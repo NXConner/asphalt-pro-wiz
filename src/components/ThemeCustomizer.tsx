@@ -1,25 +1,57 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Palette } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Palette, UploadCloud, X } from "lucide-react";
+import {
+  applyThemePreferences,
+  getDefaultPreferences,
+  loadThemePreferences,
+  saveThemePreferences,
+  setPrimaryHue,
+  setRadius,
+  setThemeName,
+  setWallpaper,
+  setWallpaperBlur,
+  setWallpaperOpacity,
+  type ThemeName,
+} from "@/lib/theme";
 
 export function ThemeCustomizer() {
-  const [primaryHue, setPrimaryHue] = useState(210);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const [primaryHueLocal, setPrimaryHueLocal] = useState(210);
+  const [themeName, setThemeNameLocal] = useState<ThemeName>("default");
+  const [radius, setRadiusLocal] = useState(8);
+  const [opacity, setOpacityLocal] = useState(0.25);
+  const [blur, setBlurLocal] = useState(0);
+  const [hasWallpaper, setHasWallpaper] = useState(false);
 
-  const applyTheme = (hue: number) => {
-    setPrimaryHue(hue);
-    document.documentElement.style.setProperty('--primary', `${hue} 100% 50%`);
-    document.documentElement.style.setProperty('--primary-foreground', `${hue} 10% 95%`);
+  useEffect(() => {
+    const prefs = loadThemePreferences();
+    setPrimaryHueLocal(prefs.primaryHue);
+    setThemeNameLocal(prefs.name);
+    setRadiusLocal(prefs.radius);
+    setOpacityLocal(prefs.wallpaperOpacity);
+    setBlurLocal(prefs.wallpaperBlur);
+    setHasWallpaper(!!prefs.wallpaperDataUrl);
+    applyThemePreferences(prefs);
+  }, []);
+
+  const handleWallpaper = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const dataUrl = await toDataUrl(file);
+    setWallpaper(dataUrl);
+    setHasWallpaper(true);
+    if (fileRef.current) fileRef.current.value = "";
   };
 
-  const presets = [
-    { name: 'Blue', hue: 210 },
-    { name: 'Green', hue: 142 },
-    { name: 'Orange', hue: 25 },
-    { name: 'Purple', hue: 270 },
-    { name: 'Red', hue: 0 },
-  ];
+  const clearWallpaper = () => {
+    setWallpaper("");
+    setHasWallpaper(false);
+  };
 
   return (
     <Card>
@@ -28,42 +60,92 @@ export function ThemeCustomizer() {
           <Palette className="h-5 w-5" />
           Theme Customizer
         </CardTitle>
-        <CardDescription>Customize your invoice theme colors</CardDescription>
+        <CardDescription>Advanced theming and wallpaper</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <Label htmlFor="primary-hue">Primary Color Hue ({primaryHue}°)</Label>
-          <input
-            id="primary-hue"
-            type="range"
-            min="0"
-            max="360"
-            value={primaryHue}
-            onChange={(e) => applyTheme(parseInt(e.target.value))}
-            className="w-full h-2 bg-gradient-to-r from-red-500 via-green-500 to-blue-500 rounded-lg appearance-none cursor-pointer mt-2"
-          />
-        </div>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <Label>Theme</Label>
+            <Select value={themeName} onValueChange={(v: ThemeName) => { setThemeNameLocal(v); setThemeName(v); }}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default">Default</SelectItem>
+                <SelectItem value="emerald">Emerald</SelectItem>
+                <SelectItem value="sunset">Sunset</SelectItem>
+                <SelectItem value="royal">Royal</SelectItem>
+                <SelectItem value="crimson">Crimson</SelectItem>
+              </SelectContent>
+            </Select>
 
-        <div>
-          <Label>Color Presets</Label>
-          <div className="flex gap-2 mt-2 flex-wrap">
-            {presets.map((preset) => (
-              <Button
-                key={preset.name}
-                variant="outline"
-                size="sm"
-                onClick={() => applyTheme(preset.hue)}
-                style={{ 
-                  borderColor: `hsl(${preset.hue} 100% 50%)`,
-                  color: `hsl(${preset.hue} 100% 35%)`
-                }}
-              >
-                {preset.name}
-              </Button>
-            ))}
+            <Label htmlFor="primary-hue">Primary Hue ({primaryHueLocal}°)</Label>
+            <input
+              id="primary-hue"
+              type="range"
+              min="0"
+              max="360"
+              value={primaryHueLocal}
+              onChange={(e) => { const v = parseInt(e.target.value); setPrimaryHueLocal(v); setPrimaryHue(v); }}
+              className="w-full h-2 bg-gradient-to-r from-red-500 via-green-500 to-blue-500 rounded-lg appearance-none cursor-pointer"
+            />
+
+            <Label htmlFor="radius">Radius ({radius}px)</Label>
+            <input
+              id="radius"
+              type="range"
+              min="0"
+              max="24"
+              value={radius}
+              onChange={(e) => { const v = parseInt(e.target.value); setRadiusLocal(v); setRadius(v); }}
+              className="w-full"
+            />
+          </div>
+
+          <div className="space-y-3">
+            <Label>Wallpaper</Label>
+            <div className="flex items-center gap-2">
+              <Input ref={fileRef} type="file" accept="image/*" onChange={handleWallpaper} />
+              <UploadCloud className="w-5 h-5" />
+              {hasWallpaper && (
+                <Button type="button" variant="ghost" size="sm" onClick={clearWallpaper}>
+                  <X className="w-4 h-4 mr-1" /> Clear
+                </Button>
+              )}
+            </div>
+            <Label htmlFor="opacity">Wallpaper Opacity ({Math.round(opacity * 100)}%)</Label>
+            <input
+              id="opacity"
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={opacity}
+              onChange={(e) => { const v = parseFloat(e.target.value); setOpacityLocal(v); setWallpaperOpacity(v); }}
+              className="w-full"
+            />
+            <Label htmlFor="blur">Wallpaper Blur ({blur}px)</Label>
+            <input
+              id="blur"
+              type="range"
+              min="0"
+              max="30"
+              value={blur}
+              onChange={(e) => { const v = parseInt(e.target.value); setBlurLocal(v); setWallpaperBlur(v); }}
+              className="w-full"
+            />
           </div>
         </div>
       </CardContent>
     </Card>
   );
+}
+
+async function toDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (e) => reject(e);
+    reader.readAsDataURL(file);
+  });
 }
