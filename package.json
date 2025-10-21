@@ -21,6 +21,7 @@
     "migrate:up": "node-pg-migrate -m supabase/migrations -d \"$DATABASE_URL\" up",
     "migrate:down": "node-pg-migrate -m supabase/migrations -d \"$DATABASE_URL\" down",
     "seed": "tsx scripts/seed.ts",
+    "openapi:generate": "tsx scripts/openapi/generate.ts",
     "test": "vitest",
     "test:unit": "vitest run",
     "test:watch": "vitest",
