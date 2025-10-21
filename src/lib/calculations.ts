@@ -293,10 +293,26 @@ export function calculateProject(inputs: ProjectInputs, businessData: BusinessDa
     if (inputs.numCoats >= 2) sealHours += inputs.totalArea / businessData.sealcoatingSpeed2;
     if (inputs.numCoats >= 3) sealHours += inputs.totalArea / businessData.sealcoatingSpeed2;
   }
-  
-  const totalHours = inputs.prepHours + sealHours + (inputs.crackLength / businessData.crackSealingSpeed) + (inputs.jobDistanceMiles / 45);
+
+  // Ensure Cleaning/Prep time is automatically included when performing crack repair
+  const prepLaborHours = (inputs.includeCleaningRepair && inputs.crackLength > 0)
+    ? Math.max(inputs.prepHours, 1)
+    : inputs.prepHours;
+
+  // Only count crack repair labor when that category is selected
+  const crackLaborHours = inputs.includeCleaningRepair
+    ? (inputs.crackLength / businessData.crackSealingSpeed)
+    : 0;
+
+  // Simple assumption: average 45 mph for travel time to/from job
+  const travelHours = inputs.jobDistanceMiles / 45;
+
+  const totalHours = prepLaborHours + sealHours + crackLaborHours + travelHours;
   costs.labor = totalHours * businessData.employees * businessData.laborRate;
-  breakdown.push({ item: `Labor (${businessData.employees} employees @ $${businessData.laborRate}/hr)`, value: `${totalHours.toFixed(1)} hrs → $${costs.labor.toFixed(2)}` });
+  breakdown.push({
+    item: `Labor (${businessData.employees} employees @ $${businessData.laborRate}/hr)`,
+    value: `${totalHours.toFixed(1)} hrs (Prep: ${prepLaborHours.toFixed(1)}, Seal: ${sealHours.toFixed(1)}, Crack: ${crackLaborHours.toFixed(1)}, Travel: ${travelHours.toFixed(1)}) → $${costs.labor.toFixed(2)}`
+  });
 
   // Subtotal (before overhead and profit)
   costs.subtotal = costs.labor + costs.sealcoat + costs.sand + costs.additives + costs.crackFiller + costs.propane + costs.primer + costs.striping + costs.travel + costs.premiumServices + costs.customServices;
