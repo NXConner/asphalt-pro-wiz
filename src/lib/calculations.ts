@@ -102,6 +102,12 @@ export interface ProjectInputs {
   includeCleaningRepair: boolean;
   includeSealcoating: boolean;
   includeStriping: boolean;
+  customServices?: Array<{
+    name: string;
+    type: 'flat' | 'perUnit' | 'perSqFt' | 'perLinearFt';
+    unitPrice: number;
+    quantity?: number;
+  }>;
 }
 
 export interface CostBreakdown {
@@ -120,6 +126,7 @@ export interface Costs {
   striping: number;
   travel: number;
   premiumServices: number;
+  customServices: number;
   subtotal: number;
   overhead: number;
   profit: number;
@@ -149,6 +156,7 @@ export function calculateProject(inputs: ProjectInputs, businessData: BusinessDa
     striping: 0,
     travel: 0,
     premiumServices: 0,
+    customServices: 0,
     subtotal: 0,
     overhead: 0,
     profit: 0,
@@ -254,6 +262,30 @@ export function calculateProject(inputs: ProjectInputs, businessData: BusinessDa
     breakdown.push({ item: 'Debris Removal', value: `$${businessData.premiumServices.debrisRemoval.toFixed(2)}` });
   }
 
+  // Custom Services
+  if (inputs.customServices && inputs.customServices.length > 0) {
+    for (const svc of inputs.customServices) {
+      let qty = 1;
+      switch (svc.type) {
+        case 'flat':
+          qty = 1;
+          break;
+        case 'perUnit':
+          qty = Math.max(0, svc.quantity ?? 0);
+          break;
+        case 'perSqFt':
+          qty = inputs.totalArea;
+          break;
+        case 'perLinearFt':
+          qty = inputs.crackLength;
+          break;
+      }
+      const cost = svc.unitPrice * qty;
+      costs.customServices += cost;
+      breakdown.push({ item: `Custom: ${svc.name}`, value: `$${cost.toFixed(2)}` });
+    }
+  }
+
   // Labor
   let sealHours = 0;
   if (inputs.includeSealcoating) {
@@ -267,7 +299,7 @@ export function calculateProject(inputs: ProjectInputs, businessData: BusinessDa
   breakdown.push({ item: `Labor (${businessData.employees} employees @ $${businessData.laborRate}/hr)`, value: `${totalHours.toFixed(1)} hrs → $${costs.labor.toFixed(2)}` });
 
   // Subtotal (before overhead and profit)
-  costs.subtotal = costs.labor + costs.sealcoat + costs.sand + costs.additives + costs.crackFiller + costs.propane + costs.primer + costs.striping + costs.travel + costs.premiumServices;
+  costs.subtotal = costs.labor + costs.sealcoat + costs.sand + costs.additives + costs.crackFiller + costs.propane + costs.primer + costs.striping + costs.travel + costs.premiumServices + costs.customServices;
   
   // Overhead
   costs.overhead = costs.subtotal * (businessData.overheadPercent / 100);

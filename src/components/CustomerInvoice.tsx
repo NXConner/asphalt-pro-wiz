@@ -25,12 +25,33 @@ export function CustomerInvoice({
     day: 'numeric' 
   });
 
-  // Filter out internal cost details for customer view
-  const customerBreakdown = breakdown.filter(item => 
-    !item.item.includes('→') && 
-    !item.item.includes('Overhead') && 
-    !item.item.includes('Profit')
-  );
+  // Group items for customer-friendly summary
+  const customerBreakdown = breakdown
+    .filter(item => !item.item.includes('Overhead') && !item.item.includes('Profit'))
+    .map(item => {
+      if (item.item.startsWith('Sealcoat')) return { item: 'Sealcoating', value: item.value.split('→').pop()?.trim() || item.value };
+      if (item.item === 'Sand') return { item: 'Sealcoating Additives', value: item.value.split('→').pop()?.trim() || item.value };
+      if (item.item === 'Fast-Dry Additive') return { item: 'Sealcoating Additives', value: item.value.split('→').pop()?.trim() || item.value };
+      if (item.item === 'Crack Filler' || item.item === 'Propane Tanks') return { item: 'Cleaning & Crack Repair', value: item.value.split('→').pop()?.trim() || item.value };
+      if (item.item === 'Striping') return { item: 'Parking Lot Striping', value: item.value };
+      if (item.item === 'Oil Spot Primer') return { item: 'Surface Preparation', value: item.value.split('→').pop()?.trim() || item.value };
+      if (item.item === 'Edge Pushing' || item.item.startsWith('Weed') || item.item.startsWith('Professional Crack Cleaning') || item.item === 'Power Washing' || item.item === 'Debris Removal') {
+        return { item: 'Premium Services', value: item.value };
+      }
+      if (item.item.startsWith('Labor')) return { item: 'Labor', value: item.value.split('→').pop()?.trim() || item.value };
+      if (item.item === 'Fuel Cost') return { item: 'Travel', value: item.value };
+      if (item.item === 'Total Area') return { item: 'Measured Area', value: item.value };
+      return item;
+    })
+    .reduce<Record<string, number>>((acc, cur) => {
+      const numeric = parseFloat(cur.value.replace(/[^0-9.]/g, '')) || 0;
+      acc[cur.item] = (acc[cur.item] || 0) + numeric;
+      return acc;
+    }, {});
+
+  const customerItems = Object.entries(customerBreakdown)
+    .filter(([k]) => !['Measured Area'].includes(k))
+    .map(([k, v]) => ({ item: k, value: `$${v.toFixed(2)}` }));
 
   return (
     <Card className="print:shadow-none">
@@ -72,9 +93,9 @@ export function CustomerInvoice({
 
       <CardContent className="space-y-6">
         <div>
-          <h3 className="font-semibold text-lg mb-4">Services Included</h3>
+          <h3 className="font-semibold text-lg mb-4">Included Services (Summary)</h3>
           <div className="space-y-2">
-            {customerBreakdown.map((item, index) => (
+            {customerItems.map((item, index) => (
               <div key={index} className="flex justify-between py-2 border-b">
                 <span className="text-sm">{item.item}</span>
                 <span className="font-medium">{item.value}</span>
