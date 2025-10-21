@@ -14,7 +14,11 @@
     "audit": "npm audit --audit-level=high",
     "prepare": "husky",
     "preview": "vite preview",
-    "ingest:repos": "tsx scripts/ingest/ingest.ts"
+    "ingest:repos": "tsx scripts/ingest/ingest.ts",
+    "migrate:create": "node-pg-migrate -m supabase/migrations create",
+    "migrate:up": "node-pg-migrate -m supabase/migrations -d \"$DATABASE_URL\" up",
+    "migrate:down": "node-pg-migrate -m supabase/migrations -d \"$DATABASE_URL\" down",
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -96,6 +100,9 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "tsx": "^4.19.2",
-    "vite": "^5.4.19"
+    "vite": "^5.4.19",
+    "node-pg-migrate": "^7.6.1",
+    "pg": "^8.13.1",
+    "dotenv": "^16.4.5"
   }
 }
