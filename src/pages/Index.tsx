@@ -16,10 +16,14 @@ import { ThemeCustomizer } from '@/components/ThemeCustomizer';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { CustomerInvoice } from '@/components/CustomerInvoice';
 import { calculateProject, calculateDistance, defaultBusinessData, ProjectInputs, BusinessData, Costs, CostBreakdown } from '@/lib/calculations';
+import { CustomServices, type CustomService } from '@/components/CustomServices';
+import { UploadsPanel } from '@/components/UploadsPanel';
+import { DocumentGenerator } from '@/components/DocumentGenerator';
+import { AIGemini } from '@/components/AIGemini';
 
 interface AreaItem {
   id: number;
-  shape: 'rectangle' | 'triangle' | 'circle' | 'drawn';
+  shape: 'rectangle' | 'triangle' | 'circle' | 'drawn' | 'manual';
   area: number;
 }
 
@@ -30,7 +34,7 @@ const Index = () => {
   const [customerCoords, setCustomerCoords] = useState<[number, number] | null>(null);
   const [areas, setAreas] = useState<AreaItem[]>([]);
   const [nextAreaId, setNextAreaId] = useState(1);
-  const [shapeType, setShapeType] = useState<'rectangle' | 'triangle' | 'circle'>('rectangle');
+  const [shapeType, setShapeType] = useState<'rectangle' | 'triangle' | 'circle' | 'manual'>('rectangle');
   
   const [numCoats, setNumCoats] = useState(2);
   const [sandAdded, setSandAdded] = useState(false);
@@ -56,6 +60,8 @@ const Index = () => {
   const [premiumCrackCleaning, setPremiumCrackCleaning] = useState(false);
   const [premiumPowerWashing, setPremiumPowerWashing] = useState(false);
   const [premiumDebrisRemoval, setPremiumDebrisRemoval] = useState(false);
+
+  const [customServices, setCustomServices] = useState<CustomService[]>([]);
 
   const [includeCleaningRepair, setIncludeCleaningRepair] = useState(true);
   const [includeSealcoating, setIncludeSealcoating] = useState(true);
@@ -164,6 +170,7 @@ const Index = () => {
       includeCleaningRepair,
       includeSealcoating,
       includeStriping,
+      customServices: customServices.map(s => ({ name: s.name, type: s.type, unitPrice: s.unitPrice, quantity: s.quantity }))
     };
 
     const result = calculateProject(inputs, businessData);
@@ -264,11 +271,12 @@ const Index = () => {
                           <SelectItem value="rectangle">Rectangle</SelectItem>
                           <SelectItem value="triangle">Triangle</SelectItem>
                           <SelectItem value="circle">Circle</SelectItem>
+                          <SelectItem value="manual">Manual Area</SelectItem>
                         </SelectContent>
                       </Select>
                       <Button onClick={addArea} variant="outline">
                         <Plus className="h-4 w-4 mr-2" />
-                        Add Shape
+                        Add
                       </Button>
                     </div>
                     <div className="space-y-2">
@@ -487,6 +495,13 @@ const Index = () => {
                   onChange={handlePremiumServiceChange}
                 />
 
+                <CustomServices
+                  totalArea={totalArea}
+                  crackLength={crackLength}
+                  value={customServices}
+                  onChange={setCustomServices}
+                />
+
                 <Card>
                   <CardHeader>
                     <CardTitle>Additional Prep Work</CardTitle>
@@ -541,6 +556,9 @@ const Index = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                <UploadsPanel jobName={jobName} customerAddress={customerAddress} />
+                <AIGemini />
               </div>
             </div>
 
@@ -588,6 +606,9 @@ const Index = () => {
                 onPrint={handlePrint}
               />
             )}
+            <div className="mt-6">
+              <DocumentGenerator jobName={jobName} customerAddress={customerAddress} />
+            </div>
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-6">

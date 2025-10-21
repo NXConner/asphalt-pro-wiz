@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { X } from 'lucide-react';
 
 interface AreaSectionProps {
-  shape: 'rectangle' | 'triangle' | 'circle' | 'drawn';
+  shape: 'rectangle' | 'triangle' | 'circle' | 'drawn' | 'manual';
   initialArea?: number;
   onRemove: () => void;
   onChange: (area: number) => void;
@@ -21,6 +21,10 @@ const AreaSection = ({ shape, initialArea = 0, onRemove, onChange }: AreaSection
   const [area, setArea] = useState(initialArea);
 
   useEffect(() => {
+    if (shape === 'manual') {
+      // Manual entries are controlled by the dedicated input below
+      return;
+    }
     let calculatedArea = 0;
 
     switch (shape) {
@@ -48,6 +52,20 @@ const AreaSection = ({ shape, initialArea = 0, onRemove, onChange }: AreaSection
 
   return (
     <div className="flex items-center gap-2">
+      {shape === 'manual' && (
+        <>
+          <Input
+            type="number"
+            placeholder="Area (sq ft)"
+            className="w-2/3"
+            onChange={(e) => {
+              const val = parseFloat(e.target.value) || 0;
+              setArea(val);
+              onChange(val);
+            }}
+          />
+        </>
+      )}
       {shape === 'rectangle' && (
         <>
           <Input
