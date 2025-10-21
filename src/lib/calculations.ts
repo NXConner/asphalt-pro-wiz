@@ -1,6 +1,8 @@
 export interface BusinessData {
   laborRate: number;
   employees: number;
+  overheadPercent: number;
+  profitPercent: number;
   sealcoatPrice: number;
   sandPrice: number;
   fastDryPrice: number;
@@ -25,16 +27,25 @@ export interface BusinessData {
     lettering: number;
     curb: number;
   };
+  premiumServices: {
+    edgePushing: number;
+    weedKiller: number;
+    crackCleaning: number;
+    powerWashing: number;
+    debrisRemoval: number;
+  };
 }
 
 export const defaultBusinessData: BusinessData = {
-  laborRate: 20.00,
+  laborRate: 25.00,
   employees: 3,
+  overheadPercent: 25,
+  profitPercent: 25,
   sealcoatPrice: 3.65,
   sandPrice: 10.00,
-  fastDryPrice: 50.00,
+  fastDryPrice: 140.00,
   prepSealPrice: 50.00,
-  crackFillerPrice: 44.99,
+  crackFillerPrice: 44.95,
   propanePrice: 10.00,
   gasPrice: 2.901,
   chevyMPG: 8,
@@ -53,6 +64,13 @@ export const defaultBusinessData: BusinessData = {
     arrowSmall: 15.00,
     lettering: 5.00,
     curb: 2.00
+  },
+  premiumServices: {
+    edgePushing: 150.00,
+    weedKiller: 75.00,
+    crackCleaning: 100.00,
+    powerWashing: 200.00,
+    debrisRemoval: 125.00,
   }
 };
 
@@ -76,6 +94,14 @@ export interface ProjectInputs {
   oilSpots: number;
   propaneTanks: number;
   jobDistanceMiles: number;
+  premiumEdgePushing: boolean;
+  premiumWeedKiller: boolean;
+  premiumCrackCleaning: boolean;
+  premiumPowerWashing: boolean;
+  premiumDebrisRemoval: boolean;
+  includeCleaningRepair: boolean;
+  includeSealcoating: boolean;
+  includeStriping: boolean;
 }
 
 export interface CostBreakdown {
@@ -93,6 +119,10 @@ export interface Costs {
   primer: number;
   striping: number;
   travel: number;
+  premiumServices: number;
+  subtotal: number;
+  overhead: number;
+  profit: number;
   total: number;
 }
 
@@ -118,6 +148,10 @@ export function calculateProject(inputs: ProjectInputs, businessData: BusinessDa
     primer: 0,
     striping: 0,
     travel: 0,
+    premiumServices: 0,
+    subtotal: 0,
+    overhead: 0,
+    profit: 0,
     total: 0
   };
 
@@ -134,30 +168,40 @@ export function calculateProject(inputs: ProjectInputs, businessData: BusinessDa
   costs.travel = ((totalDist / businessData.chevyMPG) + (inputs.jobDistanceMiles / businessData.dodgeMPG)) * businessData.gasPrice;
   breakdown.push({ item: 'Fuel Cost', value: `$${costs.travel.toFixed(2)}` });
 
-  // Sealcoat
-  const sealerGals = 
-    (inputs.totalArea * businessData.sealCoatCoverage1) +
-    (inputs.numCoats > 1 ? inputs.totalArea * businessData.sealCoatCoverage2 : 0) +
-    (inputs.numCoats > 2 ? inputs.totalArea * businessData.sealCoatCoverage3 : 0);
-  costs.sealcoat = sealerGals * businessData.sealcoatPrice;
-  breakdown.push({ item: `Sealcoat (${inputs.numCoats} Coat/s)`, value: `${sealerGals.toFixed(1)} gal → $${costs.sealcoat.toFixed(2)}` });
+  // Sealcoat (only if includeSealcoating is true)
+  if (inputs.includeSealcoating) {
+    const sealerGals = 
+      (inputs.totalArea * businessData.sealCoatCoverage1) +
+      (inputs.numCoats > 1 ? inputs.totalArea * businessData.sealCoatCoverage2 : 0) +
+      (inputs.numCoats > 2 ? inputs.totalArea * businessData.sealCoatCoverage3 : 0);
+    costs.sealcoat = sealerGals * businessData.sealcoatPrice;
+    breakdown.push({ item: `Sealcoat (${inputs.numCoats} Coat/s)`, value: `${sealerGals.toFixed(1)} gal → $${costs.sealcoat.toFixed(2)}` });
+  }
 
   // Sand
-  if (inputs.sandAdded) {
+  if (inputs.includeSealcoating && inputs.sandAdded) {
+    const sealerGals = 
+      (inputs.totalArea * businessData.sealCoatCoverage1) +
+      (inputs.numCoats > 1 ? inputs.totalArea * businessData.sealCoatCoverage2 : 0) +
+      (inputs.numCoats > 2 ? inputs.totalArea * businessData.sealCoatCoverage3 : 0);
     const sandBags = Math.ceil((sealerGals * businessData.sandRatio) / 50);
     costs.sand = sandBags * businessData.sandPrice;
     breakdown.push({ item: 'Sand', value: `${sandBags} bags → $${costs.sand.toFixed(2)}` });
   }
 
   // Fast-dry additive
-  if (inputs.polymerAdded) {
+  if (inputs.includeSealcoating && inputs.polymerAdded) {
+    const sealerGals = 
+      (inputs.totalArea * businessData.sealCoatCoverage1) +
+      (inputs.numCoats > 1 ? inputs.totalArea * businessData.sealCoatCoverage2 : 0) +
+      (inputs.numCoats > 2 ? inputs.totalArea * businessData.sealCoatCoverage3 : 0);
     const buckets = Math.ceil(sealerGals / 100);
     costs.additives = buckets * businessData.fastDryPrice;
     breakdown.push({ item: 'Fast-Dry Additive', value: `${buckets} bucket(s) → $${costs.additives.toFixed(2)}` });
   }
 
-  // Crack filling
-  if (inputs.crackLength > 0) {
+  // Crack filling (only if includeCleaningRepair is true)
+  if (inputs.includeCleaningRepair && inputs.crackLength > 0) {
     const boxes = Math.ceil((inputs.crackLength * 12 * inputs.crackWidth * inputs.crackDepth) / 3000);
     costs.crackFiller = boxes * businessData.crackFillerPrice;
     breakdown.push({ item: 'Crack Filler', value: `${boxes} box(es) → $${costs.crackFiller.toFixed(2)}` });
@@ -166,38 +210,75 @@ export function calculateProject(inputs: ProjectInputs, businessData: BusinessDa
     breakdown.push({ item: 'Propane Tanks', value: `${inputs.propaneTanks} → $${costs.propane.toFixed(2)}` });
   }
 
-  // Striping
-  costs.striping =
-    inputs.stripingLines * businessData.striping.line +
-    inputs.stripingHandicap * businessData.striping.handicap +
-    inputs.stripingArrowsLarge * businessData.striping.arrowLarge +
-    inputs.stripingArrowsSmall * businessData.striping.arrowSmall +
-    inputs.stripingLettering * businessData.striping.lettering +
-    inputs.stripingCurb * businessData.striping.curb;
-  
-  if (costs.striping > 0) {
-    breakdown.push({ item: 'Striping', value: `$${costs.striping.toFixed(2)}` });
+  // Striping (only if includeStriping is true)
+  if (inputs.includeStriping) {
+    costs.striping =
+      inputs.stripingLines * businessData.striping.line +
+      inputs.stripingHandicap * businessData.striping.handicap +
+      inputs.stripingArrowsLarge * businessData.striping.arrowLarge +
+      inputs.stripingArrowsSmall * businessData.striping.arrowSmall +
+      inputs.stripingLettering * businessData.striping.lettering +
+      inputs.stripingCurb * businessData.striping.curb;
+    
+    if (costs.striping > 0) {
+      breakdown.push({ item: 'Striping', value: `$${costs.striping.toFixed(2)}` });
+    }
   }
 
-  // Oil spot primer
-  if (inputs.oilSpots > 0) {
+  // Oil spot primer (only if includeSealcoating is true)
+  if (inputs.includeSealcoating && inputs.oilSpots > 0) {
     const buckets = Math.ceil(inputs.oilSpots / 50);
     costs.primer = buckets * businessData.prepSealPrice;
     breakdown.push({ item: 'Oil Spot Primer', value: `${buckets} bucket(s) → $${costs.primer.toFixed(2)}` });
   }
 
+  // Premium Services
+  if (inputs.premiumEdgePushing) {
+    costs.premiumServices += businessData.premiumServices.edgePushing;
+    breakdown.push({ item: 'Edge Pushing', value: `$${businessData.premiumServices.edgePushing.toFixed(2)}` });
+  }
+  if (inputs.premiumWeedKiller) {
+    costs.premiumServices += businessData.premiumServices.weedKiller;
+    breakdown.push({ item: 'Weed Killer Application', value: `$${businessData.premiumServices.weedKiller.toFixed(2)}` });
+  }
+  if (inputs.premiumCrackCleaning) {
+    costs.premiumServices += businessData.premiumServices.crackCleaning;
+    breakdown.push({ item: 'Professional Crack Cleaning', value: `$${businessData.premiumServices.crackCleaning.toFixed(2)}` });
+  }
+  if (inputs.premiumPowerWashing) {
+    costs.premiumServices += businessData.premiumServices.powerWashing;
+    breakdown.push({ item: 'Power Washing', value: `$${businessData.premiumServices.powerWashing.toFixed(2)}` });
+  }
+  if (inputs.premiumDebrisRemoval) {
+    costs.premiumServices += businessData.premiumServices.debrisRemoval;
+    breakdown.push({ item: 'Debris Removal', value: `$${businessData.premiumServices.debrisRemoval.toFixed(2)}` });
+  }
+
   // Labor
   let sealHours = 0;
-  if (inputs.numCoats >= 1) sealHours += inputs.totalArea / businessData.sealcoatingSpeed1;
-  if (inputs.numCoats >= 2) sealHours += inputs.totalArea / businessData.sealcoatingSpeed2;
-  if (inputs.numCoats >= 3) sealHours += inputs.totalArea / businessData.sealcoatingSpeed2;
+  if (inputs.includeSealcoating) {
+    if (inputs.numCoats >= 1) sealHours += inputs.totalArea / businessData.sealcoatingSpeed1;
+    if (inputs.numCoats >= 2) sealHours += inputs.totalArea / businessData.sealcoatingSpeed2;
+    if (inputs.numCoats >= 3) sealHours += inputs.totalArea / businessData.sealcoatingSpeed2;
+  }
   
   const totalHours = inputs.prepHours + sealHours + (inputs.crackLength / businessData.crackSealingSpeed) + (inputs.jobDistanceMiles / 45);
   costs.labor = totalHours * businessData.employees * businessData.laborRate;
-  breakdown.push({ item: 'Labor', value: `${totalHours.toFixed(1)} hrs → $${costs.labor.toFixed(2)}` });
+  breakdown.push({ item: `Labor (${businessData.employees} employees @ $${businessData.laborRate}/hr)`, value: `${totalHours.toFixed(1)} hrs → $${costs.labor.toFixed(2)}` });
+
+  // Subtotal (before overhead and profit)
+  costs.subtotal = costs.labor + costs.sealcoat + costs.sand + costs.additives + costs.crackFiller + costs.propane + costs.primer + costs.striping + costs.travel + costs.premiumServices;
+  
+  // Overhead
+  costs.overhead = costs.subtotal * (businessData.overheadPercent / 100);
+  breakdown.push({ item: `Overhead (${businessData.overheadPercent}%)`, value: `$${costs.overhead.toFixed(2)}` });
+  
+  // Profit
+  costs.profit = costs.subtotal * (businessData.profitPercent / 100);
+  breakdown.push({ item: `Profit Margin (${businessData.profitPercent}%)`, value: `$${costs.profit.toFixed(2)}` });
 
   // Total
-  costs.total = Object.values(costs).reduce((sum, val) => sum + val, 0);
+  costs.total = costs.subtotal + costs.overhead + costs.profit;
 
   return { costs, breakdown };
 }

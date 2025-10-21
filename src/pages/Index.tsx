@@ -4,11 +4,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Calculator, MapPin, Plus } from 'lucide-react';
+import { Calculator, FileText, Plus, Settings, MapPin } from 'lucide-react';
 import Map from '@/components/Map';
 import AreaSection from '@/components/AreaSection';
-import { calculateProject, calculateDistance, defaultBusinessData, ProjectInputs, Costs, CostBreakdown } from '@/lib/calculations';
+import { BusinessSettings } from '@/components/BusinessSettings';
+import { PremiumServices } from '@/components/PremiumServices';
+import { ServiceCategories } from '@/components/ServiceCategories';
+import { ThemeCustomizer } from '@/components/ThemeCustomizer';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { CustomerInvoice } from '@/components/CustomerInvoice';
+import { calculateProject, calculateDistance, defaultBusinessData, ProjectInputs, BusinessData, Costs, CostBreakdown } from '@/lib/calculations';
 
 interface AreaItem {
   id: number;
@@ -17,6 +24,7 @@ interface AreaItem {
 }
 
 const Index = () => {
+  const [businessData, setBusinessData] = useState<BusinessData>(defaultBusinessData);
   const [jobName, setJobName] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
   const [customerCoords, setCustomerCoords] = useState<[number, number] | null>(null);
@@ -42,12 +50,21 @@ const Index = () => {
   const [prepHours, setPrepHours] = useState(1);
   const [oilSpots, setOilSpots] = useState(0);
   const [propaneTanks, setPropaneTanks] = useState(1);
+
+  const [premiumEdgePushing, setPremiumEdgePushing] = useState(false);
+  const [premiumWeedKiller, setPremiumWeedKiller] = useState(false);
+  const [premiumCrackCleaning, setPremiumCrackCleaning] = useState(false);
+  const [premiumPowerWashing, setPremiumPowerWashing] = useState(false);
+  const [premiumDebrisRemoval, setPremiumDebrisRemoval] = useState(false);
+
+  const [includeCleaningRepair, setIncludeCleaningRepair] = useState(true);
+  const [includeSealcoating, setIncludeSealcoating] = useState(true);
+  const [includeStriping, setIncludeStriping] = useState(true);
   
   const [showResults, setShowResults] = useState(false);
   const [costs, setCosts] = useState<Costs | null>(null);
   const [breakdown, setBreakdown] = useState<CostBreakdown[]>([]);
   const [jobDistance, setJobDistance] = useState(0);
-  const [supplierDistance, setSupplierDistance] = useState(0);
 
   const businessCoords: [number, number] = [36.7388, -80.2692];
   const supplierCoords: [number, number] = [36.3871, -79.9578];
@@ -93,6 +110,24 @@ const Index = () => {
     setAreas(prev => prev.map(a => a.id === id ? { ...a, area } : a));
   };
 
+  const handlePremiumServiceChange = (service: string, value: boolean) => {
+    switch(service) {
+      case 'premiumEdgePushing': setPremiumEdgePushing(value); break;
+      case 'premiumWeedKiller': setPremiumWeedKiller(value); break;
+      case 'premiumCrackCleaning': setPremiumCrackCleaning(value); break;
+      case 'premiumPowerWashing': setPremiumPowerWashing(value); break;
+      case 'premiumDebrisRemoval': setPremiumDebrisRemoval(value); break;
+    }
+  };
+
+  const handleServiceCategoryChange = (category: string, value: boolean) => {
+    switch(category) {
+      case 'includeCleaningRepair': setIncludeCleaningRepair(value); break;
+      case 'includeSealcoating': setIncludeSealcoating(value); break;
+      case 'includeStriping': setIncludeStriping(value); break;
+    }
+  };
+
   const totalArea = areas.reduce((sum, a) => sum + a.area, 0);
 
   const handleCalculate = () => {
@@ -120,401 +155,446 @@ const Index = () => {
       prepHours,
       oilSpots,
       propaneTanks,
-      jobDistanceMiles: jobDistance
+      jobDistanceMiles: jobDistance,
+      premiumEdgePushing,
+      premiumWeedKiller,
+      premiumCrackCleaning,
+      premiumPowerWashing,
+      premiumDebrisRemoval,
+      includeCleaningRepair,
+      includeSealcoating,
+      includeStriping,
     };
 
-    const result = calculateProject(inputs, defaultBusinessData);
+    const result = calculateProject(inputs, businessData);
     setCosts(result.costs);
     setBreakdown(result.breakdown);
     setShowResults(true);
 
-    // Scroll to results
     setTimeout(() => {
       document.getElementById('results-container')?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
   };
 
-  const baseQuote = costs?.total || 0;
-  const markupQuote = baseQuote * 1.25;
-  const roundedUpBase = Math.ceil(baseQuote / 10) * 10;
-  const finalRoundedQuote = roundedUpBase * 1.25;
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const supplierDist = calculateDistance(businessCoords, supplierCoords) * 2;
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-4 md:p-8">
-        <header className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">Advanced Asphalt Estimator</h1>
-          <p className="text-lg text-muted-foreground">Residential & Commercial Project Calculator</p>
+        <header className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold text-foreground mb-2">CONNER Asphalt Estimator</h1>
+            <p className="text-lg text-muted-foreground">Professional Estimate & Invoice Generator</p>
+          </div>
+          <ThemeToggle />
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calculator className="h-5 w-5" />
-                  Project Details & Measurements
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Job Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="jobName">Job Name / Customer</Label>
-                    <Input
-                      id="jobName"
-                      placeholder="e.g., Smith Driveway"
-                      value={jobName}
-                      onChange={(e) => setJobName(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="customerAddress">Customer Address</Label>
-                    <Input
-                      id="customerAddress"
-                      placeholder="Enter address, search, or click map"
-                      value={customerAddress}
-                      onChange={(e) => setCustomerAddress(e.target.value)}
-                    />
-                  </div>
-                </div>
+        <Tabs defaultValue="estimate" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
+            <TabsTrigger value="estimate">
+              <Calculator className="h-4 w-4 mr-2" />
+              Estimate
+            </TabsTrigger>
+            <TabsTrigger value="invoice" disabled={!showResults}>
+              <FileText className="h-4 w-4 mr-2" />
+              Invoice
+            </TabsTrigger>
+            <TabsTrigger value="settings">
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </TabsTrigger>
+          </TabsList>
 
-                {/* Area Calculation */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Area Calculation</h3>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Use the <strong className="text-primary">drawing tools on the map</strong> to measure area (polygon) or add manual shapes below.
-                  </p>
-                  <div className="flex gap-2 mb-3">
-                    <Select value={shapeType} onValueChange={(v: any) => setShapeType(v)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="rectangle">Rectangle</SelectItem>
-                        <SelectItem value="triangle">Triangle</SelectItem>
-                        <SelectItem value="circle">Circle</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button onClick={addArea} className="whitespace-nowrap">
-                      <Plus className="h-4 w-4 mr-1" />
-                      Add Shape
-                    </Button>
-                  </div>
-                  <div className="space-y-2">
-                    {areas.map(area => (
-                      <AreaSection
-                        key={area.id}
-                        shape={area.shape}
-                        initialArea={area.area}
-                        onRemove={() => removeArea(area.id)}
-                        onChange={(val) => updateAreaValue(area.id, val)}
-                      />
-                    ))}
-                  </div>
-                  {areas.length > 0 && (
-                    <div className="mt-3 p-3 bg-primary/10 rounded-md">
-                      <p className="font-semibold text-primary">Total Area: {totalArea.toFixed(1)} sq ft</p>
+          <TabsContent value="estimate" className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Project Details</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="jobName">Job Name / Customer</Label>
+                        <Input
+                          id="jobName"
+                          value={jobName}
+                          onChange={(e) => setJobName(e.target.value)}
+                          placeholder="e.g., Smith Driveway"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="customerAddress">Customer Address</Label>
+                        <Input
+                          id="customerAddress"
+                          value={customerAddress}
+                          onChange={(e) => setCustomerAddress(e.target.value)}
+                          placeholder="Search address on map"
+                        />
+                      </div>
                     </div>
-                  )}
-                </div>
+                  </CardContent>
+                </Card>
 
-                {/* Sealcoating */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Sealcoating</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label>Number of Coats</Label>
-                      <Select value={numCoats.toString()} onValueChange={(v) => setNumCoats(parseInt(v))}>
-                        <SelectTrigger>
+                <ServiceCategories
+                  cleaningRepair={includeCleaningRepair}
+                  sealcoating={includeSealcoating}
+                  striping={includeStriping}
+                  onChange={handleServiceCategoryChange}
+                />
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Area Measurement</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Use the drawing tools on the map or add manual shapes below
+                    </p>
+                    <div className="flex gap-2">
+                      <Select value={shapeType} onValueChange={(v: any) => setShapeType(v)}>
+                        <SelectTrigger className="w-[180px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="1">1 Coat</SelectItem>
-                          <SelectItem value="2">2 Coats</SelectItem>
-                          <SelectItem value="3">3 Coats</SelectItem>
+                          <SelectItem value="rectangle">Rectangle</SelectItem>
+                          <SelectItem value="triangle">Triangle</SelectItem>
+                          <SelectItem value="circle">Circle</SelectItem>
                         </SelectContent>
                       </Select>
+                      <Button onClick={addArea} variant="outline">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Shape
+                      </Button>
                     </div>
                     <div className="space-y-2">
-                      <Label>Sand Added?</Label>
-                      <Select value={sandAdded ? 'yes' : 'no'} onValueChange={(v) => setSandAdded(v === 'yes')}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="yes">Yes</SelectItem>
-                          <SelectItem value="no">No</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      {areas.map(area => (
+                        <AreaSection
+                          key={area.id}
+                          shape={area.shape}
+                          initialArea={area.area}
+                          onChange={(val) => updateAreaValue(area.id, val)}
+                          onRemove={() => removeArea(area.id)}
+                        />
+                      ))}
                     </div>
-                    <div className="space-y-2">
-                      <Label>Fast-Dry Additive?</Label>
-                      <Select value={polymerAdded ? 'yes' : 'no'} onValueChange={(v) => setPolymerAdded(v === 'yes')}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="yes">Yes</SelectItem>
-                          <SelectItem value="no">No</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
+                    {totalArea > 0 && (
+                      <div className="bg-primary/10 p-3 rounded-md">
+                        <p className="font-semibold">Total Area: {totalArea.toFixed(1)} sq ft</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
 
-                {/* Crack Filling */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Crack Filling</h3>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Use the <strong className="text-primary">drawing tools on the map</strong> to measure crack length (line) or enter total length manually.
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="crackLength">Total Crack Length (ft)</Label>
-                      <Input
-                        id="crackLength"
-                        type="number"
-                        value={crackLength}
-                        onChange={(e) => setCrackLength(parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="crackWidth">Avg. Width (in)</Label>
-                      <Input
-                        id="crackWidth"
-                        type="number"
-                        step="0.25"
-                        value={crackWidth}
-                        onChange={(e) => setCrackWidth(parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="crackDepth">Avg. Depth (in)</Label>
-                      <Input
-                        id="crackDepth"
-                        type="number"
-                        step="0.25"
-                        value={crackDepth}
-                        onChange={(e) => setCrackDepth(parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
-                  </div>
-                </div>
+                {includeSealcoating && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Sealcoating Options</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="numCoats">Number of Coats</Label>
+                          <Select value={numCoats.toString()} onValueChange={(v) => setNumCoats(parseInt(v))}>
+                            <SelectTrigger id="numCoats">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1">1 Coat</SelectItem>
+                              <SelectItem value="2">2 Coats</SelectItem>
+                              <SelectItem value="3">3 Coats</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="sandAdded">Sand Added?</Label>
+                          <Select value={sandAdded ? 'yes' : 'no'} onValueChange={(v) => setSandAdded(v === 'yes')}>
+                            <SelectTrigger id="sandAdded">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="yes">Yes</SelectItem>
+                              <SelectItem value="no">No</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="polymerAdded">Fast-Dry Additive?</Label>
+                          <Select value={polymerAdded ? 'yes' : 'no'} onValueChange={(v) => setPolymerAdded(v === 'yes')}>
+                            <SelectTrigger id="polymerAdded">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="yes">Yes</SelectItem>
+                              <SelectItem value="no">No</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="oilSpots">Oil Spot Priming (count)</Label>
+                        <Input
+                          id="oilSpots"
+                          type="number"
+                          min="0"
+                          value={oilSpots}
+                          onChange={(e) => setOilSpots(parseInt(e.target.value) || 0)}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
-                {/* Parking Lot Striping */}
-                <fieldset className="border border-border rounded-lg p-4 space-y-3">
-                  <legend className="text-lg font-semibold px-2">Parking Lot Striping (Optional)</legend>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="stripingLines">Parking Lines</Label>
-                      <Input
-                        id="stripingLines"
-                        type="number"
-                        value={stripingLines}
-                        onChange={(e) => setStripingLines(parseInt(e.target.value) || 0)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="stripingHandicap">Handicap Stencils</Label>
-                      <Input
-                        id="stripingHandicap"
-                        type="number"
-                        value={stripingHandicap}
-                        onChange={(e) => setStripingHandicap(parseInt(e.target.value) || 0)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="stripingArrowsLarge">Large Arrows</Label>
-                      <Input
-                        id="stripingArrowsLarge"
-                        type="number"
-                        value={stripingArrowsLarge}
-                        onChange={(e) => setStripingArrowsLarge(parseInt(e.target.value) || 0)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="stripingArrowsSmall">Small Arrows</Label>
-                      <Input
-                        id="stripingArrowsSmall"
-                        type="number"
-                        value={stripingArrowsSmall}
-                        onChange={(e) => setStripingArrowsSmall(parseInt(e.target.value) || 0)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="stripingLettering">Lettering (Total)</Label>
-                      <Input
-                        id="stripingLettering"
-                        type="number"
-                        value={stripingLettering}
-                        onChange={(e) => setStripingLettering(parseInt(e.target.value) || 0)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="stripingCurb">Curb Painting (ft)</Label>
-                      <Input
-                        id="stripingCurb"
-                        type="number"
-                        value={stripingCurb}
-                        onChange={(e) => setStripingCurb(parseInt(e.target.value) || 0)}
-                      />
-                    </div>
-                  </div>
-                </fieldset>
+                {includeCleaningRepair && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Crack Filling</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        Use the drawing tools on the map to measure crack length
+                      </p>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="crackLength">Total Length (ft)</Label>
+                          <Input
+                            id="crackLength"
+                            type="number"
+                            min="0"
+                            value={crackLength}
+                            onChange={(e) => setCrackLength(parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="crackWidth">Avg. Width (in)</Label>
+                          <Input
+                            id="crackWidth"
+                            type="number"
+                            min="0"
+                            step="0.25"
+                            value={crackWidth}
+                            onChange={(e) => setCrackWidth(parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="crackDepth">Avg. Depth (in)</Label>
+                          <Input
+                            id="crackDepth"
+                            type="number"
+                            min="0"
+                            step="0.25"
+                            value={crackDepth}
+                            onChange={(e) => setCrackDepth(parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="propaneTanks">Propane Tanks</Label>
+                        <Input
+                          id="propaneTanks"
+                          type="number"
+                          min="0"
+                          value={propaneTanks}
+                          onChange={(e) => setPropaneTanks(parseInt(e.target.value) || 0)}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
-                {/* Additional Work */}
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Additional Work & Prep</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="prepHours">Cleaning/Prep Time (Hours)</Label>
+                {includeStriping && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Parking Lot Striping</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="stripingLines">Parking Lines</Label>
+                          <Input
+                            id="stripingLines"
+                            type="number"
+                            min="0"
+                            value={stripingLines}
+                            onChange={(e) => setStripingLines(parseInt(e.target.value) || 0)}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="stripingHandicap">Handicap Stencils</Label>
+                          <Input
+                            id="stripingHandicap"
+                            type="number"
+                            min="0"
+                            value={stripingHandicap}
+                            onChange={(e) => setStripingHandicap(parseInt(e.target.value) || 0)}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="stripingArrowsLarge">Large Arrows</Label>
+                          <Input
+                            id="stripingArrowsLarge"
+                            type="number"
+                            min="0"
+                            value={stripingArrowsLarge}
+                            onChange={(e) => setStripingArrowsLarge(parseInt(e.target.value) || 0)}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="stripingArrowsSmall">Small Arrows</Label>
+                          <Input
+                            id="stripingArrowsSmall"
+                            type="number"
+                            min="0"
+                            value={stripingArrowsSmall}
+                            onChange={(e) => setStripingArrowsSmall(parseInt(e.target.value) || 0)}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="stripingLettering">Lettering (Total)</Label>
+                          <Input
+                            id="stripingLettering"
+                            type="number"
+                            min="0"
+                            value={stripingLettering}
+                            onChange={(e) => setStripingLettering(parseInt(e.target.value) || 0)}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="stripingCurb">Curb Painting (ft)</Label>
+                          <Input
+                            id="stripingCurb"
+                            type="number"
+                            min="0"
+                            value={stripingCurb}
+                            onChange={(e) => setStripingCurb(parseInt(e.target.value) || 0)}
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                <PremiumServices
+                  edgePushing={premiumEdgePushing}
+                  weedKiller={premiumWeedKiller}
+                  crackCleaning={premiumCrackCleaning}
+                  powerWashing={premiumPowerWashing}
+                  debrisRemoval={premiumDebrisRemoval}
+                  onChange={handlePremiumServiceChange}
+                />
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Additional Prep Work</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div>
+                      <Label htmlFor="prepHours">Cleaning/Prep Time (hours)</Label>
                       <Input
                         id="prepHours"
                         type="number"
+                        min="0"
+                        step="0.5"
                         value={prepHours}
                         onChange={(e) => setPrepHours(parseFloat(e.target.value) || 0)}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="oilSpots">Oil Spot Priming Spots</Label>
-                      <Input
-                        id="oilSpots"
-                        type="number"
-                        value={oilSpots}
-                        onChange={(e) => setOilSpots(parseInt(e.target.value) || 0)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="propaneTanks">Propane Tanks for Crack Machine</Label>
-                      <Input
-                        id="propaneTanks"
-                        type="number"
-                        value={propaneTanks}
-                        onChange={(e) => setPropaneTanks(parseInt(e.target.value) || 0)}
-                      />
-                    </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
 
-                <div className="text-center pt-4">
-                  <Button
-                    onClick={handleCalculate}
-                    className="w-full md:w-1/2 bg-accent hover:bg-accent/90 text-accent-foreground"
-                    size="lg"
-                  >
-                    <Calculator className="mr-2 h-5 w-5" />
+                <div className="text-center">
+                  <Button onClick={handleCalculate} size="lg" className="w-full md:w-auto">
+                    <Calculator className="h-5 w-5 mr-2" />
                     Generate Estimate
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Map & Travel Info */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5" />
-                  Travel & Logistics
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="bg-primary/10 border-l-4 border-primary p-4 rounded-md">
-                  <p className="font-bold text-sm mb-1">Use the Map Tools</p>
-                  <p className="text-xs text-muted-foreground">
-                    Use the drawing toolbar in the top-left of the map to measure areas and crack lengths.
-                  </p>
-                </div>
-                
-                <Map
-                  onAddressUpdate={handleAddressUpdate}
-                  onAreaDrawn={handleAreaDrawn}
-                  onCrackLengthDrawn={handleCrackLengthDrawn}
-                  customerAddress={customerAddress}
-                />
-
-                <div className="space-y-3 text-sm">
-                  <div>
-                    <p className="font-medium">Business:</p>
-                    <p className="text-muted-foreground">337 Ayers Orchard Road, Stuart, VA</p>
-                  </div>
-                  <div>
-                    <p className="font-medium">Supplier:</p>
-                    <p className="text-muted-foreground">703 West Decatur Street, Madison, NC</p>
-                  </div>
-                  <div className="bg-primary/5 p-3 rounded-md space-y-1">
-                    <p><strong>To Job Site (RT):</strong> <span className="font-semibold">{jobDistance > 0 ? `${jobDistance.toFixed(1)} miles` : 'N/A'}</span></p>
-                    <p><strong>To Supplier (RT):</strong> <span className="font-semibold">{calculateDistance(businessCoords, supplierCoords) * 2} miles</span></p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Results */}
-        {showResults && costs && (
-          <Card id="results-container" className="mt-8">
-            <CardHeader>
-              <CardTitle className="text-center text-3xl">Generated Proposal</CardTitle>
-              <div className="text-center text-sm space-y-1 pt-4">
-                <p><strong>For:</strong> {jobName || 'N/A'}</p>
-                <p><strong>Address:</strong> {customerAddress || 'N/A'}</p>
-                <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="md:col-span-1">
-                  <h3 className="text-xl font-semibold mb-4">Cost Breakdown</h3>
-                  <div className="space-y-2 text-sm">
-                    {breakdown.map((item, idx) => (
-                      <div key={idx} className="flex justify-between py-1 border-b">
-                        <span className="text-muted-foreground">{item.item}:</span>
-                        <span className="font-medium">{item.value}</span>
+
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="h-5 w-5" />
+                      Location & Map
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Map
+                      customerAddress={customerAddress}
+                      onAddressUpdate={handleAddressUpdate}
+                      onAreaDrawn={handleAreaDrawn}
+                      onCrackLengthDrawn={handleCrackLengthDrawn}
+                    />
+                    <div className="space-y-2 text-sm">
+                      <p><strong>Business:</strong> 337 Ayers Orchard Rd, Stuart, VA</p>
+                      <p><strong>Supplier:</strong> 703 West Decatur St, Madison, NC</p>
+                      <div className="bg-muted p-3 rounded-md">
+                        <p><strong>To Supplier (RT):</strong> {supplierDist.toFixed(1)} mi</p>
+                        {jobDistance > 0 && (
+                          <p><strong>To Job Site (RT):</strong> {jobDistance.toFixed(1)} mi</p>
+                        )}
                       </div>
-                    ))}
-                    <div className="flex justify-between pt-3 mt-3 font-bold text-lg border-t-2">
-                      <span>Total Direct Cost:</span>
-                      <span className="text-primary">${costs.total.toFixed(2)}</span>
                     </div>
-                  </div>
-                </div>
-
-                <div className="md:col-span-2">
-                  <h3 className="text-xl font-semibold mb-4">Estimate Options</h3>
-                  <div className="space-y-4">
-                    <div className="p-4 border rounded-lg bg-muted/50">
-                      <h4 className="font-bold text-lg">Standard Quote</h4>
-                      <p className="text-3xl font-bold text-accent">${baseQuote.toFixed(2)}</p>
-                      <p className="text-xs text-muted-foreground">Based on direct costs.</p>
-                    </div>
-                    <div className="p-4 border-2 border-primary rounded-lg bg-primary/5">
-                      <h4 className="font-bold text-lg text-primary">Premium Quote (25% Markup)</h4>
-                      <p className="text-3xl font-bold text-primary">${markupQuote.toFixed(2)}</p>
-                      <p className="text-xs text-primary/80">Includes a 25% profit margin.</p>
-                    </div>
-                    <div className="p-4 border-2 border-purple-500 rounded-lg bg-purple-50 dark:bg-purple-950/20">
-                      <h4 className="font-bold text-lg text-purple-700 dark:text-purple-300">Value+ Quote (Rounded + 25%)</h4>
-                      <p className="text-3xl font-bold text-purple-700 dark:text-purple-300">${finalRoundedQuote.toFixed(2)}</p>
-                      <p className="text-xs text-purple-600 dark:text-purple-400">
-                        Based on cost rounded up to ${roundedUpBase.toFixed(2)}, then a 25% profit margin applied.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               </div>
+            </div>
 
-              <div className="text-center mt-8">
-                <Button onClick={() => window.print()} variant="secondary" size="lg">
-                  Print Proposal
-                </Button>
+            {showResults && costs && (
+              <div id="results-container" className="mt-8">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-2xl">Cost Breakdown (Internal View)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="md:col-span-1 space-y-2">
+                        {breakdown.map((item, idx) => (
+                          <div key={idx} className="flex justify-between py-2 border-b text-sm">
+                            <span className="text-muted-foreground">{item.item}</span>
+                            <span className="font-medium">{item.value}</span>
+                          </div>
+                        ))}
+                        <div className="flex justify-between pt-3 font-bold text-lg">
+                          <span>Total</span>
+                          <span className="text-primary">${costs.total.toFixed(2)}</span>
+                        </div>
+                      </div>
+                      <div className="md:col-span-2 space-y-4">
+                        <div className="p-4 border rounded-lg bg-card">
+                          <h4 className="font-bold text-lg mb-2">Base Quote</h4>
+                          <p className="text-3xl font-bold text-primary">${costs.total.toFixed(2)}</p>
+                          <p className="text-sm text-muted-foreground">Includes overhead & profit</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            )}
+          </TabsContent>
+
+          <TabsContent value="invoice">
+            {showResults && costs && (
+              <CustomerInvoice
+                jobName={jobName}
+                customerAddress={customerAddress}
+                costs={costs}
+                breakdown={breakdown}
+                onPrint={handlePrint}
+              />
+            )}
+          </TabsContent>
+
+          <TabsContent value="settings" className="space-y-6">
+            <BusinessSettings data={businessData} onChange={setBusinessData} />
+            <ThemeCustomizer />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
