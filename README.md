@@ -60,6 +60,68 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Quickstart
+
+1. Copy env template:
+
+```sh
+cp .env.example .env
+```
+
+2. Install deps and hooks:
+
+```sh
+./scripts/install_dependencies.sh
+```
+
+3. Start dev server:
+
+```sh
+npm run dev
+```
+
+4. Optional: Build RAG index for AI:
+
+```sh
+npm run ingest:repos
+```
+
+## Database (optional for local dev)
+
+```sh
+docker compose up -d db
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/pavement npm run migrate:up
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/pavement npm run seed
+```
+
+See `docs/ADMIN_SETUP.md` for Supabase admin instructions.
+
+## Tests
+
+```sh
+npm run test:unit
+```
+
+E2E (requires dev server):
+
+```sh
+npm run test:e2e
+```
+
+## Load Testing
+
+With k6:
+
+```sh
+k6 run scripts/load/k6-estimate.js
+```
+
+With Artillery:
+
+```sh
+artillery run scripts/load/artillery.yml
+```
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/1282c161-32ae-4cc0-9d0c-60535b8cd60d) and click on Share -> Publish.

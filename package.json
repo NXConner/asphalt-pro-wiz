@@ -20,7 +20,12 @@
     "migrate:create": "node-pg-migrate -m supabase/migrations create",
     "migrate:up": "node-pg-migrate -m supabase/migrations -d \"$DATABASE_URL\" up",
     "migrate:down": "node-pg-migrate -m supabase/migrations -d \"$DATABASE_URL\" down",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "test": "vitest",
+    "test:unit": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -106,6 +111,14 @@
     "node-pg-migrate": "^7.6.1",
     "pg": "^8.13.1",
     "dotenv": "^16.4.5",
-    "snyk": "^1.1296.0"
+    "snyk": "^1.1296.0",
+    "@playwright/test": "^1.48.2",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.0.1",
+    "@testing-library/user-event": "^14.5.2",
+    "@vitest/coverage-v8": "^2.1.5",
+    "jsdom": "^25.0.1",
+    "vitest": "^2.1.5",
+    "vitest-axe": "^0.1.0"
   }
 }
