@@ -12,6 +12,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "audit": "npm audit --audit-level=high",
+    "snyk:test": "snyk test || true",
+    "snyk:monitor": "snyk monitor || true",
     "prepare": "husky",
     "preview": "vite preview",
     "ingest:repos": "tsx scripts/ingest/ingest.ts",
@@ -103,6 +105,7 @@
     "vite": "^5.4.19",
     "node-pg-migrate": "^7.6.1",
     "pg": "^8.13.1",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "snyk": "^1.1296.0"
   }
 }
