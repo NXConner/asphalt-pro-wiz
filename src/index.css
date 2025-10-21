@@ -38,6 +38,11 @@ All colors MUST be HSL.
 
     --radius: 0.5rem;
 
+    /* Wallpaper */
+    --app-wallpaper: initial; /* url(...) */
+    --wallpaper-opacity: 0.25;
+    --wallpaper-blur: 0px;
+
     --sidebar-background: 0 0% 98%;
 
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -92,6 +97,27 @@ All colors MUST be HSL.
     --sidebar-border: 0 0% 18%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
+  /* Theme variants */
+  .theme-default {
+    /* keep base */
+  }
+  .theme-emerald {
+    --primary: 142 76% 36%;
+    --accent: 142 76% 36%;
+  }
+  .theme-sunset {
+    --primary: 25 95% 55%;
+    --accent: 340 82% 52%;
+  }
+  .theme-royal {
+    --primary: 260 90% 55%;
+    --accent: 220 90% 60%;
+  }
+  .theme-crimson {
+    --primary: 0 84% 60%;
+    --accent: 340 82% 52%;
+  }
 }
 
 @media print {
@@ -110,5 +136,18 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+  }
+
+  body.has-wallpaper {
+    background-image: linear-gradient(
+      to bottom,
+      hsl(var(--background) / calc(1 - var(--wallpaper-opacity))),
+      hsl(var(--background) / calc(1 - var(--wallpaper-opacity)))
+    ), var(--app-wallpaper);
+    backdrop-filter: blur(var(--wallpaper-blur));
   }
 }

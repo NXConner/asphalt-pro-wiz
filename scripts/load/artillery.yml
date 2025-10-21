@@ -1,0 +1,10 @@
+config:
+  target: "http://localhost:5173"
+  phases:
+    - duration: 30
+      arrivalRate: 10
+scenarios:
+  - name: Home Page
+    flow:
+      - get:
+          url: "/"
