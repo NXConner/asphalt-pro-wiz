@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { analyzeImage, generateChat } from "@/lib/gemini";
+import { retrieveRelevantContext } from "@/lib/rag";
 
 export function AIGemini() {
   const [question, setQuestion] = useState("");
@@ -14,7 +15,10 @@ export function AIGemini() {
   const ask = async () => {
     setBusy(true);
     try {
-      const res = await generateChat(question, "You are an asphalt maintenance expert. Be concise.");
+      const ragContext = await retrieveRelevantContext(question);
+      const system = "You are an asphalt maintenance expert. Be concise.";
+      const context = ragContext ? `${system}\n\nContext:\n${ragContext}` : system;
+      const res = await generateChat(question, context);
       setAnswer(res);
     } catch (e: any) {
       setAnswer(e?.message || "Error");

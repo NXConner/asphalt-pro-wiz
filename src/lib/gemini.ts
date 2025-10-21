@@ -10,6 +10,9 @@ type Content = { role?: 'user' | 'model'; parts: Part[] };
 const GEMINI_GENERATE_URL = (model: string, apiKey: string) =>
   `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
+const GEMINI_EMBED_URL = (apiKey: string) =>
+  `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${apiKey}`;
+
 export async function generateChat(userMessage: string, context?: string): Promise<string> {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
   if (!apiKey) throw new Error('Missing VITE_GEMINI_API_KEY');
@@ -53,4 +56,21 @@ export async function analyzeImage(base64Data: string, mimeType: string, prompt:
   const data = await response.json();
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
   return text;
+}
+
+export async function embedText(text: string): Promise<number[]> {
+  const apiKey = (import.meta.env.VITE_GEMINI_API_KEY as string | undefined) ?? (globalThis as any)?.process?.env?.GEMINI_API_KEY;
+  if (!apiKey) throw new Error('Missing VITE_GEMINI_API_KEY');
+  const body = {
+    content: { parts: [{ text }] },
+  } as const;
+  const response = await fetch(GEMINI_EMBED_URL(apiKey), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) throw new Error(`Gemini embed error: ${response.status}`);
+  const data = await response.json();
+  const values = data?.embedding?.values as number[] | undefined;
+  return values ?? [];
 }
