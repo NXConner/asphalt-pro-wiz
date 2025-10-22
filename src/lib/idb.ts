@@ -2,11 +2,13 @@
 // Namespace: Pavement Performance Suite (pps)
 
 const DB_NAME = 'pps-db';
-const DB_VERSION = 1;
+// Bump version when adding new stores or indexes
+const DB_VERSION = 2;
 const FILE_STORE = 'files';
 const DOC_STORE = 'docs';
+const JOB_STORE = 'jobs';
 
-function openDb(): Promise<IDBDatabase> {
+export function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     request.onupgradeneeded = () => {
@@ -18,6 +20,13 @@ function openDb(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(DOC_STORE)) {
         const store = db.createObjectStore(DOC_STORE, { keyPath: 'id' });
         store.createIndex('byJob', 'jobKey', { unique: false });
+      }
+      // Jobs store for persisting job/site markers and status
+      if (!db.objectStoreNames.contains(JOB_STORE)) {
+        const store = db.createObjectStore(JOB_STORE, { keyPath: 'id' });
+        store.createIndex('byStatus', 'status', { unique: false });
+        store.createIndex('byCompetitor', 'competitor', { unique: false });
+        store.createIndex('byUpdatedAt', 'updatedAt', { unique: false });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -152,4 +161,85 @@ export async function deleteDoc(id: string): Promise<void> {
 
 export function makeJobKey(jobName: string, customerAddress: string): string {
   return `${(jobName || 'job').trim().toLowerCase()}|${(customerAddress || 'address').trim().toLowerCase()}`;
+}
+
+// Low-level job store utilities (kept here to avoid circular deps)
+export type JobStatus = 'need_estimate' | 'estimated' | 'active' | 'completed' | 'lost';
+export type SavedJob = {
+  id: string; // jobKey
+  jobKey: string;
+  name: string;
+  address: string;
+  coords: [number, number] | null;
+  status: JobStatus;
+  competitor?: string;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export async function getJob(jobKey: string): Promise<SavedJob | undefined> {
+  const db = await openDb();
+  const value: SavedJob | undefined = await new Promise((resolve, reject) => {
+    const tx = db.transaction(JOB_STORE, 'readonly');
+    const req = tx.objectStore(JOB_STORE).get(jobKey);
+    req.onsuccess = () => resolve(req.result as SavedJob | undefined);
+    req.onerror = () => reject(req.error);
+  });
+  db.close();
+  return value;
+}
+
+export async function upsertJob(job: Omit<SavedJob, 'createdAt' | 'updatedAt'> & Partial<Pick<SavedJob, 'createdAt' | 'updatedAt'>>): Promise<SavedJob> {
+  const existing = await getJob(job.id);
+  const now = Date.now();
+  const record: SavedJob = existing
+    ? { ...existing, ...job, updatedAt: now }
+    : {
+        id: job.id,
+        jobKey: job.jobKey,
+        name: job.name,
+        address: job.address,
+        coords: job.coords ?? null,
+        status: job.status ?? 'need_estimate',
+        competitor: job.competitor,
+        createdAt: now,
+        updatedAt: now,
+      };
+  const db = await openDb();
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(JOB_STORE, 'readwrite');
+    tx.objectStore(JOB_STORE).put(record);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+  db.close();
+  return record;
+}
+
+export async function listJobs(): Promise<SavedJob[]> {
+  const db = await openDb();
+  const jobs: SavedJob[] = [];
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(JOB_STORE, 'readonly');
+    const store = tx.objectStore(JOB_STORE);
+    const req = store.openCursor(undefined, 'prev');
+    req.onsuccess = () => {
+      const cursor = req.result;
+      if (cursor) {
+        jobs.push(cursor.value as SavedJob);
+        cursor.continue();
+      } else {
+        resolve();
+      }
+    };
+    req.onerror = () => reject(req.error);
+  });
+  db.close();
+  return jobs;
+}
+
+export async function setJobStatus(jobKey: string, status: JobStatus, competitor?: string): Promise<SavedJob | undefined> {
+  const job = await getJob(jobKey);
+  if (!job) return undefined;
+  return upsertJob({ ...job, status, competitor });
 }

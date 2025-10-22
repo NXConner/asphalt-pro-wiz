@@ -168,7 +168,7 @@ export function calculateProject(inputs: ProjectInputs, businessData: BusinessDa
   // Area
   breakdown.push({ item: 'Total Area', value: `${inputs.totalArea.toFixed(0)} sq ft` });
 
-  // Travel costs
+  // Travel costs (business to supplier round trip + business to job round trip)
   const businessCoords: [number, number] = [36.7388, -80.2692];
   const supplierCoords: [number, number] = [36.3871, -79.9578];
   const supplierDist = calculateDistance(businessCoords, supplierCoords) * 2;
