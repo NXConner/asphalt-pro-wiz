@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { listFiles, listDocs, makeJobKey, saveDoc, saveFile, type SavedDoc, type SavedFile, deleteFile, deleteDoc } from "@/lib/idb";
+import { isEnabled } from "@/lib/flags";
 import { Trash2, UploadCloud, FileText, ImageIcon } from "lucide-react";
 
 interface UploadsPanelProps {

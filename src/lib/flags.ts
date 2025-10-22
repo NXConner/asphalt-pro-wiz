@@ -2,13 +2,15 @@ export type FeatureFlag =
   | "imageAreaAnalyzer"
   | "aiAssistant"
   | "pwa"
-  | "i18n";
+  | "i18n"
+  | "receipts";
 
 const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   imageAreaAnalyzer: true,
   aiAssistant: true,
   pwa: true,
   i18n: true,
+  receipts: true,
 };
 
 const STORAGE_KEY = "pps:flags";
