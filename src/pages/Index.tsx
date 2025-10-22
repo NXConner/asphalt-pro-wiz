@@ -53,7 +53,6 @@ const Index = () => {
   const [stripingLettering, setStripingLettering] = useState(0);
   const [stripingCurb, setStripingCurb] = useState(0);
   
-  const [prepHours, setPrepHours] = useState(1);
   const [oilSpots, setOilSpots] = useState(0);
   const [propaneTanks, setPropaneTanks] = useState(1);
 
@@ -170,7 +169,6 @@ const Index = () => {
       stripingArrowsSmall,
       stripingLettering,
       stripingCurb,
-      prepHours,
       oilSpots,
       propaneTanks,
       jobDistanceMiles: jobDistance,
@@ -515,24 +513,7 @@ const Index = () => {
                   onChange={setCustomServices}
                 />
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Additional Prep Work</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div>
-                      <Label htmlFor="prepHours">Cleaning/Prep Time (hours)</Label>
-                      <Input
-                        id="prepHours"
-                        type="number"
-                        min="0"
-                        step="0.5"
-                        value={prepHours}
-                        onChange={(e) => setPrepHours(parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
+                {/* Manual prep removed: auto-calculated per service in labor */}
 
                 <div className="text-center">
                   <Button onClick={handleCalculate} size="lg" className="w-full md:w-auto">
