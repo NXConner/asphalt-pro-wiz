@@ -18,6 +18,8 @@ import { ThemeCustomizer } from '@/components/ThemeCustomizer';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { CustomerInvoice } from '@/components/CustomerInvoice';
 import { calculateProject, calculateDistance, defaultBusinessData, ProjectInputs, BusinessData, Costs, CostBreakdown } from '@/lib/calculations';
+import { makeJobKey, upsertJob, setJobStatus, type JobStatus } from '@/lib/idb';
+import { BUSINESS_ADDRESS, SUPPLIER_ADDRESS } from '@/lib/locations';
 import { CustomServices, type CustomService } from '@/components/CustomServices';
 import { UploadsPanel } from '@/components/UploadsPanel';
 import { DocumentGenerator } from '@/components/DocumentGenerator';
@@ -34,6 +36,9 @@ const Index = () => {
   const [jobName, setJobName] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
   const [customerCoords, setCustomerCoords] = useState<[number, number] | null>(null);
+  const [jobStatus, setJobStatusLocal] = useState<JobStatus>('need_estimate');
+  const [jobCompetitor, setJobCompetitor] = useState('');
+  const [mapRefreshKey, setMapRefreshKey] = useState(0);
   const [areas, setAreas] = useState<AreaItem[]>([]);
   const [nextAreaId, setNextAreaId] = useState(1);
   const [shapeType, setShapeType] = useState<'rectangle' | 'triangle' | 'circle' | 'manual' | 'image'>('rectangle');
@@ -81,6 +86,17 @@ const Index = () => {
     setCustomerAddress(address);
     const dist = calculateDistance(businessCoords, coords) * 2;
     setJobDistance(dist);
+    // Persist/update job immediately with default status
+    const key = makeJobKey(jobName, address);
+    void upsertJob({
+      id: key,
+      jobKey: key,
+      name: jobName || 'Job',
+      address,
+      coords,
+      status: jobStatus,
+      competitor: jobCompetitor || undefined,
+    }).then(() => setMapRefreshKey(k => k + 1));
   };
 
   const handleAreaDrawn = (area: number) => {
@@ -188,6 +204,10 @@ const Index = () => {
     setBreakdown(result.breakdown);
     setShowResults(true);
 
+    // Auto-mark as estimated and persist
+    const key = makeJobKey(jobName, customerAddress);
+    void setJobStatus(key, 'estimated').then(() => setMapRefreshKey(k => k + 1));
+
     setTimeout(() => {
       document.getElementById('results-container')?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
@@ -252,6 +272,54 @@ const Index = () => {
                           onChange={(e) => setCustomerAddress(e.target.value)}
                           placeholder="Search address on map"
                         />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="jobStatus">Job Status</Label>
+                        <Select value={jobStatus} onValueChange={(v: any) => setJobStatusLocal(v)}>
+                          <SelectTrigger id="jobStatus">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="need_estimate">Need Estimate</SelectItem>
+                            <SelectItem value="estimated">Estimated</SelectItem>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                            <SelectItem value="lost">Lost</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="competitor">Competitor (if lost)</Label>
+                        <Input id="competitor" value={jobCompetitor} onChange={(e) => setJobCompetitor(e.target.value)} placeholder="Who won the job?" />
+                      </div>
+                      <div className="flex items-end">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            const key = makeJobKey(jobName, customerAddress);
+                            if (!key || !customerAddress || !customerCoords) {
+                              toast.error('Set job name/address by selecting on map first');
+                              return;
+                            }
+                            void upsertJob({
+                              id: key,
+                              jobKey: key,
+                              name: jobName || 'Job',
+                              address: customerAddress,
+                              coords: customerCoords,
+                              status: jobStatus,
+                              competitor: jobCompetitor || undefined,
+                            }).then(() => {
+                              toast.success('Saved job');
+                              setMapRefreshKey(k => k + 1);
+                            });
+                          }}
+                        >
+                          Save Job
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -537,10 +605,11 @@ const Index = () => {
                       onAddressUpdate={handleAddressUpdate}
                       onAreaDrawn={handleAreaDrawn}
                       onCrackLengthDrawn={handleCrackLengthDrawn}
+                      refreshKey={mapRefreshKey}
                     />
                     <div className="space-y-2 text-sm">
-                      <p><strong>Business:</strong> 337 Ayers Orchard Rd, Stuart, VA</p>
-                      <p><strong>Supplier:</strong> 703 West Decatur St, Madison, NC</p>
+                      <p><strong>Business:</strong> {BUSINESS_ADDRESS}</p>
+                      <p><strong>Supplier:</strong> {SUPPLIER_ADDRESS}</p>
                       <div className="bg-muted p-3 rounded-md">
                         <p><strong>To Supplier (RT):</strong> {supplierDist.toFixed(1)} mi</p>
                         {jobDistance > 0 && (
