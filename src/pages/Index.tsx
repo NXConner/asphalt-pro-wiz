@@ -10,7 +10,7 @@ import { Calculator, FileText, Plus, Settings, MapPin } from 'lucide-react';
 import Map from '@/components/Map';
 import AreaSection from '@/components/AreaSection';
 import ImageAreaAnalyzer from '@/components/ImageAreaAnalyzer';
-import { isEnabled } from '@/lib/flags';
+import { isEnabled, setFlag } from '@/lib/flags';
 import { BusinessSettings } from '@/components/BusinessSettings';
 import { PremiumServices } from '@/components/PremiumServices';
 import { ServiceCategories } from '@/components/ServiceCategories';
@@ -22,6 +22,10 @@ import { CustomServices, type CustomService } from '@/components/CustomServices'
 import { UploadsPanel } from '@/components/UploadsPanel';
 import { DocumentGenerator } from '@/components/DocumentGenerator';
 import { AIGemini } from '@/components/AIGemini';
+import { ComplianceResources, type ComplianceTopic } from '@/components/ComplianceResources';
+import { OwnerSettings } from '@/components/OwnerSettings';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 
 interface AreaItem {
   id: number;
@@ -37,6 +41,7 @@ const Index = () => {
   const [areas, setAreas] = useState<AreaItem[]>([]);
   const [nextAreaId, setNextAreaId] = useState(1);
   const [shapeType, setShapeType] = useState<'rectangle' | 'triangle' | 'circle' | 'manual' | 'image'>('rectangle');
+  const [ownerMode, setOwnerMode] = useState<boolean>(isEnabled('ownerMode'));
   
   const [numCoats, setNumCoats] = useState(2);
   const [sandAdded, setSandAdded] = useState(false);
@@ -52,6 +57,7 @@ const Index = () => {
   const [stripingArrowsSmall, setStripingArrowsSmall] = useState(0);
   const [stripingLettering, setStripingLettering] = useState(0);
   const [stripingCurb, setStripingCurb] = useState(0);
+  const [stripingColors, setStripingColors] = useState<Array<'White' | 'Blue' | 'Yellow' | 'Red' | 'Green'>>([]);
   
   const [prepHours, setPrepHours] = useState(1);
   const [oilSpots, setOilSpots] = useState(0);
@@ -68,6 +74,12 @@ const Index = () => {
   const [includeCleaningRepair, setIncludeCleaningRepair] = useState(true);
   const [includeSealcoating, setIncludeSealcoating] = useState(true);
   const [includeStriping, setIncludeStriping] = useState(true);
+  const [complianceOpen, setComplianceOpen] = useState(false);
+  const [complianceTopic, setComplianceTopic] = useState<ComplianceTopic>('striping');
+  const [waterPercent, setWaterPercent] = useState(0);
+  const [sealerType, setSealerType] = useState('PMM');
+  const [sandType, setSandType] = useState<'Black Beauty' | 'Black Diamond' | 'Other'>('Black Beauty');
+  const crackFillerProduct = 'CrackMaster Parking Lot LP hot pour (30 lb box)';
   
   const [showResults, setShowResults] = useState(false);
   const [costs, setCosts] = useState<Costs | null>(null);
@@ -146,6 +158,10 @@ const Index = () => {
     }
   };
 
+  const toggleStripingColor = (color: 'White' | 'Blue' | 'Yellow' | 'Red' | 'Green', checked: boolean) => {
+    setStripingColors(prev => checked ? Array.from(new Set([...prev, color])) : prev.filter(c => c !== color));
+  };
+
   const totalArea = areas.reduce((sum, a) => sum + a.area, 0);
 
   const handleCalculate = () => {
@@ -170,6 +186,7 @@ const Index = () => {
       stripingArrowsSmall,
       stripingLettering,
       stripingCurb,
+      stripingColors,
       prepHours,
       oilSpots,
       propaneTanks,
@@ -182,6 +199,10 @@ const Index = () => {
       includeCleaningRepair,
       includeSealcoating,
       includeStriping,
+      sealerType,
+      sandType,
+      waterPercent,
+      crackFillerProduct,
       customServices: customServices.map(s => ({ name: s.name, type: s.type, unitPrice: s.unitPrice, quantity: s.quantity }))
     };
 

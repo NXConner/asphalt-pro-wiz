@@ -80,7 +80,10 @@ export interface ProjectInputs {
   totalArea: number;
   numCoats: number;
   sandAdded: boolean;
+  sandType?: 'Black Beauty' | 'Black Diamond' | 'Other';
   polymerAdded: boolean;
+  sealerType?: 'PMM' | 'Asphalt Emulsion' | 'Coal Tar' | 'Acrylic' | 'Other';
+  waterPercent?: number; // 0-30 for owner-only mixing option
   crackLength: number;
   crackWidth: number;
   crackDepth: number;
@@ -90,6 +93,7 @@ export interface ProjectInputs {
   stripingArrowsSmall: number;
   stripingLettering: number;
   stripingCurb: number;
+  stripingColors?: Array<'White' | 'Blue' | 'Yellow' | 'Red' | 'Green'>;
   prepHours: number;
   oilSpots: number;
   propaneTanks: number;
@@ -102,6 +106,7 @@ export interface ProjectInputs {
   includeCleaningRepair: boolean;
   includeSealcoating: boolean;
   includeStriping: boolean;
+  crackFillerProduct?: string; // display only
   customServices?: Array<{
     name: string;
     type: 'flat' | 'perUnit' | 'perSqFt' | 'perLinearFt';
@@ -178,23 +183,34 @@ export function calculateProject(inputs: ProjectInputs, businessData: BusinessDa
 
   // Sealcoat (only if includeSealcoating is true)
   if (inputs.includeSealcoating) {
-    const sealerGals = 
+    const sealerGals =
       (inputs.totalArea * businessData.sealCoatCoverage1) +
       (inputs.numCoats > 1 ? inputs.totalArea * businessData.sealCoatCoverage2 : 0) +
       (inputs.numCoats > 2 ? inputs.totalArea * businessData.sealCoatCoverage3 : 0);
     costs.sealcoat = sealerGals * businessData.sealcoatPrice;
-    breakdown.push({ item: `Sealcoat (${inputs.numCoats} Coat/s)`, value: `${sealerGals.toFixed(1)} gal → $${costs.sealcoat.toFixed(2)}` });
+
+    const sealerLabel = inputs.sealerType ? `${inputs.sealerType}` : 'PMM';
+    breakdown.push({ item: `Sealcoat • ${sealerLabel} (${inputs.numCoats} coat/s)`, value: `${sealerGals.toFixed(1)} gal concentrate → $${costs.sealcoat.toFixed(2)}` });
+
+    // Owner-only mix details: water gallons
+    const waterPct = Math.min(Math.max(inputs.waterPercent ?? 0, 0), 30);
+    if (waterPct > 0) {
+      const waterGals = sealerGals * (waterPct / 100);
+      breakdown.push({ item: `Water Added (${waterPct.toFixed(0)}%)`, value: `${waterGals.toFixed(1)} gal` });
+    }
   }
 
   // Sand
   if (inputs.includeSealcoating && inputs.sandAdded) {
-    const sealerGals = 
+    const sealerGals =
       (inputs.totalArea * businessData.sealCoatCoverage1) +
       (inputs.numCoats > 1 ? inputs.totalArea * businessData.sealCoatCoverage2 : 0) +
       (inputs.numCoats > 2 ? inputs.totalArea * businessData.sealCoatCoverage3 : 0);
     const sandBags = Math.ceil((sealerGals * businessData.sandRatio) / 50);
+    const sandLbs = sandBags * 50;
     costs.sand = sandBags * businessData.sandPrice;
-    breakdown.push({ item: 'Sand', value: `${sandBags} bags → $${costs.sand.toFixed(2)}` });
+    const sandType = inputs.sandType ?? 'Black Beauty';
+    breakdown.push({ item: `Sand • ${sandType}`, value: `${sandBags} bags (${sandLbs} lbs) → $${costs.sand.toFixed(2)}` });
   }
 
   // Fast-dry additive
@@ -210,6 +226,9 @@ export function calculateProject(inputs: ProjectInputs, businessData: BusinessDa
 
   // Crack filling (only if includeCleaningRepair is true)
   if (inputs.includeCleaningRepair && inputs.crackLength > 0) {
+    if (inputs.crackFillerProduct) {
+      breakdown.push({ item: 'Crack Filler Product', value: inputs.crackFillerProduct });
+    }
     const boxes = Math.ceil((inputs.crackLength * 12 * inputs.crackWidth * inputs.crackDepth) / 3000);
     costs.crackFiller = boxes * businessData.crackFillerPrice;
     breakdown.push({ item: 'Crack Filler', value: `${boxes} box(es) → $${costs.crackFiller.toFixed(2)}` });
@@ -230,6 +249,9 @@ export function calculateProject(inputs: ProjectInputs, businessData: BusinessDa
     
     if (costs.striping > 0) {
       breakdown.push({ item: 'Striping', value: `$${costs.striping.toFixed(2)}` });
+      if (inputs.stripingColors && inputs.stripingColors.length > 0) {
+        breakdown.push({ item: 'Striping Colors', value: inputs.stripingColors.join(', ') });
+      }
     }
   }
 
