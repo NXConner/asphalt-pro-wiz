@@ -18,7 +18,7 @@ function baseInputs(overrides: Partial<ProjectInputs> = {}): ProjectInputs {
     stripingArrowsSmall: 0,
     stripingLettering: 0,
     stripingCurb: 0,
-    prepHours: 1,
+    // prepHours removed: prep is auto-calculated per selected services
     oilSpots: 0,
     propaneTanks: 0,
     jobDistanceMiles: 10,
@@ -54,5 +54,32 @@ describe('calculateProject', () => {
   it('includes overhead and profit in total', () => {
     const { costs } = calculateProject(baseInputs(), defaultBusinessData);
     expect(costs.total).toBeGreaterThan(costs.subtotal);
+  });
+
+  it('auto-adds prep for crack repair only', () => {
+    const { costs, breakdown } = calculateProject(
+      baseInputs({ includeSealcoating: false, crackLength: 600, includeStriping: false }),
+      defaultBusinessData
+    );
+    const laborLine = breakdown.find(b => b.item.startsWith('Labor'))?.value || '';
+    expect(laborLine).toMatch(/Prep: [1-9]/); // at least 1 hour prep
+  });
+
+  it('auto-adds prep for sealcoating only', () => {
+    const { costs, breakdown } = calculateProject(
+      baseInputs({ includeCleaningRepair: false, includeSealcoating: true, totalArea: 10000 }),
+      defaultBusinessData
+    );
+    const laborLine = breakdown.find(b => b.item.startsWith('Labor'))?.value || '';
+    expect(laborLine).toMatch(/Prep: [1-9]/);
+  });
+
+  it('auto-adds prep for striping when any items present', () => {
+    const { breakdown } = calculateProject(
+      baseInputs({ includeCleaningRepair: false, includeSealcoating: false, includeStriping: true, stripingLines: 1 }),
+      defaultBusinessData
+    );
+    const laborLine = breakdown.find(b => b.item.startsWith('Labor'))?.value || '';
+    expect(laborLine).toMatch(/L:1.0/);
   });
 });

@@ -8,7 +8,7 @@ const FILE_STORE = 'files';
 const DOC_STORE = 'docs';
 const RECEIPT_STORE = 'receipts';
 
-function openDb(): Promise<IDBDatabase> {
+export function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     request.onupgradeneeded = () => {
