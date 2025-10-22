@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { Calculator, FileText, Plus, Settings, MapPin } from 'lucide-react';
 import Map from '@/components/Map';
 import AreaSection from '@/components/AreaSection';
+import ImageAreaAnalyzer from '@/components/ImageAreaAnalyzer';
 import { BusinessSettings } from '@/components/BusinessSettings';
 import { PremiumServices } from '@/components/PremiumServices';
 import { ServiceCategories } from '@/components/ServiceCategories';
@@ -23,7 +24,7 @@ import { AIGemini } from '@/components/AIGemini';
 
 interface AreaItem {
   id: number;
-  shape: 'rectangle' | 'triangle' | 'circle' | 'drawn' | 'manual';
+  shape: 'rectangle' | 'triangle' | 'circle' | 'drawn' | 'manual' | 'image';
   area: number;
 }
 
@@ -34,7 +35,7 @@ const Index = () => {
   const [customerCoords, setCustomerCoords] = useState<[number, number] | null>(null);
   const [areas, setAreas] = useState<AreaItem[]>([]);
   const [nextAreaId, setNextAreaId] = useState(1);
-  const [shapeType, setShapeType] = useState<'rectangle' | 'triangle' | 'circle' | 'manual'>('rectangle');
+  const [shapeType, setShapeType] = useState<'rectangle' | 'triangle' | 'circle' | 'manual' | 'image'>('rectangle');
   
   const [numCoats, setNumCoats] = useState(2);
   const [sandAdded, setSandAdded] = useState(false);
@@ -91,6 +92,16 @@ const Index = () => {
     setAreas(prev => [...prev, newArea]);
     setNextAreaId(prev => prev + 1);
     toast.success(`Added ${area.toFixed(1)} sq ft from map drawing`);
+  };
+
+  const handleImageAreaDetected = (area: number) => {
+    const newArea: AreaItem = {
+      id: nextAreaId,
+      shape: 'image',
+      area
+    };
+    setAreas(prev => [...prev, newArea]);
+    setNextAreaId(prev => prev + 1);
   };
 
   const handleCrackLengthDrawn = (length: number) => {
@@ -272,6 +283,7 @@ const Index = () => {
                           <SelectItem value="triangle">Triangle</SelectItem>
                           <SelectItem value="circle">Circle</SelectItem>
                           <SelectItem value="manual">Manual Area</SelectItem>
+                          <SelectItem value="image">From Image</SelectItem>
                         </SelectContent>
                       </Select>
                       <Button onClick={addArea} variant="outline">
@@ -558,6 +570,7 @@ const Index = () => {
                 </Card>
 
                 <UploadsPanel jobName={jobName} customerAddress={customerAddress} />
+                <ImageAreaAnalyzer onAreaDetected={handleImageAreaDetected} />
                 <AIGemini />
               </div>
             </div>
