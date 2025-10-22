@@ -21,6 +21,7 @@ import { calculateProject, calculateDistance, defaultBusinessData, ProjectInputs
 import { makeJobKey, upsertJob, setJobStatus, type JobStatus } from '@/lib/idb';
 import { BUSINESS_ADDRESS, SUPPLIER_ADDRESS, BUSINESS_COORDS_FALLBACK, SUPPLIER_COORDS_FALLBACK } from '@/lib/locations';
 import { CustomServices, type CustomService } from '@/components/CustomServices';
+import { getServiceById } from '@/lib/serviceCatalog';
 import { UploadsPanel } from '@/components/UploadsPanel';
 import { ReceiptsPanel } from '@/components/ReceiptsPanel';
 import { DocumentGenerator } from '@/components/DocumentGenerator';
@@ -197,6 +198,23 @@ const Index = () => {
   };
 
   const totalArea = areas.reduce((sum, a) => sum + a.area, 0);
+
+  const addedServiceNames = customServices.map(s => s.name);
+
+  const handleAddPremiumCustomService = (serviceId: string) => {
+    const svc = getServiceById(serviceId);
+    if (!svc) return;
+    // prevent duplicate by name
+    if (customServices.some(s => s.name === svc.name)) return;
+    const newService: CustomService = {
+      id: crypto.randomUUID(),
+      name: svc.name,
+      type: svc.unitType,
+      unitPrice: svc.defaultUnitPrice,
+      quantity: svc.unitType === 'perUnit' ? 1 : undefined,
+    };
+    setCustomServices(prev => [...prev, newService]);
+  };
 
   const handleCalculate = () => {
     if (totalArea <= 0) {
@@ -636,6 +654,8 @@ const Index = () => {
                   powerWashing={premiumPowerWashing}
                   debrisRemoval={premiumDebrisRemoval}
                   onChange={handlePremiumServiceChange}
+                  onAddCustomService={handleAddPremiumCustomService}
+                  addedServiceNames={addedServiceNames}
                 />
 
                 <CustomServices
