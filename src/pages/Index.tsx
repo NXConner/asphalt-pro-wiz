@@ -558,7 +558,7 @@ const Index = () => {
                 )}
 
                 {includeStriping && (
-                  <Card>
+                <Card>
                     <CardHeader>
                       <CardTitle>Parking Lot Striping</CardTitle>
                     </CardHeader>

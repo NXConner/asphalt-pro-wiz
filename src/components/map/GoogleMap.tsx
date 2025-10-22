@@ -1,0 +1,307 @@
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useJsApiLoader, GoogleMap as GMap, DrawingManager, Circle } from '@react-google-maps/api';
+import type { Coordinates } from '@/lib/locations';
+import { getBusinessCoords, getSupplierCoords, BUSINESS_ADDRESS, SUPPLIER_ADDRESS, BUSINESS_COORDS_FALLBACK, SUPPLIER_COORDS_FALLBACK } from '@/lib/locations';
+import { loadMapSettings, type TileOverlayConfig } from '@/lib/mapSettings';
+import { listJobs, type SavedJob } from '@/lib/idb';
+import { fetchRadarFrames, getTileUrlForFrame } from '@/lib/radar';
+
+export interface GoogleMapProps {
+  onAddressUpdate: (coords: [number, number], address: string) => void;
+  onAreaDrawn: (area: number) => void;
+  onCrackLengthDrawn: (length: number) => void;
+  customerAddress: string;
+  refreshKey?: number;
+}
+
+const statusColor: Record<string, string> = {
+  need_estimate: '#f59e0b',
+  estimated: '#3b82f6',
+  active: '#22c55e',
+  completed: '#6b7280',
+  lost: '#ef4444',
+};
+
+const containerStyle: google.maps.MapOptions['styles'] | undefined = undefined;
+
+export const GoogleMap = memo(({ onAddressUpdate, onAreaDrawn, onCrackLengthDrawn, customerAddress, refreshKey }: GoogleMapProps) => {
+  const settings = loadMapSettings();
+  const apiKey = settings.googleApiKey || '';
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: apiKey || 'invalid-key',
+    libraries: ['places', 'drawing', 'geometry'],
+    id: 'google-map-script-pps',
+  });
+
+  const mapRef = useRef<google.maps.Map | null>(null);
+  const [center, setCenter] = useState<google.maps.LatLngLiteral>({ lat: settings.center?.[0] ?? BUSINESS_COORDS_FALLBACK[0], lng: settings.center?.[1] ?? BUSINESS_COORDS_FALLBACK[1] });
+  const [zoom, setZoom] = useState<number>(settings.zoom ?? 19);
+  const [jobs, setJobs] = useState<SavedJob[]>([]);
+  const radarIntervalRef = useRef<number | null>(null);
+  const baseOverlayCountRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((pos) => setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude }), () => {}, { timeout: 4000 });
+    }
+  }, []);
+
+  const onLoad = useCallback((map: google.maps.Map) => {
+    mapRef.current = map;
+    map.setMapTypeId('hybrid');
+    map.setZoom(zoom);
+    map.setCenter(center);
+
+    // Business / supplier markers
+    (async () => {
+      try {
+        const [biz, sup] = await Promise.all([getBusinessCoords(), getSupplierCoords()]);
+        new google.maps.Marker({ position: { lat: biz[0], lng: biz[1] }, map, title: BUSINESS_ADDRESS });
+        new google.maps.Marker({ position: { lat: sup[0], lng: sup[1] }, map, title: SUPPLIER_ADDRESS });
+      } catch {}
+    })();
+
+    // Non-radar overlays first
+    setupBaseOverlays(map);
+    // Radar overlay frames (on top)
+    setupRadar(map);
+  }, [center, zoom]);
+
+  const setupBaseOverlays = (map: google.maps.Map) => {
+    // Clear all types, then add base ones (non-radar)
+    while ((map.overlayMapTypes?.getLength?.() || 0) > 0) {
+      map.overlayMapTypes?.pop();
+    }
+    const nonRadar = settings.overlays.filter((o) => o.visible && o.id !== 'radar');
+    for (const o of nonRadar) {
+      const type = createOverlayMapTypeFromConfig(o);
+      if (type) map.overlayMapTypes.push(type);
+    }
+    baseOverlayCountRef.current = map.overlayMapTypes?.getLength?.() || 0;
+  };
+
+  const setupRadar = async (map: google.maps.Map) => {
+    if (radarIntervalRef.current) {
+      window.clearInterval(radarIntervalRef.current);
+      radarIntervalRef.current = null;
+    }
+    const radarCfg = settings.overlays.find((o) => o.id === 'radar' && o.visible);
+    if (!settings.radar.enabled || !radarCfg) return;
+    const frames = await fetchRadarFrames();
+    if (!frames.length) return;
+
+    const layers = frames.map((f) => new google.maps.ImageMapType({
+      getTileUrl: (coord, z) => getTileUrlForFrame(f).replace('{z}', String(z)).replace('{x}', String(coord.x)).replace('{y}', String(coord.y)),
+      tileSize: new google.maps.Size(256, 256),
+      opacity: radarCfg.opacity ?? settings.radar.opacity,
+      name: `radar-${f.time}`,
+    }));
+
+    let idx = layers.length - 1;
+    map.overlayMapTypes.setAt(baseOverlayCountRef.current, layers[idx]);
+
+    if (settings.radar.animate) {
+      radarIntervalRef.current = window.setInterval(() => {
+        map.overlayMapTypes.setAt(baseOverlayCountRef.current, layers[idx]);
+        idx = (idx + 1) % layers.length;
+      }, Math.max(100, settings.radar.frameDelayMs));
+    }
+  };
+
+  const onUnmount = useCallback(() => {
+    if (radarIntervalRef.current) window.clearInterval(radarIntervalRef.current);
+    mapRef.current = null;
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setJobs(await listJobs());
+      } catch {}
+    })();
+  }, [refreshKey]);
+
+  // Handle clicks -> reverse geocode with Google if available
+  const handleClick = async (e: google.maps.MapMouseEvent) => {
+    if (!e.latLng || !mapRef.current) return;
+    const lat = e.latLng.lat();
+    const lng = e.latLng.lng();
+    const gc = new google.maps.Geocoder();
+    try {
+      const res = await gc.geocode({ location: { lat, lng } });
+      const name = res.results?.[0]?.formatted_address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      onAddressUpdate([lat, lng], name);
+    } catch {
+      onAddressUpdate([lat, lng], `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+    }
+  };
+
+  // Drawing finished handlers (area/length using geometry lib)
+  const handleOverlayComplete = (e: google.maps.drawing.OverlayCompleteEvent) => {
+    const overlay = e.overlay as any;
+    const type = e.type;
+    if (!overlay || !type) return;
+    if ((type === google.maps.drawing.OverlayType.POLYGON || type === google.maps.drawing.OverlayType.RECTANGLE) && (google.maps.geometry as any)?.spherical?.computeArea) {
+      let areaMeters = 0;
+      if (type === google.maps.drawing.OverlayType.RECTANGLE) {
+        const path = (overlay as google.maps.Rectangle).getBounds()?.toJSON();
+        if (path) {
+          const rectPaths: google.maps.LatLngLiteral[] = [
+            { lat: path.north, lng: path.west },
+            { lat: path.north, lng: path.east },
+            { lat: path.south, lng: path.east },
+            { lat: path.south, lng: path.west },
+          ];
+          areaMeters = (google.maps.geometry.spherical as any).computeArea(rectPaths);
+        }
+      } else {
+        const path = (overlay as google.maps.Polygon).getPath();
+        const pts: google.maps.LatLngLiteral[] = [];
+        for (let i = 0; i < path.getLength(); i++) pts.push(path.getAt(i).toJSON());
+        areaMeters = (google.maps.geometry.spherical as any).computeArea(pts);
+      }
+      const feet2 = areaMeters * 10.7639;
+      onAreaDrawn(feet2);
+    }
+    if (type === google.maps.drawing.OverlayType.POLYLINE && (google.maps.geometry as any)?.spherical?.computeLength) {
+      const path = (overlay as google.maps.Polyline).getPath();
+      const pts: google.maps.LatLngLiteral[] = [];
+      for (let i = 0; i < path.getLength(); i++) pts.push(path.getAt(i).toJSON());
+      const meters = (google.maps.geometry.spherical as any).computeLength(pts);
+      const feet = meters * 3.28084;
+      onCrackLengthDrawn(feet);
+    }
+  };
+
+  // External address change -> forward geocode with Google
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (!customerAddress || !mapRef.current) return;
+      try {
+        const gc = new google.maps.Geocoder();
+        const res = await gc.geocode({ address: customerAddress });
+        const r = res.results?.[0];
+        if (r) {
+          const loc = r.geometry.location;
+          const coords: [number, number] = [loc.lat(), loc.lng()];
+          onAddressUpdate(coords, r.formatted_address);
+          mapRef.current?.setCenter({ lat: coords[0], lng: coords[1] });
+          mapRef.current?.setZoom(19);
+        }
+      } catch {}
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [customerAddress]);
+
+  if (!apiKey) {
+    return (
+      <div className="h-[450px] w-full rounded-lg border border-border flex items-center justify-center text-sm text-muted-foreground">
+        Enter Google Maps API key in Map Settings to enable Google provider.
+      </div>
+    );
+  }
+
+  if (!isLoaded) {
+    return <div className="h-[450px] w-full rounded-lg border border-border" />;
+  }
+
+  return (
+    <GMap
+      onLoad={onLoad}
+      onUnmount={onUnmount}
+      onClick={handleClick}
+      mapContainerStyle={{ height: '450px', width: '100%', borderRadius: 8 }}
+      options={{ mapTypeId: 'hybrid', streetViewControl: false, fullscreenControl: true }}
+    >
+      {/* Drawing tools */}
+      <DrawingManager
+        onOverlayComplete={handleOverlayComplete}
+        options={{
+          drawingControl: true,
+          drawingControlOptions: {
+            position: google.maps.ControlPosition.TOP_LEFT,
+            drawingModes: [
+              google.maps.drawing.OverlayType.POLYGON,
+              google.maps.drawing.OverlayType.POLYLINE,
+              google.maps.drawing.OverlayType.RECTANGLE,
+            ],
+          },
+        }}
+      />
+
+      {/* Job markers */}
+      {jobs.map((job) =>
+        job.coords ? (
+          <Circle key={job.id} center={{ lat: (job.coords as any)[0], lng: (job.coords as any)[1] }} radius={3} options={{
+            strokeColor: statusColor[job.status] || '#10b981', strokeOpacity: 0.9, strokeWeight: 2,
+            fillColor: statusColor[job.status] || '#10b981', fillOpacity: 0.7,
+          }} />
+        ) : null
+      )}
+    </GMap>
+  );
+});
+
+function createOverlayMapTypeFromConfig(o: TileOverlayConfig): google.maps.ImageMapType | null {
+  if (!o.visible) return null;
+  if (o.type === 'tile' && o.urlTemplate) {
+    return new google.maps.ImageMapType({
+      getTileUrl: (coord, z) =>
+        o.urlTemplate!
+          .replace('{z}', String(z))
+          .replace('{x}', String(coord.x))
+          .replace('{y}', String(coord.y)),
+      tileSize: new google.maps.Size(256, 256),
+      opacity: o.opacity ?? 1,
+      name: o.name,
+    });
+  }
+  if (o.type === 'wms' && o.urlTemplate && o.wmsParams?.layers) {
+    return new google.maps.ImageMapType({
+      getTileUrl: (coord, z) => buildWmsUrl(o.urlTemplate!, o.wmsParams!.layers, z, coord.x, coord.y),
+      tileSize: new google.maps.Size(256, 256),
+      opacity: o.opacity ?? 1,
+      name: o.name,
+    });
+  }
+  return null;
+}
+
+function buildWmsUrl(baseUrl: string, layers: string, z: number, x: number, y: number): string {
+  // Compute EPSG:3857 bbox from x,y,z tile
+  const n = Math.pow(2, z);
+  const lonLeft = (x / n) * 360 - 180;
+  const lonRight = ((x + 1) / n) * 360 - 180;
+  const latTop = radToDeg(Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / n))));
+  const latBottom = radToDeg(Math.atan(Math.sinh(Math.PI * (1 - (2 * (y + 1)) / n))));
+  const [minx, miny] = lonLatToMercator(lonLeft, latBottom);
+  const [maxx, maxy] = lonLatToMercator(lonRight, latTop);
+  const params = new URLSearchParams({
+    service: 'WMS',
+    request: 'GetMap',
+    layers,
+    styles: '',
+    format: 'image/png',
+    transparent: 'true',
+    version: '1.3.0',
+    crs: 'EPSG:3857',
+    width: '256',
+    height: '256',
+    bbox: `${minx},${miny},${maxx},${maxy}`,
+  });
+  const sep = baseUrl.includes('?') ? '&' : '?';
+  return `${baseUrl}${sep}${params.toString()}`;
+}
+
+function lonLatToMercator(lon: number, lat: number): [number, number] {
+  const x = (lon * 20037508.34) / 180;
+  let y = Math.log(Math.tan(((90 + lat) * Math.PI) / 360)) / (Math.PI / 180);
+  y = (y * 20037508.34) / 180;
+  // clamp
+  const max = 20037508.34;
+  return [Math.max(-max, Math.min(max, x)), Math.max(-max, Math.min(max, y))];
+}
+
+function radToDeg(rad: number): number { return (rad * 180) / Math.PI; }
+
+export default GoogleMap;

@@ -1,13 +1,14 @@
-import { useEffect, useRef } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import 'leaflet-draw/dist/leaflet.draw.css';
-import 'leaflet-draw';
-import 'leaflet-control-geocoder/dist/Control.Geocoder.css';
-import 'leaflet-control-geocoder';
-import type { Coordinates } from '@/lib/locations';
-import { getBusinessCoords, getSupplierCoords, BUSINESS_ADDRESS, SUPPLIER_ADDRESS, BUSINESS_COORDS_FALLBACK, SUPPLIER_COORDS_FALLBACK } from '@/lib/locations';
-import { listJobs, type SavedJob } from '@/lib/idb';
+import { useMemo, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
+import LeafletMap from '@/components/map/LeafletMap';
+import GoogleMap from '@/components/map/GoogleMap';
+import WeatherCard from '@/components/WeatherCard';
+import { loadMapSettings, saveMapSettings, type MapProvider, type BaseLayerId } from '@/lib/mapSettings';
 
 interface MapProps {
   onAddressUpdate: (coords: [number, number], address: string) => void;
@@ -17,294 +18,214 @@ interface MapProps {
   refreshKey?: number;
 }
 
-const statusColor: Record<string, string> = {
-  need_estimate: '#f59e0b', // amber-500
-  estimated: '#3b82f6', // blue-500
-  active: '#22c55e', // green-500
-  completed: '#6b7280', // gray-500
-  lost: '#ef4444', // red-500
-};
+const baseLayers: { id: BaseLayerId; label: string }[] = [
+  { id: 'esri_satellite', label: 'Satellite (Esri World Imagery)' },
+  { id: 'osm_standard', label: 'OpenStreetMap Standard' },
+  { id: 'carto_voyager', label: 'CARTO Voyager' },
+  { id: 'stamen_terrain', label: 'Stamen Terrain' },
+  { id: 'google_hybrid', label: 'Google Hybrid (use Google provider)' },
+];
 
 const Map = ({ onAddressUpdate, onAreaDrawn, onCrackLengthDrawn, customerAddress, refreshKey }: MapProps) => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<L.Map | null>(null);
-  const customerMarkerRef = useRef<L.Marker | null>(null);
-  const drawnItemsRef = useRef<L.FeatureGroup | null>(null);
-  const jobsLayerRef = useRef<L.LayerGroup | null>(null);
-  const businessMarkerRef = useRef<L.Marker | null>(null);
-  const supplierMarkerRef = useRef<L.Marker | null>(null);
+  const [settings, setSettings] = useState(loadMapSettings());
+  const [settingsKey, setSettingsKey] = useState(0);
+  const [lastCoords, setLastCoords] = useState<[number, number] | null>(null);
+  const [newOverlay, setNewOverlay] = useState<{ name: string; type: 'tile' | 'wms'; url: string; layers: string; attribution: string }>(
+    { name: '', type: 'tile', url: '', layers: '', attribution: '' }
+  );
 
-  const businessCoordsFallback: Coordinates = BUSINESS_COORDS_FALLBACK;
-  const supplierCoordsFallback: Coordinates = SUPPLIER_COORDS_FALLBACK;
+  const ProviderMap = useMemo(() => (settings.provider === 'google' ? GoogleMap : LeafletMap), [settings.provider]);
 
-  useEffect(() => {
-    if (!mapContainer.current || mapRef.current) return;
-
-    // Initialize map - start with business coords, will update to user location
-    const map = L.map(mapContainer.current).setView(businessCoordsFallback, 10);
-    mapRef.current = map;
-
-    // Try to get user's current location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userCoords: [number, number] = [position.coords.latitude, position.coords.longitude];
-          map.setView(userCoords, 18);
-        },
-        (error) => {
-          console.log('Geolocation not available, using business location:', error.message);
-        },
-        { timeout: 5000 }
-      );
-    }
-
-    // Satellite base layer
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Tiles &copy; Esri'
-    }).addTo(map);
-
-    // Road and label overlay
-    L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}').addTo(map);
-
-    // Add job markers layer
-    const jobsLayer = new L.LayerGroup();
-    jobsLayerRef.current = jobsLayer;
-    map.addLayer(jobsLayer);
-
-    // Add business and supplier markers (fallback first)
-    businessMarkerRef.current = L.marker(businessCoordsFallback).addTo(map).bindPopup(`<b>Your Business</b><br>${BUSINESS_ADDRESS}`).openPopup();
-    supplierMarkerRef.current = L.marker(supplierCoordsFallback).addTo(map).bindPopup(`<b>SealMaster Supplier</b><br>${SUPPLIER_ADDRESS}`);
-
-    // Resolve actual geocoded coords asynchronously and update markers
-    (async () => {
-      try {
-        const [biz, sup] = await Promise.all([getBusinessCoords(), getSupplierCoords()]);
-        if (businessMarkerRef.current) {
-          businessMarkerRef.current.setLatLng(biz);
-        }
-        if (supplierMarkerRef.current) {
-          supplierMarkerRef.current.setLatLng(sup);
-        }
-        map.setView(biz, 12);
-      } catch {}
-    })();
-
-    // Initialize drawing tools
-    const drawnItems = new L.FeatureGroup();
-    drawnItemsRef.current = drawnItems;
-    map.addLayer(drawnItems);
-
-    const drawControl = new L.Control.Draw({
-      position: 'topleft',
-      edit: { featureGroup: drawnItems },
-      draw: {
-        polygon: { 
-          allowIntersection: false, 
-          showArea: true, 
-          metric: false 
-        },
-        polyline: { 
-          showLength: true, 
-          metric: false 
-        },
-        rectangle: { 
-          showArea: true, 
-          metric: false 
-        },
-        circle: false,
-        marker: false,
-        circlemarker: false
-      }
-    });
-    map.addControl(drawControl);
-
-    // Handle drawn shapes
-    map.on(L.Draw.Event.CREATED, (e: any) => {
-      const type = e.layerType;
-      const layer = e.layer;
-      drawnItems.addLayer(layer);
-
-      if (type === 'polygon' || type === 'rectangle') {
-        const latlngs = layer.getLatLngs()[0];
-        // Calculate geodesic area using Leaflet's built-in method
-        const areaMeters = (L as any).GeometryUtil.geodesicArea(latlngs);
-        const areaFeet = areaMeters * 10.7639;
-        onAreaDrawn(areaFeet);
-      }
-
-      if (type === 'polyline') {
-        let distanceMeters = 0;
-        const latlngs = layer.getLatLngs();
-        for (let i = 0; i < latlngs.length - 1; i++) {
-          distanceMeters += latlngs[i].distanceTo(latlngs[i + 1]);
-        }
-        const distanceFeet = distanceMeters * 3.28084;
-        onCrackLengthDrawn(distanceFeet);
-      }
-    });
-
-    // Geocoder
-    const geocoder = (L.Control as any).geocoder({
-      defaultMarkGeocode: false,
-      placeholder: 'Search for an address...',
-      errorMessage: 'Nothing found.'
-    }).on('markgeocode', (e: any) => {
-      const { center, name } = e.geocode;
-      const coords: [number, number] = [center.lat, center.lng];
-      updateCustomerMarker(coords, name);
-      map.setView(coords, 18);
-    }).addTo(map);
-
-    // Map click handler
-    map.on('click', async (e: L.LeafletMouseEvent) => {
-      if ((document.body as any).classList.contains('leaflet-draw-activated')) return;
-      
-      const { lat, lng } = e.latlng;
-      try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-        const data = await response.json();
-        if (data && data.display_name) {
-          updateCustomerMarker([lat, lng], data.display_name);
-          map.panTo([lat, lng]);
-        }
-      } catch (error) {
-        console.error('Error fetching address:', error);
-      }
-    });
-
-    map.on('draw:drawstart', () => {
-      document.body.classList.add('leaflet-draw-activated');
-    });
-
-    map.on('draw:drawstop', () => {
-      document.body.classList.remove('leaflet-draw-activated');
-    });
-
-    addLegend(map);
-
-    // Initial render of persistent job markers
-    renderJobsMarkers();
-
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
-  }, []);
-
-  const updateCustomerMarker = (coords: [number, number], displayName: string) => {
-    if (!mapRef.current) return;
-    
-    if (customerMarkerRef.current) {
-      mapRef.current.removeLayer(customerMarkerRef.current);
-    }
-    
-    const marker = L.marker(coords).addTo(mapRef.current)
-      .bindPopup(`<b>Job Site</b><br>${displayName}`)
-      .openPopup();
-    
-    customerMarkerRef.current = marker;
-    onAddressUpdate(coords, displayName);
+  const persist = (mut: (s: ReturnType<typeof loadMapSettings>) => ReturnType<typeof loadMapSettings>) => {
+    const next = mut({ ...settings });
+    setSettings(next);
+    saveMapSettings(next);
+    setSettingsKey((k) => k + 1);
   };
 
-  const renderJobsMarkers = async () => {
-    if (!mapRef.current || !jobsLayerRef.current) return;
-    const layer = jobsLayerRef.current;
-    layer.clearLayers();
-    try {
-      const jobs: SavedJob[] = await listJobs();
-      for (const job of jobs) {
-        if (!job.coords) continue;
-        const color = statusColor[job.status] || '#10b981';
-        const marker = L.circleMarker(job.coords as L.LatLngExpression, {
-          radius: 7,
-          color,
-          weight: 2,
-          fillColor: color,
-          fillOpacity: 0.7,
-        });
-        const comp = job.status === 'lost' && job.competitor ? `<br><i>Lost to:</i> ${escapeHtml(job.competitor)}` : '';
-        marker.bindPopup(`
-          <b>${escapeHtml(job.name || 'Job')}</b>
-          <br>${escapeHtml(job.address)}
-          <br><b>Status:</b> ${escapeHtml(job.status)}${comp}
-        `);
-        marker.addTo(layer);
-      }
-    } catch (e) {
-      // ignore
-    }
+  const handleProviderChange = (value: MapProvider) => {
+    persist((s) => ({ ...s, provider: value }));
   };
 
-  function escapeHtml(text: string): string {
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
+  const handleBaseChange = (value: BaseLayerId) => {
+    persist((s) => ({ ...s, baseLayer: value }));
+  };
 
-  function addLegend(map: L.Map) {
-    const legendControl = new L.Control({ position: 'bottomright' });
-    legendControl.onAdd = () => {
-      const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar');
-      div.style.padding = '8px';
-      div.style.background = 'white';
-      div.style.borderRadius = '6px';
-      div.style.boxShadow = '0 1px 2px rgba(0,0,0,0.2)';
-      const entries = [
-        ['need_estimate', statusColor.need_estimate],
-        ['estimated', statusColor.estimated],
-        ['active', statusColor.active],
-        ['completed', statusColor.completed],
-        ['lost', statusColor.lost],
-      ] as const;
-      div.innerHTML = `
-        <div style="font-weight:bold;margin-bottom:4px;">Jobs</div>
-        ${entries
-          .map(([label, color]) => `<div style="display:flex;align-items:center;gap:6px;margin:2px 0;">
-            <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${color};border:1px solid #00000022"></span>
-            <span style="font-size:12px;text-transform:capitalize;">${label.replace('_', ' ')}</span>
-          </div>`)
-          .join('')}
-      `;
-      return div;
-    };
-    legendControl.addTo(map);
-  }
+  const handleOverlayVisible = (id: string, visible: boolean) => {
+    persist((s) => ({ ...s, overlays: s.overlays.map((o) => (o.id === id ? { ...o, visible } : o)) }));
+  };
 
-  // Geocode address when it changes externally
-  useEffect(() => {
-    const geocodeAddress = async () => {
-      if (!customerAddress || !mapRef.current) return;
-      
-      try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(customerAddress)}`);
-        const data = await response.json();
-        if (data && data.length > 0) {
-          const { lat, lon, display_name } = data[0];
-          const latNum = parseFloat(lat);
-          const lonNum = parseFloat(lon);
-          updateCustomerMarker([latNum, lonNum], display_name);
-          mapRef.current.setView([latNum, lonNum], 18);
-        }
-      } catch (error) {
-        console.error('Error geocoding address:', error);
-      }
-    };
+  const handleOverlayOpacity = (id: string, opacity: number) => {
+    persist((s) => ({ ...s, overlays: s.overlays.map((o) => (o.id === id ? { ...o, opacity } : o)) }));
+  };
 
-    const timer = setTimeout(geocodeAddress, 500);
-    return () => clearTimeout(timer);
-  }, [customerAddress]);
+  const toggleRadar = (enabled: boolean) => {
+    persist((s) => ({ ...s, radar: { ...s.radar, enabled } }));
+  };
 
-  // Refresh persistent job markers when requested
-  useEffect(() => {
-    renderJobsMarkers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshKey]);
+  const setRadarAnimate = (animate: boolean) => {
+    persist((s) => ({ ...s, radar: { ...s.radar, animate } }));
+  };
+
+  const setRadarOpacity = (opacity: number) => {
+    persist((s) => ({ ...s, radar: { ...s.radar, opacity } }));
+  };
+
+  const setRadarSpeed = (delayMs: number) => {
+    persist((s) => ({ ...s, radar: { ...s.radar, frameDelayMs: Math.max(50, Math.min(1000, delayMs)) } }));
+  };
+
+  const handleGoogleKeyChange = (value: string) => {
+    persist((s) => ({ ...s, googleApiKey: value }));
+  };
+
+  const handleOpenWeatherKeyChange = (value: string) => {
+    persist((s) => ({ ...s, openWeatherApiKey: value }));
+  };
+
+  const handleAddressUpdateWrapped = (coords: [number, number], address: string) => {
+    setLastCoords(coords);
+    onAddressUpdate(coords, address);
+  };
 
   return (
-    <div ref={mapContainer} className="h-[450px] w-full rounded-lg shadow-lg border border-border" />
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="p-3 grid grid-cols-1 lg:grid-cols-4 gap-4 items-end">
+          <div>
+            <Label>Map Provider</Label>
+            <Select value={settings.provider} onValueChange={(v: any) => handleProviderChange(v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="leaflet">OpenStreetMap/Leaflet</SelectItem>
+                <SelectItem value="google">Google Maps</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Base Layer</Label>
+            <Select value={settings.baseLayer} onValueChange={(v: any) => handleBaseChange(v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {baseLayers.map((b) => (
+                  <SelectItem key={b.id} value={b.id}>{b.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <div className="flex items-center justify-between">
+              <Label>Radar</Label>
+              <Switch checked={settings.radar.enabled} onCheckedChange={toggleRadar} />
+            </div>
+            <div className="mt-2 flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Animate</span>
+              <Switch checked={settings.radar.animate} onCheckedChange={setRadarAnimate} />
+            </div>
+            <div className="mt-2">
+              <span className="text-xs text-muted-foreground">Radar Opacity</span>
+              <Slider value={[Math.round((settings.radar.opacity ?? 0.7) * 100)]} onValueChange={(v) => setRadarOpacity((v?.[0] ?? 70) / 100)} max={100} step={5} />
+            </div>
+            <div className="mt-2">
+              <span className="text-xs text-muted-foreground">Animation Speed (ms/frame)</span>
+              <Slider value={[settings.radar.frameDelayMs ?? 250]} onValueChange={(v) => setRadarSpeed(v?.[0] ?? 250)} max={1000} min={50} step={50} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            {settings.provider === 'google' && (
+              <>
+                <Label>Google Maps API Key</Label>
+                <Input value={settings.googleApiKey ?? ''} onChange={(e) => handleGoogleKeyChange(e.target.value)} placeholder="Enter API key" />
+              </>
+            )}
+            <Label>OpenWeather API Key (optional)</Label>
+            <Input value={settings.openWeatherApiKey ?? ''} onChange={(e) => handleOpenWeatherKeyChange(e.target.value)} placeholder="For richer weather" />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {settings.overlays.map((o) => (
+              <div key={o.id} className="p-2 border rounded">
+                <div className="flex items-center justify-between">
+                  <div className="font-medium text-sm">{o.name}</div>
+                  <Switch checked={!!o.visible} onCheckedChange={(v) => handleOverlayVisible(o.id, v)} />
+                </div>
+                {o.type !== 'radar' && (
+                  <div className="mt-2">
+                    <span className="text-xs text-muted-foreground">Opacity</span>
+                    <Slider value={[Math.round((o.opacity ?? 1) * 100)]} onValueChange={(v) => handleOverlayOpacity(o.id, (v?.[0] ?? 100) / 100)} max={100} step={5} />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 border-t pt-3 grid grid-cols-1 md:grid-cols-5 gap-2 items-end">
+            <div>
+              <Label>Overlay Name</Label>
+              <Input value={newOverlay.name} onChange={(e) => setNewOverlay({ ...newOverlay, name: e.target.value })} placeholder="e.g., Patrick County Parcels" />
+            </div>
+            <div>
+              <Label>Type</Label>
+              <Select value={newOverlay.type} onValueChange={(v: any) => setNewOverlay({ ...newOverlay, type: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tile">Tile (XYZ / WMTS)</SelectItem>
+                  <SelectItem value="wms">WMS</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="md:col-span-2">
+              <Label>URL Template</Label>
+              <Input value={newOverlay.url} onChange={(e) => setNewOverlay({ ...newOverlay, url: e.target.value })} placeholder="https://host/tiles/{z}/{x}/{y}.png or WMS endpoint" />
+            </div>
+            <div>
+              <Label>WMS Layers</Label>
+              <Input value={newOverlay.layers} onChange={(e) => setNewOverlay({ ...newOverlay, layers: e.target.value })} placeholder="e.g., Parcels" />
+            </div>
+            <div className="md:col-span-4">
+              <Label>Attribution</Label>
+              <Input value={newOverlay.attribution} onChange={(e) => setNewOverlay({ ...newOverlay, attribution: e.target.value })} placeholder="Data © County GIS" />
+            </div>
+            <div>
+              <button
+                type="button"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+                onClick={() => {
+                  if (!newOverlay.name || !newOverlay.url) return;
+                  const id = newOverlay.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                  persist((s) => ({
+                    ...s,
+                    overlays: [
+                      ...s.overlays,
+                      newOverlay.type === 'wms'
+                        ? { id, name: newOverlay.name, type: 'wms', urlTemplate: newOverlay.url, attribution: newOverlay.attribution || undefined, opacity: 1, visible: true, wmsParams: { layers: newOverlay.layers || '', transparent: true, format: 'image/png' } }
+                        : { id, name: newOverlay.name, type: 'tile', urlTemplate: newOverlay.url, attribution: newOverlay.attribution || undefined, opacity: 1, visible: true },
+                    ],
+                  }));
+                  setNewOverlay({ name: '', type: 'tile', url: '', layers: '', attribution: '' });
+                }}
+              >
+                Add Overlay
+              </button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <ProviderMap
+        key={`${settings.provider}-${settingsKey}`}
+        customerAddress={customerAddress}
+        onAddressUpdate={handleAddressUpdateWrapped}
+        onAreaDrawn={onAreaDrawn}
+        onCrackLengthDrawn={onCrackLengthDrawn}
+        refreshKey={refreshKey}
+      />
+
+      <WeatherCard coords={lastCoords} />
+    </div>
   );
 };
 
