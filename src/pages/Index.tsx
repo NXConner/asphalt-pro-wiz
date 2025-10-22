@@ -377,6 +377,63 @@ const Index = () => {
                   </CardContent>
                 </Card>
 
+                {includeCleaningRepair && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Crack Filling</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        Use the drawing tools on the map to measure crack length
+                      </p>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="crackLength">Total Length (ft)</Label>
+                          <Input
+                            id="crackLength"
+                            type="number"
+                            min="0"
+                            value={crackLength}
+                            onChange={(e) => setCrackLength(parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="crackWidth">Avg. Width (in)</Label>
+                          <Input
+                            id="crackWidth"
+                            type="number"
+                            min="0"
+                            step="0.25"
+                            value={crackWidth}
+                            onChange={(e) => setCrackWidth(parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="crackDepth">Avg. Depth (in)</Label>
+                          <Input
+                            id="crackDepth"
+                            type="number"
+                            min="0"
+                            step="0.25"
+                            value={crackDepth}
+                            onChange={(e) => setCrackDepth(parseFloat(e.target.value) || 0)}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="propaneTanks">Propane Tanks</Label>
+                        <Input
+                          id="propaneTanks"
+                          type="number"
+                          min="0"
+                          value={propaneTanks}
+                          onChange={(e) => setPropaneTanks(parseInt(e.target.value) || 0)}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {includeSealcoating && (
                   <Card>
                     <CardHeader>
@@ -430,63 +487,6 @@ const Index = () => {
                           min="0"
                           value={oilSpots}
                           onChange={(e) => setOilSpots(parseInt(e.target.value) || 0)}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {includeCleaningRepair && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Crack Filling</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-sm text-muted-foreground">
-                        Use the drawing tools on the map to measure crack length
-                      </p>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div>
-                          <Label htmlFor="crackLength">Total Length (ft)</Label>
-                          <Input
-                            id="crackLength"
-                            type="number"
-                            min="0"
-                            value={crackLength}
-                            onChange={(e) => setCrackLength(parseFloat(e.target.value) || 0)}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="crackWidth">Avg. Width (in)</Label>
-                          <Input
-                            id="crackWidth"
-                            type="number"
-                            min="0"
-                            step="0.25"
-                            value={crackWidth}
-                            onChange={(e) => setCrackWidth(parseFloat(e.target.value) || 0)}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="crackDepth">Avg. Depth (in)</Label>
-                          <Input
-                            id="crackDepth"
-                            type="number"
-                            min="0"
-                            step="0.25"
-                            value={crackDepth}
-                            onChange={(e) => setCrackDepth(parseFloat(e.target.value) || 0)}
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="propaneTanks">Propane Tanks</Label>
-                        <Input
-                          id="propaneTanks"
-                          type="number"
-                          min="0"
-                          value={propaneTanks}
-                          onChange={(e) => setPropaneTanks(parseInt(e.target.value) || 0)}
                         />
                       </div>
                     </CardContent>
