@@ -6,7 +6,7 @@ const DB_NAME = 'pps-db';
 const DB_VERSION = 2;
 const FILE_STORE = 'files';
 const DOC_STORE = 'docs';
-const JOB_STORE = 'jobs';
+const RECEIPT_STORE = 'receipts';
 
 export function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -21,12 +21,11 @@ export function openDb(): Promise<IDBDatabase> {
         const store = db.createObjectStore(DOC_STORE, { keyPath: 'id' });
         store.createIndex('byJob', 'jobKey', { unique: false });
       }
-      // Jobs store for persisting job/site markers and status
-      if (!db.objectStoreNames.contains(JOB_STORE)) {
-        const store = db.createObjectStore(JOB_STORE, { keyPath: 'id' });
-        store.createIndex('byStatus', 'status', { unique: false });
-        store.createIndex('byCompetitor', 'competitor', { unique: false });
-        store.createIndex('byUpdatedAt', 'updatedAt', { unique: false });
+      if (!db.objectStoreNames.contains(RECEIPT_STORE)) {
+        const store = db.createObjectStore(RECEIPT_STORE, { keyPath: 'id' });
+        store.createIndex('byCategory', 'category', { unique: false });
+        store.createIndex('byDate', 'date', { unique: false });
+        store.createIndex('byVendor', 'vendorLower', { unique: false });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -163,52 +162,79 @@ export function makeJobKey(jobName: string, customerAddress: string): string {
   return `${(jobName || 'job').trim().toLowerCase()}|${(customerAddress || 'address').trim().toLowerCase()}`;
 }
 
-// Low-level job store utilities (kept here to avoid circular deps)
-export type JobStatus = 'need_estimate' | 'estimated' | 'active' | 'completed' | 'lost';
-export type SavedJob = {
-  id: string; // jobKey
-  jobKey: string;
+// ===== Receipts Store =====
+
+export type ReceiptCategory =
+  | 'SealMaster'
+  | 'Fuel'
+  | 'Payroll'
+  | 'Parts'
+  | 'Equipment'
+  | 'Tools'
+  | 'Materials'
+  | 'Supplies'
+  | 'Entertainment'
+  | 'Meals'
+  | 'Lodging'
+  | 'Travel'
+  | 'Permits'
+  | 'Insurance'
+  | 'Utilities'
+  | 'Marketing'
+  | 'Office'
+  | 'Other';
+
+export type SavedReceipt = {
+  id: string; // `rcpt:${timestamp}:${name}`
   name: string;
-  address: string;
-  coords: [number, number] | null;
-  status: JobStatus;
-  competitor?: string;
-  createdAt: number;
-  updatedAt: number;
+  type: string;
+  size: number;
+  createdAt: number; // ms epoch
+  updatedAt: number; // ms epoch
+  blob: Blob; // original file/image
+  // Metadata
+  category: ReceiptCategory;
+  vendor: string;
+  vendorLower: string; // for indexing/search
+  date: string; // ISO date (yyyy-mm-dd)
+  subtotal?: number | null;
+  tax?: number | null;
+  total?: number | null;
+  paymentMethod?: string | null; // e.g., Cash, Card, Check
+  notes?: string | null;
+  jobKey?: string | null; // optionally associate to a job
+  ocrText?: string | null; // raw OCR/AI output for reference/search
 };
 
-export async function getJob(jobKey: string): Promise<SavedJob | undefined> {
-  const db = await openDb();
-  const value: SavedJob | undefined = await new Promise((resolve, reject) => {
-    const tx = db.transaction(JOB_STORE, 'readonly');
-    const req = tx.objectStore(JOB_STORE).get(jobKey);
-    req.onsuccess = () => resolve(req.result as SavedJob | undefined);
-    req.onerror = () => reject(req.error);
-  });
-  db.close();
-  return value;
-}
+export type ReceiptUpdate = Partial<Omit<SavedReceipt, 'id' | 'name' | 'type' | 'size' | 'createdAt' | 'blob'>>;
 
-export async function upsertJob(job: Omit<SavedJob, 'createdAt' | 'updatedAt'> & Partial<Pick<SavedJob, 'createdAt' | 'updatedAt'>>): Promise<SavedJob> {
-  const existing = await getJob(job.id);
-  const now = Date.now();
-  const record: SavedJob = existing
-    ? { ...existing, ...job, updatedAt: now }
-    : {
-        id: job.id,
-        jobKey: job.jobKey,
-        name: job.name,
-        address: job.address,
-        coords: job.coords ?? null,
-        status: job.status ?? 'need_estimate',
-        competitor: job.competitor,
-        createdAt: now,
-        updatedAt: now,
-      };
+export async function saveReceipt(file: File, meta?: Partial<SavedReceipt>): Promise<SavedReceipt> {
   const db = await openDb();
+  const now = Date.now();
+  const id = `rcpt:${now}:${file.name}`;
+  const record: SavedReceipt = {
+    id,
+    name: file.name,
+    type: file.type,
+    size: file.size,
+    createdAt: now,
+    updatedAt: now,
+    blob: file,
+    category: (meta?.category as ReceiptCategory) || 'Other',
+    vendor: (meta?.vendor || '').trim(),
+    vendorLower: (meta?.vendor || '').trim().toLowerCase(),
+    date: meta?.date || new Date(now).toISOString().slice(0, 10),
+    subtotal: meta?.subtotal ?? null,
+    tax: meta?.tax ?? null,
+    total: meta?.total ?? null,
+    paymentMethod: meta?.paymentMethod ?? null,
+    notes: meta?.notes ?? null,
+    jobKey: meta?.jobKey ?? null,
+    ocrText: meta?.ocrText ?? null,
+  };
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(JOB_STORE, 'readwrite');
-    tx.objectStore(JOB_STORE).put(record);
+    const tx = db.transaction(RECEIPT_STORE, 'readwrite');
+    tx.objectStore(RECEIPT_STORE).put(record);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
@@ -216,17 +242,24 @@ export async function upsertJob(job: Omit<SavedJob, 'createdAt' | 'updatedAt'> &
   return record;
 }
 
-export async function listJobs(): Promise<SavedJob[]> {
+export type ReceiptFilters = {
+  category?: ReceiptCategory | 'All';
+  startDate?: string; // inclusive yyyy-mm-dd
+  endDate?: string; // inclusive yyyy-mm-dd
+  vendorQuery?: string; // case-insensitive substring
+};
+
+export async function listReceipts(filters?: ReceiptFilters): Promise<SavedReceipt[]> {
   const db = await openDb();
-  const jobs: SavedJob[] = [];
+  const receipts: SavedReceipt[] = [];
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(JOB_STORE, 'readonly');
-    const store = tx.objectStore(JOB_STORE);
-    const req = store.openCursor(undefined, 'prev');
+    const tx = db.transaction(RECEIPT_STORE, 'readonly');
+    const store = tx.objectStore(RECEIPT_STORE);
+    const req = store.openCursor(null, 'prev');
     req.onsuccess = () => {
-      const cursor = req.result;
+      const cursor = req.result as IDBCursorWithValue | null;
       if (cursor) {
-        jobs.push(cursor.value as SavedJob);
+        receipts.push(cursor.value as SavedReceipt);
         cursor.continue();
       } else {
         resolve();
@@ -235,11 +268,54 @@ export async function listJobs(): Promise<SavedJob[]> {
     req.onerror = () => reject(req.error);
   });
   db.close();
-  return jobs;
+
+  if (!filters) return receipts;
+  const { category, startDate, endDate, vendorQuery } = filters;
+  const q = (vendorQuery || '').trim().toLowerCase();
+  return receipts.filter((r) => {
+    if (category && category !== 'All' && r.category !== category) return false;
+    if (startDate && r.date < startDate) return false;
+    if (endDate && r.date > endDate) return false;
+    if (q && !r.vendorLower.includes(q)) return false;
+    return true;
+  });
 }
 
-export async function setJobStatus(jobKey: string, status: JobStatus, competitor?: string): Promise<SavedJob | undefined> {
-  const job = await getJob(jobKey);
-  if (!job) return undefined;
-  return upsertJob({ ...job, status, competitor });
+export async function deleteReceipt(id: string): Promise<void> {
+  const db = await openDb();
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(RECEIPT_STORE, 'readwrite');
+    tx.objectStore(RECEIPT_STORE).delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+  db.close();
+}
+
+export async function updateReceiptMeta(id: string, updates: ReceiptUpdate): Promise<SavedReceipt | null> {
+  const db = await openDb();
+  const record = await new Promise<SavedReceipt | null>((resolve, reject) => {
+    const tx = db.transaction(RECEIPT_STORE, 'readwrite');
+    const store = tx.objectStore(RECEIPT_STORE);
+    const getReq = store.get(id);
+    getReq.onsuccess = () => {
+      const current = getReq.result as SavedReceipt | undefined;
+      if (!current) {
+        resolve(null);
+        return;
+      }
+      const next: SavedReceipt = {
+        ...current,
+        ...updates,
+        vendorLower: (updates.vendor ?? current.vendor).trim().toLowerCase(),
+        updatedAt: Date.now(),
+      };
+      const putReq = store.put(next);
+      putReq.onsuccess = () => resolve(next);
+      putReq.onerror = () => reject(putReq.error);
+    };
+    getReq.onerror = () => reject(getReq.error);
+  });
+  db.close();
+  return record;
 }
