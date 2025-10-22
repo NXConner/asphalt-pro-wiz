@@ -1,0 +1,77 @@
+name: Android APKs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'vite.config.ts'
+      - 'capacitor.config.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/android.yml'
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web assets for mobile
+        run: npm run build:mobile
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: |-
+            platforms;android-34
+            build-tools;34.0.0
+
+      - name: Add and sync Capacitor Android
+        run: |
+          npx cap add android || true
+          npx cap sync android
+
+      - name: Build APKs (debug and unsigned release)
+        working-directory: android
+        run: ./gradlew assembleDebug assembleRelease --stacktrace
+
+      - name: Sign release APK (if secrets provided)
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 && secrets.ANDROID_KEYSTORE_PASSWORD && secrets.ANDROID_KEY_ALIAS && secrets.ANDROID_KEY_PASSWORD }}
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/release.jks
+          ZIPALIGN="$ANDROID_SDK_ROOT/build-tools/34.0.0/zipalign"
+          APKSIGNER="$ANDROID_SDK_ROOT/build-tools/34.0.0/apksigner"
+          unsigned_apk="android/app/build/outputs/apk/release/app-release-unsigned.apk"
+          aligned_apk="android/app/build/outputs/apk/release/app-release-unsigned-aligned.apk"
+          signed_apk="android/app/build/outputs/apk/release/app-release-signed.apk"
+          "$ZIPALIGN" -v -p 4 "$unsigned_apk" "$aligned_apk"
+          "$APKSIGNER" sign --ks android/release.jks --ks-pass pass:"$ANDROID_KEYSTORE_PASSWORD" --ks-key-alias "$ANDROID_KEY_ALIAS" --key-pass pass:"$ANDROID_KEY_PASSWORD" --out "$signed_apk" "$aligned_apk"
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apks
+          path: |
+            android/app/build/outputs/apk/debug/*.apk
+            android/app/build/outputs/apk/release/*.apk
