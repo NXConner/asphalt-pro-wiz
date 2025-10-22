@@ -49,6 +49,7 @@ const Index = () => {
   const [nextAreaId, setNextAreaId] = useState(1);
   const [shapeType, setShapeType] = useState<'rectangle' | 'triangle' | 'circle' | 'manual' | 'image'>('rectangle');
   const [ownerMode, setOwnerMode] = useState<boolean>(isEnabled('ownerMode'));
+  const [manualAreaInput, setManualAreaInput] = useState<string>('');
   
   const [numCoats, setNumCoats] = useState(2);
   const [sandAdded, setSandAdded] = useState(false);
@@ -147,6 +148,23 @@ const Index = () => {
     };
     setAreas(prev => [...prev, newArea]);
     setNextAreaId(prev => prev + 1);
+  };
+
+  const addManualAreaQuick = () => {
+    const parsed = parseFloat(manualAreaInput);
+    if (!parsed || parsed <= 0) {
+      toast.error('Enter a valid area in sq ft');
+      return;
+    }
+    const newArea: AreaItem = {
+      id: nextAreaId,
+      shape: 'manual',
+      area: parsed
+    };
+    setAreas(prev => [...prev, newArea]);
+    setNextAreaId(prev => prev + 1);
+    setManualAreaInput('');
+    toast.success(`Added ${parsed.toFixed(1)} sq ft`);
   };
 
   const removeArea = (id: number) => {
@@ -364,6 +382,30 @@ const Index = () => {
                     <p className="text-sm text-muted-foreground">
                       Use the drawing tools on the map or add manual shapes below
                     </p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
+                      <div className="md:col-span-2">
+                        <Label htmlFor="knownArea">Known Area (sq ft)</Label>
+                        <Input
+                          id="knownArea"
+                          type="number"
+                          inputMode="decimal"
+                          placeholder="e.g., 12500"
+                          value={manualAreaInput}
+                          onChange={(e) => setManualAreaInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              addManualAreaQuick();
+                            }
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <Button type="button" variant="secondary" onClick={addManualAreaQuick}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Area
+                        </Button>
+                      </div>
+                    </div>
                     <div className="flex gap-2">
                       <Select value={shapeType} onValueChange={(v: any) => setShapeType(v)}>
                         <SelectTrigger className="w-[180px]">
