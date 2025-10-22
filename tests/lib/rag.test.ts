@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { retrieveRelevantContext } from '@/lib/rag';
 
 // Minimal mock for fetch for index and embedding requests
@@ -13,13 +13,16 @@ function mockFetchOnce(data: any, ok = true) {
 }
 
 describe('retrieveRelevantContext', () => {
+  beforeEach(() => {
+    (globalAny.process as any) = { env: { GEMINI_API_KEY: 'test' } };
+  });
   it('returns empty string when no index', async () => {
     globalAny.fetch = vi.fn();
     // First fetch: index.json empty
     mockFetchOnce([]);
-    // Second fetch: embedding
-    mockFetchOnce({ embedding: { values: [0.1, 0.2] } });
+    // Stub embedText call path by returning empty vector
+    mockFetchOnce({ embedding: { values: [] } });
     const ctx = await retrieveRelevantContext('test');
-    expect(typeof ctx).toBe('string');
+    expect(ctx).toBe('');
   });
 });

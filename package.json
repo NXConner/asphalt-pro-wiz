@@ -109,6 +109,7 @@
     "typescript-eslint": "^8.38.0",
     "tsx": "^4.19.2",
     "vite": "^5.4.19",
+    "vite-plugin-pwa": "^0.20.5",
     "node-pg-migrate": "^7.6.1",
     "pg": "^8.13.1",
     "dotenv": "^16.4.5",

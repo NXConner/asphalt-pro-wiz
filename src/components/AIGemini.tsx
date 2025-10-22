@@ -59,8 +59,8 @@ export function AIGemini() {
         )}
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Image Analysis</label>
-          <Input type="file" accept="image/*" onChange={handleImage} />
+          <label htmlFor="ai-image" className="text-sm font-medium">Image Analysis</label>
+          <Input id="ai-image" type="file" accept="image/*" onChange={handleImage} />
           {imageResult && (
             <div className="p-3 border rounded-md whitespace-pre-wrap text-sm bg-muted">{imageResult}</div>
           )}
