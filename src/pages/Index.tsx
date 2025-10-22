@@ -23,7 +23,6 @@ import { BUSINESS_ADDRESS, SUPPLIER_ADDRESS } from '@/lib/locations';
 import { CustomServices, type CustomService } from '@/components/CustomServices';
 import { UploadsPanel } from '@/components/UploadsPanel';
 import { ReceiptsPanel } from '@/components/ReceiptsPanel';
-import ReceiptsPanel from '@/components/ReceiptsPanel';
 import { DocumentGenerator } from '@/components/DocumentGenerator';
 import { AIGemini } from '@/components/AIGemini';
 import { ComplianceResources, type ComplianceTopic } from '@/components/ComplianceResources';
@@ -687,9 +686,6 @@ const Index = () => {
                 </Card>
 
                 <UploadsPanel jobName={jobName} customerAddress={customerAddress} />
-                {isEnabled('receipts') && (
-                  <ReceiptsPanel jobName={jobName} customerAddress={customerAddress} />
-                )}
                 {isEnabled('receipts') && (
                   <ReceiptsPanel jobName={jobName} customerAddress={customerAddress} />
                 )}
