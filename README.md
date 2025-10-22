@@ -80,6 +80,10 @@ cp .env.example .env
 npm run dev
 ```
 
+### Unified Supabase (single project for all apps)
+
+See `docs/UNIFIED_SUPABASE_GUIDE.md` for step-by-step setup to connect this and other repositories to one Supabase project, run unified migrations, seed admin access, and use compatibility views for legacy schemas.
+
 4. Optional: Build RAG index for AI:
 
 ```sh

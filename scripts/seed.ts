@@ -12,37 +12,42 @@ async function main() {
   try {
     await client.query('BEGIN');
 
-    // Ensure core roles
+    // Ensure unified roles_compat for legacy mapping
     await client.query(`
-      INSERT INTO roles (name) VALUES
+      CREATE TABLE IF NOT EXISTS public.roles_compat (
+        id serial PRIMARY KEY,
+        name text NOT NULL UNIQUE
+      );
+      INSERT INTO public.roles_compat(name) VALUES
         ('viewer'), ('operator'), ('manager'), ('super_admin')
       ON CONFLICT (name) DO NOTHING;
     `);
 
-    // Ensure admin user exists
-    await client.query(
-      `INSERT INTO users (email, full_name)
-       VALUES ($1, $2)
-       ON CONFLICT (email) DO NOTHING;`,
-      [adminEmail, 'Administrator']
-    );
+    // Ensure admin auth user exists must be done via Supabase Dashboard
+    // Here we only ensure membership and role if user is present
 
     const { rows: userRows } = await client.query<{ id: string }>(
-      'SELECT id FROM users WHERE email = $1',
+      'SELECT id FROM auth.users WHERE email = $1',
       [adminEmail]
     );
     if (userRows.length) {
       const userId = userRows[0].id;
-      const { rows: roleRows } = await client.query<{ id: number }>(
-        "SELECT id FROM roles WHERE name = 'super_admin'"
+      // Ensure default organization exists
+      await client.query(
+        `INSERT INTO public.organizations(name, slug)
+         SELECT 'Default Organization', 'default'
+         WHERE NOT EXISTS (SELECT 1 FROM public.organizations);`
       );
-      if (roleRows.length) {
-        const roleId = roleRows[0].id;
+      const { rows: orgRows } = await client.query<{ id: string }>(
+        'SELECT id FROM public.organizations ORDER BY created_at ASC LIMIT 1'
+      );
+      const orgId = orgRows[0]?.id;
+      if (orgId) {
         await client.query(
-          `INSERT INTO user_roles (user_id, role_id)
-           VALUES ($1, $2)
-           ON CONFLICT (user_id, role_id) DO NOTHING;`,
-          [userId, roleId]
+          `INSERT INTO public.user_org_memberships(user_id, org_id, role)
+           VALUES ($1, $2, 'Super Administrator')
+           ON CONFLICT (user_id, org_id) DO UPDATE SET role = EXCLUDED.role;`,
+          [userId, orgId]
         );
       }
     }
