@@ -166,12 +166,12 @@ function escapeHtml(str: string) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
+    .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
 
 function csvEscape(field: string) {
   const needsQuotes = /[",\n]/.test(field);
-  let out = field.replace(/"/g, '""');
+  const out = field.replace(/"/g, '""');
   return needsQuotes ? `"${out}"` : out;
 }

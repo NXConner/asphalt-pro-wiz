@@ -21,7 +21,8 @@ const Command = React.forwardRef<
 ));
 Command.displayName = CommandPrimitive.displayName;
 
-interface CommandDialogProps extends DialogProps {}
+// Explicitly include children to satisfy empty interface rule
+interface CommandDialogProps extends DialogProps { children?: React.ReactNode }
 
 const CommandDialog = ({ children, ...props }: CommandDialogProps) => {
   return (

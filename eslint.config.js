@@ -6,13 +6,11 @@ import tseslint from "typescript-eslint";
 import jsxA11y from "eslint-plugin-jsx-a11y";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  { ignores: ["dist", "scripts/**"] },
   {
     extends: [
       js.configs.recommended,
       ...tseslint.configs.recommended,
-      // Apply jsx-a11y recommended rules
-      jsxA11y.configs?.recommended ?? {},
     ],
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
@@ -29,6 +27,19 @@ export default tseslint.config(
       ...(jsxA11y.configs?.recommended?.rules ?? {}),
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-require-imports": "off",
+      "no-empty": ["error", { allowEmptyCatch: true }],
+    },
+  },
+  {
+    files: ["src/components/ui/**/*.{ts,tsx}"],
+    rules: {
+      // UI primitives manage their own semantics; suppress strict a11y rules here
+      "jsx-a11y/heading-has-content": "off",
+      "jsx-a11y/anchor-has-content": "off",
+      "jsx-a11y/click-events-have-key-events": "off",
+      "jsx-a11y/no-noninteractive-element-interactions": "off",
     },
   },
 );

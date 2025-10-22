@@ -10,6 +10,7 @@ import { Calculator, FileText, Plus, Settings, MapPin } from 'lucide-react';
 import Map from '@/components/Map';
 import AreaSection from '@/components/AreaSection';
 import ImageAreaAnalyzer from '@/components/ImageAreaAnalyzer';
+import { isEnabled } from '@/lib/flags';
 import { BusinessSettings } from '@/components/BusinessSettings';
 import { PremiumServices } from '@/components/PremiumServices';
 import { ServiceCategories } from '@/components/ServiceCategories';
@@ -570,8 +571,10 @@ const Index = () => {
                 </Card>
 
                 <UploadsPanel jobName={jobName} customerAddress={customerAddress} />
-                <ImageAreaAnalyzer onAreaDetected={handleImageAreaDetected} />
-                <AIGemini />
+                {isEnabled('imageAreaAnalyzer') && (
+                  <ImageAreaAnalyzer onAreaDetected={handleImageAreaDetected} />
+                )}
+                {isEnabled('aiAssistant') && <AIGemini />}
               </div>
             </div>
 

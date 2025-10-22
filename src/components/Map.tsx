@@ -163,8 +163,10 @@ const Map = ({ onAddressUpdate, onAreaDrawn, onCrackLengthDrawn, customerAddress
         const data = await response.json();
         if (data && data.length > 0) {
           const { lat, lon, display_name } = data[0];
-          updateCustomerMarker([parseFloat(lat), parseFloat(lon)], display_name);
-          mapRef.current.setView([lat, lon], 18);
+          const latNum = parseFloat(lat);
+          const lonNum = parseFloat(lon);
+          updateCustomerMarker([latNum, lonNum], display_name);
+          mapRef.current.setView([latNum, lonNum], 18);
         }
       } catch (error) {
         console.error('Error geocoding address:', error);
