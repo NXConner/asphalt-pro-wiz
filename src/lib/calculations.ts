@@ -173,7 +173,7 @@ export function calculateProject(inputs: ProjectInputs, businessData: BusinessDa
   // Area
   breakdown.push({ item: 'Total Area', value: `${inputs.totalArea.toFixed(0)} sq ft` });
 
-  // Travel costs
+  // Travel costs (business to supplier round trip + business to job round trip)
   const businessCoords: [number, number] = [36.7388, -80.2692];
   const supplierCoords: [number, number] = [36.3871, -79.9578];
   const supplierDist = calculateDistance(businessCoords, supplierCoords) * 2;
@@ -316,10 +316,21 @@ export function calculateProject(inputs: ProjectInputs, businessData: BusinessDa
     if (inputs.numCoats >= 3) sealHours += inputs.totalArea / businessData.sealcoatingSpeed2;
   }
 
-  // Ensure Cleaning/Prep time is automatically included when performing crack repair
-  const prepLaborHours = (inputs.includeCleaningRepair && inputs.crackLength > 0)
-    ? Math.max(inputs.prepHours, 1)
-    : inputs.prepHours;
+  // Automatic preparation time per selected service
+  // Crack repair prep: at least 1 hr if any crack work, scale with length (~600 ft/hr prep rate)
+  const crackPrepHours = (inputs.includeCleaningRepair && inputs.crackLength > 0)
+    ? Math.max(1, inputs.crackLength / 600)
+    : 0;
+  // Sealcoating prep: at least 1 hr for staging/blowing/edges, scale with area (~10k sq ft/hr prep rate)
+  const sealPrepHours = inputs.includeSealcoating
+    ? Math.max(1, inputs.totalArea / 10000)
+    : 0;
+  // Striping prep: at least 1 hr if any striping items selected (layout, chalking, cleaning)
+  const totalStripingItems = inputs.stripingLines + inputs.stripingHandicap + inputs.stripingArrowsLarge + inputs.stripingArrowsSmall + inputs.stripingLettering + (inputs.stripingCurb > 0 ? 1 : 0);
+  const stripingPrepHours = inputs.includeStriping && totalStripingItems > 0
+    ? 1
+    : 0;
+  const prepLaborHours = crackPrepHours + sealPrepHours + stripingPrepHours;
 
   // Only count crack repair labor when that category is selected
   const crackLaborHours = inputs.includeCleaningRepair
@@ -333,7 +344,7 @@ export function calculateProject(inputs: ProjectInputs, businessData: BusinessDa
   costs.labor = totalHours * businessData.employees * businessData.laborRate;
   breakdown.push({
     item: `Labor (${businessData.employees} employees @ $${businessData.laborRate}/hr)`,
-    value: `${totalHours.toFixed(1)} hrs (Prep: ${prepLaborHours.toFixed(1)}, Seal: ${sealHours.toFixed(1)}, Crack: ${crackLaborHours.toFixed(1)}, Travel: ${travelHours.toFixed(1)}) → $${costs.labor.toFixed(2)}`
+    value: `${totalHours.toFixed(1)} hrs (Prep: ${prepLaborHours.toFixed(1)} [C:${crackPrepHours.toFixed(1)} S:${sealPrepHours.toFixed(1)} L:${stripingPrepHours.toFixed(1)}], Seal: ${sealHours.toFixed(1)}, Crack: ${crackLaborHours.toFixed(1)}, Travel: ${travelHours.toFixed(1)}) → $${costs.labor.toFixed(2)}`
   });
 
   // Subtotal (before overhead and profit)
