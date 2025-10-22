@@ -78,6 +78,7 @@
 | P0 | Add DevEx foundations: Prettier, Husky, env template, a11y ESLint | Refactor | package.json, eslint.config.js, .prettierrc.json, .husky/pre-commit, .env.example |
 | P0 | Dockerize app and compose Postgres (pgvector) | New-Feature | Dockerfile, docker-compose.yml, .dockerignore |
 | P0 | RAG ingestion pipeline (local + GitHub) and UI retrieval | Max-Feature | scripts/ingest/ingest.ts, src/lib/rag.ts, src/lib/gemini.ts, public/rag/index.json (generated) |
+| P0 | Fix duplicate ReceiptsPanel and add feature flag 'receipts' | Fix | src/components/ReceiptsPanel.tsx, src/pages/Index.tsx, src/lib/flags.ts, .env.example, tests/lib/flags.test.ts |
 | P1 | Supabase migrations with RLS, roles/user_roles, seed script | New-Feature | supabase/migrations/*, scripts/seed.ts, scripts/db/*, package.json |
 | P1 | Secrets & security scanning | Refactor | docs/secrets.md, package.json |
 | P1 | Testing setup (unit/integration/E2E) and a11y checks | New-Feature | vitest/playwright config, tests/* |
@@ -85,3 +86,9 @@
 | P2 | API docs (when backend present) | New-Feature | scripts/openapi/*, docs/api.md |
 | P2 | Documentation suite | New-Feature | README.md, CONTRIBUTING.md, CODEOWNERS, CHANGELOG.md, LICENSE |
 | P2 | Observability and CI/CD | New-Feature | .github/workflows/main.yml, src/lib/logging.ts |
+
+### Additional Findings and Immediate Fixes
+
+- Resolve two conflicting implementations in `src/components/ReceiptsPanel.tsx` by consolidating into a single, comprehensive component. This eliminates duplicate exports/imports and runtime ambiguity.
+- Introduce a `receipts` feature flag in `src/lib/flags.ts` with a corresponding `VITE_FLAG_RECEIPTS` `.env` entry to control visibility in `src/pages/Index.tsx`.
+- Add a small unit test to assert default flag behavior.

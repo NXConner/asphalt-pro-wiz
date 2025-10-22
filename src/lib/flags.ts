@@ -3,6 +3,7 @@ export type FeatureFlag =
   | "aiAssistant"
   | "pwa"
   | "i18n"
+  | "receipts"
   | "ownerMode";
 
 const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
@@ -10,6 +11,7 @@ const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   aiAssistant: true,
   pwa: true,
   i18n: true,
+  receipts: true,
   ownerMode: false,
 };
 
