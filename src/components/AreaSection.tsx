@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { X } from 'lucide-react';
 
 interface AreaSectionProps {
-  shape: 'rectangle' | 'triangle' | 'circle' | 'drawn' | 'manual';
+  shape: 'rectangle' | 'triangle' | 'circle' | 'drawn' | 'manual' | 'image';
   initialArea?: number;
   onRemove: () => void;
   onChange: (area: number) => void;
@@ -38,6 +38,9 @@ const AreaSection = ({ shape, initialArea = 0, onRemove, onChange }: AreaSection
         calculatedArea = Math.PI * (values.radius ** 2);
         break;
       case 'drawn':
+        calculatedArea = initialArea;
+        break;
+      case 'image':
         calculatedArea = initialArea;
         break;
     }
@@ -108,6 +111,9 @@ const AreaSection = ({ shape, initialArea = 0, onRemove, onChange }: AreaSection
       )}
       {shape === 'drawn' && (
         <span className="text-sm text-muted-foreground px-2">Drawn on map:</span>
+      )}
+      {shape === 'image' && (
+        <span className="text-sm text-muted-foreground px-2">From image analysis:</span>
       )}
       <div className="flex-grow px-3 py-2 bg-muted rounded-md text-center font-medium">
         {area.toFixed(1)} sq ft
