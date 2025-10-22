@@ -319,3 +319,120 @@ export async function updateReceiptMeta(id: string, updates: ReceiptUpdate): Pro
   db.close();
   return record;
 }
+
+// ===== Jobs Store =====
+
+export type JobStatus = 'need_estimate' | 'estimated' | 'active' | 'completed' | 'lost';
+
+export type SavedJob = {
+  id: string; // jobKey
+  name: string;
+  address: string;
+  coords: [number, number] | null;
+  status: JobStatus;
+  competitor?: string; // if lost
+  createdAt: number;
+  updatedAt: number;
+};
+
+const JOBS_STORE = 'jobs';
+
+// Upgrade DB to version 3 for jobs store
+const DB_VERSION_WITH_JOBS = 3;
+
+export function openDbWithJobs(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION_WITH_JOBS);
+    request.onupgradeneeded = (e: any) => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(FILE_STORE)) {
+        const store = db.createObjectStore(FILE_STORE, { keyPath: 'id' });
+        store.createIndex('byJob', 'jobKey', { unique: false });
+      }
+      if (!db.objectStoreNames.contains(DOC_STORE)) {
+        const store = db.createObjectStore(DOC_STORE, { keyPath: 'id' });
+        store.createIndex('byJob', 'jobKey', { unique: false });
+      }
+      if (!db.objectStoreNames.contains(RECEIPT_STORE)) {
+        const store = db.createObjectStore(RECEIPT_STORE, { keyPath: 'id' });
+        store.createIndex('byCategory', 'category', { unique: false });
+        store.createIndex('byDate', 'date', { unique: false });
+        store.createIndex('byVendor', 'vendorLower', { unique: false });
+      }
+      if (!db.objectStoreNames.contains(JOBS_STORE)) {
+        const store = db.createObjectStore(JOBS_STORE, { keyPath: 'id' });
+        store.createIndex('byStatus', 'status', { unique: false });
+        store.createIndex('byUpdated', 'updatedAt', { unique: false });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function upsertJob(job: Omit<SavedJob, 'createdAt' | 'updatedAt'>): Promise<SavedJob> {
+  const db = await openDbWithJobs();
+  const now = Date.now();
+  const record = await new Promise<SavedJob>((resolve, reject) => {
+    const tx = db.transaction(JOBS_STORE, 'readwrite');
+    const store = tx.objectStore(JOBS_STORE);
+    const getReq = store.get(job.id);
+    getReq.onsuccess = () => {
+      const existing = getReq.result as SavedJob | undefined;
+      const next: SavedJob = {
+        ...job,
+        createdAt: existing?.createdAt || now,
+        updatedAt: now,
+      };
+      const putReq = store.put(next);
+      putReq.onsuccess = () => resolve(next);
+      putReq.onerror = () => reject(putReq.error);
+    };
+    getReq.onerror = () => reject(getReq.error);
+  });
+  db.close();
+  return record;
+}
+
+export async function listJobs(): Promise<SavedJob[]> {
+  const db = await openDbWithJobs();
+  const jobs: SavedJob[] = [];
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(JOBS_STORE, 'readonly');
+    const store = tx.objectStore(JOBS_STORE);
+    const req = store.openCursor(null, 'prev');
+    req.onsuccess = () => {
+      const cursor = req.result as IDBCursorWithValue | null;
+      if (cursor) {
+        jobs.push(cursor.value as SavedJob);
+        cursor.continue();
+      } else {
+        resolve();
+      }
+    };
+    req.onerror = () => reject(req.error);
+  });
+  db.close();
+  return jobs;
+}
+
+export async function setJobStatus(jobKey: string, status: JobStatus, competitor?: string): Promise<void> {
+  const db = await openDbWithJobs();
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(JOBS_STORE, 'readwrite');
+    const store = tx.objectStore(JOBS_STORE);
+    const getReq = store.get(jobKey);
+    getReq.onsuccess = () => {
+      const job = getReq.result as SavedJob | undefined;
+      if (job) {
+        job.status = status;
+        job.updatedAt = Date.now();
+        if (competitor !== undefined) job.competitor = competitor;
+        store.put(job);
+      }
+      resolve();
+    };
+    getReq.onerror = () => reject(getReq.error);
+  });
+  db.close();
+}

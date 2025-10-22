@@ -6,7 +6,7 @@ export const BUSINESS_ADDRESS = '337 Ayers Orchard Rd, Stuart, VA';
 export const SUPPLIER_ADDRESS = '703 West Decatur St, Madison, NC';
 
 // Fallback coordinates if geocoding is unavailable
-export const BUSINESS_COORDS_FALLBACK: Coordinates = [36.638, -80.269];
+export const BUSINESS_COORDS_FALLBACK: Coordinates = [36.7388, -80.2692];
 export const SUPPLIER_COORDS_FALLBACK: Coordinates = [36.3871, -79.9578];
 
 type GeocodeCache = Record<string, Coordinates>;

@@ -205,14 +205,14 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
       const row = [
         r.id,
         r.date,
-        (r.vendor || "").replaceAll(",", " "),
+        (r.vendor || "").replace(/,/g, " "),
         r.category,
         (r.subtotal ?? "").toString(),
         (r.tax ?? "").toString(),
         (r.total ?? "").toString(),
         (r.paymentMethod ?? "").toString(),
         (r.jobKey ?? "").toString(),
-        (r.notes ?? "").replaceAll("\n", " ").replaceAll(",", " "),
+        (r.notes ?? "").replace(/\n/g, " ").replace(/,/g, " "),
       ];
       lines.push(row.map((x) => `"${x}"`).join(","));
     }

@@ -40,9 +40,23 @@ const Map = ({ onAddressUpdate, onAreaDrawn, onCrackLengthDrawn, customerAddress
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
 
-    // Initialize map
+    // Initialize map - start with business coords, will update to user location
     const map = L.map(mapContainer.current).setView(businessCoordsFallback, 10);
     mapRef.current = map;
+
+    // Try to get user's current location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userCoords: [number, number] = [position.coords.latitude, position.coords.longitude];
+          map.setView(userCoords, 18);
+        },
+        (error) => {
+          console.log('Geolocation not available, using business location:', error.message);
+        },
+        { timeout: 5000 }
+      );
+    }
 
     // Satellite base layer
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -231,9 +245,9 @@ const Map = ({ onAddressUpdate, onAreaDrawn, onCrackLengthDrawn, customerAddress
   }
 
   function addLegend(map: L.Map) {
-    const legend = L.control({ position: 'bottomright' });
-    legend.onAdd = () => {
-      const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar p-2 bg-white rounded shadow');
+    const legendControl = new L.Control({ position: 'bottomright' });
+    legendControl.onAdd = () => {
+      const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar');
       div.style.padding = '8px';
       div.style.background = 'white';
       div.style.borderRadius = '6px';
@@ -256,7 +270,7 @@ const Map = ({ onAddressUpdate, onAreaDrawn, onCrackLengthDrawn, customerAddress
       `;
       return div;
     };
-    legend.addTo(map);
+    legendControl.addTo(map);
   }
 
   // Geocode address when it changes externally

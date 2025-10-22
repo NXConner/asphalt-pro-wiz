@@ -19,7 +19,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { CustomerInvoice } from '@/components/CustomerInvoice';
 import { calculateProject, calculateDistance, defaultBusinessData, ProjectInputs, BusinessData, Costs, CostBreakdown } from '@/lib/calculations';
 import { makeJobKey, upsertJob, setJobStatus, type JobStatus } from '@/lib/idb';
-import { BUSINESS_ADDRESS, SUPPLIER_ADDRESS } from '@/lib/locations';
+import { BUSINESS_ADDRESS, SUPPLIER_ADDRESS, BUSINESS_COORDS_FALLBACK, SUPPLIER_COORDS_FALLBACK } from '@/lib/locations';
 import { CustomServices, type CustomService } from '@/components/CustomServices';
 import { UploadsPanel } from '@/components/UploadsPanel';
 import { ReceiptsPanel } from '@/components/ReceiptsPanel';
@@ -68,6 +68,7 @@ const Index = () => {
   
   const [oilSpots, setOilSpots] = useState(0);
   const [propaneTanks, setPropaneTanks] = useState(1);
+  const [prepHours, setPrepHours] = useState(1);
 
   const [premiumEdgePushing, setPremiumEdgePushing] = useState(false);
   const [premiumWeedKiller, setPremiumWeedKiller] = useState(false);
@@ -83,7 +84,7 @@ const Index = () => {
   const [complianceOpen, setComplianceOpen] = useState(false);
   const [complianceTopic, setComplianceTopic] = useState<ComplianceTopic>('striping');
   const [waterPercent, setWaterPercent] = useState(0);
-  const [sealerType, setSealerType] = useState('PMM');
+  const [sealerType, setSealerType] = useState<'Acrylic' | 'Asphalt Emulsion' | 'Coal Tar' | 'PMM' | 'Other'>('PMM');
   const [sandType, setSandType] = useState<'Black Beauty' | 'Black Diamond' | 'Other'>('Black Beauty');
   const crackFillerProduct = 'CrackMaster Parking Lot LP hot pour (30 lb box)';
   
@@ -92,8 +93,8 @@ const Index = () => {
   const [breakdown, setBreakdown] = useState<CostBreakdown[]>([]);
   const [jobDistance, setJobDistance] = useState(0);
 
-  const businessCoords: [number, number] = [36.7388, -80.2692];
-  const supplierCoords: [number, number] = [36.3871, -79.9578];
+  const businessCoords: [number, number] = BUSINESS_COORDS_FALLBACK;
+  const supplierCoords: [number, number] = SUPPLIER_COORDS_FALLBACK;
 
   const handleAddressUpdate = (coords: [number, number], address: string) => {
     setCustomerCoords(coords);
@@ -104,7 +105,6 @@ const Index = () => {
     const key = makeJobKey(jobName, address);
     void upsertJob({
       id: key,
-      jobKey: key,
       name: jobName || 'Job',
       address,
       coords,
@@ -347,7 +347,6 @@ const Index = () => {
                             }
                             void upsertJob({
                               id: key,
-                              jobKey: key,
                               name: jobName || 'Job',
                               address: customerAddress,
                               coords: customerCoords,
