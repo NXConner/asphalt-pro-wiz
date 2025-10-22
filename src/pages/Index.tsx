@@ -20,6 +20,7 @@ import { CustomerInvoice } from '@/components/CustomerInvoice';
 import { calculateProject, calculateDistance, defaultBusinessData, ProjectInputs, BusinessData, Costs, CostBreakdown } from '@/lib/calculations';
 import { CustomServices, type CustomService } from '@/components/CustomServices';
 import { UploadsPanel } from '@/components/UploadsPanel';
+import { ReceiptsPanel } from '@/components/ReceiptsPanel';
 import ReceiptsPanel from '@/components/ReceiptsPanel';
 import { DocumentGenerator } from '@/components/DocumentGenerator';
 import { AIGemini } from '@/components/AIGemini';
@@ -572,6 +573,9 @@ const Index = () => {
                 </Card>
 
                 <UploadsPanel jobName={jobName} customerAddress={customerAddress} />
+                {isEnabled('receipts') && (
+                  <ReceiptsPanel jobName={jobName} customerAddress={customerAddress} />
+                )}
                 {isEnabled('receipts') && (
                   <ReceiptsPanel jobName={jobName} customerAddress={customerAddress} />
                 )}
