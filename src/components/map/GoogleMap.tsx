@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useJsApiLoader, GoogleMap as GMap, DrawingManager, Circle } from '@react-google-maps/api';
 import type { Coordinates } from '@/lib/locations';
 import { getBusinessCoords, getSupplierCoords, BUSINESS_ADDRESS, SUPPLIER_ADDRESS, BUSINESS_COORDS_FALLBACK, SUPPLIER_COORDS_FALLBACK } from '@/lib/locations';
-import { loadMapSettings, type TileOverlayConfig } from '@/lib/mapSettings';
+import { loadMapSettings, type TileOverlayConfig, type BaseLayerId } from '@/lib/mapSettings';
 import { listJobs, type SavedJob } from '@/lib/idb';
 import { fetchRadarFrames, getTileUrlForFrame } from '@/lib/radar';
 
@@ -77,9 +77,23 @@ export const GoogleMap = memo(({ onAddressUpdate, onAreaDrawn, onCrackLengthDraw
     }
   }, []);
 
+  const getMapTypeId = (base: BaseLayerId): google.maps.MapTypeId | string => {
+    switch (base) {
+      case 'google_roadmap':
+        return google.maps.MapTypeId.ROADMAP;
+      case 'google_satellite':
+        return google.maps.MapTypeId.SATELLITE;
+      case 'google_terrain':
+        return google.maps.MapTypeId.TERRAIN;
+      case 'google_hybrid':
+      default:
+        return google.maps.MapTypeId.HYBRID;
+    }
+  };
+
   const onLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map;
-    map.setMapTypeId('hybrid');
+    map.setMapTypeId(getMapTypeId(settings.baseLayer));
     map.setZoom(zoom);
     map.setCenter(center);
 
@@ -254,7 +268,7 @@ export const GoogleMap = memo(({ onAddressUpdate, onAreaDrawn, onCrackLengthDraw
       onUnmount={onUnmount}
       onClick={handleClick}
       mapContainerStyle={{ height: '450px', width: '100%', borderRadius: 8 }}
-      options={{ mapTypeId: 'hybrid', streetViewControl: false, fullscreenControl: true }}
+      options={{ mapTypeId: getMapTypeId(settings.baseLayer), streetViewControl: false, fullscreenControl: true }}
     >
       {/* Drawing tools */}
       <DrawingManager

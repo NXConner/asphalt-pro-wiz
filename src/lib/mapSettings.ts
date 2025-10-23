@@ -1,12 +1,11 @@
 // Map settings and persistence utilities
 
-export type MapProvider = 'leaflet' | 'google';
+export type MapProvider = 'google';
 
 export type BaseLayerId =
-  | 'esri_satellite'
-  | 'osm_standard'
-  | 'carto_voyager'
-  | 'stamen_terrain'
+  | 'google_roadmap'
+  | 'google_satellite'
+  | 'google_terrain'
   | 'google_hybrid';
 
 export interface TileOverlayConfig {
@@ -59,13 +58,12 @@ const defaultOverlays: TileOverlayConfig[] = [
   },
   {
     id: 'roads',
-    name: 'Roads',
+    name: 'Roads (OSM overlay)',
     type: 'tile',
-    urlTemplate:
-      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '© OpenStreetMap contributors',
-    opacity: 0.35,
-    visible: true,
+    opacity: 0.3,
+    visible: false,
   },
   {
     id: 'radar',
@@ -78,8 +76,8 @@ const defaultOverlays: TileOverlayConfig[] = [
 
 export function getDefaultMapSettings(): MapSettings {
   const s: MapSettings = {
-    provider: 'leaflet',
-    baseLayer: 'esri_satellite',
+    provider: 'google',
+    baseLayer: 'google_hybrid',
     overlays: defaultOverlays,
     radar: {
       enabled: true,
@@ -102,6 +100,9 @@ export function loadMapSettings(): MapSettings {
     return {
       ...def,
       ...parsed,
+      // Force Google provider and valid base layer going forward
+      provider: 'google',
+      baseLayer: 'google_hybrid',
       overlays: mergeOverlays(def.overlays, parsed.overlays || []),
       radar: { ...def.radar, ...(parsed.radar || {}) },
     };
