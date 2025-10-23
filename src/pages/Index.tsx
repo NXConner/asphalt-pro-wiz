@@ -723,6 +723,11 @@ const Index = () => {
             <div className="mt-6">
               <DocumentGenerator jobName={jobName} customerAddress={customerAddress} />
             </div>
+            {isEnabled('receipts') && (
+              <div className="mt-6">
+                <ReceiptsPanel jobName={jobName} customerAddress={customerAddress} />
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-6">

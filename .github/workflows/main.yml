@@ -82,3 +82,19 @@ jobs:
           node-version: '22'
       - run: npm ci
       - run: npm run audit
+
+  snyk:
+    runs-on: ubuntu-latest
+    if: ${{ secrets.SNYK_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Install Snyk
+        run: npm i -g snyk@latest
+      - name: Auth Snyk
+        run: snyk auth ${{ secrets.SNYK_TOKEN }}
+      - name: Snyk Test (high severity)
+        run: snyk test --severity-threshold=high || true

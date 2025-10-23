@@ -7,7 +7,10 @@ export const options = {
 };
 
 export default function () {
-  const res = http.get('http://localhost:5173/');
-  check(res, { 'status is 200': (r) => r.status === 200 });
+  const res = http.get(__ENV.BASE_URL || 'http://localhost:8080');
+  check(res, {
+    'status is 200': (r) => r.status === 200,
+    'loads main app': (r) => r.body.includes('CONNER Asphalt Estimator'),
+  });
   sleep(1);
 }

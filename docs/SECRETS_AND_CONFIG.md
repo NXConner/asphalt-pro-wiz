@@ -9,6 +9,14 @@ Use environment variables for all secrets. In production, use a secrets manager:
 Local development:
 - Copy `.env.example` to `.env` and fill values (never commit `.env`).
 
+Supabase Edge Function (Gemini Proxy):
+- Create `supabase/functions/gemini-proxy` and deploy with `supabase functions deploy gemini-proxy`.
+- Set secret `GEMINI_API_KEY` in Supabase (Dashboard -> Project Settings -> Functions).
+- Expose the function URL and set `VITE_GEMINI_PROXY_URL` in `.env` to route all Gemini calls via the proxy.
+
+Notes:
+- When `VITE_GEMINI_PROXY_URL` is set, the app will not use `VITE_GEMINI_API_KEY` in the browser.
+
 CI/CD:
 - Store secrets as GitHub Action secrets, pass to jobs as env.
 
