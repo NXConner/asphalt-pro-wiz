@@ -39,10 +39,41 @@ export const GoogleMap = memo(({ onAddressUpdate, onAreaDrawn, onCrackLengthDraw
   const [jobs, setJobs] = useState<SavedJob[]>([]);
   const radarIntervalRef = useRef<number | null>(null);
   const baseOverlayCountRef = useRef<number>(0);
+  const userMarkerRef = useRef<google.maps.Marker | null>(null);
+  const userCoordsRef = useRef<[number, number] | null>(null);
+  const bizCoordsRef = useRef<[number, number] | null>(null);
 
   useEffect(() => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((pos) => setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude }), () => {}, { timeout: 4000 });
+      navigator.geolocation.getCurrentPosition((pos) => {
+        const coords: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+        userCoordsRef.current = coords;
+        setCenter({ lat: coords[0], lng: coords[1] });
+        // Drop/update current location marker if map is ready
+        if (mapRef.current) {
+          if (userMarkerRef.current) userMarkerRef.current.setMap(null);
+          userMarkerRef.current = new google.maps.Marker({
+            position: { lat: coords[0], lng: coords[1] },
+            map: mapRef.current,
+            title: 'Your Location',
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 6,
+              fillColor: '#3b82f6',
+              fillOpacity: 0.95,
+              strokeColor: '#2563eb',
+              strokeWeight: 2,
+            },
+          });
+          // If business coords known, fit both
+          if (bizCoordsRef.current) {
+            const bounds = new google.maps.LatLngBounds();
+            bounds.extend(new google.maps.LatLng(coords[0], coords[1]));
+            bounds.extend(new google.maps.LatLng(bizCoordsRef.current[0], bizCoordsRef.current[1]));
+            mapRef.current.fitBounds(bounds, 20);
+          }
+        }
+      }, () => {}, { timeout: 4000 });
     }
   }, []);
 
@@ -56,8 +87,20 @@ export const GoogleMap = memo(({ onAddressUpdate, onAreaDrawn, onCrackLengthDraw
     (async () => {
       try {
         const [biz, sup] = await Promise.all([getBusinessCoords(), getSupplierCoords()]);
-        new google.maps.Marker({ position: { lat: biz[0], lng: biz[1] }, map, title: BUSINESS_ADDRESS });
+        bizCoordsRef.current = biz;
+        const bizMarker = new google.maps.Marker({ position: { lat: biz[0], lng: biz[1] }, map, title: BUSINESS_ADDRESS });
         new google.maps.Marker({ position: { lat: sup[0], lng: sup[1] }, map, title: SUPPLIER_ADDRESS });
+
+        // If user location known, fit to both; else center to business
+        if (userCoordsRef.current) {
+          const bounds = new google.maps.LatLngBounds();
+          bounds.extend(new google.maps.LatLng(userCoordsRef.current[0], userCoordsRef.current[1]));
+          bounds.extend(new google.maps.LatLng(biz[0], biz[1]));
+          map.fitBounds(bounds, 20);
+        } else {
+          map.setCenter({ lat: biz[0], lng: biz[1] });
+          map.setZoom(Math.max(map.getZoom() || 0, 12));
+        }
       } catch {}
     })();
 

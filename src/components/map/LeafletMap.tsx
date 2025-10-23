@@ -50,6 +50,8 @@ export const LeafletMap = ({ onAddressUpdate, onAreaDrawn, onCrackLengthDrawn, c
   const jobsLayerRef = useRef<L.LayerGroup | null>(null);
   const businessMarkerRef = useRef<L.Marker | null>(null);
   const supplierMarkerRef = useRef<L.Marker | null>(null);
+  const userMarkerRef = useRef<L.Marker | null>(null);
+  const userCoordsRef = useRef<[number, number] | null>(null);
   const baseLayerRef = useRef<L.TileLayer | null>(null);
   const overlayLayersRef = useRef<Record<string, L.Layer>>({});
   const radarIntervalRef = useRef<number | null>(null);
@@ -134,7 +136,29 @@ export const LeafletMap = ({ onAddressUpdate, onAreaDrawn, onCrackLengthDrawn, c
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const userCoords: [number, number] = [position.coords.latitude, position.coords.longitude];
-          map.setView(userCoords, 19);
+          userCoordsRef.current = userCoords;
+          // Add/refresh a visible current-location marker
+          if (userMarkerRef.current) {
+            map.removeLayer(userMarkerRef.current);
+          }
+          userMarkerRef.current = L.circleMarker(userCoords, {
+            radius: 7,
+            color: '#2563eb',
+            weight: 2,
+            fillColor: '#3b82f6',
+            fillOpacity: 0.9,
+          })
+            .addTo(map)
+            .bindPopup('<b>Your Location</b>');
+
+          // If we already know business coords, fit both; else center to user for now
+          const bizLatLng = businessMarkerRef.current?.getLatLng();
+          if (bizLatLng) {
+            const bounds = L.latLngBounds([userCoords, [bizLatLng.lat, bizLatLng.lng]]);
+            map.fitBounds(bounds, { padding: [20, 20] });
+          } else {
+            map.setView(userCoords, 19);
+          }
         },
         () => {},
         { timeout: 4000 }
@@ -156,7 +180,13 @@ export const LeafletMap = ({ onAddressUpdate, onAreaDrawn, onCrackLengthDrawn, c
         const [biz, sup] = await Promise.all([getBusinessCoords(), getSupplierCoords()]);
         businessMarkerRef.current?.setLatLng(biz);
         supplierMarkerRef.current?.setLatLng(sup);
-        map.setView(biz, Math.max(map.getZoom(), 12));
+        // Prefer showing both user and business when possible
+        if (userCoordsRef.current) {
+          const bounds = L.latLngBounds([userCoordsRef.current, biz]);
+          map.fitBounds(bounds, { padding: [20, 20] });
+        } else {
+          map.setView(biz, Math.max(map.getZoom(), 12));
+        }
       } catch {}
     })();
 
