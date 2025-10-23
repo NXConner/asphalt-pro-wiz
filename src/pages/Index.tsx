@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,6 +30,12 @@ import { ComplianceResources, type ComplianceTopic } from '@/components/Complian
 import { OwnerSettings } from '@/components/OwnerSettings';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
+import { CustomizableCard, CardStyle } from '@/components/CustomizableCard';
+import { CardLayoutManager, CardLayout } from '@/components/CardLayoutManager';
+import WeatherCard from '@/components/WeatherCard';
+import GridLayout from 'react-grid-layout';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 
 interface AreaItem {
   id: number;
@@ -94,8 +100,39 @@ const Index = () => {
   const [breakdown, setBreakdown] = useState<CostBreakdown[]>([]);
   const [jobDistance, setJobDistance] = useState(0);
 
+  // Card layout and customization state
+  const [cardLayouts, setCardLayouts] = useState<CardLayout[]>([
+    { i: 'map', x: 0, y: 0, w: 12, h: 8, minW: 6, minH: 6 },
+    { i: 'details', x: 0, y: 8, w: 8, h: 14, minW: 4, minH: 8 },
+    { i: 'weather', x: 8, y: 8, w: 4, h: 6, minW: 3, minH: 4 },
+    { i: 'premium', x: 8, y: 14, w: 4, h: 8, minW: 3, minH: 4 },
+  ]);
+  const [cardStyles, setCardStyles] = useState<Record<string, CardStyle>>({});
+  const [pinnedCards, setPinnedCards] = useState<Record<string, boolean>>({});
+
   const businessCoords: [number, number] = BUSINESS_COORDS_FALLBACK;
   const supplierCoords: [number, number] = SUPPLIER_COORDS_FALLBACK;
+
+  const handleCardPin = (cardId: string, pinned: boolean) => {
+    setPinnedCards(prev => ({ ...prev, [cardId]: pinned }));
+  };
+
+  const handleCardStyleChange = (cardId: string, style: CardStyle) => {
+    setCardStyles(prev => ({ ...prev, [cardId]: style }));
+  };
+
+  const handleLayoutChange = (newLayout: any[]) => {
+    const updatedLayouts = newLayout.map(item => ({
+      i: item.i,
+      x: item.x,
+      y: item.y,
+      w: item.w,
+      h: item.h,
+      minW: cardLayouts.find(c => c.i === item.i)?.minW,
+      minH: cardLayouts.find(c => c.i === item.i)?.minH,
+    }));
+    setCardLayouts(updatedLayouts);
+  };
 
   const handleAddressUpdate = (coords: [number, number], address: string) => {
     setCustomerCoords(coords);
@@ -281,12 +318,20 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-4 md:p-8">
-        <header className="flex justify-between items-center mb-8">
+        <header className="flex justify-between items-center mb-4">
           <div>
             <h1 className="text-4xl font-bold text-foreground mb-2">CONNER Asphalt Estimator</h1>
             <p className="text-lg text-muted-foreground">Professional Estimate & Invoice Generator</p>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <CardLayoutManager
+              currentLayouts={cardLayouts}
+              currentStyles={cardStyles}
+              onLayoutChange={setCardLayouts}
+              onStylesChange={setCardStyles}
+            />
+            <ThemeToggle />
+          </div>
         </header>
 
         <Tabs defaultValue="estimate" className="space-y-6">
@@ -305,378 +350,29 @@ const Index = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="estimate" className="space-y-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Project Details</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="jobName">Job Name / Customer</Label>
-                        <Input
-                          id="jobName"
-                          value={jobName}
-                          onChange={(e) => setJobName(e.target.value)}
-                          placeholder="e.g., Smith Driveway"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="customerAddress">Customer Address</Label>
-                        <Input
-                          id="customerAddress"
-                          value={customerAddress}
-                          onChange={(e) => setCustomerAddress(e.target.value)}
-                          placeholder="Search address on map"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="jobStatus">Job Status</Label>
-                        <Select value={jobStatus} onValueChange={(v: any) => setJobStatusLocal(v)}>
-                          <SelectTrigger id="jobStatus">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="need_estimate">Need Estimate</SelectItem>
-                            <SelectItem value="estimated">Estimated</SelectItem>
-                            <SelectItem value="active">Active</SelectItem>
-                            <SelectItem value="completed">Completed</SelectItem>
-                            <SelectItem value="lost">Lost</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="competitor">Competitor (if lost)</Label>
-                        <Input id="competitor" value={jobCompetitor} onChange={(e) => setJobCompetitor(e.target.value)} placeholder="Who won the job?" />
-                      </div>
-                      <div className="flex items-end">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => {
-                            const key = makeJobKey(jobName, customerAddress);
-                            if (!key || !customerAddress || !customerCoords) {
-                              toast.error('Set job name/address by selecting on map first');
-                              return;
-                            }
-                            void upsertJob({
-                              id: key,
-                              name: jobName || 'Job',
-                              address: customerAddress,
-                              coords: customerCoords,
-                              status: jobStatus,
-                              competitor: jobCompetitor || undefined,
-                            }).then(() => {
-                              toast.success('Saved job');
-                              setMapRefreshKey(k => k + 1);
-                            });
-                          }}
-                        >
-                          Save Job
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <ServiceCategories
-                  cleaningRepair={includeCleaningRepair}
-                  sealcoating={includeSealcoating}
-                  striping={includeStriping}
-                  onChange={handleServiceCategoryChange}
-                />
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Area Measurement</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                      Use the drawing tools on the map or add manual shapes below
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
-                      <div className="md:col-span-2">
-                        <Label htmlFor="knownArea">Known Area (sq ft)</Label>
-                        <Input
-                          id="knownArea"
-                          type="number"
-                          inputMode="decimal"
-                          placeholder="e.g., 12500"
-                          value={manualAreaInput}
-                          onChange={(e) => setManualAreaInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              addManualAreaQuick();
-                            }
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <Button type="button" variant="secondary" onClick={addManualAreaQuick}>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Area
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Select value={shapeType} onValueChange={(v: any) => setShapeType(v)}>
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="rectangle">Rectangle</SelectItem>
-                          <SelectItem value="triangle">Triangle</SelectItem>
-                          <SelectItem value="circle">Circle</SelectItem>
-                          <SelectItem value="manual">Manual Area</SelectItem>
-                          <SelectItem value="image">From Image</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Button onClick={addArea} variant="outline">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add
-                      </Button>
-                    </div>
-                    <div className="space-y-2">
-                      {areas.map(area => (
-                        <AreaSection
-                          key={area.id}
-                          shape={area.shape}
-                          initialArea={area.area}
-                          onChange={(val) => updateAreaValue(area.id, val)}
-                          onRemove={() => removeArea(area.id)}
-                        />
-                      ))}
-                    </div>
-                    {totalArea > 0 && (
-                      <div className="bg-primary/10 p-3 rounded-md">
-                        <p className="font-semibold">Total Area: {totalArea.toFixed(1)} sq ft</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {includeCleaningRepair && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Crack Filling</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-sm text-muted-foreground">
-                        Use the drawing tools on the map to measure crack length
-                      </p>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div>
-                          <Label htmlFor="crackLength">Total Length (ft)</Label>
-                          <Input
-                            id="crackLength"
-                            type="number"
-                            min="0"
-                            value={crackLength}
-                            onChange={(e) => setCrackLength(parseFloat(e.target.value) || 0)}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="crackWidth">Avg. Width (in)</Label>
-                          <Input
-                            id="crackWidth"
-                            type="number"
-                            min="0"
-                            step="0.25"
-                            value={crackWidth}
-                            onChange={(e) => setCrackWidth(parseFloat(e.target.value) || 0)}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="crackDepth">Avg. Depth (in)</Label>
-                          <Input
-                            id="crackDepth"
-                            type="number"
-                            min="0"
-                            step="0.25"
-                            value={crackDepth}
-                            onChange={(e) => setCrackDepth(parseFloat(e.target.value) || 0)}
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="propaneTanks">Propane Tanks</Label>
-                        <Input
-                          id="propaneTanks"
-                          type="number"
-                          min="0"
-                          value={propaneTanks}
-                          onChange={(e) => setPropaneTanks(parseInt(e.target.value) || 0)}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {includeSealcoating && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Sealcoating Options</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-3 gap-4">
-                        <div>
-                          <Label htmlFor="numCoats">Number of Coats</Label>
-                          <Select value={numCoats.toString()} onValueChange={(v) => setNumCoats(parseInt(v))}>
-                            <SelectTrigger id="numCoats">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="1">1 Coat</SelectItem>
-                              <SelectItem value="2">2 Coats</SelectItem>
-                              <SelectItem value="3">3 Coats</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor="sandAdded">Sand Added?</Label>
-                          <Select value={sandAdded ? 'yes' : 'no'} onValueChange={(v) => setSandAdded(v === 'yes')}>
-                            <SelectTrigger id="sandAdded">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="yes">Yes</SelectItem>
-                              <SelectItem value="no">No</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor="polymerAdded">Fast-Dry Additive?</Label>
-                          <Select value={polymerAdded ? 'yes' : 'no'} onValueChange={(v) => setPolymerAdded(v === 'yes')}>
-                            <SelectTrigger id="polymerAdded">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="yes">Yes</SelectItem>
-                              <SelectItem value="no">No</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="oilSpots">Oil Spot Priming (count)</Label>
-                        <Input
-                          id="oilSpots"
-                          type="number"
-                          min="0"
-                          value={oilSpots}
-                          onChange={(e) => setOilSpots(parseInt(e.target.value) || 0)}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {includeStriping && (
-                <Card>
-                    <CardHeader>
-                      <CardTitle>Parking Lot Striping</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <div>
-                          <Label htmlFor="stripingLines">Parking Lines</Label>
-                          <Input
-                            id="stripingLines"
-                            type="number"
-                            min="0"
-                            value={stripingLines}
-                            onChange={(e) => setStripingLines(parseInt(e.target.value) || 0)}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="stripingHandicap">Handicap Stencils</Label>
-                          <Input
-                            id="stripingHandicap"
-                            type="number"
-                            min="0"
-                            value={stripingHandicap}
-                            onChange={(e) => setStripingHandicap(parseInt(e.target.value) || 0)}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="stripingArrowsLarge">Large Arrows</Label>
-                          <Input
-                            id="stripingArrowsLarge"
-                            type="number"
-                            min="0"
-                            value={stripingArrowsLarge}
-                            onChange={(e) => setStripingArrowsLarge(parseInt(e.target.value) || 0)}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="stripingArrowsSmall">Small Arrows</Label>
-                          <Input
-                            id="stripingArrowsSmall"
-                            type="number"
-                            min="0"
-                            value={stripingArrowsSmall}
-                            onChange={(e) => setStripingArrowsSmall(parseInt(e.target.value) || 0)}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="stripingLettering">Lettering (Total)</Label>
-                          <Input
-                            id="stripingLettering"
-                            type="number"
-                            min="0"
-                            value={stripingLettering}
-                            onChange={(e) => setStripingLettering(parseInt(e.target.value) || 0)}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="stripingCurb">Curb Painting (ft)</Label>
-                          <Input
-                            id="stripingCurb"
-                            type="number"
-                            min="0"
-                            value={stripingCurb}
-                            onChange={(e) => setStripingCurb(parseInt(e.target.value) || 0)}
-                          />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                <PremiumServices
-                  edgePushing={premiumEdgePushing}
-                  weedKiller={premiumWeedKiller}
-                  crackCleaning={premiumCrackCleaning}
-                  powerWashing={premiumPowerWashing}
-                  debrisRemoval={premiumDebrisRemoval}
-                  onChange={handlePremiumServiceChange}
-                  onAddCustomService={handleAddPremiumCustomService}
-                  addedServiceNames={addedServiceNames}
-                />
-
-                <CustomServices
-                  totalArea={totalArea}
-                  crackLength={crackLength}
-                  value={customServices}
-                  onChange={setCustomServices}
-                />
-
-                {/* Manual prep removed: auto-calculated per service in labor */}
-
-                <div className="text-center">
-                  <Button onClick={handleCalculate} size="lg" className="w-full md:w-auto">
-                    <Calculator className="h-5 w-5 mr-2" />
-                    Generate Estimate
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <Card>
+          <TabsContent value="estimate" className="space-y-4">
+            <GridLayout
+              className="layout"
+              layout={cardLayouts}
+              cols={12}
+              rowHeight={30}
+              width={1200}
+              onLayoutChange={handleLayoutChange}
+              isDraggable={true}
+              isResizable={true}
+              compactType="vertical"
+              preventCollision={false}
+            >
+              <div key="map">
+                <CustomizableCard
+                  cardId="map"
+                  title="Location & Map"
+                  isPinned={pinnedCards['map']}
+                  onPin={(pinned) => handleCardPin('map', pinned)}
+                  style={cardStyles['map']}
+                  onStyleChange={(style) => handleCardStyleChange('map', style)}
+                  className="h-full"
+                >
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <MapPin className="h-5 w-5" />
@@ -691,29 +387,270 @@ const Index = () => {
                       onCrackLengthDrawn={handleCrackLengthDrawn}
                       refreshKey={mapRefreshKey}
                     />
-                    <div className="space-y-2 text-sm">
-                      <p><strong>Business:</strong> {BUSINESS_ADDRESS}</p>
-                      <p><strong>Supplier:</strong> {SUPPLIER_ADDRESS}</p>
-                      <div className="bg-muted p-3 rounded-md">
-                        <p><strong>To Supplier (RT):</strong> {supplierDist.toFixed(1)} mi</p>
-                        {jobDistance > 0 && (
-                          <p><strong>To Job Site (RT):</strong> {jobDistance.toFixed(1)} mi</p>
-                        )}
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <Label>Business</Label>
+                        <p className="text-muted-foreground">{BUSINESS_ADDRESS}</p>
                       </div>
+                      <div>
+                        <Label>Supplier</Label>
+                        <p className="text-muted-foreground">{SUPPLIER_ADDRESS}</p>
+                      </div>
+                      <div>
+                        <Label>To Supplier (RT)</Label>
+                        <p className="font-semibold">{supplierDist.toFixed(1)} mi</p>
+                      </div>
+                      {jobDistance > 0 && (
+                        <div>
+                          <Label>To Job (RT)</Label>
+                          <p className="font-semibold">{jobDistance.toFixed(1)} mi</p>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
-                </Card>
-
-                <UploadsPanel jobName={jobName} customerAddress={customerAddress} />
-                {isEnabled('receipts') && (
-                  <ReceiptsPanel jobName={jobName} customerAddress={customerAddress} />
-                )}
-                {isEnabled('imageAreaAnalyzer') && (
-                  <ImageAreaAnalyzer onAreaDetected={handleImageAreaDetected} />
-                )}
-                {isEnabled('aiAssistant') && <AIGemini />}
+                </CustomizableCard>
               </div>
-            </div>
+
+              <div key="details">
+                <CustomizableCard
+                  cardId="details"
+                  title="Project Details"
+                  isPinned={pinnedCards['details']}
+                  onPin={(pinned) => handleCardPin('details', pinned)}
+                  style={cardStyles['details']}
+                  onStyleChange={(style) => handleCardStyleChange('details', style)}
+                  className="h-full overflow-y-auto"
+                >
+                  <CardHeader>
+                    <CardTitle>Project Details & Measurements</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="jobName" className="text-xs">Job Name</Label>
+                        <Input
+                          id="jobName"
+                          value={jobName}
+                          onChange={(e) => setJobName(e.target.value)}
+                          placeholder="Smith Driveway"
+                          className="h-8"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="customerAddress" className="text-xs">Address</Label>
+                        <Input
+                          id="customerAddress"
+                          value={customerAddress}
+                          onChange={(e) => setCustomerAddress(e.target.value)}
+                          placeholder="Search on map"
+                          className="h-8"
+                        />
+                      </div>
+                    </div>
+
+                    <ServiceCategories
+                      cleaningRepair={includeCleaningRepair}
+                      sealcoating={includeSealcoating}
+                      striping={includeStriping}
+                      onChange={handleServiceCategoryChange}
+                    />
+
+                    <div className="border-t pt-3">
+                      <h4 className="font-semibold text-sm mb-2">Area Measurement</h4>
+                      <div className="grid grid-cols-3 gap-2 mb-2">
+                        <Input
+                          type="number"
+                          placeholder="Known sq ft"
+                          value={manualAreaInput}
+                          onChange={(e) => setManualAreaInput(e.target.value)}
+                          className="h-8 text-sm col-span-2"
+                        />
+                        <Button size="sm" variant="secondary" onClick={addManualAreaQuick} className="h-8">
+                          <Plus className="h-3 w-3 mr-1" />
+                          Add
+                        </Button>
+                      </div>
+                      <div className="space-y-1">
+                        {areas.map(area => (
+                          <AreaSection
+                            key={area.id}
+                            shape={area.shape}
+                            initialArea={area.area}
+                            onChange={(val) => updateAreaValue(area.id, val)}
+                            onRemove={() => removeArea(area.id)}
+                          />
+                        ))}
+                      </div>
+                      {totalArea > 0 && (
+                        <div className="bg-primary/10 p-2 rounded text-sm font-semibold mt-2">
+                          Total: {totalArea.toFixed(1)} sq ft
+                        </div>
+                      )}
+                    </div>
+
+                    {includeCleaningRepair && (
+                      <div className="border-t pt-3">
+                        <h4 className="font-semibold text-sm mb-2">Crack Filling</h4>
+                        <div className="grid grid-cols-3 gap-2">
+                          <div>
+                            <Label className="text-xs">Length (ft)</Label>
+                            <Input
+                              type="number"
+                              value={crackLength}
+                              onChange={(e) => setCrackLength(parseFloat(e.target.value) || 0)}
+                              className="h-8"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Width (in)</Label>
+                            <Input
+                              type="number"
+                              step="0.25"
+                              value={crackWidth}
+                              onChange={(e) => setCrackWidth(parseFloat(e.target.value) || 0)}
+                              className="h-8"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Depth (in)</Label>
+                            <Input
+                              type="number"
+                              step="0.25"
+                              value={crackDepth}
+                              onChange={(e) => setCrackDepth(parseFloat(e.target.value) || 0)}
+                              className="h-8"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {includeSealcoating && (
+                      <div className="border-t pt-3">
+                        <h4 className="font-semibold text-sm mb-2">Sealcoating</h4>
+                        <div className="grid grid-cols-3 gap-2">
+                          <div>
+                            <Label className="text-xs">Coats</Label>
+                            <Select value={numCoats.toString()} onValueChange={(v) => setNumCoats(parseInt(v))}>
+                              <SelectTrigger className="h-8">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1">1</SelectItem>
+                                <SelectItem value="2">2</SelectItem>
+                                <SelectItem value="3">3</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label className="text-xs">Sand</Label>
+                            <Select value={sandAdded ? 'yes' : 'no'} onValueChange={(v) => setSandAdded(v === 'yes')}>
+                              <SelectTrigger className="h-8">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="yes">Yes</SelectItem>
+                                <SelectItem value="no">No</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label className="text-xs">Fast-Dry</Label>
+                            <Select value={polymerAdded ? 'yes' : 'no'} onValueChange={(v) => setPolymerAdded(v === 'yes')}>
+                              <SelectTrigger className="h-8">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="yes">Yes</SelectItem>
+                                <SelectItem value="no">No</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {includeStriping && (
+                      <div className="border-t pt-3">
+                        <h4 className="font-semibold text-sm mb-2">Striping</h4>
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <Input
+                            type="number"
+                            placeholder="Lines"
+                            value={stripingLines}
+                            onChange={(e) => setStripingLines(parseInt(e.target.value) || 0)}
+                            className="h-8"
+                          />
+                          <Input
+                            type="number"
+                            placeholder="Handicap"
+                            value={stripingHandicap}
+                            onChange={(e) => setStripingHandicap(parseInt(e.target.value) || 0)}
+                            className="h-8"
+                          />
+                          <Input
+                            type="number"
+                            placeholder="Arrows"
+                            value={stripingArrowsLarge}
+                            onChange={(e) => setStripingArrowsLarge(parseInt(e.target.value) || 0)}
+                            className="h-8"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <CustomServices
+                      totalArea={totalArea}
+                      crackLength={crackLength}
+                      value={customServices}
+                      onChange={setCustomServices}
+                    />
+
+                    <Button onClick={handleCalculate} size="lg" className="w-full">
+                      <Calculator className="h-4 w-4 mr-2" />
+                      Generate Estimate
+                    </Button>
+                  </CardContent>
+                </CustomizableCard>
+              </div>
+
+              <div key="weather">
+                <CustomizableCard
+                  cardId="weather"
+                  title="Weather"
+                  isPinned={pinnedCards['weather']}
+                  onPin={(pinned) => handleCardPin('weather', pinned)}
+                  style={cardStyles['weather']}
+                  onStyleChange={(style) => handleCardStyleChange('weather', style)}
+                  className="h-full"
+                >
+                  <WeatherCard coords={customerCoords} />
+                </CustomizableCard>
+              </div>
+
+              <div key="premium">
+                <CustomizableCard
+                  cardId="premium"
+                  title="Premium Services"
+                  isPinned={pinnedCards['premium']}
+                  onPin={(pinned) => handleCardPin('premium', pinned)}
+                  style={cardStyles['premium']}
+                  onStyleChange={(style) => handleCardStyleChange('premium', style)}
+                  className="h-full overflow-y-auto"
+                >
+                  <PremiumServices
+                    edgePushing={premiumEdgePushing}
+                    weedKiller={premiumWeedKiller}
+                    crackCleaning={premiumCrackCleaning}
+                    powerWashing={premiumPowerWashing}
+                    debrisRemoval={premiumDebrisRemoval}
+                    onChange={handlePremiumServiceChange}
+                    onAddCustomService={handleAddPremiumCustomService}
+                    addedServiceNames={addedServiceNames}
+                  />
+                </CustomizableCard>
+              </div>
+            </GridLayout>
 
             {showResults && costs && (
               <div id="results-container" className="mt-8">

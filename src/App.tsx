@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import PremiumServiceDetails from "./pages/PremiumServiceDetails";
 import { useEffect } from "react";
 import { toast as sonnerToast } from "sonner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -58,6 +59,7 @@ const App = () => {
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/service/:serviceId" element={<PremiumServiceDetails />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

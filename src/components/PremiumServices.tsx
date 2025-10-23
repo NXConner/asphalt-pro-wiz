@@ -125,7 +125,9 @@ export function PremiumServices({
               return (
                 <div key={svc.id} className="border rounded-md p-3 space-y-2 bg-card">
                   <div className="flex items-center justify-between">
-                    <div className="font-semibold">{svc.name}</div>
+                    <a href={`/service/${svc.id}`} className="font-semibold hover:text-primary transition-colors">
+                      {svc.name}
+                    </a>
                     <Badge variant="secondary">{svc.unitType === 'flat' ? 'Flat' : svc.unitType === 'perUnit' ? 'Per Unit' : svc.unitType === 'perSqFt' ? 'Per Sq Ft' : 'Per Linear Ft'}</Badge>
                   </div>
                   <div className="text-sm text-muted-foreground">{svc.description}</div>
