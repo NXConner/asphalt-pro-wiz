@@ -43,8 +43,8 @@ describe('CardLayoutManager', () => {
     const props = makeProps();
     render(<CardLayoutManager {...props} />);
 
-    const setDefaultBtn = await screen.findByRole('button', { name: /set default/i });
-    await userEvent.click(setDefaultBtn);
+    const setDefaultBtns = await screen.findAllByRole('button', { name: /set default/i });
+    await userEvent.click(setDefaultBtns[0]);
 
     expect(localStorage.getItem('layout-default-preset')).toBe('Optimized');
   });
