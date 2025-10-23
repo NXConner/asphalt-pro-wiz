@@ -14,13 +14,14 @@
 - Uploads panel for job files and internal docs (IndexedDB)
 
 ### Gaps / Risks
-- No backend; Gemini API key exposed in client
-- No database/migrations; Supabase integration not set up
-- No test coverage; no CI/CD; no containerization
-- No structured secrets handling; no vulnerability scanning
-- No OpenAPI because no backend routes yet
-- Accessibility linting not configured; limited design system modularity
-- No feature flags or observability hooks
+- Backend API/proxy missing; Gemini API key currently used in browser. Need a thin server (or Supabase Edge Function) to proxy AI calls and protect secrets.
+- Supabase present with unified migrations, but RLS policies and role mappings need environment-specific hardening and tests.
+- CI/CD pipeline missing (no GitHub Actions workflow). No automated lint, test, build, docker, scans, or migrations in CI.
+- Secrets management is documented but not integrated (no Doppler/Vault/AWS SM wiring). `.env.example` lacks some observability keys (e.g., `VITE_LOG_BEACON_URL`).
+- OpenAPI/docs: generator script placeholder exists but there is no backend to document yet.
+- Observability limited to client logs; no metrics/tracing and no server-side logs.
+- Design system is defined in CSS variables and `ThemeCustomizer`, but tokens are not typed and not centrally exported for TS consumption.
+- Android (Capacitor) present; no release pipeline hardening, signing guidance, or runtime permission audits.
 
 ## Improvement & Completion Plan (Prioritized)
 
@@ -75,20 +76,21 @@
 
 | Priority | Task Description | Task Type | Files to Modify/Create |
 |---|---|---|---|
-| P0 | Add DevEx foundations: Prettier, Husky, env template, a11y ESLint | Refactor | package.json, eslint.config.js, .prettierrc.json, .husky/pre-commit, .env.example |
-| P0 | Dockerize app and compose Postgres (pgvector) | New-Feature | Dockerfile, docker-compose.yml, .dockerignore |
-| P0 | RAG ingestion pipeline (local + GitHub) and UI retrieval | Max-Feature | scripts/ingest/ingest.ts, src/lib/rag.ts, src/lib/gemini.ts, public/rag/index.json (generated) |
-| P0 | Fix duplicate ReceiptsPanel and add feature flag 'receipts' | Fix | src/components/ReceiptsPanel.tsx, src/pages/Index.tsx, src/lib/flags.ts, .env.example, tests/lib/flags.test.ts |
-| P1 | Supabase migrations with RLS, roles/user_roles, seed script | New-Feature | supabase/migrations/*, scripts/seed.ts, scripts/db/*, package.json |
-| P1 | Secrets & security scanning | Refactor | docs/secrets.md, package.json |
-| P1 | Testing setup (unit/integration/E2E) and a11y checks | New-Feature | vitest/playwright config, tests/* |
-| P2 | Performance/load testing | New-Feature | scripts/load/*, README.md |
-| P2 | API docs (when backend present) | New-Feature | scripts/openapi/*, docs/api.md |
-| P2 | Documentation suite | New-Feature | README.md, CONTRIBUTING.md, CODEOWNERS, CHANGELOG.md, LICENSE |
-| P2 | Observability and CI/CD | New-Feature | .github/workflows/main.yml, src/lib/logging.ts |
+| P0 | Refresh Phase 1 analysis (this doc) to current state | Refactor | docs/PHASE_1_ANALYSIS.md |
+| P0 | DevEx polish: add .prettierrc, extend .env.example (beacon keys), ensure Husky pre-commit runs lint/tests | Refactor | package.json, .prettierrc, .env.example, .husky/pre-commit |
+| P0 | RAG ingestion & retrieval hardening (chunking, rate limits, docs) | Max-Feature | scripts/ingest/ingest.ts, src/lib/rag.ts, public/rag/index.json |
+| P0 | Security: move Gemini calls behind server/edge proxy; add feature-flag override via env | Max-Feature | scripts/server/* or supabase/functions/*, src/lib/gemini.ts, src/lib/flags.ts, .env.example |
+| P1 | Supabase: finalize RLS/roles and add tests; seed admin membership | New-Feature | supabase/migrations/*, scripts/seed.ts, tests/db/* |
+| P1 | CI/CD: add GitHub Actions (lint, unit, e2e, build, docker, audit, CodeQL) | New-Feature | .github/workflows/main.yml |
+| P1 | Secrets & scanning: wire npm audit/Snyk, document Doppler/Vault/AWS SM usage | Refactor | docs/SECRETS_AND_CONFIG.md, package.json |
+| P1 | Testing expansion (unit + integration + E2E with a11y checks) | New-Feature | tests/**/*, vitest.config, e2e/* |
+| P2 | Observability: client beacon config, server logs, basic metrics | New-Feature | src/lib/logging.ts, server functions, README.md |
+| P2 | Docs & templates: README, CONTRIBUTING, issue/PR templates | New-Feature | .github/*, README.md, CONTRIBUTING.md |
+| P2 | Mobile build and release notes: signing, permissions, testing checklist | New-Feature | docs/ANDROID_RELEASE.md, android/* |
 
 ### Additional Findings and Immediate Fixes
 
-- Resolve two conflicting implementations in `src/components/ReceiptsPanel.tsx` by consolidating into a single, comprehensive component. This eliminates duplicate exports/imports and runtime ambiguity.
-- Introduce a `receipts` feature flag in `src/lib/flags.ts` with a corresponding `VITE_FLAG_RECEIPTS` `.env` entry to control visibility in `src/pages/Index.tsx`.
-- Add a small unit test to assert default flag behavior.
+- Add `VITE_LOG_BEACON_URL` to `.env.example` to enable client log beacons in production.
+- Ensure `scripts/ingest/ingest.ts` respects API rate limits and fails fast when `GEMINI_API_KEY` is missing.
+- Keep Gemini API keys off the client by introducing a minimal proxy (Node or Supabase Edge Functions) and switching `src/lib/gemini.ts` to call it.
+- Add `.prettierrc` to align formatting across contributors.

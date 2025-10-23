@@ -10,4 +10,9 @@ fi
 # Initialize Husky hooks
 npm run prepare || true
 
-echo "Done."
+# Install Playwright browsers for E2E if package present (idempotent)
+if npx --yes playwright --version >/dev/null 2>&1; then
+  npx --yes playwright install --with-deps || true
+fi
+
+echo "Dependencies installed and hooks prepared."
