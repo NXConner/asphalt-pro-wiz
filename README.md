@@ -62,19 +62,19 @@ This project is built with:
 
 ## Quickstart
 
-1. Copy env template:
+1. Copy env template and fill secrets:
 
 ```sh
 cp .env.example .env
 ```
 
-2. Install deps and hooks:
+2. Install deps, hooks, and Playwright browsers:
 
 ```sh
 ./scripts/install_dependencies.sh
 ```
 
-3. Start dev server:
+3. Start dev server (then refresh if running):
 
 ```sh
 npm run dev
@@ -99,6 +99,10 @@ DATABASE_URL=postgres://postgres:postgres@localhost:5432/pavement npm run seed
 ```
 
 See `docs/ADMIN_SETUP.md` for Supabase admin instructions.
+
+### Gemini Proxy (recommended)
+- Deploy Supabase Edge Function `gemini-proxy` (see `docs/SECRETS_AND_CONFIG.md`).
+- Set `VITE_GEMINI_PROXY_URL` to the function URL; avoid exposing API keys in the browser.
 
 ## Tests
 
