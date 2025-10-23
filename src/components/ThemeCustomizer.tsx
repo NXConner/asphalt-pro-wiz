@@ -79,6 +79,11 @@ export function ThemeCustomizer() {
                 <SelectItem value="sunset">Sunset</SelectItem>
                 <SelectItem value="royal">Royal</SelectItem>
                 <SelectItem value="crimson">Crimson</SelectItem>
+                <SelectItem value="forest">Forest</SelectItem>
+                <SelectItem value="ocean">Ocean</SelectItem>
+                <SelectItem value="amber">Amber</SelectItem>
+                <SelectItem value="mono">Monochrome</SelectItem>
+                <SelectItem value="cyber">Cyber</SelectItem>
               </SelectContent>
             </Select>
 

@@ -1,5 +1,15 @@
 export type ThemeMode = "light" | "dark" | "system";
-export type ThemeName = "default" | "emerald" | "sunset" | "royal" | "crimson";
+export type ThemeName =
+  | "default"
+  | "emerald"
+  | "sunset"
+  | "royal"
+  | "crimson"
+  | "forest"
+  | "ocean"
+  | "amber"
+  | "mono"
+  | "cyber";
 
 export interface ThemePreferences {
   mode: ThemeMode;
@@ -60,7 +70,18 @@ export function applyThemePreferences(prefs: ThemePreferences): void {
   root.classList.add(mode);
 
   // theme name
-  root.classList.remove("theme-default", "theme-emerald", "theme-sunset", "theme-royal", "theme-crimson");
+  root.classList.remove(
+    "theme-default",
+    "theme-emerald",
+    "theme-sunset",
+    "theme-royal",
+    "theme-crimson",
+    "theme-forest",
+    "theme-ocean",
+    "theme-amber",
+    "theme-mono",
+    "theme-cyber",
+  );
   root.classList.add(`theme-${prefs.name}`);
 
   // radius

@@ -163,6 +163,26 @@ All colors MUST be HSL.
     --primary: 0 84% 60%;
     --accent: 340 82% 52%;
   }
+  .theme-forest {
+    --primary: 125 55% 35%; /* deep green */
+    --accent: 45 95% 50%;   /* warm amber */
+  }
+  .theme-ocean {
+    --primary: 200 85% 50%; /* teal/blue */
+    --accent: 170 70% 45%;  /* aqua */
+  }
+  .theme-amber {
+    --primary: 38 92% 55%;  /* amber */
+    --accent: 14 90% 55%;   /* orange-red */
+  }
+  .theme-mono {
+    --primary: 0 0% 100%;   /* white accents */
+    --accent: 0 0% 60%;     /* gray */
+  }
+  .theme-cyber {
+    --primary: 285 80% 60%; /* neon purple */
+    --accent: 162 85% 45%;  /* neon cyan */
+  }
 }
 
 @media print {
