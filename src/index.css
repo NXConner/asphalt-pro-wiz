@@ -164,6 +164,26 @@ All colors MUST be HSL.
     --accent: 340 82% 52%;
   }
   .theme-forest {
+    --primary: 125 55% 35%;
+    --accent: 45 95% 50%;
+  }
+  .theme-ocean {
+    --primary: 200 85% 50%;
+    --accent: 170 70% 45%;
+  }
+  .theme-amber {
+    --primary: 38 92% 55%;
+    --accent: 14 90% 55%;
+  }
+  .theme-mono {
+    --primary: 0 0% 100%;
+    --accent: 0 0% 60%;
+  }
+  .theme-cyber {
+    --primary: 285 80% 60%;
+    --accent: 162 85% 45%;
+  }
+  .theme-forest {
     --primary: 125 55% 35%; /* deep green */
     --accent: 45 95% 50%;   /* warm amber */
   }
