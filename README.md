@@ -116,12 +116,17 @@ E2E (requires dev server):
 npm run test:e2e
 ```
 
+Key E2E flows covered:
+- Theme toggle switches between light/dark.
+- Feature Flags toggles (Image Area Analyzer, AI Assistant, Receipts).
+- Uploads panel accepts a file and displays a Download link.
+
 ## Load Testing
 
 With k6:
 
 ```sh
-k6 run scripts/load/k6-estimate.js
+BASE_URL=http://localhost:8080 k6 run scripts/load/k6-estimate.js
 ```
 
 With Artillery:
