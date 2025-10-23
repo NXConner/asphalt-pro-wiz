@@ -90,27 +90,45 @@ export function CardLayoutManager({
 
   useEffect(() => {
     // Load custom presets and apply default on first mount
-    const saved = localStorage.getItem('layout-presets');
+    const isBrowser = typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
     let nextPresets: LayoutPreset[] = DEFAULT_PRESETS;
-    if (saved) {
-      try {
-        const parsed: LayoutPreset[] = JSON.parse(saved);
-        nextPresets = [...DEFAULT_PRESETS, ...parsed];
-      } catch (e) {
-        console.error('Failed to load saved presets', e);
-      }
-    }
-    setPresets(nextPresets);
 
-    // Determine which preset to auto-load
-    const defaultName = localStorage.getItem('layout-default-preset') || 'Optimized';
-    const fallbackName = nextPresets.find((p) => p.name === defaultName) ? defaultName : 'Optimized';
-    const preset = nextPresets.find((p) => p.name === fallbackName);
-    if (preset) {
-      onLayoutChange(preset.layouts);
-      onStylesChange(preset.styles);
-      setSelectedPreset(fallbackName);
-      logEvent('loaded_default_preset', { preset: fallbackName });
+    if (isBrowser) {
+      const saved = window.localStorage.getItem('layout-presets');
+      if (saved) {
+        try {
+          const parsed: LayoutPreset[] = JSON.parse(saved);
+          // Sanitize parsed presets to avoid malformed entries
+          const sanitized = Array.isArray(parsed)
+            ? parsed.filter((p) => p && typeof p.name === 'string' && Array.isArray(p.layouts) && typeof p.styles === 'object')
+            : [];
+          nextPresets = [...DEFAULT_PRESETS, ...sanitized];
+        } catch (e) {
+          console.error('Failed to load saved presets', e);
+        }
+      }
+
+      setPresets(nextPresets);
+
+      // Determine which preset to auto-load
+      const defaultName = window.localStorage.getItem('layout-default-preset') || 'Optimized';
+      const fallbackName = nextPresets.find((p) => p.name === defaultName) ? defaultName : 'Optimized';
+      const preset = nextPresets.find((p) => p.name === fallbackName);
+      if (preset) {
+        onLayoutChange(preset.layouts);
+        onStylesChange(preset.styles);
+        setSelectedPreset(fallbackName);
+        logEvent('loaded_default_preset', { preset: fallbackName });
+      }
+    } else {
+      // Non-browser environment: keep defaults without touching storage
+      setPresets(nextPresets);
+      const preset = nextPresets.find((p) => p.name === 'Optimized');
+      if (preset) {
+        onLayoutChange(preset.layouts);
+        onStylesChange(preset.styles);
+        setSelectedPreset('Optimized');
+      }
     }
   }, [onLayoutChange, onStylesChange]);
 
@@ -131,38 +149,79 @@ export function CardLayoutManager({
       return;
     }
 
+    const trimmedName = newPresetName.trim();
+    const defaultNames = new Set(DEFAULT_PRESETS.map((dp) => dp.name));
+    if (defaultNames.has(trimmedName)) {
+      toast.error('This preset name is reserved. Choose a different name.');
+      return;
+    }
+
     const newPreset: LayoutPreset = {
-      name: newPresetName,
+      name: trimmedName,
       layouts: currentLayouts,
       styles: currentStyles,
     };
 
-    const customPresets = presets.filter((p) => !DEFAULT_PRESETS.find((dp) => dp.name === p.name));
-    const updatedCustom = [...customPresets, newPreset];
-    
-    localStorage.setItem('layout-presets', JSON.stringify(updatedCustom));
+    // Collect currently saved custom presets (exclude defaults)
+    const customPresets = presets.filter((p) => !defaultNames.has(p.name));
+    // Replace any existing custom preset with the same name instead of duplicating
+    const withoutSameName = customPresets.filter((p) => p.name !== trimmedName);
+    const updatedCustom = [...withoutSameName, newPreset];
+
+    try {
+      if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
+        window.localStorage.setItem('layout-presets', JSON.stringify(updatedCustom));
+      }
+    } catch (e) {
+      console.error('Failed to save presets', e);
+      toast.error('Failed to save presets. Storage may be unavailable.');
+      return;
+    }
+
     setPresets([...DEFAULT_PRESETS, ...updatedCustom]);
-    setSelectedPreset(newPresetName);
+    setSelectedPreset(trimmedName);
     setNewPresetName('');
     setSaveDialogOpen(false);
+
     if (saveAsDefault) {
-      localStorage.setItem('layout-default-preset', newPreset.name);
-      logEvent('set_default_preset', { preset: newPreset.name, source: 'save_preset' });
+      try {
+        if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
+          window.localStorage.setItem('layout-default-preset', newPreset.name);
+        }
+        logEvent('set_default_preset', { preset: newPreset.name, source: 'save_preset' });
+      } catch (e) {
+        console.error('Failed to set default preset', e);
+        toast.error('Failed to set default preset.');
+      }
     }
     setSaveAsDefault(false);
     logEvent('saved_preset', { preset: newPreset.name });
-    toast.success(`Saved layout as "${newPresetName}"`);
+    toast.success(`Saved layout as "${trimmedName}"`);
   };
 
   const handleSetDefault = () => {
-    localStorage.setItem('layout-default-preset', selectedPreset);
-    logEvent('set_default_preset', { preset: selectedPreset, source: 'set_button' });
-    toast.success(`Set "${selectedPreset}" as default`);
+    try {
+      if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
+        window.localStorage.setItem('layout-default-preset', selectedPreset);
+      }
+      logEvent('set_default_preset', { preset: selectedPreset, source: 'set_button' });
+      toast.success(`Set "${selectedPreset}" as default`);
+    } catch (e) {
+      console.error('Failed to set default preset', e);
+      toast.error('Failed to set default preset.');
+    }
   };
 
   const handleResetDefault = () => {
     const fallback = 'Optimized';
-    localStorage.setItem('layout-default-preset', fallback);
+    try {
+      if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
+        window.localStorage.setItem('layout-default-preset', fallback);
+      }
+    } catch (e) {
+      console.error('Failed to reset default preset', e);
+      toast.error('Failed to reset default preset.');
+    }
     handleLoadPreset(fallback);
     logEvent('reset_default_preset', { preset: fallback });
   };
