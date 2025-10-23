@@ -18,6 +18,7 @@ import {
   setWallpaperOpacity,
   type ThemeName,
 } from "@/lib/theme";
+import { Switch } from "@/components/ui/switch";
 
 export function ThemeCustomizer() {
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -27,6 +28,7 @@ export function ThemeCustomizer() {
   const [opacity, setOpacityLocal] = useState(0.25);
   const [blur, setBlurLocal] = useState(0);
   const [hasWallpaper, setHasWallpaper] = useState(false);
+  const [useHueOverride, setUseHueOverrideLocal] = useState(false);
 
   useEffect(() => {
     const prefs = loadThemePreferences();
@@ -36,6 +38,7 @@ export function ThemeCustomizer() {
     setOpacityLocal(prefs.wallpaperOpacity);
     setBlurLocal(prefs.wallpaperBlur);
     setHasWallpaper(!!prefs.wallpaperDataUrl);
+    setUseHueOverrideLocal(!!prefs.useHueOverride);
     applyThemePreferences(prefs);
   }, []);
 
@@ -78,6 +81,21 @@ export function ThemeCustomizer() {
                 <SelectItem value="crimson">Crimson</SelectItem>
               </SelectContent>
             </Select>
+
+            <div className="flex items-center justify-between">
+              <Label htmlFor="override-hue">Use Hue Override</Label>
+              <Switch
+                id="override-hue"
+                checked={useHueOverride}
+                onCheckedChange={(checked) => {
+                  setUseHueOverrideLocal(checked);
+                  const prefs = loadThemePreferences();
+                  prefs.useHueOverride = checked;
+                  saveThemePreferences(prefs);
+                  applyThemePreferences(prefs);
+                }}
+              />
+            </div>
 
             <Label htmlFor="primary-hue">Primary Hue ({primaryHueLocal}°)</Label>
             <input
