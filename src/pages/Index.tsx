@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -100,12 +100,12 @@ const Index = () => {
   const [breakdown, setBreakdown] = useState<CostBreakdown[]>([]);
   const [jobDistance, setJobDistance] = useState(0);
 
-  // Card layout and customization state
+  // Card layout and customization state (align with Optimized preset for no flicker)
   const [cardLayouts, setCardLayouts] = useState<CardLayout[]>([
-    { i: 'map', x: 0, y: 0, w: 12, h: 8, minW: 6, minH: 6 },
-    { i: 'details', x: 0, y: 8, w: 8, h: 14, minW: 4, minH: 8 },
-    { i: 'weather', x: 8, y: 8, w: 4, h: 6, minW: 3, minH: 4 },
-    { i: 'premium', x: 8, y: 14, w: 4, h: 8, minW: 3, minH: 4 },
+    { i: 'map', x: 0, y: 0, w: 8, h: 10, minW: 6, minH: 6 },
+    { i: 'details', x: 8, y: 0, w: 4, h: 18, minW: 4, minH: 8 },
+    { i: 'premium', x: 0, y: 10, w: 8, h: 10, minW: 3, minH: 4 },
+    { i: 'weather', x: 8, y: 18, w: 4, h: 6, minW: 3, minH: 4 },
   ]);
   const [cardStyles, setCardStyles] = useState<Record<string, CardStyle>>({});
   const [pinnedCards, setPinnedCards] = useState<Record<string, boolean>>({});
@@ -315,6 +315,28 @@ const Index = () => {
 
   const supplierDist = calculateDistance(businessCoords, supplierCoords) * 2;
 
+  // Responsive width for react-grid-layout
+  const gridContainerRef = useRef<HTMLDivElement | null>(null);
+  const [gridWidth, setGridWidth] = useState<number>(1200);
+
+  useEffect(() => {
+    const el = gridContainerRef.current;
+    if (!el) return;
+    const update = () => setGridWidth(el.clientWidth);
+    update();
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => update());
+      ro.observe(el);
+    } else {
+      window.addEventListener('resize', update);
+    }
+    return () => {
+      if (ro) ro.disconnect();
+      else window.removeEventListener('resize', update);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-4 md:p-8">
@@ -351,12 +373,13 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="estimate" className="space-y-4">
+            <div ref={gridContainerRef}>
             <GridLayout
               className="layout"
               layout={cardLayouts}
               cols={12}
               rowHeight={30}
-              width={1200}
+              width={gridWidth}
               onLayoutChange={handleLayoutChange}
               isDraggable={true}
               isResizable={true}
@@ -651,6 +674,7 @@ const Index = () => {
                 </CustomizableCard>
               </div>
             </GridLayout>
+            </div>
 
             {showResults && costs && (
               <div id="results-container" className="mt-8">

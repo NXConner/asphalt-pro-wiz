@@ -7,7 +7,6 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import LeafletMap from '@/components/map/LeafletMap';
 import GoogleMap from '@/components/map/GoogleMap';
-import WeatherCard from '@/components/WeatherCard';
 import { loadMapSettings, saveMapSettings, type MapProvider, type BaseLayerId } from '@/lib/mapSettings';
 
 interface MapProps {
@@ -29,7 +28,6 @@ const baseLayers: { id: BaseLayerId; label: string }[] = [
 const Map = ({ onAddressUpdate, onAreaDrawn, onCrackLengthDrawn, customerAddress, refreshKey }: MapProps) => {
   const [settings, setSettings] = useState(loadMapSettings());
   const [settingsKey, setSettingsKey] = useState(0);
-  const [lastCoords, setLastCoords] = useState<[number, number] | null>(null);
   const [newOverlay, setNewOverlay] = useState<{ name: string; type: 'tile' | 'wms'; url: string; layers: string; attribution: string }>(
     { name: '', type: 'tile', url: '', layers: '', attribution: '' }
   );
@@ -84,7 +82,6 @@ const Map = ({ onAddressUpdate, onAreaDrawn, onCrackLengthDrawn, customerAddress
   };
 
   const handleAddressUpdateWrapped = (coords: [number, number], address: string) => {
-    setLastCoords(coords);
     onAddressUpdate(coords, address);
   };
 
@@ -223,8 +220,6 @@ const Map = ({ onAddressUpdate, onAreaDrawn, onCrackLengthDrawn, customerAddress
         onCrackLengthDrawn={onCrackLengthDrawn}
         refreshKey={refreshKey}
       />
-
-      <WeatherCard coords={lastCoords} />
     </div>
   );
 };
