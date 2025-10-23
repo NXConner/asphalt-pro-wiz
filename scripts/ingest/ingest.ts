@@ -10,22 +10,34 @@ import path from 'path';
 import fg from 'fast-glob';
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
+const GEMINI_PROXY_URL = process.env.GEMINI_PROXY_URL || process.env.VITE_GEMINI_PROXY_URL || '';
 const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, 'data');
 const OUTPUT = path.join(ROOT, 'public', 'rag', 'index.json');
 
 async function embed(text: string): Promise<number[]> {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
-  if (!apiKey) throw new Error('Missing GEMINI_API_KEY');
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${apiKey}`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content: { parts: [{ text }] } }),
-  });
-  if (!res.ok) throw new Error(`Embed failed: ${res.status}`);
-  const json = await res.json();
-  return json?.embedding?.values ?? [];
+  if (GEMINI_PROXY_URL) {
+    const res = await fetch(GEMINI_PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'embed', text }),
+    });
+    if (!res.ok) throw new Error(`Embed failed via proxy: ${res.status}`);
+    const json = await res.json();
+    return json?.embedding?.values ?? [];
+  } else {
+    const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) throw new Error('Missing GEMINI_API_KEY');
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${apiKey}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: { parts: [{ text }] } }),
+    });
+    if (!res.ok) throw new Error(`Embed failed: ${res.status}`);
+    const json = await res.json();
+    return json?.embedding?.values ?? [];
+  }
 }
 
 function chunkText(text: string, chunkSize = 1500, overlap = 200): string[] {
