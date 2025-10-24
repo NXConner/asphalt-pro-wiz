@@ -11,6 +11,7 @@ import Map from '@/components/Map';
 import AreaSection from '@/components/AreaSection';
 import ImageAreaAnalyzer from '@/components/ImageAreaAnalyzer';
 import { isEnabled, setFlag } from '@/lib/flags';
+import { logEvent } from '@/lib/logging';
 import { BusinessSettings } from '@/components/BusinessSettings';
 import { PremiumServices } from '@/components/PremiumServices';
 import { ServiceCategories } from '@/components/ServiceCategories';
@@ -132,6 +133,13 @@ const Index = () => {
       minH: cardLayouts.find(c => c.i === item.i)?.minH,
     }));
     setCardLayouts(updatedLayouts);
+    try {
+      const meta = updatedLayouts.reduce((acc: Record<string, { w: number; h: number }>, l) => {
+        acc[l.i] = { w: l.w, h: l.h };
+        return acc;
+      }, {} as Record<string, { w: number; h: number }>);
+      logEvent('ui.cards.layout_changed', { count: updatedLayouts.length, meta });
+    } catch {}
   };
 
   const handleAddressUpdate = (coords: [number, number], address: string) => {
@@ -139,6 +147,7 @@ const Index = () => {
     setCustomerAddress(address);
     const dist = calculateDistance(businessCoords, coords) * 2;
     setJobDistance(dist);
+    logEvent('job.address_updated', { address, distanceRtMiles: dist });
     // Persist/update job immediately with default status
     const key = makeJobKey(jobName, address);
     void upsertJob({
@@ -201,6 +210,7 @@ const Index = () => {
     setAreas(prev => [...prev, newArea]);
     setNextAreaId(prev => prev + 1);
     setManualAreaInput('');
+    try { logEvent('area.add_manual', { areaSqFt: parsed }); } catch {}
     toast.success(`Added ${parsed.toFixed(1)} sq ft`);
   };
 
@@ -299,6 +309,18 @@ const Index = () => {
     setCosts(result.costs);
     setBreakdown(result.breakdown);
     setShowResults(true);
+    try {
+      logEvent('estimate.calculated', {
+        jobName: jobName || 'Job',
+        totalArea,
+        crackLength,
+        includeSealcoating,
+        includeStriping,
+        includeCleaningRepair,
+        numCustomServices: customServices.length,
+        total: result.costs.total,
+      });
+    } catch {}
 
     // Auto-mark as estimated and persist
     const key = makeJobKey(jobName, customerAddress);
@@ -510,6 +532,13 @@ const Index = () => {
                         </div>
                       )}
                     </div>
+
+                    {isEnabled('imageAreaAnalyzer') && (
+                      <div className="border-t pt-3">
+                        <h4 className="font-semibold text-sm mb-2">Image Area Analyzer</h4>
+                        <ImageAreaAnalyzer onAreaDetected={handleImageAreaDetected} />
+                      </div>
+                    )}
 
                     {includeCleaningRepair && (
                       <div className="border-t pt-3">
@@ -728,11 +757,79 @@ const Index = () => {
                 <ReceiptsPanel jobName={jobName} customerAddress={customerAddress} />
               </div>
             )}
+            <div className="mt-6">
+              <UploadsPanel jobName={jobName} customerAddress={customerAddress} />
+            </div>
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-6">
             <BusinessSettings data={businessData} onChange={setBusinessData} />
             <ThemeCustomizer />
+            <Card>
+              <CardHeader>
+                <CardTitle>Feature Flags</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="flag-owner" className="text-sm">Owner Mode</Label>
+                  <Switch
+                    id="flag-owner"
+                    checked={ownerMode}
+                    onCheckedChange={(checked) => {
+                      setOwnerMode(checked);
+                      setFlag('ownerMode', checked);
+                      try { logEvent('flags.ownerMode_toggled', { enabled: checked }); } catch {}
+                    }}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="flag-ai" className="text-sm">AI Assistant</Label>
+                  <Switch
+                    id="flag-ai"
+                    checked={isEnabled('aiAssistant')}
+                    onCheckedChange={(checked) => {
+                      setFlag('aiAssistant', checked);
+                      try { logEvent('flags.aiAssistant_toggled', { enabled: checked }); } catch {}
+                    }}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="flag-iaa" className="text-sm">Image Area Analyzer</Label>
+                  <Switch
+                    id="flag-iaa"
+                    checked={isEnabled('imageAreaAnalyzer')}
+                    onCheckedChange={(checked) => {
+                      setFlag('imageAreaAnalyzer', checked);
+                      try { logEvent('flags.imageAreaAnalyzer_toggled', { enabled: checked }); } catch {}
+                    }}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="flag-receipts" className="text-sm">Receipts</Label>
+                  <Switch
+                    id="flag-receipts"
+                    checked={isEnabled('receipts')}
+                    onCheckedChange={(checked) => {
+                      setFlag('receipts', checked);
+                      try { logEvent('flags.receipts_toggled', { enabled: checked }); } catch {}
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {ownerMode && (
+              <OwnerSettings
+                waterPercent={waterPercent}
+                onWaterPercentChange={setWaterPercent}
+                sealerType={sealerType}
+                onSealerTypeChange={setSealerType}
+                sandType={sandType}
+                onSandTypeChange={setSandType}
+              />
+            )}
+
+            {isEnabled('aiAssistant') && <AIGemini />}
           </TabsContent>
         </Tabs>
       </div>
