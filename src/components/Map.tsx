@@ -1,13 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-import LeafletMap from '@/components/map/LeafletMap';
 import GoogleMap from '@/components/map/GoogleMap';
-import { loadMapSettings, saveMapSettings, type MapProvider, type BaseLayerId } from '@/lib/mapSettings';
+import { loadMapSettings, saveMapSettings, type BaseLayerId } from '@/lib/mapSettings';
 
 interface MapProps {
   onAddressUpdate: (coords: [number, number], address: string) => void;
@@ -18,11 +17,10 @@ interface MapProps {
 }
 
 const baseLayers: { id: BaseLayerId; label: string }[] = [
-  { id: 'esri_satellite', label: 'Satellite (Esri World Imagery)' },
-  { id: 'osm_standard', label: 'OpenStreetMap Standard' },
-  { id: 'carto_voyager', label: 'CARTO Voyager' },
-  { id: 'stamen_terrain', label: 'Stamen Terrain' },
-  { id: 'google_hybrid', label: 'Google Hybrid (use Google provider)' },
+  { id: 'google_roadmap', label: 'Google Roadmap' },
+  { id: 'google_satellite', label: 'Google Satellite' },
+  { id: 'google_terrain', label: 'Google Terrain' },
+  { id: 'google_hybrid', label: 'Google Hybrid' },
 ];
 
 const Map = ({ onAddressUpdate, onAreaDrawn, onCrackLengthDrawn, customerAddress, refreshKey }: MapProps) => {
@@ -32,17 +30,11 @@ const Map = ({ onAddressUpdate, onAreaDrawn, onCrackLengthDrawn, customerAddress
     { name: '', type: 'tile', url: '', layers: '', attribution: '' }
   );
 
-  const ProviderMap = useMemo(() => (settings.provider === 'google' ? GoogleMap : LeafletMap), [settings.provider]);
-
   const persist = (mut: (s: ReturnType<typeof loadMapSettings>) => ReturnType<typeof loadMapSettings>) => {
     const next = mut({ ...settings });
     setSettings(next);
     saveMapSettings(next);
     setSettingsKey((k) => k + 1);
-  };
-
-  const handleProviderChange = (value: MapProvider) => {
-    persist((s) => ({ ...s, provider: value }));
   };
 
   const handleBaseChange = (value: BaseLayerId) => {
@@ -88,17 +80,7 @@ const Map = ({ onAddressUpdate, onAreaDrawn, onCrackLengthDrawn, customerAddress
   return (
     <div className="space-y-4">
       <Card>
-        <CardContent className="p-3 grid grid-cols-1 lg:grid-cols-4 gap-4 items-end">
-          <div>
-            <Label>Map Provider</Label>
-            <Select value={settings.provider} onValueChange={(v: any) => handleProviderChange(v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="leaflet">OpenStreetMap/Leaflet</SelectItem>
-                <SelectItem value="google">Google Maps</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <CardContent className="p-3 grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
           <div>
             <Label>Base Layer</Label>
             <Select value={settings.baseLayer} onValueChange={(v: any) => handleBaseChange(v)}>
@@ -129,12 +111,8 @@ const Map = ({ onAddressUpdate, onAreaDrawn, onCrackLengthDrawn, customerAddress
             </div>
           </div>
           <div className="space-y-2">
-            {settings.provider === 'google' && (
-              <>
-                <Label>Google Maps API Key</Label>
-                <Input value={settings.googleApiKey ?? ''} onChange={(e) => handleGoogleKeyChange(e.target.value)} placeholder="Enter API key" />
-              </>
-            )}
+            <Label>Google Maps API Key</Label>
+            <Input value={settings.googleApiKey ?? ''} onChange={(e) => handleGoogleKeyChange(e.target.value)} placeholder="Enter API key" />
             <Label>OpenWeather API Key (optional)</Label>
             <Input value={settings.openWeatherApiKey ?? ''} onChange={(e) => handleOpenWeatherKeyChange(e.target.value)} placeholder="For richer weather" />
           </div>
@@ -212,8 +190,8 @@ const Map = ({ onAddressUpdate, onAreaDrawn, onCrackLengthDrawn, customerAddress
         </CardContent>
       </Card>
 
-      <ProviderMap
-        key={`${settings.provider}-${settingsKey}`}
+      <GoogleMap
+        key={`google-${settingsKey}`}
         customerAddress={customerAddress}
         onAddressUpdate={handleAddressUpdateWrapped}
         onAreaDrawn={onAreaDrawn}
