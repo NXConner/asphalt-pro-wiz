@@ -3,7 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { FileText, UploadCloud, Trash2, ScanText, Download, Filter, RefreshCw } from "lucide-react";
 import {
@@ -104,6 +110,8 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
 
   useEffect(() => {
     void refresh();
+    // refresh is stable (declared inline); lint false positive due to function identity
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryFilter, vendorQuery, startDate, endDate]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,7 +153,8 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
         "Extract receipt details and return ONLY compact JSON with keys vendor,date (YYYY-MM-DD), subtotal, tax, total, paymentMethod, notes, suggestedCategory. If unknown, use null.";
       const text = await analyzeImage(base64, r.type || "image/png", prompt);
       const data = tryParseJson(text) || {};
-      const normalizedDate = typeof data.date === "string" && data.date.length >= 10 ? data.date.slice(0, 10) : r.date;
+      const normalizedDate =
+        typeof data.date === "string" && data.date.length >= 10 ? data.date.slice(0, 10) : r.date;
       let nextCategory: ReceiptCategory | undefined;
       const suggested = (data.suggestedCategory || data.category || "").toString().toLowerCase();
       for (const c of RECEIPT_CATEGORIES) {
@@ -154,16 +163,22 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
       if (!nextCategory) {
         const v = (data.vendor || r.vendor).toString().toLowerCase();
         if (v.includes("sealmaster")) nextCategory = "SealMaster";
-        else if (v.includes("bp") || v.includes("shell") || v.includes("exxon") || v.includes("fuel")) nextCategory = "Fuel";
+        else if (
+          v.includes("bp") ||
+          v.includes("shell") ||
+          v.includes("exxon") ||
+          v.includes("fuel")
+        )
+          nextCategory = "Fuel";
       }
       await updateReceiptMeta(r.id, {
         vendor: (data.vendor || r.vendor || "").toString(),
         date: normalizedDate,
-        subtotal: typeof data.subtotal === "number" ? data.subtotal : r.subtotal ?? null,
-        tax: typeof data.tax === "number" ? data.tax : r.tax ?? null,
-        total: typeof data.total === "number" ? data.total : r.total ?? null,
-        paymentMethod: data.paymentMethod ? String(data.paymentMethod) : r.paymentMethod ?? null,
-        notes: data.notes ? String(data.notes) : r.notes ?? null,
+        subtotal: typeof data.subtotal === "number" ? data.subtotal : (r.subtotal ?? null),
+        tax: typeof data.tax === "number" ? data.tax : (r.tax ?? null),
+        total: typeof data.total === "number" ? data.total : (r.total ?? null),
+        paymentMethod: data.paymentMethod ? String(data.paymentMethod) : (r.paymentMethod ?? null),
+        notes: data.notes ? String(data.notes) : (r.notes ?? null),
         ocrText: text,
         category: nextCategory || r.category,
       });
@@ -229,7 +244,12 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
     let sum = 0;
     const byCategory = new Map<string, number>();
     for (const r of receipts) {
-      const v = typeof r.total === "number" ? r.total : (typeof r.subtotal === "number" ? (r.subtotal + (r.tax || 0)) : 0);
+      const v =
+        typeof r.total === "number"
+          ? r.total
+          : typeof r.subtotal === "number"
+            ? r.subtotal + (r.tax || 0)
+            : 0;
       sum += v;
       byCategory.set(r.category, (byCategory.get(r.category) || 0) + v);
     }
@@ -240,14 +260,23 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
     <Card>
       <CardHeader>
         <CardTitle>Receipts & Expenses</CardTitle>
-        <CardDescription>Upload images/PDFs (SealMaster, fuel, payroll, materials, etc.). Auto-extract totals with AI.</CardDescription>
+        <CardDescription>
+          Upload images/PDFs (SealMaster, fuel, payroll, materials, etc.). Auto-extract totals with
+          AI.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
           <div className="md:col-span-2">
-            <Label className="flex items-center gap-2"><Filter className="w-4 h-4" /> Filters</Label>
+            <Label className="flex items-center gap-2">
+              <Filter className="w-4 h-4" /> Filters
+            </Label>
             <div className="grid grid-cols-2 gap-2">
-              <Input placeholder="Vendor contains..." value={vendorQuery} onChange={(e) => setVendorQuery(e.target.value)} />
+              <Input
+                placeholder="Vendor contains..."
+                value={vendorQuery}
+                onChange={(e) => setVendorQuery(e.target.value)}
+              />
               <Select value={categoryFilter} onValueChange={(v: any) => setCategoryFilter(v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Category" />
@@ -255,7 +284,9 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
                 <SelectContent>
                   <SelectItem value="All">All</SelectItem>
                   {RECEIPT_CATEGORIES.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -270,7 +301,16 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
             <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
           </div>
           <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={() => { setVendorQuery(""); setCategoryFilter("All"); setStartDate(""); setEndDate(""); }}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setVendorQuery("");
+                setCategoryFilter("All");
+                setStartDate("");
+                setEndDate("");
+              }}
+            >
               <Filter className="w-4 h-4 mr-2" /> Clear
             </Button>
             <Button type="button" variant="outline" onClick={refresh}>
@@ -286,19 +326,37 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
           <div className="md:col-span-2">
             <Label>Upload Receipts</Label>
             <div className="flex items-center gap-2">
-              <Input ref={fileInputRef} type="file" multiple accept="image/*,application/pdf" onChange={handleUpload} />
+              <Input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*,application/pdf"
+                onChange={handleUpload}
+              />
               <UploadCloud className="w-5 h-5" />
             </div>
             <div className="mt-2 text-xs text-muted-foreground flex items-center gap-2">
-              <input id="autoExtract" type="checkbox" className="mr-1" checked={autoExtract} onChange={(e) => setAutoExtract(e.target.checked)} />
+              <input
+                id="autoExtract"
+                type="checkbox"
+                className="mr-1"
+                checked={autoExtract}
+                onChange={(e) => setAutoExtract(e.target.checked)}
+              />
               <Label htmlFor="autoExtract">Auto-extract on upload</Label>
             </div>
           </div>
         </div>
 
         <div className="bg-muted p-3 rounded-md flex items-center justify-between text-sm">
-          <div>Filtered total: <strong>{formatCurrency(totals.sum)}</strong></div>
-          {jobName && <div>Job: <strong>{jobName}</strong></div>}
+          <div>
+            Filtered total: <strong>{formatCurrency(totals.sum)}</strong>
+          </div>
+          {jobName && (
+            <div>
+              Job: <strong>{jobName}</strong>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -310,60 +368,115 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
                   <div className="w-20 h-20 bg-muted rounded overflow-hidden flex items-center justify-center">
                     {isImage ? (
                       // eslint-disable-next-line jsx-a11y/alt-text
-                      <img src={URL.createObjectURL(r.blob)} className="object-cover w-full h-full" />
+                      <img
+                        src={URL.createObjectURL(r.blob)}
+                        className="object-cover w-full h-full"
+                      />
                     ) : (
                       <FileText className="w-10 h-10 text-muted-foreground" />
                     )}
                   </div>
                   <div className="flex-1 space-y-2 min-w-0">
                     <div className="flex items-center justify-between">
-                      <div className="text-sm font-medium truncate max-w-[220px]" title={r.name}>{r.vendor || "(Vendor)"} • {r.category}</div>
-                      <div className="text-xs text-muted-foreground">{new Date(r.createdAt).toLocaleString()}</div>
+                      <div className="text-sm font-medium truncate max-w-[220px]" title={r.name}>
+                        {r.vendor || "(Vendor)"} • {r.category}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(r.createdAt).toLocaleString()}
+                      </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
                         <Label className="text-xs">Vendor</Label>
-                        <Input value={r.vendor} onChange={(e) => updateMeta(r.id, { vendor: e.target.value })} />
+                        <Input
+                          value={r.vendor}
+                          onChange={(e) => updateMeta(r.id, { vendor: e.target.value })}
+                        />
                       </div>
                       <div>
                         <Label className="text-xs">Date</Label>
-                        <Input type="date" value={r.date} onChange={(e) => updateMeta(r.id, { date: e.target.value })} />
+                        <Input
+                          type="date"
+                          value={r.date}
+                          onChange={(e) => updateMeta(r.id, { date: e.target.value })}
+                        />
                       </div>
                       <div>
                         <Label className="text-xs">Category</Label>
-                        <Select value={r.category} onValueChange={(v: any) => updateMeta(r.id, { category: v })}>
+                        <Select
+                          value={r.category}
+                          onValueChange={(v: any) => updateMeta(r.id, { category: v })}
+                        >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {RECEIPT_CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                            {RECEIPT_CATEGORIES.map((c) => (
+                              <SelectItem key={c} value={c}>
+                                {c}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
                       <div>
                         <Label className="text-xs">Payment</Label>
-                        <Input value={r.paymentMethod || ""} onChange={(e) => updateMeta(r.id, { paymentMethod: e.target.value })} />
+                        <Input
+                          value={r.paymentMethod || ""}
+                          onChange={(e) => updateMeta(r.id, { paymentMethod: e.target.value })}
+                        />
                       </div>
                       <div>
                         <Label className="text-xs">Subtotal</Label>
-                        <Input type="number" step="0.01" value={r.subtotal ?? ""} onChange={(e) => updateMeta(r.id, { subtotal: parseFloat(e.target.value) || 0 })} />
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={r.subtotal ?? ""}
+                          onChange={(e) =>
+                            updateMeta(r.id, { subtotal: parseFloat(e.target.value) || 0 })
+                          }
+                        />
                       </div>
                       <div>
                         <Label className="text-xs">Tax</Label>
-                        <Input type="number" step="0.01" value={r.tax ?? ""} onChange={(e) => updateMeta(r.id, { tax: parseFloat(e.target.value) || 0 })} />
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={r.tax ?? ""}
+                          onChange={(e) =>
+                            updateMeta(r.id, { tax: parseFloat(e.target.value) || 0 })
+                          }
+                        />
                       </div>
                       <div>
                         <Label className="text-xs">Total</Label>
-                        <Input type="number" step="0.01" value={r.total ?? ""} onChange={(e) => updateMeta(r.id, { total: parseFloat(e.target.value) || 0 })} />
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={r.total ?? ""}
+                          onChange={(e) =>
+                            updateMeta(r.id, { total: parseFloat(e.target.value) || 0 })
+                          }
+                        />
                       </div>
                       <div className="col-span-2">
                         <Label className="text-xs">Notes</Label>
-                        <Input value={r.notes || ""} onChange={(e) => updateMeta(r.id, { notes: e.target.value })} />
+                        <Input
+                          value={r.notes || ""}
+                          onChange={(e) => updateMeta(r.id, { notes: e.target.value })}
+                        />
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button type="button" variant="secondary" size="sm" onClick={() => extractWithAI(r)} disabled={!!busyIds[r.id]}>
-                        <ScanText className="w-4 h-4 mr-2" /> {busyIds[r.id] ? "Extracting..." : "Extract with AI"}
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => extractWithAI(r)}
+                        disabled={!!busyIds[r.id]}
+                      >
+                        <ScanText className="w-4 h-4 mr-2" />{" "}
+                        {busyIds[r.id] ? "Extracting..." : "Extract with AI"}
                       </Button>
                       <a
                         className="text-primary text-sm underline"
@@ -374,12 +487,27 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
                       >
                         View/Download
                       </a>
-                      <Button type="button" variant="ghost" size="icon" onClick={() => remove(r.id)} className="text-destructive ml-auto">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => remove(r.id)}
+                        className="text-destructive ml-auto"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground">
-                      Amount: <strong>{formatCurrency(typeof r.total === "number" ? r.total : (typeof r.subtotal === "number" ? r.subtotal + (r.tax || 0) : null))}</strong>
+                      Amount:{" "}
+                      <strong>
+                        {formatCurrency(
+                          typeof r.total === "number"
+                            ? r.total
+                            : typeof r.subtotal === "number"
+                              ? r.subtotal + (r.tax || 0)
+                              : null,
+                        )}
+                      </strong>
                     </div>
                   </div>
                 </div>
@@ -389,7 +517,9 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
         </div>
 
         {receipts.length === 0 && (
-          <div className="text-sm text-muted-foreground">No receipts yet. Upload images or PDFs to begin tracking expenses.</div>
+          <div className="text-sm text-muted-foreground">
+            No receipts yet. Upload images or PDFs to begin tracking expenses.
+          </div>
         )}
       </CardContent>
     </Card>

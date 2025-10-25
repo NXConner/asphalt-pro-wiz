@@ -1,15 +1,13 @@
-import { useParams, Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { PREMIUM_SERVICES, STANDARD_SERVICES } from '@/lib/serviceCatalog';
+import { useParams, Link } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { PREMIUM_SERVICES, STANDARD_SERVICES } from "@/lib/serviceCatalog";
 
 export default function PremiumServiceDetails() {
   const { serviceId } = useParams<{ serviceId: string }>();
-  
-  const service = [...PREMIUM_SERVICES, ...STANDARD_SERVICES].find(
-    s => s.id === serviceId
-  );
+
+  const service = [...PREMIUM_SERVICES, ...STANDARD_SERVICES].find((s) => s.id === serviceId);
 
   if (!service) {
     return (
@@ -63,10 +61,10 @@ export default function PremiumServiceDetails() {
               <div className="bg-muted p-4 rounded-lg">
                 <p className="text-2xl font-bold">
                   ${service.defaultUnitPrice.toFixed(2)}
-                  {service.unitType === 'perSqFt' && ' per sq ft'}
-                  {service.unitType === 'perLinearFt' && ' per linear ft'}
-                  {service.unitType === 'perUnit' && ' per unit'}
-                  {service.unitType === 'flat' && ' (flat rate)'}
+                  {service.unitType === "perSqFt" && " per sq ft"}
+                  {service.unitType === "perLinearFt" && " per linear ft"}
+                  {service.unitType === "perUnit" && " per unit"}
+                  {service.unitType === "flat" && " (flat rate)"}
                 </p>
               </div>
             </div>
@@ -74,8 +72,8 @@ export default function PremiumServiceDetails() {
             <div className="bg-accent/10 border-l-4 border-accent p-4 rounded">
               <h3 className="font-semibold mb-2">Professional Service</h3>
               <p className="text-sm text-muted-foreground">
-                This service is performed by trained professionals with specialized equipment
-                and materials to ensure the highest quality results and longevity of your pavement.
+                This service is performed by trained professionals with specialized equipment and
+                materials to ensure the highest quality results and longevity of your pavement.
               </p>
             </div>
           </CardContent>

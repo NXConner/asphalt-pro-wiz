@@ -150,12 +150,16 @@ export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerP
     try {
       const base64 = await fetch(imageUrl)
         .then((r) => r.blob())
-        .then((b) => new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve((reader.result as string).split(",")[1] || "");
-          reader.readAsDataURL(b);
-        }));
-      const prompt = "Estimate paved surface area (sq ft). If polygon provided, prefer that. Return a concise numeric answer like: Area: 1234 sq ft.";
+        .then(
+          (b) =>
+            new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve((reader.result as string).split(",")[1] || "");
+              reader.readAsDataURL(b);
+            }),
+        );
+      const prompt =
+        "Estimate paved surface area (sq ft). If polygon provided, prefer that. Return a concise numeric answer like: Area: 1234 sq ft.";
       const res = await analyzeImage(base64, "image/png", prompt);
       setAiNotes(res);
       const match = res.match(/([0-9]+(?:\.[0-9]+)?)\s*(sq\s*ft|ft\^2|square\s*feet)/i);
@@ -178,7 +182,8 @@ export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerP
       <CardHeader>
         <CardTitle>Image Area Analyzer</CardTitle>
         <CardDescription>
-          Upload a site photo, calibrate with a known distance, then click to draw over the paved area.
+          Upload a site photo, calibrate with a known distance, then click to draw over the paved
+          area.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -203,7 +208,12 @@ export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerP
             <Button type="button" variant="outline" onClick={undoPoint} disabled={!points.length}>
               Undo Point
             </Button>
-            <Button type="button" variant="ghost" onClick={clearAll} disabled={!points.length && !calibrationPx}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={clearAll}
+              disabled={!points.length && !calibrationPx}
+            >
               Reset
             </Button>
           </div>
@@ -226,12 +236,12 @@ export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerP
               className="block w-full text-left p-0 m-0 bg-transparent"
               aria-label="Image area annotator"
             >
-            <img ref={imgRef} src={imageUrl} alt="Site" className="max-w-full h-auto block" />
-            <canvas
-              ref={canvasRef}
-              className="absolute top-0 left-0 pointer-events-none"
-              style={{ width: "100%", height: "100%" }}
-            />
+              <img ref={imgRef} src={imageUrl} alt="Site" className="max-w-full h-auto block" />
+              <canvas
+                ref={canvasRef}
+                className="absolute top-0 left-0 pointer-events-none"
+                style={{ width: "100%", height: "100%" }}
+              />
             </button>
           </div>
         )}
@@ -245,9 +255,7 @@ export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerP
           <div className="p-3 rounded-md bg-muted">
             <div className="font-medium">Polygon</div>
             <div>Vertices: {points.length}</div>
-            <div>
-              Area: {areaSqFt > 0 ? <strong>{areaSqFt.toFixed(1)} sq ft</strong> : "—"}
-            </div>
+            <div>Area: {areaSqFt > 0 ? <strong>{areaSqFt.toFixed(1)} sq ft</strong> : "—"}</div>
           </div>
           <div className="p-3 rounded-md bg-muted">
             <div className="font-medium">AI Notes</div>

@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
-import { calculateProject, defaultBusinessData, type ProjectInputs } from '@/lib/calculations';
+import { describe, it, expect } from "vitest";
+import { calculateProject, defaultBusinessData, type ProjectInputs } from "@/lib/calculations";
 
 function baseInputs(overrides: Partial<ProjectInputs> = {}): ProjectInputs {
   return {
-    jobName: 'Test',
-    customerAddress: '123 Main',
+    jobName: "Test",
+    customerAddress: "123 Main",
     totalArea: 10000,
     numCoats: 2,
     sandAdded: false,
@@ -35,51 +35,62 @@ function baseInputs(overrides: Partial<ProjectInputs> = {}): ProjectInputs {
   };
 }
 
-describe('calculateProject', () => {
-  it('computes sealcoat cost for two coats', () => {
+describe("calculateProject", () => {
+  it("computes sealcoat cost for two coats", () => {
     const { costs } = calculateProject(baseInputs(), defaultBusinessData);
     expect(costs.sealcoat).toBeGreaterThan(0);
   });
 
-  it('omits sealcoat cost when sealcoating disabled', () => {
-    const { costs } = calculateProject(baseInputs({ includeSealcoating: false }), defaultBusinessData);
+  it("omits sealcoat cost when sealcoating disabled", () => {
+    const { costs } = calculateProject(
+      baseInputs({ includeSealcoating: false }),
+      defaultBusinessData,
+    );
     expect(costs.sealcoat).toBe(0);
   });
 
-  it('adds striping costs when enabled', () => {
-    const { costs } = calculateProject(baseInputs({ includeStriping: true, stripingLines: 10 }), defaultBusinessData);
+  it("adds striping costs when enabled", () => {
+    const { costs } = calculateProject(
+      baseInputs({ includeStriping: true, stripingLines: 10 }),
+      defaultBusinessData,
+    );
     expect(costs.striping).toBeGreaterThan(0);
   });
 
-  it('includes overhead and profit in total', () => {
+  it("includes overhead and profit in total", () => {
     const { costs } = calculateProject(baseInputs(), defaultBusinessData);
     expect(costs.total).toBeGreaterThan(costs.subtotal);
   });
 
-  it('auto-adds prep for crack repair only', () => {
+  it("auto-adds prep for crack repair only", () => {
     const { costs, breakdown } = calculateProject(
       baseInputs({ includeSealcoating: false, crackLength: 600, includeStriping: false }),
-      defaultBusinessData
+      defaultBusinessData,
     );
-    const laborLine = breakdown.find(b => b.item.startsWith('Labor'))?.value || '';
+    const laborLine = breakdown.find((b) => b.item.startsWith("Labor"))?.value || "";
     expect(laborLine).toMatch(/Prep: [1-9]/); // at least 1 hour prep
   });
 
-  it('auto-adds prep for sealcoating only', () => {
+  it("auto-adds prep for sealcoating only", () => {
     const { costs, breakdown } = calculateProject(
       baseInputs({ includeCleaningRepair: false, includeSealcoating: true, totalArea: 10000 }),
-      defaultBusinessData
+      defaultBusinessData,
     );
-    const laborLine = breakdown.find(b => b.item.startsWith('Labor'))?.value || '';
+    const laborLine = breakdown.find((b) => b.item.startsWith("Labor"))?.value || "";
     expect(laborLine).toMatch(/Prep: [1-9]/);
   });
 
-  it('auto-adds prep for striping when any items present', () => {
+  it("auto-adds prep for striping when any items present", () => {
     const { breakdown } = calculateProject(
-      baseInputs({ includeCleaningRepair: false, includeSealcoating: false, includeStriping: true, stripingLines: 1 }),
-      defaultBusinessData
+      baseInputs({
+        includeCleaningRepair: false,
+        includeSealcoating: false,
+        includeStriping: true,
+        stripingLines: 1,
+      }),
+      defaultBusinessData,
     );
-    const laborLine = breakdown.find(b => b.item.startsWith('Labor'))?.value || '';
+    const laborLine = breakdown.find((b) => b.item.startsWith("Labor"))?.value || "";
     expect(laborLine).toMatch(/L:1.0/);
   });
 });

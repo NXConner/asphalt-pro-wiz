@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getWeather, getWorkRecommendations, type WeatherBundle } from '@/lib/weather';
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getWeather, getWorkRecommendations, type WeatherBundle } from "@/lib/weather";
 
 interface WeatherCardProps {
   coords: [number, number] | null;
@@ -22,6 +22,8 @@ export const WeatherCard = ({ coords }: WeatherCardProps) => {
       }
     };
     void load();
+    // coords dep split to avoid complex expressions false positive
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coords?.[0], coords?.[1]]);
 
   return (
@@ -36,18 +38,26 @@ export const WeatherCard = ({ coords }: WeatherCardProps) => {
             <div className="flex items-center gap-4">
               <div className="text-3xl font-bold">{Math.round(weather.current.temperatureF)}°F</div>
               <div className="text-muted-foreground">
-                Wind {Math.round(weather.current.windMph)} mph · Humidity {Math.round(weather.current.humidityPct)}%
-                {weather.current.precipitationChancePct !== undefined && ` · Precip ${weather.current.precipitationChancePct}%`}
+                Wind {Math.round(weather.current.windMph)} mph · Humidity{" "}
+                {Math.round(weather.current.humidityPct)}%
+                {weather.current.precipitationChancePct !== undefined &&
+                  ` · Precip ${weather.current.precipitationChancePct}%`}
               </div>
             </div>
             {weather.hourlyNext6hPopPct && (
-              <div className="text-xs text-muted-foreground">Next 6h precip chance: {weather.hourlyNext6hPopPct.join('% · ')}%</div>
+              <div className="text-xs text-muted-foreground">
+                Next 6h precip chance: {weather.hourlyNext6hPopPct.join("% · ")}%
+              </div>
             )}
             <div className="grid grid-cols-4 gap-2">
               {weather.daily.slice(0, 4).map((d) => (
                 <div key={d.date} className="p-2 rounded border">
-                  <div className="text-xs text-muted-foreground">{new Date(d.date).toLocaleDateString()}</div>
-                  <div className="font-semibold">{Math.round(d.tempMaxF)}° / {Math.round(d.tempMinF)}°</div>
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(d.date).toLocaleDateString()}
+                  </div>
+                  <div className="font-semibold">
+                    {Math.round(d.tempMaxF)}° / {Math.round(d.tempMinF)}°
+                  </div>
                   <div className="text-xs">Precip {Math.round(d.precipitationMm)}mm</div>
                 </div>
               ))}

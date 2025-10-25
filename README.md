@@ -101,6 +101,7 @@ DATABASE_URL=postgres://postgres:postgres@localhost:5432/pavement npm run seed
 See `docs/ADMIN_SETUP.md` for Supabase admin instructions.
 
 ### Gemini Proxy (recommended)
+
 - Deploy Supabase Edge Function `gemini-proxy` (see `docs/SECRETS_AND_CONFIG.md`).
 - Set `VITE_GEMINI_PROXY_URL` to the function URL; avoid exposing API keys in the browser.
 
@@ -117,6 +118,7 @@ npm run test:e2e
 ```
 
 Key E2E flows covered:
+
 - Theme toggle switches between light/dark.
 - Feature Flags toggles (Image Area Analyzer, AI Assistant, Receipts).
 - Uploads panel accepts a file and displays a Download link.

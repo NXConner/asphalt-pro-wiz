@@ -13,12 +13,12 @@ interface DocumentGeneratorProps {
 
 export function DocumentGenerator({ jobName, customerAddress }: DocumentGeneratorProps) {
   const [docType, setDocType] = useState<
-    "Contract" |
-    "Progress Report" |
-    "Coating Notes" |
-    "Line Striping Plan" |
-    "Completion Certificate" |
-    "Before/After Comparison"
+    | "Contract"
+    | "Progress Report"
+    | "Coating Notes"
+    | "Line Striping Plan"
+    | "Completion Certificate"
+    | "Before/After Comparison"
   >("Contract");
   const [notes, setNotes] = useState("");
   const [clientName, setClientName] = useState("");
@@ -113,13 +113,19 @@ export function DocumentGenerator({ jobName, customerAddress }: DocumentGenerato
     <Card>
       <CardHeader>
         <CardTitle>Document Generator</CardTitle>
-        <CardDescription>Create client-facing documents and internal records; export in multiple formats.</CardDescription>
+        <CardDescription>
+          Create client-facing documents and internal records; export in multiple formats.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label>Document Type</Label>
-            <select className="w-full border rounded-md p-2 bg-background" value={docType} onChange={(e) => setDocType(e.target.value as any)}>
+            <select
+              className="w-full border rounded-md p-2 bg-background"
+              value={docType}
+              onChange={(e) => setDocType(e.target.value as any)}
+            >
               <option>Contract</option>
               <option>Progress Report</option>
               <option>Coating Notes</option>
@@ -134,26 +140,50 @@ export function DocumentGenerator({ jobName, customerAddress }: DocumentGenerato
           </div>
           <div>
             <Label>Schedule</Label>
-            <Input placeholder="e.g., 2025-05-10 morning" value={schedule} onChange={(e) => setSchedule(e.target.value)} />
+            <Input
+              placeholder="e.g., 2025-05-10 morning"
+              value={schedule}
+              onChange={(e) => setSchedule(e.target.value)}
+            />
           </div>
         </div>
 
         <div>
           <Label>Details / Notes</Label>
-          <Textarea rows={6} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Include before/after notes, repair progress, coat details, striping layout, final completion, comparisons..." />
+          <Textarea
+            rows={6}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Include before/after notes, repair progress, coat details, striping layout, final completion, comparisons..."
+          />
         </div>
 
         <div>
           <Label>Pricing Summary (optional)</Label>
-          <Textarea rows={3} value={priceSummary} onChange={(e) => setPriceSummary(e.target.value)} placeholder="High-level summary for client (internal breakdown stays private)" />
+          <Textarea
+            rows={3}
+            value={priceSummary}
+            onChange={(e) => setPriceSummary(e.target.value)}
+            placeholder="High-level summary for client (internal breakdown stays private)"
+          />
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={exportPdf}>Export PDF (Print)</Button>
-          <Button variant="outline" onClick={exportDoc}>Export Word (.doc)</Button>
-          <Button variant="outline" onClick={exportHtml}>Export HTML</Button>
-          <Button variant="outline" onClick={exportMarkdown}>Export Markdown</Button>
-          <Button variant="outline" onClick={exportCsv}>Export CSV (Excel compatible)</Button>
+          <Button variant="outline" onClick={exportPdf}>
+            Export PDF (Print)
+          </Button>
+          <Button variant="outline" onClick={exportDoc}>
+            Export Word (.doc)
+          </Button>
+          <Button variant="outline" onClick={exportHtml}>
+            Export HTML
+          </Button>
+          <Button variant="outline" onClick={exportMarkdown}>
+            Export Markdown
+          </Button>
+          <Button variant="outline" onClick={exportCsv}>
+            Export CSV (Excel compatible)
+          </Button>
           <Button onClick={saveRecord}>Save to Records</Button>
         </div>
       </CardContent>

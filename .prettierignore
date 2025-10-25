@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+playwright-report
+supabase/migrations/**
+deleted files/**
+**/*.min.js
+public/rag/index.json
+scripts/ingest/ingest.ts

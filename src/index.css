@@ -185,23 +185,23 @@ All colors MUST be HSL.
   }
   .theme-forest {
     --primary: 125 55% 35%; /* deep green */
-    --accent: 45 95% 50%;   /* warm amber */
+    --accent: 45 95% 50%; /* warm amber */
   }
   .theme-ocean {
     --primary: 200 85% 50%; /* teal/blue */
-    --accent: 170 70% 45%;  /* aqua */
+    --accent: 170 70% 45%; /* aqua */
   }
   .theme-amber {
-    --primary: 38 92% 55%;  /* amber */
-    --accent: 14 90% 55%;   /* orange-red */
+    --primary: 38 92% 55%; /* amber */
+    --accent: 14 90% 55%; /* orange-red */
   }
   .theme-mono {
-    --primary: 0 0% 100%;   /* white accents */
-    --accent: 0 0% 60%;     /* gray */
+    --primary: 0 0% 100%; /* white accents */
+    --accent: 0 0% 60%; /* gray */
   }
   .theme-cyber {
     --primary: 285 80% 60%; /* neon purple */
-    --accent: 162 85% 45%;  /* neon cyan */
+    --accent: 162 85% 45%; /* neon cyan */
   }
 }
 
@@ -228,42 +228,86 @@ All colors MUST be HSL.
   }
 
   body.has-wallpaper {
-    background-image: linear-gradient(
-      to bottom,
-      hsl(var(--background) / calc(1 - var(--wallpaper-opacity))),
-      hsl(var(--background) / calc(1 - var(--wallpaper-opacity)))
-    ), var(--app-wallpaper);
+    background-image:
+      linear-gradient(
+        to bottom,
+        hsl(var(--background) / calc(1 - var(--wallpaper-opacity))),
+        hsl(var(--background) / calc(1 - var(--wallpaper-opacity)))
+      ),
+      var(--app-wallpaper);
     backdrop-filter: blur(var(--wallpaper-blur));
   }
 }
 
 /* Card animation/effect utilities */
 @keyframes pps-float {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
-  100% { transform: translateY(0); }
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
 @keyframes pps-glow {
-  0% { box-shadow: 0 0 0 rgba(59,130,246,0.0); }
-  50% { box-shadow: 0 0 24px rgba(59,130,246,0.35); }
-  100% { box-shadow: 0 0 0 rgba(59,130,246,0.0); }
+  0% {
+    box-shadow: 0 0 0 rgba(59, 130, 246, 0);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(59, 130, 246, 0.35);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(59, 130, 246, 0);
+  }
 }
 @keyframes pps-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 @keyframes pps-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
-.pps-hover-lift:hover { transform: translateY(-2px); }
-.pps-anim-float { animation: pps-float 6s ease-in-out infinite; }
-.pps-anim-glow { animation: pps-glow 3s ease-in-out infinite; }
-.pps-anim-pulse { animation: pps-pulse 2s ease-in-out infinite; }
-.pps-anim-shimmer { background-image: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent); background-size: 200% 100%; animation: pps-shimmer 2.5s linear infinite; }
+.pps-hover-lift:hover {
+  transform: translateY(-2px);
+}
+.pps-anim-float {
+  animation: pps-float 6s ease-in-out infinite;
+}
+.pps-anim-glow {
+  animation: pps-glow 3s ease-in-out infinite;
+}
+.pps-anim-pulse {
+  animation: pps-pulse 2s ease-in-out infinite;
+}
+.pps-anim-shimmer {
+  background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  background-size: 200% 100%;
+  animation: pps-shimmer 2.5s linear infinite;
+}
 
 /* Layout variants */
-.pps-variant-compact .card-content, .pps-variant-compact .card-header { padding: 0.5rem !important; }
-.pps-variant-dense .card-content, .pps-variant-dense .card-header { padding: 0.75rem !important; }
-.pps-variant-spacious .card-content, .pps-variant-spacious .card-header { padding: 1.5rem !important; }
+.pps-variant-compact .card-content,
+.pps-variant-compact .card-header {
+  padding: 0.5rem !important;
+}
+.pps-variant-dense .card-content,
+.pps-variant-dense .card-header {
+  padding: 0.75rem !important;
+}
+.pps-variant-spacious .card-content,
+.pps-variant-spacious .card-header {
+  padding: 1.5rem !important;
+}

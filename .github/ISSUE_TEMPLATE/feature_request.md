@@ -3,7 +3,7 @@ name: Feature request
 about: Suggest an idea for this project
 title: "[Feature] "
 labels: enhancement
-assignees: ''
+assignees: ""
 ---
 
 ## Problem / Opportunity
@@ -15,12 +15,16 @@ assignees: ''
 ## Risks / Rollback
 
 ## Acceptance criteria
+
 1.
 2.
+
 ---
+
 name: Feature request
 about: Suggest an idea for this project
 labels: enhancement
+
 ---
 
 ## Summary

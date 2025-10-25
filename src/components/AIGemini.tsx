@@ -33,7 +33,11 @@ export function AIGemini() {
     setBusy(true);
     try {
       const base64 = await toBase64(file);
-      const res = await analyzeImage(base64, file.type, "Analyze asphalt condition, cracks (length/width), patching needs, and estimated affected area in sq ft. Return a concise list with numeric estimates.");
+      const res = await analyzeImage(
+        base64,
+        file.type,
+        "Analyze asphalt condition, cracks (length/width), patching needs, and estimated affected area in sq ft. Return a concise list with numeric estimates.",
+      );
       setImageResult(res);
     } catch (e: any) {
       setImageResult(e?.message || "Error");
@@ -51,18 +55,30 @@ export function AIGemini() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-2 items-start">
-          <Textarea className="md:col-span-4" rows={3} placeholder="Ask about materials, coverage, crack repair, scheduling, etc." value={question} onChange={(e) => setQuestion(e.target.value)} />
-          <Button className="md:col-span-1" onClick={ask} disabled={busy || !question.trim()}>Ask</Button>
+          <Textarea
+            className="md:col-span-4"
+            rows={3}
+            placeholder="Ask about materials, coverage, crack repair, scheduling, etc."
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+          />
+          <Button className="md:col-span-1" onClick={ask} disabled={busy || !question.trim()}>
+            Ask
+          </Button>
         </div>
         {answer && (
           <div className="p-3 border rounded-md whitespace-pre-wrap text-sm bg-muted">{answer}</div>
         )}
 
         <div className="space-y-2">
-          <label htmlFor="ai-image" className="text-sm font-medium">Image Analysis</label>
+          <label htmlFor="ai-image" className="text-sm font-medium">
+            Image Analysis
+          </label>
           <Input id="ai-image" type="file" accept="image/*" onChange={handleImage} />
           {imageResult && (
-            <div className="p-3 border rounded-md whitespace-pre-wrap text-sm bg-muted">{imageResult}</div>
+            <div className="p-3 border rounded-md whitespace-pre-wrap text-sm bg-muted">
+              {imageResult}
+            </div>
           )}
         </div>
       </CardContent>

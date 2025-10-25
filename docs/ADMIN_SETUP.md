@@ -15,9 +15,11 @@ ADMIN_EMAIL=n8ter8@gmail.com npm run seed
 ```
 
 Notes:
+
 - Migrations enable Row Level Security (RLS) on all tables. Add specific policies in your Supabase environment as needed.
 
 Seed behavior (idempotent):
+
 - `scripts/seed.ts` ensures default organization and assigns the admin user (`ADMIN_EMAIL`) a high-privilege role/membership if the user exists in `auth.users`.
 - Re-running the seed will not duplicate roles or orgs.
 - For local development via Docker Compose, the default `DATABASE_URL` is provided in `.env.example`.
