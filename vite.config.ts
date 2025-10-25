@@ -7,8 +7,20 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
+    // Bind on IPv4 for Lovable proxy compatibility and enforce port 8080
+    host: true,
     port: 8080,
+    strictPort: true,
+    // Ensure HMR works behind Lovable's HTTPS reverse proxy
+    hmr: {
+      clientPort: 443,
+    },
+  },
+  // Ensure `vite preview` uses the same port/host in Lovable
+  preview: {
+    host: true,
+    port: 8080,
+    strictPort: true,
   },
   plugins: [
     react(),
