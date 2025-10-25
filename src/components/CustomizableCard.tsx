@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Settings2, Pin, PinOff, Trash2 } from 'lucide-react';
+import { Settings2, Pin, PinOff, Trash2, Lock, Unlock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface CardStyle {
@@ -45,6 +45,12 @@ interface CustomizableCardProps {
   // Layout helpers wired by parent grid
   onResizePreset?: (w: number, h: number) => void;
   onLayoutFlagsChange?: (flags: { isDraggable?: boolean; isResizable?: boolean; static?: boolean }) => void;
+  // Customization lock (separate from movement lock)
+  isCustomizationLocked?: boolean;
+  onCustomizationLockToggle?: (locked: boolean) => void;
+  // Movement lock indicator and toggle (affects drag/resize)
+  isMovementLocked?: boolean;
+  onMovementLockToggle?: (locked: boolean) => void;
 }
 
 export function CustomizableCard({
@@ -58,6 +64,10 @@ export function CustomizableCard({
   className,
   onResizePreset,
   onLayoutFlagsChange,
+  isCustomizationLocked = false,
+  onCustomizationLockToggle,
+  isMovementLocked = false,
+  onMovementLockToggle,
 }: CustomizableCardProps) {
   const [isCustomizing, setIsCustomizing] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -146,6 +156,17 @@ export function CustomizableCard({
       style={cardStyle}
     >
       <div className="absolute top-2 right-2 z-10 flex gap-1">
+        {onMovementLockToggle && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => onMovementLockToggle(!isMovementLocked)}
+            title={isMovementLocked ? 'Unlock move/resize' : 'Lock move/resize'}
+          >
+            {isMovementLocked ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
+          </Button>
+        )}
         {onPin && (
           <Button
             variant="ghost"
@@ -156,9 +177,20 @@ export function CustomizableCard({
             {isPinned ? <Pin className="h-4 w-4" /> : <PinOff className="h-4 w-4" />}
           </Button>
         )}
-        <Popover open={isCustomizing} onOpenChange={setIsCustomizing}>
+        {onCustomizationLockToggle && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => onCustomizationLockToggle(!isCustomizationLocked)}
+            title={isCustomizationLocked ? 'Unlock customization' : 'Lock customization'}
+          >
+            {isCustomizationLocked ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
+          </Button>
+        )}
+        <Popover open={isCustomizationLocked ? false : isCustomizing} onOpenChange={(open) => !isCustomizationLocked && setIsCustomizing(open)}>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-7 w-7">
+            <Button variant="ghost" size="icon" className="h-7 w-7" disabled={isCustomizationLocked} title={isCustomizationLocked ? 'Customization locked' : 'Customize card'}>
               <Settings2 className="h-4 w-4" />
             </Button>
           </PopoverTrigger>

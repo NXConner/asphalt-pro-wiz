@@ -5,7 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Layout, Save, Star, RefreshCcw } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Layout, Save, Star, RefreshCcw, Settings2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { logEvent } from '@/lib/logging';
 
@@ -78,6 +79,12 @@ interface CardLayoutManagerProps {
   currentStyles: Record<string, any>;
   onLayoutChange: (layouts: CardLayout[]) => void;
   onStylesChange: (styles: Record<string, any>) => void;
+  // Optional: manage visible cards and global lock from here
+  availableCards?: { id: string; label: string }[];
+  visibleCardIds?: string[];
+  onVisibleCardsChange?: (ids: string[]) => void;
+  globalLock?: boolean;
+  onGlobalLockChange?: (locked: boolean) => void;
 }
 
 export function CardLayoutManager({
@@ -85,12 +92,18 @@ export function CardLayoutManager({
   currentStyles,
   onLayoutChange,
   onStylesChange,
+  availableCards,
+  visibleCardIds,
+  onVisibleCardsChange,
+  globalLock = false,
+  onGlobalLockChange,
 }: CardLayoutManagerProps) {
   const [presets, setPresets] = useState<LayoutPreset[]>(DEFAULT_PRESETS);
   const [selectedPreset, setSelectedPreset] = useState('Optimized');
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [newPresetName, setNewPresetName] = useState('');
   const [saveAsDefault, setSaveAsDefault] = useState(false);
+  const [manageCardsOpen, setManageCardsOpen] = useState(false);
 
   useEffect(() => {
     // Load custom presets and apply default on first mount
@@ -253,6 +266,49 @@ export function CardLayoutManager({
       <Button variant="ghost" size="icon" onClick={handleResetDefault} title="Reset to default">
         <RefreshCcw className="h-4 w-4" />
       </Button>
+
+      {typeof onGlobalLockChange === 'function' && (
+        <div className="flex items-center gap-2 pl-2 border-l">
+          <Label className="text-xs">Lock Layout</Label>
+          <Switch checked={!!globalLock} onCheckedChange={(v) => onGlobalLockChange(Boolean(v))} />
+        </div>
+      )}
+
+      {availableCards && onVisibleCardsChange && (
+        <Dialog open={manageCardsOpen} onOpenChange={setManageCardsOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Settings2 className="h-4 w-4 mr-1" />
+              Manage Cards
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Manage Visible Cards</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 py-2">
+              {availableCards.map((card) => {
+                const checked = !!visibleCardIds?.includes(card.id);
+                return (
+                  <div key={card.id} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`card-${card.id}`}
+                      checked={checked}
+                      onCheckedChange={(v) => {
+                        const isChecked = Boolean(v);
+                        const next = new Set(visibleCardIds || []);
+                        if (isChecked) next.add(card.id); else next.delete(card.id);
+                        onVisibleCardsChange(Array.from(next));
+                      }}
+                    />
+                    <Label htmlFor={`card-${card.id}`}>{card.label}</Label>
+                  </div>
+                );
+              })}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
         <DialogTrigger asChild>
