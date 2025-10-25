@@ -31,8 +31,13 @@ export async function generateChat(userMessage: string, context?: string): Promi
     const data = await res.json();
     return data?.text ?? "";
   }
-
-  if (!apiKey) throw new Error("Missing VITE_GEMINI_API_KEY");
+  // Enforce proxy-only in production: do not allow direct API calls without proxy
+  const nodeEnv = (globalThis as any)?.process?.env?.NODE_ENV;
+  const isProd = envAny.MODE === "production" || nodeEnv === "production";
+  if (isProd) {
+    throw new Error("Gemini proxy required in non-development environments");
+  }
+  if (!apiKey) throw new Error("Missing VITE_GEMINI_API_KEY (dev/test only)");
   const response = await fetch(GEMINI_GENERATE_URL("gemini-1.5-pro-latest", apiKey), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -70,8 +75,12 @@ export async function analyzeImage(
     const data = await res.json();
     return data?.text ?? "";
   }
-
-  if (!apiKey) throw new Error("Missing VITE_GEMINI_API_KEY");
+  const nodeEnv2 = (globalThis as any)?.process?.env?.NODE_ENV;
+  const isProd2 = envAny.MODE === "production" || nodeEnv2 === "production";
+  if (isProd2) {
+    throw new Error("Gemini proxy required in non-development environments");
+  }
+  if (!apiKey) throw new Error("Missing VITE_GEMINI_API_KEY (dev/test only)");
   const response = await fetch(GEMINI_GENERATE_URL("gemini-1.5-flash-latest", apiKey), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -101,7 +110,12 @@ export async function embedText(text: string): Promise<number[]> {
     return values ?? [];
   }
 
-  if (!apiKey) throw new Error("Missing VITE_GEMINI_API_KEY");
+  const nodeEnv3 = (globalThis as any)?.process?.env?.NODE_ENV;
+  const isProd3 = envAny.MODE === "production" || nodeEnv3 === "production";
+  if (isProd3) {
+    throw new Error("Gemini proxy required in non-development environments");
+  }
+  if (!apiKey) throw new Error("Missing VITE_GEMINI_API_KEY (dev/test only)");
   const response = await fetch(GEMINI_EMBED_URL(apiKey), {
     method: "POST",
     headers: { "Content-Type": "application/json" },

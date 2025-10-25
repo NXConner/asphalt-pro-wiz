@@ -1,50 +1,20 @@
 ---
 name: Bug report
-about: Create a report to help us improve
-title: "[Bug] "
-labels: bug
-assignees: ""
----
-
-## Describe the bug
-
-## Steps to reproduce
-
-1.
-2.
-
-## Expected behavior
-
-## Screenshots / Logs
-
-## Environment
-
-- OS:
-- Browser:
-- Version/Commit:
-
-## Additional context
-
----
-
-name: Bug report
 about: Report a problem to help us improve
 labels: bug
-
 ---
 
-## Describe the bug
+### Describe the bug
 
-## To Reproduce
+### Steps to reproduce
 
-## Expected behavior
+### Expected behavior
 
-## Screenshots / Logs
+### Screenshots / recordings
 
-## Environment
+### Environment
 
-- OS:
-- Browser:
-- Version:
+- Browser/OS:
+- Version/commit:
 
-## Additional context
+### Additional context

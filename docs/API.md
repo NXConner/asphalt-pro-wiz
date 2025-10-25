@@ -1,6 +1,6 @@
 # API Overview
 
-This project currently runs frontend-only with optional Supabase Edge Functions.
+This project currently runs frontend-only with optional Supabase Edge Functions. In production, all Gemini calls must go through the edge proxy.
 
 ## Gemini Proxy (Supabase Edge Function)
 

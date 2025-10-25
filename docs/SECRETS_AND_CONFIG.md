@@ -1,4 +1,5 @@
 # Secrets & Config
+
 ## Production-grade secrets management (placeholder wiring)
 
 - Recommended managers: Doppler, HashiCorp Vault, AWS Secrets Manager.
@@ -12,7 +13,7 @@ env:
 ```
 
 - Local development uses `.env` loaded by Vite. Never commit real secrets.
-- VITE_GEMINI_PROXY_URL: URL of Supabase Edge Function `gemini-proxy` to avoid exposing Gemini keys in browser.
+- VITE_GEMINI_PROXY_URL: URL of Supabase Edge Function `gemini-proxy` to avoid exposing Gemini keys in browser. In non-development environments, the app requires a proxy; direct API keys in the browser are blocked.
 - VITE_LOG_BEACON_URL: Optional endpoint to receive client-side structured logs via `navigator.sendBeacon`.
 - DATABASE_URL: For local Postgres when running migrations and seed scripts.
 

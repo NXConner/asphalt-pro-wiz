@@ -1,4 +1,8 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-npm run precommit:hook
+# Run lint-staged for staged files
+npx --no-install lint-staged
+
+# Run unit tests fast (no watch)
+npm run test:unit -- --run

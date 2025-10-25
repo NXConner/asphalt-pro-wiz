@@ -28,6 +28,8 @@ export interface ThemePreferences {
   wallpaperOpacity: number; // 0-1
   wallpaperBlur: number; // px
   radius: number; // px
+  /** High-contrast accessibility mode */
+  highContrast?: boolean;
 }
 
 const STORAGE_KEY = "pps:theme";
@@ -42,6 +44,7 @@ export function getDefaultPreferences(): ThemePreferences {
     wallpaperOpacity: 0.25,
     wallpaperBlur: 0,
     radius: 8,
+    highContrast: false,
   };
 }
 
@@ -86,6 +89,13 @@ export function applyThemePreferences(prefs: ThemePreferences): void {
 
   // radius
   root.style.setProperty("--radius", `${prefs.radius}px`);
+
+  // high contrast
+  if (prefs.highContrast) {
+    root.classList.add("high-contrast");
+  } else {
+    root.classList.remove("high-contrast");
+  }
 
   // primary hue override (optional)
   if (prefs.useHueOverride && Number.isFinite(prefs.primaryHue)) {
