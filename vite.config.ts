@@ -6,6 +6,9 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // Ensure assets resolve under sub-path previews (e.g., /preview/xyz)
+  // Use relative base in production to avoid absolute /assets paths breaking behind proxies
+  base: mode === 'development' ? '/' : (process.env.VITE_BASE_PATH || './'),
   server: {
     // Bind on IPv4 for Lovable proxy compatibility and enforce port 8080
     host: true,

@@ -49,6 +49,27 @@ const App = () => {
     };
   }, []);
 
+  // Ensure routing works when the app is served from a sub-path (e.g., lovable.dev preview)
+  const baseName = (() => {
+    try {
+      // Prefer Vite's injected BASE_URL when available, otherwise derive from document.baseURI
+      const envAny = (import.meta as any)?.env ?? {};
+      const envBase = (envAny.BASE_URL as string | undefined) || (envAny.VITE_BASE_URL as string | undefined);
+      if (envBase && envBase !== "/") {
+        // Treat './' (relative base) as root for router basename
+        const cleaned = envBase === "./" ? "/" : envBase;
+        return cleaned.replace(/\/$/, "");
+      }
+      let { pathname } = new URL(document.baseURI);
+      // Strip index.html if present
+      pathname = pathname.replace(/\/?index\.html$/, "");
+      if (!pathname || pathname === "/") return "/";
+      return pathname.replace(/\/$/, "");
+    } catch {
+      return "/";
+    }
+  })();
+
   return (
     <ErrorBoundary>
       <I18nProvider>
@@ -56,7 +77,7 @@ const App = () => {
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <BrowserRouter>
+            <BrowserRouter basename={baseName}>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/service/:serviceId" element={<PremiumServiceDetails />} />
