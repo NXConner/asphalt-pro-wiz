@@ -320,6 +320,20 @@ export function CustomizableCard({
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Layout Variant</Label>
+                  <Select value={style.layoutVariant || 'default'} onValueChange={(v) => handleStyleChange('layoutVariant', v as CardStyle['layoutVariant'])}>
+                    <SelectTrigger className="h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="default">Default</SelectItem>
+                      <SelectItem value="compact">Compact</SelectItem>
+                      <SelectItem value="dense">Dense</SelectItem>
+                      <SelectItem value="padded">Spacious</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="flex items-center justify-between mt-6">
                   <Label className="text-xs">Hover Lift</Label>
                   <Switch checked={!!style.hoverLift} onCheckedChange={(checked) => handleStyleChange('hoverLift', checked)} />
