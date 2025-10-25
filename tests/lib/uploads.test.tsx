@@ -18,6 +18,8 @@ vi.mock('@/lib/idb', async () => {
   };
 });
 
+import * as idb from '@/lib/idb';
+
 describe('UploadsPanel', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -32,16 +34,16 @@ describe('UploadsPanel', () => {
     await waitFor(() => fireEvent.change(input, { target: { files: [file] } }));
 
     // After upload, listFiles is called to refresh
-    await waitFor(() => expect(require('@/lib/idb').listFiles).toHaveBeenCalled());
+    await waitFor(() => expect(idb.listFiles).toHaveBeenCalled());
   });
 
   it('creates a document record', async () => {
     render(<UploadsPanel jobName="J" customerAddress="A" />);
 
-    fireEvent.change(screen.getByPlaceholderText('Title (e.g., Contract, Progress Report)'), { target: { value: 'My Doc' } });
-    fireEvent.change(screen.getByPlaceholderText('Notes / Content (quick text)'), { target: { value: 'Hi' } });
-    fireEvent.click(screen.getByText('Save Document'));
+    fireEvent.change(screen.getAllByPlaceholderText('Title (e.g., Contract, Progress Report)')[0], { target: { value: 'My Doc' } });
+    fireEvent.change(screen.getAllByPlaceholderText('Notes / Content (quick text)')[0], { target: { value: 'Hi' } });
+    fireEvent.click(screen.getAllByText('Save Document')[0]);
 
-    await waitFor(() => expect(require('@/lib/idb').saveDoc).toHaveBeenCalled());
+    await waitFor(() => expect(idb.saveDoc).toHaveBeenCalled());
   });
 });

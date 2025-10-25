@@ -66,9 +66,9 @@ export function UploadsPanel({ jobName, customerAddress }: UploadsPanelProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <Label>Upload Files (images, pdf, docx, xlsx, etc.)</Label>
+          <Label htmlFor="file-upload">Upload Files (images, pdf, docx, xlsx, etc.)</Label>
           <div className="flex items-center gap-2">
-            <Input ref={fileInputRef} type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv" onChange={handleUpload} />
+            <Input id="file-upload" ref={fileInputRef} type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv" onChange={handleUpload} />
             <UploadCloud className="w-5 h-5" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
@@ -103,8 +103,8 @@ export function UploadsPanel({ jobName, customerAddress }: UploadsPanelProps) {
         <div className="space-y-2">
           <Label>Create Internal Document (for records)</Label>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
-            <Input className="md:col-span-2" placeholder="Title (e.g., Contract, Progress Report)" value={docTitle} onChange={(e) => setDocTitle(e.target.value)} />
-            <Input className="md:col-span-3" placeholder="Notes / Content (quick text)" value={docContent} onChange={(e) => setDocContent(e.target.value)} />
+            <Input aria-label="Document Title" className="md:col-span-2" placeholder="Title (e.g., Contract, Progress Report)" value={docTitle} onChange={(e) => setDocTitle(e.target.value)} />
+            <Input aria-label="Document Notes" className="md:col-span-3" placeholder="Notes / Content (quick text)" value={docContent} onChange={(e) => setDocContent(e.target.value)} />
           </div>
           <Button onClick={handleCreateDoc} className="mt-2">Save Document</Button>
 

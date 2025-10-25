@@ -110,6 +110,9 @@ const Index = () => {
   ]);
   const [cardStyles, setCardStyles] = useState<Record<string, CardStyle>>({});
   const [pinnedCards, setPinnedCards] = useState<Record<string, boolean>>({});
+  const [globalLock, setGlobalLock] = useState<boolean>(false);
+  const [visibleCardIds, setVisibleCardIds] = useState<string[]>(['map', 'details', 'premium', 'weather']);
+  const [customizationLocks, setCustomizationLocks] = useState<Record<string, boolean>>({});
 
   const businessCoords: [number, number] = BUSINESS_COORDS_FALLBACK;
   const supplierCoords: [number, number] = SUPPLIER_COORDS_FALLBACK;
@@ -123,25 +126,35 @@ const Index = () => {
   };
 
   const handleLayoutChange = (newLayout: any[]) => {
-    const updatedLayouts = newLayout.map(item => ({
-      i: item.i,
-      x: item.x,
-      y: item.y,
-      w: item.w,
-      h: item.h,
-      minW: cardLayouts.find(c => c.i === item.i)?.minW,
-      minH: cardLayouts.find(c => c.i === item.i)?.minH,
-      isResizable: cardLayouts.find(c => c.i === item.i)?.isResizable,
-      isDraggable: cardLayouts.find(c => c.i === item.i)?.isDraggable,
-      static: cardLayouts.find(c => c.i === item.i)?.static,
-    }));
-    setCardLayouts(updatedLayouts);
+    // Merge changes from visible layout into full layout state
+    setCardLayouts(prev => {
+      const nextById = new Map<string, any>();
+      for (const item of newLayout) {
+        nextById.set(item.i, item);
+      }
+      return prev.map(orig => {
+        const changed = nextById.get(orig.i);
+        if (!changed) return orig; // keep hidden items intact
+        return {
+          i: orig.i,
+          x: changed.x,
+          y: changed.y,
+          w: changed.w,
+          h: changed.h,
+          minW: orig.minW,
+          minH: orig.minH,
+          isResizable: orig.isResizable,
+          isDraggable: orig.isDraggable,
+          static: orig.static,
+        };
+      });
+    });
     try {
-      const meta = updatedLayouts.reduce((acc: Record<string, { w: number; h: number }>, l) => {
+      const meta = newLayout.reduce((acc: Record<string, { w: number; h: number }>, l: any) => {
         acc[l.i] = { w: l.w, h: l.h };
         return acc;
       }, {} as Record<string, { w: number; h: number }>);
-      logEvent('ui.cards.layout_changed', { count: updatedLayouts.length, meta });
+      logEvent('ui.cards.layout_changed', { count: newLayout.length, meta });
     } catch {}
   };
 
@@ -151,6 +164,14 @@ const Index = () => {
 
   const setItemFlags = (i: string, flags: { isDraggable?: boolean; isResizable?: boolean; static?: boolean }) => {
     setCardLayouts(prev => prev.map(l => l.i === i ? { ...l, ...flags } : l));
+  };
+
+  const setItemMovementLocked = (i: string, locked: boolean) => {
+    setCardLayouts(prev => prev.map(l => l.i === i ? { ...l, static: locked, isDraggable: locked ? false : l.isDraggable, isResizable: locked ? false : l.isResizable } : l));
+  };
+
+  const setCardCustomizationLocked = (i: string, locked: boolean) => {
+    setCustomizationLocks(prev => ({ ...prev, [i]: locked }));
   };
 
   const handleAddressUpdate = (coords: [number, number], address: string) => {
@@ -384,6 +405,32 @@ const Index = () => {
               currentStyles={cardStyles}
               onLayoutChange={setCardLayouts}
               onStylesChange={setCardStyles}
+              availableCards={[
+                { id: 'map', label: 'Location & Map' },
+                { id: 'details', label: 'Project Details' },
+                { id: 'premium', label: 'Premium Services' },
+                { id: 'weather', label: 'Weather' },
+              ]}
+              visibleCardIds={visibleCardIds}
+              onVisibleCardsChange={(ids) => {
+                // Ensure layouts exist for any newly added cards
+                setCardLayouts(prev => {
+                  const exists = new Set(prev.map(p => p.i));
+                  const missing = ids.filter(id => !exists.has(id));
+                  if (missing.length === 0) return prev;
+                  const defaults: Record<string, CardLayout> = {
+                    map: { i: 'map', x: 0, y: 0, w: 8, h: 10, minW: 6, minH: 6 },
+                    details: { i: 'details', x: 8, y: 0, w: 4, h: 18, minW: 4, minH: 8 },
+                    premium: { i: 'premium', x: 0, y: 10, w: 8, h: 10, minW: 3, minH: 4 },
+                    weather: { i: 'weather', x: 8, y: 18, w: 4, h: 6, minW: 3, minH: 4 },
+                  };
+                  const toAdd = missing.map(id => defaults[id]).filter(Boolean) as CardLayout[];
+                  return [...prev, ...toAdd];
+                });
+                setVisibleCardIds(ids);
+              }}
+              globalLock={globalLock}
+              onGlobalLockChange={setGlobalLock}
             />
             <ThemeToggle />
           </div>
@@ -409,17 +456,18 @@ const Index = () => {
             <div ref={gridContainerRef}>
             <GridLayout
               className="layout"
-              layout={cardLayouts}
+              layout={cardLayouts.filter(l => visibleCardIds.includes(l.i))}
               cols={12}
               rowHeight={30}
               width={gridWidth}
               onLayoutChange={handleLayoutChange}
-              isDraggable={true}
-              isResizable={true}
+              isDraggable={!globalLock}
+              isResizable={!globalLock}
               compactType="vertical"
               preventCollision={false}
               draggableCancel=".non-draggable"
             >
+              {visibleCardIds.includes('map') && (
               <div key="map">
                 <CustomizableCard
                   cardId="map"
@@ -431,6 +479,10 @@ const Index = () => {
                   className="h-full"
                   onResizePreset={(w,h) => setItemSize('map', w, h)}
                   onLayoutFlagsChange={(flags) => setItemFlags('map', flags)}
+                  isCustomizationLocked={!!customizationLocks['map']}
+                  onCustomizationLockToggle={(locked) => setCardCustomizationLocked('map', locked)}
+                  isMovementLocked={!!cardLayouts.find(l => l.i === 'map')?.static || (!cardLayouts.find(l => l.i === 'map')?.isDraggable && !cardLayouts.find(l => l.i === 'map')?.isResizable)}
+                  onMovementLockToggle={(locked) => setItemMovementLocked('map', locked)}
                 >
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -469,7 +521,9 @@ const Index = () => {
                   </CardContent>
                 </CustomizableCard>
               </div>
+              )}
 
+              {visibleCardIds.includes('details') && (
               <div key="details">
                 <CustomizableCard
                   cardId="details"
@@ -481,6 +535,10 @@ const Index = () => {
                   className="h-full overflow-y-auto"
                   onResizePreset={(w,h) => setItemSize('details', w, h)}
                   onLayoutFlagsChange={(flags) => setItemFlags('details', flags)}
+                  isCustomizationLocked={!!customizationLocks['details']}
+                  onCustomizationLockToggle={(locked) => setCardCustomizationLocked('details', locked)}
+                  isMovementLocked={!!cardLayouts.find(l => l.i === 'details')?.static || (!cardLayouts.find(l => l.i === 'details')?.isDraggable && !cardLayouts.find(l => l.i === 'details')?.isResizable)}
+                  onMovementLockToggle={(locked) => setItemMovementLocked('details', locked)}
                 >
                   <CardHeader>
                     <CardTitle>Project Details & Measurements</CardTitle>
@@ -681,7 +739,9 @@ const Index = () => {
                   </CardContent>
                 </CustomizableCard>
               </div>
+              )}
 
+              {visibleCardIds.includes('weather') && (
               <div key="weather">
                 <CustomizableCard
                   cardId="weather"
@@ -693,11 +753,17 @@ const Index = () => {
                   className="h-full"
                   onResizePreset={(w,h) => setItemSize('weather', w, h)}
                   onLayoutFlagsChange={(flags) => setItemFlags('weather', flags)}
+                  isCustomizationLocked={!!customizationLocks['weather']}
+                  onCustomizationLockToggle={(locked) => setCardCustomizationLocked('weather', locked)}
+                  isMovementLocked={!!cardLayouts.find(l => l.i === 'weather')?.static || (!cardLayouts.find(l => l.i === 'weather')?.isDraggable && !cardLayouts.find(l => l.i === 'weather')?.isResizable)}
+                  onMovementLockToggle={(locked) => setItemMovementLocked('weather', locked)}
                 >
                   <WeatherCard coords={customerCoords} />
                 </CustomizableCard>
               </div>
+              )}
 
+              {visibleCardIds.includes('premium') && (
               <div key="premium">
                 <CustomizableCard
                   cardId="premium"
@@ -709,6 +775,10 @@ const Index = () => {
                   className="h-full overflow-y-auto"
                   onResizePreset={(w,h) => setItemSize('premium', w, h)}
                   onLayoutFlagsChange={(flags) => setItemFlags('premium', flags)}
+                  isCustomizationLocked={!!customizationLocks['premium']}
+                  onCustomizationLockToggle={(locked) => setCardCustomizationLocked('premium', locked)}
+                  isMovementLocked={!!cardLayouts.find(l => l.i === 'premium')?.static || (!cardLayouts.find(l => l.i === 'premium')?.isDraggable && !cardLayouts.find(l => l.i === 'premium')?.isResizable)}
+                  onMovementLockToggle={(locked) => setItemMovementLocked('premium', locked)}
                 >
                   <PremiumServices
                     edgePushing={premiumEdgePushing}
@@ -722,6 +792,7 @@ const Index = () => {
                   />
                 </CustomizableCard>
               </div>
+              )}
             </GridLayout>
             </div>
 
