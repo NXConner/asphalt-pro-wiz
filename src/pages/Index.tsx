@@ -131,6 +131,9 @@ const Index = () => {
       h: item.h,
       minW: cardLayouts.find(c => c.i === item.i)?.minW,
       minH: cardLayouts.find(c => c.i === item.i)?.minH,
+      isResizable: cardLayouts.find(c => c.i === item.i)?.isResizable,
+      isDraggable: cardLayouts.find(c => c.i === item.i)?.isDraggable,
+      static: cardLayouts.find(c => c.i === item.i)?.static,
     }));
     setCardLayouts(updatedLayouts);
     try {
@@ -140,6 +143,14 @@ const Index = () => {
       }, {} as Record<string, { w: number; h: number }>);
       logEvent('ui.cards.layout_changed', { count: updatedLayouts.length, meta });
     } catch {}
+  };
+
+  const setItemSize = (i: string, w: number, h: number) => {
+    setCardLayouts(prev => prev.map(l => l.i === i ? { ...l, w, h } : l));
+  };
+
+  const setItemFlags = (i: string, flags: { isDraggable?: boolean; isResizable?: boolean; static?: boolean }) => {
+    setCardLayouts(prev => prev.map(l => l.i === i ? { ...l, ...flags } : l));
   };
 
   const handleAddressUpdate = (coords: [number, number], address: string) => {
@@ -407,6 +418,7 @@ const Index = () => {
               isResizable={true}
               compactType="vertical"
               preventCollision={false}
+              draggableCancel=".non-draggable"
             >
               <div key="map">
                 <CustomizableCard
@@ -417,6 +429,8 @@ const Index = () => {
                   style={cardStyles['map']}
                   onStyleChange={(style) => handleCardStyleChange('map', style)}
                   className="h-full"
+                  onResizePreset={(w,h) => setItemSize('map', w, h)}
+                  onLayoutFlagsChange={(flags) => setItemFlags('map', flags)}
                 >
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -465,6 +479,8 @@ const Index = () => {
                   style={cardStyles['details']}
                   onStyleChange={(style) => handleCardStyleChange('details', style)}
                   className="h-full overflow-y-auto"
+                  onResizePreset={(w,h) => setItemSize('details', w, h)}
+                  onLayoutFlagsChange={(flags) => setItemFlags('details', flags)}
                 >
                   <CardHeader>
                     <CardTitle>Project Details & Measurements</CardTitle>
@@ -675,6 +691,8 @@ const Index = () => {
                   style={cardStyles['weather']}
                   onStyleChange={(style) => handleCardStyleChange('weather', style)}
                   className="h-full"
+                  onResizePreset={(w,h) => setItemSize('weather', w, h)}
+                  onLayoutFlagsChange={(flags) => setItemFlags('weather', flags)}
                 >
                   <WeatherCard coords={customerCoords} />
                 </CustomizableCard>
@@ -689,6 +707,8 @@ const Index = () => {
                   style={cardStyles['premium']}
                   onStyleChange={(style) => handleCardStyleChange('premium', style)}
                   className="h-full overflow-y-auto"
+                  onResizePreset={(w,h) => setItemSize('premium', w, h)}
+                  onLayoutFlagsChange={(flags) => setItemFlags('premium', flags)}
                 >
                   <PremiumServices
                     edgePushing={premiumEdgePushing}
