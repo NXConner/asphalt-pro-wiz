@@ -4,9 +4,18 @@ import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 import jsxA11y from "eslint-plugin-jsx-a11y";
+import pluginSecurity from "eslint-plugin-security";
 
 export default tseslint.config(
-  { ignores: ["dist", "scripts/**", "supabase/migrations/**", "deleted files/**"] },
+  {
+    ignores: [
+      "dist",
+      "scripts/**",
+      "supabase/migrations/**",
+      "supabase/functions/**",
+      "deleted files/**",
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -14,14 +23,18 @@ export default tseslint.config(
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    // Keep config simple and compatible with ESLint flat config
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
       "jsx-a11y": jsxA11y,
+      security: pluginSecurity,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
       ...(jsxA11y.configs?.recommended?.rules ?? {}),
+      "security/detect-object-injection": "off",
+      "security/detect-non-literal-fs-filename": "off",
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/no-explicit-any": "off",

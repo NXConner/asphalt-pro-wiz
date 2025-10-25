@@ -8,15 +8,10 @@ coverage
 playwright-report
 supabase/.temp
 deleted files
-node_modules
-.git
-.gitignore
-.husky
-.github
-Dockerfile*
-dist
+.env
+.env.*
 npm-debug.log
 yarn-error.log
 .idea
 .vscode
-coverage
+Dockerfile*

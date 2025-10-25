@@ -1,9 +1,6 @@
-node_modules
 dist
+node_modules
 coverage
 playwright-report
-supabase/migrations/**
-deleted files/**
-**/*.min.js
-public/rag/index.json
-scripts/ingest/ingest.ts
+supabase/.temp
+.deleted files

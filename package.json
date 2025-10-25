@@ -18,6 +18,7 @@
     "snyk:monitor": "snyk monitor || true",
     "prepare": "husky",
     "precommit:hook": "echo 'Running pre-commit checks' && npm run format:check && npm run lint && npm run test:unit -- --run",
+    "commitlint": "commitlint --edit $1",
     "preview": "vite preview",
     "ingest:repos": "tsx scripts/ingest/ingest.ts",
     "migrate:create": "node-pg-migrate -m supabase/migrations create",
@@ -108,6 +109,11 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^6.1.4",
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-security": "^3.0.1",
+    "lint-staged": "^15.2.10",
     "@eslint/js": "^9.32.0",
     "@playwright/test": "^1.48.2",
     "@tailwindcss/typography": "^0.5.16",
@@ -145,5 +151,13 @@
     "vite-plugin-pwa": "^0.20.5",
     "vitest": "^2.1.5",
     "vitest-axe": "^0.1.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json,css,md}": [
+      "prettier --write"
+    ],
+    "src/**/*.{ts,tsx}": [
+      "eslint --fix"
+    ]
   }
 }
