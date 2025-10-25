@@ -9,7 +9,13 @@ export type ThemeName =
   | "ocean"
   | "amber"
   | "mono"
-  | "cyber";
+  | "cyber"
+  | "slate"
+  | "rose"
+  | "midnight"
+  | "canary"
+  | "copper"
+  | "sage";
 
 export interface ThemePreferences {
   mode: ThemeMode;

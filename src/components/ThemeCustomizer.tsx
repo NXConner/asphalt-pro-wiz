@@ -84,6 +84,12 @@ export function ThemeCustomizer() {
                 <SelectItem value="amber">Amber</SelectItem>
                 <SelectItem value="mono">Monochrome</SelectItem>
                 <SelectItem value="cyber">Cyber</SelectItem>
+                <SelectItem value="slate">Slate</SelectItem>
+                <SelectItem value="rose">Rose</SelectItem>
+                <SelectItem value="midnight">Midnight</SelectItem>
+                <SelectItem value="canary">Canary</SelectItem>
+                <SelectItem value="copper">Copper</SelectItem>
+                <SelectItem value="sage">Sage</SelectItem>
               </SelectContent>
             </Select>
 

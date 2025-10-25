@@ -24,6 +24,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Unit tests
         run: npm run test:unit -- --run
 
@@ -37,6 +40,39 @@ jobs:
         run: npm run test:e2e
         env:
           CI: true
+
+  docker:
+    name: Build and (optionally) push Docker image
+    needs: build-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   security:
     runs-on: ubuntu-latest
@@ -53,6 +89,25 @@ jobs:
         run: npm run audit
       - name: Snyk test (non-blocking)
         run: npm run snyk:test
+
+  migrate:
+    name: Run database migrations (optional)
+    if: ${{ secrets.DATABASE_URL != '' }}
+    needs: build-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm ci
+      - name: Run migrations
+        run: npm run migrate:up
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
   codeql:
     permissions:

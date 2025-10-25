@@ -66,6 +66,13 @@ export const THEME_NAMES = [
   "amber",
   "mono",
   "cyber",
+  // Extended palette
+  "slate",
+  "rose",
+  "midnight",
+  "canary",
+  "copper",
+  "sage",
 ] as const;
 
 export type ThemeNameFromTokens = typeof THEME_NAMES[number];

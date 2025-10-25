@@ -2,95 +2,73 @@
 
 - Name: Pavement Performance Suite (Estimator + AI Assistant)
 - Stack: Vite, React, TypeScript, Tailwind, shadcn-ui, React Router, TanStack Query
-- AI: Google Gemini 1.5 (chat and image analysis) via `src/lib/gemini.ts`
-- Domain: Asphalt maintenance estimating, crack fill, sealcoating, line-striping, with church parking lot focus
-- State: Solid estimator UI with map-assisted measurement, internal cost model, invoice view, AI Q&A + image analysis, local file/docs storage via IndexedDB
+- AI: Google Gemini 1.5 (chat, image, embeddings) via `src/lib/gemini.ts` or Supabase Edge Function proxy
+- Domain: Asphalt maintenance estimating, crack fill, sealcoating, line-striping (optimized for church parking lots)
+- State: Mature estimator UI with map-assisted measurement, internal cost model, invoice view, AI Q&A + image analysis, local IndexedDB storage, theming and custom wallpapers. Lint, type-check, and unit tests currently pass.
 
-### Key Capabilities Found
-- Area measurement (map drawing and manual shapes), travel calculations, sealcoating options, crack repair, striping breakdown, premium add-ons, custom services
+### Key Capabilities
+- Area measurement (map drawing/manual shapes), travel calculations, sealcoating options, crack repair, striping breakdown, premium add-ons, custom services
 - Cost model in `src/lib/calculations.ts` with labor, materials, travel, overhead, and profit
-- Theme toggling and basic hue customizer
-- AI assistant with text Q&A and image analysis (Gemini), but no retrieval (RAG) or domain corpus yet
-- Uploads panel for job files and internal docs (IndexedDB)
+- Theme toggle, multi-theme presets, hue override, radius control, custom wallpaper upload with opacity/blur
+- AI assistant (text/image) with optional proxy function `supabase/functions/gemini-proxy`
+- Uploads panel and internal docs via IndexedDB; basic RAG scaffolding and OpenAPI placeholder
 
-### Gaps / Risks
-- Backend API/proxy missing; Gemini API key currently used in browser. Need a thin server (or Supabase Edge Function) to proxy AI calls and protect secrets.
-- Supabase present with unified migrations, but RLS policies and role mappings need environment-specific hardening and tests.
-- CI/CD pipeline missing (no GitHub Actions workflow). No automated lint, test, build, docker, scans, or migrations in CI.
-- Secrets management is documented but not integrated (no Doppler/Vault/AWS SM wiring). `.env.example` lacks some observability keys (e.g., `VITE_LOG_BEACON_URL`).
-- OpenAPI/docs: generator script placeholder exists but there is no backend to document yet.
-- Observability limited to client logs; no metrics/tracing and no server-side logs.
-- Design system is defined in CSS variables and `ThemeCustomizer`, but tokens are not typed and not centrally exported for TS consumption.
-- Android (Capacitor) present; no release pipeline hardening, signing guidance, or runtime permission audits.
+### Current Risks / Gaps
+- AI key exposure risk if proxy not used everywhere; ensure `VITE_GEMINI_PROXY_URL` is preferred and documented
+- RLS policies and role mappings should be validated with automated tests for multi-tenant scenarios
+- CI/CD can further harden with Docker build/push and optional migrations gates
+- Observability: client beacon exists; server-side logs/metrics not yet wired
+- Docker Compose passes VITE_ env at runtime (static site); document build-arg alternative when needed
 
 ## Improvement & Completion Plan (Prioritized)
 
-1) Security and DevEx foundations
-- Add env template, Prettier, Husky pre-commit, eslint a11y, and basic security scripts
-- Move toward backend mediation for AI keys (scaffold)
+1) Security + DevEx
+- Enforce type-check in pre-commit; keep keys behind proxy; extend env template for flags/observability
 
-2) Containerization & Local Orchestration
-- Multi-stage Dockerfile, docker-compose with app + Postgres (pgvector) for future RAG and analytics
+2) Containerization & Orchestration
+- Multi-stage Dockerfile (present); Compose with Postgres/pgvector (present) — document env/build-args
 
-3) RAG “training” pipeline and UI integration
-- Ingestion scripts (local files and optional GitHub repos), build embeddings (Gemini embeddings), store index
-- Frontend retrieval module to augment Gemini prompts with top-k context
+3) RAG and AI
+- Improve ingestion and retrieval; prefer proxy for all AI calls; enable embeddings caching
 
 4) Supabase schema & migrations
-- node-pg-migrate setup; initial schema for users, roles, jobs, estimates, documents; RLS policies baseline
-- Seed script and role assignment; instructions for admin user
+- Validate roles/RLS via tests; seed admin role assignment
 
-5) Security hardening
-- Secrets manager placeholders; npm audit/Snyk scripts; dependency pinning guidelines
+5) Testing & a11y
+- Expand unit/integration; E2E retained; add a11y checks where practical
 
-6) Testing (unit, integration, E2E) and a11y checks
-- Jest/Vitest + Testing Library; Playwright for core flows; add a11y checks
+6) Security hardening
+- npm audit high, Snyk test/monitor; secrets manager placeholders
 
-7) Performance & load testing
-- k6/Artillery scripts for key UI/API paths (when backend exists)
-
-8) API documentation
-- When backend routes exist, add OpenAPI annotations and generator script
-
-9) Documentation suite
-- README overhaul, CONTRIBUTING, CODEOWNERS, CHANGELOG, LICENSE
-
-10) Deployment & observability pipeline
-- GitHub Actions for lint/test/build/docker, CodeQL, dependency scans, migrations, and basic log/metric hooks
+7) CI/CD & Observability
+- Build/push Docker images on main; optional migrations; CodeQL and audits; lightweight log beacons
 
 ### Feature Maximization Ideas
-- Estimator: scenario comparisons, versioned estimates, configurable labor/material catalogs per supplier, auto-optimizing striping layouts for maximum stalls (church layouts), weather windows and scheduling constraints
-- Mapping: snap-to-curb detection, polygon library, import GeoJSON/KML, measure crack networks separately
-- AI: RAG with standards and manuals, image multi-region measurements, material spec suggestions by substrate/traffic, automatic proposal generation
-- Invoicing: branding themes, taxes/discounts, multi-currency, partial billing and change orders
-- Team ops: multi-user roles, job checklists, photo logs, daily reports, timesheets
-- Offline-first: persist drafts and sync when online
+- Estimator: scenario comparisons, versioned estimates, supplier catalogs, weather windows, auto stall layout optimization
+- Mapping: snap-to-curb detection, polygon library, GeoJSON/KML import, crack-network measurement
+- AI: RAG with standards/manuals, multi-region image analysis, substrate/traffic-driven spec suggestions, auto proposal generator
+- Invoicing: branding themes, taxes/discounts, partial billing and change orders
+- Team ops: roles, checklists, photo logs, daily reports, timesheets
+- Offline-first: robust sync
 
 ### Refactors / Optimizations
-- Extract design tokens to a typed design system module
-- Stronger types for cost breakdown and services
-- Feature flags for major modules
-- Centralized logging utility (structured logs)
+- Typed design tokens usable in TS and CSS
+- Stronger types for cost breakdowns and services
+- Centralized structured logging with beacon fallback
 
 ## Phased Implementation Roadmap
 
 | Priority | Task Description | Task Type | Files to Modify/Create |
 |---|---|---|---|
 | P0 | Refresh Phase 1 analysis (this doc) to current state | Refactor | docs/PHASE_1_ANALYSIS.md |
-| P0 | DevEx polish: add .prettierrc, extend .env.example (beacon keys), ensure Husky pre-commit runs lint/tests | Refactor | package.json, .prettierrc, .env.example, .husky/pre-commit |
-| P0 | RAG ingestion & retrieval hardening (chunking, rate limits, docs) | Max-Feature | scripts/ingest/ingest.ts, src/lib/rag.ts, public/rag/index.json |
-| P0 | Security: move Gemini calls behind server/edge proxy; add feature-flag override via env | Max-Feature | scripts/server/* or supabase/functions/*, src/lib/gemini.ts, src/lib/flags.ts, .env.example |
-| P1 | Supabase: finalize RLS/roles and add tests; seed admin membership | New-Feature | supabase/migrations/*, scripts/seed.ts, tests/db/* |
-| P1 | CI/CD: add GitHub Actions (lint, unit, e2e, build, docker, audit, CodeQL) | New-Feature | .github/workflows/main.yml |
-| P1 | Secrets & scanning: wire npm audit/Snyk, document Doppler/Vault/AWS SM usage | Refactor | docs/SECRETS_AND_CONFIG.md, package.json |
-| P1 | Testing expansion (unit + integration + E2E with a11y checks) | New-Feature | tests/**/*, vitest.config, e2e/* |
-| P2 | Observability: client beacon config, server logs, basic metrics | New-Feature | src/lib/logging.ts, server functions, README.md |
-| P2 | Docs & templates: README, CONTRIBUTING, issue/PR templates | New-Feature | .github/*, README.md, CONTRIBUTING.md |
-| P2 | Mobile build and release notes: signing, permissions, testing checklist | New-Feature | docs/ANDROID_RELEASE.md, android/* |
+| P0 | Add `typecheck` script and run in Husky pre-commit | Refactor | package.json, .husky/pre-commit |
+| P0 | Prefer Gemini proxy everywhere; document env | Max-Feature | src/lib/gemini.ts, supabase/functions/gemini-proxy, README.md |
+| P1 | CI/CD: build & push Docker, optional migrations, CodeQL, audits | New-Feature | .github/workflows/main.yml |
+| P1 | RLS roles/tests and admin seed verification | New-Feature | supabase/migrations/*, tests/db/*, scripts/seed.ts |
+| P2 | Observability: client beacon guidance, server logs/metrics stubs | New-Feature | src/lib/logging.ts, README.md |
+| P2 | RAG: ingestion/retrieval improvements and docs | Max-Feature | scripts/ingest/ingest.ts, src/lib/rag.ts, public/rag/index.json |
+| P2 | Docs & templates polish | Refactor | README.md, .github/* |
 
-### Additional Findings and Immediate Fixes
+### Immediate Fixes Already Applied
+- Lint, type-check, and unit tests passing; React hooks dependency updates; ESLint config tightened; `.prettierrc.json` added.
 
-- Add `VITE_LOG_BEACON_URL` to `.env.example` to enable client log beacons in production.
-- Ensure `scripts/ingest/ingest.ts` respects API rate limits and fails fast when `GEMINI_API_KEY` is missing.
-- Keep Gemini API keys off the client by introducing a minimal proxy (Node or Supabase Edge Functions) and switching `src/lib/gemini.ts` to call it.
-- Add `.prettierrc` to align formatting across contributors.

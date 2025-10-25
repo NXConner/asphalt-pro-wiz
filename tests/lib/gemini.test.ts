@@ -10,7 +10,7 @@ describe('gemini proxy routing', () => {
   });
 
   it('generateChat uses proxy when VITE_GEMINI_PROXY_URL is set', async () => {
-    (gem as any); // ensure module loaded
+    expect(gem).toBeTruthy(); // ensure module loaded
     ;(globalThis as any).process = { env: { VITE_GEMINI_PROXY_URL: 'https://proxy.example.com' } };
     const text = await gem.generateChat('hi');
     expect(text).toBe('ok');

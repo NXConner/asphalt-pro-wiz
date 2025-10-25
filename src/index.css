@@ -203,6 +203,30 @@ All colors MUST be HSL.
     --primary: 285 80% 60%; /* neon purple */
     --accent: 162 85% 45%;  /* neon cyan */
   }
+  .theme-slate {
+    --primary: 215 20% 45%;
+    --accent: 215 15% 65%;
+  }
+  .theme-rose {
+    --primary: 350 85% 60%;
+    --accent: 330 80% 60%;
+  }
+  .theme-midnight {
+    --primary: 230 60% 50%;
+    --accent: 260 40% 45%;
+  }
+  .theme-canary {
+    --primary: 50 98% 54%;
+    --accent: 40 95% 55%;
+  }
+  .theme-copper {
+    --primary: 20 75% 45%;
+    --accent: 12 80% 50%;
+  }
+  .theme-sage {
+    --primary: 140 15% 35%;
+    --accent: 100 20% 40%;
+  }
 }
 
 @media print {
