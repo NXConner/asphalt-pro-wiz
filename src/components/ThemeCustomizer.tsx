@@ -3,7 +3,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Palette, UploadCloud, X } from "lucide-react";
 import {
   applyThemePreferences,
@@ -69,7 +75,13 @@ export function ThemeCustomizer() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-3">
             <Label>Theme</Label>
-            <Select value={themeName} onValueChange={(v: ThemeName) => { setThemeNameLocal(v); setThemeName(v); }}>
+            <Select
+              value={themeName}
+              onValueChange={(v: ThemeName) => {
+                setThemeNameLocal(v);
+                setThemeName(v);
+              }}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -109,7 +121,11 @@ export function ThemeCustomizer() {
               min="0"
               max="360"
               value={primaryHueLocal}
-              onChange={(e) => { const v = parseInt(e.target.value); setPrimaryHueLocal(v); setPrimaryHue(v); }}
+              onChange={(e) => {
+                const v = parseInt(e.target.value);
+                setPrimaryHueLocal(v);
+                setPrimaryHue(v);
+              }}
               className="w-full h-2 bg-gradient-to-r from-red-500 via-green-500 to-blue-500 rounded-lg appearance-none cursor-pointer"
             />
 
@@ -120,7 +136,11 @@ export function ThemeCustomizer() {
               min="0"
               max="24"
               value={radius}
-              onChange={(e) => { const v = parseInt(e.target.value); setRadiusLocal(v); setRadius(v); }}
+              onChange={(e) => {
+                const v = parseInt(e.target.value);
+                setRadiusLocal(v);
+                setRadius(v);
+              }}
               className="w-full"
             />
           </div>
@@ -144,7 +164,11 @@ export function ThemeCustomizer() {
               max="1"
               step="0.05"
               value={opacity}
-              onChange={(e) => { const v = parseFloat(e.target.value); setOpacityLocal(v); setWallpaperOpacity(v); }}
+              onChange={(e) => {
+                const v = parseFloat(e.target.value);
+                setOpacityLocal(v);
+                setWallpaperOpacity(v);
+              }}
               className="w-full"
             />
             <Label htmlFor="blur">Wallpaper Blur ({blur}px)</Label>
@@ -154,7 +178,11 @@ export function ThemeCustomizer() {
               min="0"
               max="30"
               value={blur}
-              onChange={(e) => { const v = parseInt(e.target.value); setBlurLocal(v); setWallpaperBlur(v); }}
+              onChange={(e) => {
+                const v = parseInt(e.target.value);
+                setBlurLocal(v);
+                setWallpaperBlur(v);
+              }}
               className="w-full"
             />
           </div>

@@ -1,6 +1,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 
 interface OwnerSettingsProps {
@@ -12,7 +18,14 @@ interface OwnerSettingsProps {
   onSandTypeChange: (v: string) => void;
 }
 
-export function OwnerSettings({ waterPercent, onWaterPercentChange, sealerType, onSealerTypeChange, sandType, onSandTypeChange }: OwnerSettingsProps) {
+export function OwnerSettings({
+  waterPercent,
+  onWaterPercentChange,
+  sealerType,
+  onSealerTypeChange,
+  sandType,
+  onSandTypeChange,
+}: OwnerSettingsProps) {
   return (
     <Card>
       <CardHeader>
@@ -38,7 +51,14 @@ export function OwnerSettings({ waterPercent, onWaterPercentChange, sealerType, 
           </div>
           <div>
             <Label>Water Percentage (0-30%)</Label>
-            <Input type="number" min={0} max={30} step={1} value={waterPercent} onChange={(e) => onWaterPercentChange(parseFloat(e.target.value) || 0)} />
+            <Input
+              type="number"
+              min={0}
+              max={30}
+              step={1}
+              value={waterPercent}
+              onChange={(e) => onWaterPercentChange(parseFloat(e.target.value) || 0)}
+            />
           </div>
           <div>
             <Label>Sand Type</Label>

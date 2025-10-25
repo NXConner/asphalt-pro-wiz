@@ -29,7 +29,7 @@ function cosineSimilarity(a: number[], b: number[]): number {
 async function loadIndex(): Promise<RAGChunk[]> {
   if (cachedIndex) return cachedIndex;
   try {
-    const res = await fetch('/rag/index.json', { cache: 'no-store' });
+    const res = await fetch("/rag/index.json", { cache: "no-store" });
     if (!res.ok) return (cachedIndex = []);
     const json = await res.json();
     return (cachedIndex = Array.isArray(json) ? json : []);
@@ -40,13 +40,13 @@ async function loadIndex(): Promise<RAGChunk[]> {
 
 export async function retrieveRelevantContext(query: string, topK = 5): Promise<string> {
   const [index, qvec] = await Promise.all([loadIndex(), embedText(query)]);
-  if (!index.length || !qvec.length) return '';
+  if (!index.length || !qvec.length) return "";
   const scored = index
     .map((c) => ({ c, s: cosineSimilarity(qvec, c.embedding) }))
     .sort((a, b) => b.s - a.s)
     .slice(0, topK);
   const ctx = scored
-    .map(({ c }) => `Source: ${c.source}${c.title ? ` | ${c.title}` : ''}\n${c.text}`)
-    .join('\n\n---\n\n');
+    .map(({ c }) => `Source: ${c.source}${c.title ? ` | ${c.title}` : ""}\n${c.text}`)
+    .join("\n\n---\n\n");
   return ctx.slice(0, 8000); // keep context reasonable
 }

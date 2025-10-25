@@ -68,4 +68,4 @@ export const THEME_NAMES = [
   "cyber",
 ] as const;
 
-export type ThemeNameFromTokens = typeof THEME_NAMES[number];
+export type ThemeNameFromTokens = (typeof THEME_NAMES)[number];

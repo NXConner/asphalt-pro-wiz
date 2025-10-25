@@ -1,17 +1,17 @@
 // Map settings and persistence utilities
 
-export type MapProvider = 'google';
+export type MapProvider = "google";
 
 export type BaseLayerId =
-  | 'google_roadmap'
-  | 'google_satellite'
-  | 'google_terrain'
-  | 'google_hybrid';
+  | "google_roadmap"
+  | "google_satellite"
+  | "google_terrain"
+  | "google_hybrid";
 
 export interface TileOverlayConfig {
   id: string; // unique key
   name: string;
-  type: 'tile' | 'wms' | 'googleImageMapType' | 'googleTraffic' | 'radar';
+  type: "tile" | "wms" | "googleImageMapType" | "googleTraffic" | "radar";
   urlTemplate?: string; // for tile and wms
   attribution?: string;
   opacity?: number; // 0..1
@@ -43,32 +43,32 @@ export interface MapSettings {
   zoom?: number;
 }
 
-const STORAGE_KEY = 'pps.mapSettings.v1';
+const STORAGE_KEY = "pps.mapSettings.v1";
 
 const defaultOverlays: TileOverlayConfig[] = [
   {
-    id: 'labels',
-    name: 'Labels',
-    type: 'tile',
+    id: "labels",
+    name: "Labels",
+    type: "tile",
     urlTemplate:
-      'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Esri',
+      "https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+    attribution: "Esri",
     opacity: 1,
     visible: true,
   },
   {
-    id: 'roads',
-    name: 'Roads (OSM overlay)',
-    type: 'tile',
-    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '© OpenStreetMap contributors',
+    id: "roads",
+    name: "Roads (OSM overlay)",
+    type: "tile",
+    urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution: "© OpenStreetMap contributors",
     opacity: 0.3,
     visible: false,
   },
   {
-    id: 'radar',
-    name: 'Doppler Radar',
-    type: 'radar',
+    id: "radar",
+    name: "Doppler Radar",
+    type: "radar",
     opacity: 0.7,
     visible: true,
   },
@@ -76,8 +76,8 @@ const defaultOverlays: TileOverlayConfig[] = [
 
 export function getDefaultMapSettings(): MapSettings {
   const s: MapSettings = {
-    provider: 'google',
-    baseLayer: 'google_hybrid',
+    provider: "google",
+    baseLayer: "google_hybrid",
     overlays: defaultOverlays,
     radar: {
       enabled: true,
@@ -101,8 +101,8 @@ export function loadMapSettings(): MapSettings {
       ...def,
       ...parsed,
       // Force Google provider and valid base layer going forward
-      provider: 'google',
-      baseLayer: 'google_hybrid',
+      provider: "google",
+      baseLayer: "google_hybrid",
       overlays: mergeOverlays(def.overlays, parsed.overlays || []),
       radar: { ...def.radar, ...(parsed.radar || {}) },
     };

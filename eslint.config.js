@@ -6,12 +6,9 @@ import tseslint from "typescript-eslint";
 import jsxA11y from "eslint-plugin-jsx-a11y";
 
 export default tseslint.config(
-  { ignores: ["dist", "scripts/**"] },
+  { ignores: ["dist", "scripts/**", "supabase/migrations/**", "deleted files/**"] },
   {
-    extends: [
-      js.configs.recommended,
-      ...tseslint.configs.recommended,
-    ],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
       ecmaVersion: 2020,
@@ -40,6 +37,15 @@ export default tseslint.config(
       "jsx-a11y/anchor-has-content": "off",
       "jsx-a11y/click-events-have-key-events": "off",
       "jsx-a11y/no-noninteractive-element-interactions": "off",
+      // UI primitives may export helpers alongside components
+      "react-refresh/only-export-components": "off",
+    },
+  },
+  {
+    files: ["src/lib/**/*.{ts,tsx}"],
+    rules: {
+      // Allow mixed exports in lib modules (not just components)
+      "react-refresh/only-export-components": "off",
     },
   },
 );

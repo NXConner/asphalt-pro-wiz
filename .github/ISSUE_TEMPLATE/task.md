@@ -3,12 +3,13 @@ name: Task
 about: Track a development task
 title: "[Task] "
 labels: chore
-assignees: ''
+assignees: ""
 ---
 
 ## Summary
 
 ## Definition of Done
+
 - [ ]
 - [ ]
 

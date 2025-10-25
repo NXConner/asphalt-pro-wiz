@@ -14,20 +14,21 @@ export type OpenCVNamespace = typeof globalThis & { cv: any };
 let openCvLoadingPromise: Promise<any> | null = null;
 
 export function loadOpenCv(): Promise<any> {
-  if (typeof window === 'undefined') return Promise.reject(new Error('OpenCV requires a browser environment'));
+  if (typeof window === "undefined")
+    return Promise.reject(new Error("OpenCV requires a browser environment"));
   const w = window as unknown as OpenCVNamespace;
   if (w.cv) return Promise.resolve(w.cv);
   if (openCvLoadingPromise) return openCvLoadingPromise;
 
   openCvLoadingPromise = new Promise((resolve, reject) => {
-    const script = document.createElement('script');
+    const script = document.createElement("script");
     // Use a lightweight, widely mirrored OpenCV.js build. Pinned version for stability.
-    script.src = 'https://docs.opencv.org/4.x/opencv.js';
+    script.src = "https://docs.opencv.org/4.x/opencv.js";
     script.async = true;
     script.onload = () => {
       // Wait until cv is ready
       const checkReady = () => {
-        if (w.cv && typeof w.cv.Mat !== 'undefined') {
+        if (w.cv && typeof w.cv.Mat !== "undefined") {
           resolve(w.cv);
         } else {
           setTimeout(checkReady, 50);
@@ -35,7 +36,7 @@ export function loadOpenCv(): Promise<any> {
       };
       checkReady();
     };
-    script.onerror = () => reject(new Error('Failed to load OpenCV.js'));
+    script.onerror = () => reject(new Error("Failed to load OpenCV.js"));
     document.head.appendChild(script);
   });
 
@@ -46,7 +47,7 @@ export type SegmentationParams = {
   // Preprocessing
   blurKernel?: number; // odd number, default 5
   // Thresholding
-  thresholdMethod?: 'otsu' | 'adaptive';
+  thresholdMethod?: "otsu" | "adaptive";
   adaptiveBlockSize?: number; // odd number, default 31
   adaptiveC?: number; // default 2
   // Morphology
@@ -62,10 +63,13 @@ export type SegmentationResult = {
   debug?: HTMLCanvasElement; // optional visualization
 };
 
-export async function segmentAsphaltArea(image: HTMLImageElement | HTMLCanvasElement, params: SegmentationParams = {}): Promise<SegmentationResult> {
+export async function segmentAsphaltArea(
+  image: HTMLImageElement | HTMLCanvasElement,
+  params: SegmentationParams = {},
+): Promise<SegmentationResult> {
   const cv = await loadOpenCv();
   const blurKernel = params.blurKernel ?? 5;
-  const thresholdMethod = params.thresholdMethod ?? 'otsu';
+  const thresholdMethod = params.thresholdMethod ?? "otsu";
   const adaptiveBlockSize = params.adaptiveBlockSize ?? 31;
   const adaptiveC = params.adaptiveC ?? 2;
   const morphOpen = params.morphOpen ?? 1;
@@ -84,7 +88,7 @@ export async function segmentAsphaltArea(image: HTMLImageElement | HTMLCanvasEle
     const k = Math.max(3, blurKernel | 1);
     cv.GaussianBlur(gray, blurred, new cv.Size(k, k), 0, 0, cv.BORDER_DEFAULT);
 
-    if (thresholdMethod === 'adaptive') {
+    if (thresholdMethod === "adaptive") {
       const b = Math.max(3, adaptiveBlockSize | 1);
       cv.adaptiveThreshold(
         blurred,
@@ -93,7 +97,7 @@ export async function segmentAsphaltArea(image: HTMLImageElement | HTMLCanvasEle
         cv.ADAPTIVE_THRESH_GAUSSIAN_C,
         cv.THRESH_BINARY_INV,
         b,
-        adaptiveC
+        adaptiveC,
       );
     } else {
       // Otsu global threshold, invert so asphalt (dark) becomes foreground
@@ -126,14 +130,16 @@ export async function segmentAsphaltArea(image: HTMLImageElement | HTMLCanvasEle
     const pixelCount = cv.countNonZero(mask);
 
     // Convert mask to canvas
-    const maskCanvas = document.createElement('canvas');
-    maskCanvas.width = mask.cols; maskCanvas.height = mask.rows;
+    const maskCanvas = document.createElement("canvas");
+    maskCanvas.width = mask.cols;
+    maskCanvas.height = mask.rows;
     cv.imshow(maskCanvas, mask);
 
     // Optional debug overlay
-    const debugCanvas = document.createElement('canvas');
-    debugCanvas.width = src.cols; debugCanvas.height = src.rows;
-    const ctx = debugCanvas.getContext('2d')!;
+    const debugCanvas = document.createElement("canvas");
+    debugCanvas.width = src.cols;
+    debugCanvas.height = src.rows;
+    const ctx = debugCanvas.getContext("2d")!;
     ctx.drawImage(image as any, 0, 0);
     ctx.globalAlpha = 0.4;
     ctx.drawImage(maskCanvas, 0, 0);
@@ -150,7 +156,10 @@ export async function segmentAsphaltArea(image: HTMLImageElement | HTMLCanvasEle
   }
 }
 
-export function estimateSquareFeetFromPixels(pixelCount: number, calibration: { referenceFeet: number; referencePixels: number }): number {
+export function estimateSquareFeetFromPixels(
+  pixelCount: number,
+  calibration: { referenceFeet: number; referencePixels: number },
+): number {
   const { referenceFeet, referencePixels } = calibration;
   if (referenceFeet <= 0 || referencePixels <= 0) return 0;
   const sqFeetPerPixel = (referenceFeet * referenceFeet) / (referencePixels * referencePixels);

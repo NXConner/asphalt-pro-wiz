@@ -26,48 +26,84 @@ export function ComplianceResources({ open, onOpenChange, activeTopic }: Complia
           <TabsContent value="striping">
             <Section>
               <Category title="Federal">
-                <LinkItem href="https://www.ada.gov/regs2010/2010ADAStandards/2010ADAStandards_prt.pdf">ADA 2010 Standards for Accessible Design (Parking)</LinkItem>
-                <LinkItem href="https://mutcd.fhwa.dot.gov/htm/2009r1r2/html_toc.htm">FHWA MUTCD (Signs, Markings, Arrows)</LinkItem>
-                <LinkItem href="https://www.access-board.gov/aba/">Architectural Barriers Act (ABA) Standards</LinkItem>
+                <LinkItem href="https://www.ada.gov/regs2010/2010ADAStandards/2010ADAStandards_prt.pdf">
+                  ADA 2010 Standards for Accessible Design (Parking)
+                </LinkItem>
+                <LinkItem href="https://mutcd.fhwa.dot.gov/htm/2009r1r2/html_toc.htm">
+                  FHWA MUTCD (Signs, Markings, Arrows)
+                </LinkItem>
+                <LinkItem href="https://www.access-board.gov/aba/">
+                  Architectural Barriers Act (ABA) Standards
+                </LinkItem>
               </Category>
               <Category title="Virginia">
-                <LinkItem href="https://www.virginiadot.org/business/const/spec-default.asp">VDOT Road & Bridge Specifications</LinkItem>
-                <LinkItem href="https://www.dpor.virginia.gov/boards/contractors">Virginia Contractors Board Guidance</LinkItem>
-                <LinkItem href="https://codes.iccsafe.org/codes/virginia">Virginia USBC / Accessibility Code</LinkItem>
+                <LinkItem href="https://www.virginiadot.org/business/const/spec-default.asp">
+                  VDOT Road & Bridge Specifications
+                </LinkItem>
+                <LinkItem href="https://www.dpor.virginia.gov/boards/contractors">
+                  Virginia Contractors Board Guidance
+                </LinkItem>
+                <LinkItem href="https://codes.iccsafe.org/codes/virginia">
+                  Virginia USBC / Accessibility Code
+                </LinkItem>
               </Category>
               <Category title="North Carolina">
-                <LinkItem href="https://connect.ncdot.gov/resources/Specifications/Pages/default.aspx">NCDOT Standard Specifications</LinkItem>
-                <LinkItem href="https://connect.ncdot.gov/resources/Specifications/Pages/Roadway-Standard-Drawings.aspx">NCDOT Standard Drawings</LinkItem>
-                <LinkItem href="https://www.ncosfm.gov/building-codes/north-carolina-state-building-codes">NC Building / Accessibility Codes</LinkItem>
+                <LinkItem href="https://connect.ncdot.gov/resources/Specifications/Pages/default.aspx">
+                  NCDOT Standard Specifications
+                </LinkItem>
+                <LinkItem href="https://connect.ncdot.gov/resources/Specifications/Pages/Roadway-Standard-Drawings.aspx">
+                  NCDOT Standard Drawings
+                </LinkItem>
+                <LinkItem href="https://www.ncosfm.gov/building-codes/north-carolina-state-building-codes">
+                  NC Building / Accessibility Codes
+                </LinkItem>
               </Category>
               <Category title="Local & Best Practices">
-                <LinkItem href="https://adatile.com/ada-parking-requirements/">ADA Parking Space Counts & Dimensions</LinkItem>
-                <LinkItem href="https://www.npca.org/resource/a-guide-to-parking-lot-striping/">Parking Lot Striping Best Practices</LinkItem>
+                <LinkItem href="https://adatile.com/ada-parking-requirements/">
+                  ADA Parking Space Counts & Dimensions
+                </LinkItem>
+                <LinkItem href="https://www.npca.org/resource/a-guide-to-parking-lot-striping/">
+                  Parking Lot Striping Best Practices
+                </LinkItem>
               </Category>
             </Section>
           </TabsContent>
           <TabsContent value="sealcoating">
             <Section>
               <Category title="Standards & Guidance">
-                <LinkItem href="https://asphaltinstitute.org/engineering/sealcoating/">Asphalt Institute: Sealcoating Guidance</LinkItem>
-                <LinkItem href="https://www.pavementinteractive.org/reference-desk/pavement-management/maintenance-and-rehabilitation/seal-coats/">Pavement Interactive: Seal Coats</LinkItem>
-                <LinkItem href="https://www.astm.org/Standards/sealcoat">ASTM References (sealcoat test methods)</LinkItem>
+                <LinkItem href="https://asphaltinstitute.org/engineering/sealcoating/">
+                  Asphalt Institute: Sealcoating Guidance
+                </LinkItem>
+                <LinkItem href="https://www.pavementinteractive.org/reference-desk/pavement-management/maintenance-and-rehabilitation/seal-coats/">
+                  Pavement Interactive: Seal Coats
+                </LinkItem>
+                <LinkItem href="https://www.astm.org/Standards/sealcoat">
+                  ASTM References (sealcoat test methods)
+                </LinkItem>
               </Category>
               <Category title="Virginia / North Carolina">
                 <LinkItem href="https://www.virginiadot.org/">VDOT Resources</LinkItem>
                 <LinkItem href="https://connect.ncdot.gov/">NCDOT Resources</LinkItem>
               </Category>
               <Category title="Mix Design & Safety">
-                <LinkItem href="https://www.osha.gov/chemical-hazards-communication">OSHA Hazard Communication (SDS)</LinkItem>
-                <LinkItem href="https://www.epa.gov/p2">EPA: Pollution Prevention (runoff)</LinkItem>
+                <LinkItem href="https://www.osha.gov/chemical-hazards-communication">
+                  OSHA Hazard Communication (SDS)
+                </LinkItem>
+                <LinkItem href="https://www.epa.gov/p2">
+                  EPA: Pollution Prevention (runoff)
+                </LinkItem>
               </Category>
             </Section>
           </TabsContent>
           <TabsContent value="crackfilling">
             <Section>
               <Category title="Standards & Best Practices">
-                <LinkItem href="https://www.fhwa.dot.gov/publications/research/infrastructure/pavements/ltpp/070meg/070meg.pdf">FHWA Pavement Maintenance Guide</LinkItem>
-                <LinkItem href="https://trid.trb.org/view/1128394">TRB/NCHRP on Crack Sealing Materials</LinkItem>
+                <LinkItem href="https://www.fhwa.dot.gov/publications/research/infrastructure/pavements/ltpp/070meg/070meg.pdf">
+                  FHWA Pavement Maintenance Guide
+                </LinkItem>
+                <LinkItem href="https://trid.trb.org/view/1128394">
+                  TRB/NCHRP on Crack Sealing Materials
+                </LinkItem>
               </Category>
               <Category title="Product Guidance">
                 <LinkItem href="https://www.crafco.com/">Crafco Crack Sealing</LinkItem>

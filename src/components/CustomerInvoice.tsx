@@ -12,45 +12,69 @@ interface CustomerInvoiceProps {
   onPrint: () => void;
 }
 
-export function CustomerInvoice({ 
-  jobName, 
-  customerAddress, 
-  costs, 
+export function CustomerInvoice({
+  jobName,
+  customerAddress,
+  costs,
   breakdown,
-  onPrint 
+  onPrint,
 }: CustomerInvoiceProps) {
-  const today = new Date().toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  const today = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 
   // Group items for customer-friendly summary
   const customerBreakdown = breakdown
-    .filter(item => !item.item.includes('Overhead') && !item.item.includes('Profit'))
-    .map(item => {
-      if (item.item.startsWith('Sealcoat')) return { item: 'Sealcoating', value: item.value.split('→').pop()?.trim() || item.value };
-      if (item.item === 'Sand') return { item: 'Sealcoating Additives', value: item.value.split('→').pop()?.trim() || item.value };
-      if (item.item === 'Fast-Dry Additive') return { item: 'Sealcoating Additives', value: item.value.split('→').pop()?.trim() || item.value };
-      if (item.item === 'Crack Filler' || item.item === 'Propane Tanks') return { item: 'Cleaning & Crack Repair', value: item.value.split('→').pop()?.trim() || item.value };
-      if (item.item === 'Striping') return { item: 'Parking Lot Striping', value: item.value };
-      if (item.item === 'Oil Spot Primer') return { item: 'Surface Preparation', value: item.value.split('→').pop()?.trim() || item.value };
-      if (item.item === 'Edge Pushing' || item.item.startsWith('Weed') || item.item.startsWith('Professional Crack Cleaning') || item.item === 'Power Washing' || item.item === 'Debris Removal') {
-        return { item: 'Premium Services', value: item.value };
+    .filter((item) => !item.item.includes("Overhead") && !item.item.includes("Profit"))
+    .map((item) => {
+      if (item.item.startsWith("Sealcoat"))
+        return { item: "Sealcoating", value: item.value.split("→").pop()?.trim() || item.value };
+      if (item.item === "Sand")
+        return {
+          item: "Sealcoating Additives",
+          value: item.value.split("→").pop()?.trim() || item.value,
+        };
+      if (item.item === "Fast-Dry Additive")
+        return {
+          item: "Sealcoating Additives",
+          value: item.value.split("→").pop()?.trim() || item.value,
+        };
+      if (item.item === "Crack Filler" || item.item === "Propane Tanks")
+        return {
+          item: "Cleaning & Crack Repair",
+          value: item.value.split("→").pop()?.trim() || item.value,
+        };
+      if (item.item === "Striping") return { item: "Parking Lot Striping", value: item.value };
+      if (item.item === "Oil Spot Primer")
+        return {
+          item: "Surface Preparation",
+          value: item.value.split("→").pop()?.trim() || item.value,
+        };
+      if (
+        item.item === "Edge Pushing" ||
+        item.item.startsWith("Weed") ||
+        item.item.startsWith("Professional Crack Cleaning") ||
+        item.item === "Power Washing" ||
+        item.item === "Debris Removal"
+      ) {
+        return { item: "Premium Services", value: item.value };
       }
-      if (item.item.startsWith('Labor')) return { item: 'Labor', value: item.value.split('→').pop()?.trim() || item.value };
-      if (item.item === 'Fuel Cost') return { item: 'Travel', value: item.value };
-      if (item.item === 'Total Area') return { item: 'Measured Area', value: item.value };
+      if (item.item.startsWith("Labor"))
+        return { item: "Labor", value: item.value.split("→").pop()?.trim() || item.value };
+      if (item.item === "Fuel Cost") return { item: "Travel", value: item.value };
+      if (item.item === "Total Area") return { item: "Measured Area", value: item.value };
       return item;
     })
     .reduce<Record<string, number>>((acc, cur) => {
-      const numeric = parseFloat(cur.value.replace(/[^0-9.]/g, '')) || 0;
+      const numeric = parseFloat(cur.value.replace(/[^0-9.]/g, "")) || 0;
       acc[cur.item] = (acc[cur.item] || 0) + numeric;
       return acc;
     }, {});
 
   const customerItems = Object.entries(customerBreakdown)
-    .filter(([k]) => !['Measured Area'].includes(k))
+    .filter(([k]) => !["Measured Area"].includes(k))
     .map(([k, v]) => ({ item: k, value: `$${v.toFixed(2)}` }));
 
   return (
@@ -80,8 +104,8 @@ export function CustomerInvoice({
         <div className="grid grid-cols-2 gap-8">
           <div>
             <h3 className="font-semibold text-sm text-muted-foreground mb-2">ESTIMATE FOR:</h3>
-            <p className="font-medium text-lg">{jobName || 'N/A'}</p>
-            <p className="text-sm text-muted-foreground">{customerAddress || 'N/A'}</p>
+            <p className="font-medium text-lg">{jobName || "N/A"}</p>
+            <p className="text-sm text-muted-foreground">{customerAddress || "N/A"}</p>
           </div>
           <div className="text-right">
             <h3 className="font-semibold text-sm text-muted-foreground mb-2">ESTIMATE DATE:</h3>
@@ -114,9 +138,17 @@ export function CustomerInvoice({
         </div>
 
         <div className="text-sm text-muted-foreground space-y-2 pt-4">
-          <p><strong>Payment Terms:</strong> 50% deposit required to begin work. Remaining balance due upon completion.</p>
-          <p><strong>Warranty:</strong> All work is guaranteed for one year from date of completion.</p>
-          <p><strong>Note:</strong> Work is subject to suitable weather conditions. We will communicate any weather-related schedule changes promptly.</p>
+          <p>
+            <strong>Payment Terms:</strong> 50% deposit required to begin work. Remaining balance
+            due upon completion.
+          </p>
+          <p>
+            <strong>Warranty:</strong> All work is guaranteed for one year from date of completion.
+          </p>
+          <p>
+            <strong>Note:</strong> Work is subject to suitable weather conditions. We will
+            communicate any weather-related schedule changes promptly.
+          </p>
         </div>
 
         <div className="border-t pt-6 mt-8">

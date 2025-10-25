@@ -8,7 +8,13 @@ export function ThemeToggle() {
 
   useEffect(() => {
     const prefs = loadThemePreferences();
-    setMode(prefs.mode === "system" ? (document.documentElement.classList.contains('dark') ? 'dark' : 'light') : prefs.mode);
+    setMode(
+      prefs.mode === "system"
+        ? document.documentElement.classList.contains("dark")
+          ? "dark"
+          : "light"
+        : prefs.mode,
+    );
   }, []);
 
   const toggle = () => {

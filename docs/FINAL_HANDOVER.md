@@ -10,6 +10,7 @@
 - CI: `.github/workflows/main.yml` runs lint, unit, build, E2E, audits, Snyk, CodeQL.
 
 Deployment checklist:
+
 - Ensure `.env` configured; see `docs/SECRETS_AND_CONFIG.md`.
 - Supabase Edge: deploy `gemini-proxy` and set `VITE_GEMINI_PROXY_URL`.
 - Run `npm run build` for production.

@@ -1,12 +1,12 @@
 // Lightweight IndexedDB helper for storing blobs and JSON per job key.
 // Namespace: Pavement Performance Suite (pps)
 
-const DB_NAME = 'pps-db';
+const DB_NAME = "pps-db";
 // Bump version when adding new stores or indexes
 const DB_VERSION = 2;
-const FILE_STORE = 'files';
-const DOC_STORE = 'docs';
-const RECEIPT_STORE = 'receipts';
+const FILE_STORE = "files";
+const DOC_STORE = "docs";
+const RECEIPT_STORE = "receipts";
 
 export function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -14,18 +14,18 @@ export function openDb(): Promise<IDBDatabase> {
     request.onupgradeneeded = () => {
       const db = request.result;
       if (!db.objectStoreNames.contains(FILE_STORE)) {
-        const store = db.createObjectStore(FILE_STORE, { keyPath: 'id' });
-        store.createIndex('byJob', 'jobKey', { unique: false });
+        const store = db.createObjectStore(FILE_STORE, { keyPath: "id" });
+        store.createIndex("byJob", "jobKey", { unique: false });
       }
       if (!db.objectStoreNames.contains(DOC_STORE)) {
-        const store = db.createObjectStore(DOC_STORE, { keyPath: 'id' });
-        store.createIndex('byJob', 'jobKey', { unique: false });
+        const store = db.createObjectStore(DOC_STORE, { keyPath: "id" });
+        store.createIndex("byJob", "jobKey", { unique: false });
       }
       if (!db.objectStoreNames.contains(RECEIPT_STORE)) {
-        const store = db.createObjectStore(RECEIPT_STORE, { keyPath: 'id' });
-        store.createIndex('byCategory', 'category', { unique: false });
-        store.createIndex('byDate', 'date', { unique: false });
-        store.createIndex('byVendor', 'vendorLower', { unique: false });
+        const store = db.createObjectStore(RECEIPT_STORE, { keyPath: "id" });
+        store.createIndex("byCategory", "category", { unique: false });
+        store.createIndex("byDate", "date", { unique: false });
+        store.createIndex("byVendor", "vendorLower", { unique: false });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -56,7 +56,7 @@ export async function saveFile(jobKey: string, file: File): Promise<SavedFile> {
     blob: file,
   };
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(FILE_STORE, 'readwrite');
+    const tx = db.transaction(FILE_STORE, "readwrite");
     tx.objectStore(FILE_STORE).put(record);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
@@ -69,9 +69,9 @@ export async function listFiles(jobKey: string): Promise<SavedFile[]> {
   const db = await openDb();
   const files: SavedFile[] = [];
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(FILE_STORE, 'readonly');
-    const index = tx.objectStore(FILE_STORE).index('byJob');
-    const req = index.openCursor(IDBKeyRange.only(jobKey), 'prev');
+    const tx = db.transaction(FILE_STORE, "readonly");
+    const index = tx.objectStore(FILE_STORE).index("byJob");
+    const req = index.openCursor(IDBKeyRange.only(jobKey), "prev");
     req.onsuccess = () => {
       const cursor = req.result;
       if (cursor) {
@@ -90,7 +90,7 @@ export async function listFiles(jobKey: string): Promise<SavedFile[]> {
 export async function deleteFile(id: string): Promise<void> {
   const db = await openDb();
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(FILE_STORE, 'readwrite');
+    const tx = db.transaction(FILE_STORE, "readwrite");
     tx.objectStore(FILE_STORE).delete(id);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
@@ -116,7 +116,7 @@ export async function saveDoc(jobKey: string, title: string, data: any): Promise
     data,
   };
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(DOC_STORE, 'readwrite');
+    const tx = db.transaction(DOC_STORE, "readwrite");
     tx.objectStore(DOC_STORE).put(record);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
@@ -129,9 +129,9 @@ export async function listDocs(jobKey: string): Promise<SavedDoc[]> {
   const db = await openDb();
   const docs: SavedDoc[] = [];
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(DOC_STORE, 'readonly');
-    const index = tx.objectStore(DOC_STORE).index('byJob');
-    const req = index.openCursor(IDBKeyRange.only(jobKey), 'prev');
+    const tx = db.transaction(DOC_STORE, "readonly");
+    const index = tx.objectStore(DOC_STORE).index("byJob");
+    const req = index.openCursor(IDBKeyRange.only(jobKey), "prev");
     req.onsuccess = () => {
       const cursor = req.result;
       if (cursor) {
@@ -150,7 +150,7 @@ export async function listDocs(jobKey: string): Promise<SavedDoc[]> {
 export async function deleteDoc(id: string): Promise<void> {
   const db = await openDb();
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(DOC_STORE, 'readwrite');
+    const tx = db.transaction(DOC_STORE, "readwrite");
     tx.objectStore(DOC_STORE).delete(id);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
@@ -159,30 +159,30 @@ export async function deleteDoc(id: string): Promise<void> {
 }
 
 export function makeJobKey(jobName: string, customerAddress: string): string {
-  return `${(jobName || 'job').trim().toLowerCase()}|${(customerAddress || 'address').trim().toLowerCase()}`;
+  return `${(jobName || "job").trim().toLowerCase()}|${(customerAddress || "address").trim().toLowerCase()}`;
 }
 
 // ===== Receipts Store =====
 
 export type ReceiptCategory =
-  | 'SealMaster'
-  | 'Fuel'
-  | 'Payroll'
-  | 'Parts'
-  | 'Equipment'
-  | 'Tools'
-  | 'Materials'
-  | 'Supplies'
-  | 'Entertainment'
-  | 'Meals'
-  | 'Lodging'
-  | 'Travel'
-  | 'Permits'
-  | 'Insurance'
-  | 'Utilities'
-  | 'Marketing'
-  | 'Office'
-  | 'Other';
+  | "SealMaster"
+  | "Fuel"
+  | "Payroll"
+  | "Parts"
+  | "Equipment"
+  | "Tools"
+  | "Materials"
+  | "Supplies"
+  | "Entertainment"
+  | "Meals"
+  | "Lodging"
+  | "Travel"
+  | "Permits"
+  | "Insurance"
+  | "Utilities"
+  | "Marketing"
+  | "Office"
+  | "Other";
 
 export type SavedReceipt = {
   id: string; // `rcpt:${timestamp}:${name}`
@@ -206,7 +206,9 @@ export type SavedReceipt = {
   ocrText?: string | null; // raw OCR/AI output for reference/search
 };
 
-export type ReceiptUpdate = Partial<Omit<SavedReceipt, 'id' | 'name' | 'type' | 'size' | 'createdAt' | 'blob'>>;
+export type ReceiptUpdate = Partial<
+  Omit<SavedReceipt, "id" | "name" | "type" | "size" | "createdAt" | "blob">
+>;
 
 export async function saveReceipt(file: File, meta?: Partial<SavedReceipt>): Promise<SavedReceipt> {
   const db = await openDb();
@@ -220,9 +222,9 @@ export async function saveReceipt(file: File, meta?: Partial<SavedReceipt>): Pro
     createdAt: now,
     updatedAt: now,
     blob: file,
-    category: (meta?.category as ReceiptCategory) || 'Other',
-    vendor: (meta?.vendor || '').trim(),
-    vendorLower: (meta?.vendor || '').trim().toLowerCase(),
+    category: (meta?.category as ReceiptCategory) || "Other",
+    vendor: (meta?.vendor || "").trim(),
+    vendorLower: (meta?.vendor || "").trim().toLowerCase(),
     date: meta?.date || new Date(now).toISOString().slice(0, 10),
     subtotal: meta?.subtotal ?? null,
     tax: meta?.tax ?? null,
@@ -233,7 +235,7 @@ export async function saveReceipt(file: File, meta?: Partial<SavedReceipt>): Pro
     ocrText: meta?.ocrText ?? null,
   };
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(RECEIPT_STORE, 'readwrite');
+    const tx = db.transaction(RECEIPT_STORE, "readwrite");
     tx.objectStore(RECEIPT_STORE).put(record);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
@@ -243,7 +245,7 @@ export async function saveReceipt(file: File, meta?: Partial<SavedReceipt>): Pro
 }
 
 export type ReceiptFilters = {
-  category?: ReceiptCategory | 'All';
+  category?: ReceiptCategory | "All";
   startDate?: string; // inclusive yyyy-mm-dd
   endDate?: string; // inclusive yyyy-mm-dd
   vendorQuery?: string; // case-insensitive substring
@@ -253,9 +255,9 @@ export async function listReceipts(filters?: ReceiptFilters): Promise<SavedRecei
   const db = await openDb();
   const receipts: SavedReceipt[] = [];
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(RECEIPT_STORE, 'readonly');
+    const tx = db.transaction(RECEIPT_STORE, "readonly");
     const store = tx.objectStore(RECEIPT_STORE);
-    const req = store.openCursor(null, 'prev');
+    const req = store.openCursor(null, "prev");
     req.onsuccess = () => {
       const cursor = req.result as IDBCursorWithValue | null;
       if (cursor) {
@@ -271,9 +273,9 @@ export async function listReceipts(filters?: ReceiptFilters): Promise<SavedRecei
 
   if (!filters) return receipts;
   const { category, startDate, endDate, vendorQuery } = filters;
-  const q = (vendorQuery || '').trim().toLowerCase();
+  const q = (vendorQuery || "").trim().toLowerCase();
   return receipts.filter((r) => {
-    if (category && category !== 'All' && r.category !== category) return false;
+    if (category && category !== "All" && r.category !== category) return false;
     if (startDate && r.date < startDate) return false;
     if (endDate && r.date > endDate) return false;
     if (q && !r.vendorLower.includes(q)) return false;
@@ -284,7 +286,7 @@ export async function listReceipts(filters?: ReceiptFilters): Promise<SavedRecei
 export async function deleteReceipt(id: string): Promise<void> {
   const db = await openDb();
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(RECEIPT_STORE, 'readwrite');
+    const tx = db.transaction(RECEIPT_STORE, "readwrite");
     tx.objectStore(RECEIPT_STORE).delete(id);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
@@ -292,10 +294,13 @@ export async function deleteReceipt(id: string): Promise<void> {
   db.close();
 }
 
-export async function updateReceiptMeta(id: string, updates: ReceiptUpdate): Promise<SavedReceipt | null> {
+export async function updateReceiptMeta(
+  id: string,
+  updates: ReceiptUpdate,
+): Promise<SavedReceipt | null> {
   const db = await openDb();
   const record = await new Promise<SavedReceipt | null>((resolve, reject) => {
-    const tx = db.transaction(RECEIPT_STORE, 'readwrite');
+    const tx = db.transaction(RECEIPT_STORE, "readwrite");
     const store = tx.objectStore(RECEIPT_STORE);
     const getReq = store.get(id);
     getReq.onsuccess = () => {
@@ -322,7 +327,7 @@ export async function updateReceiptMeta(id: string, updates: ReceiptUpdate): Pro
 
 // ===== Jobs Store =====
 
-export type JobStatus = 'need_estimate' | 'estimated' | 'active' | 'completed' | 'lost';
+export type JobStatus = "need_estimate" | "estimated" | "active" | "completed" | "lost";
 
 export type SavedJob = {
   id: string; // jobKey
@@ -335,7 +340,7 @@ export type SavedJob = {
   updatedAt: number;
 };
 
-const JOBS_STORE = 'jobs';
+const JOBS_STORE = "jobs";
 
 // Upgrade DB to version 3 for jobs store
 const DB_VERSION_WITH_JOBS = 3;
@@ -346,23 +351,23 @@ export function openDbWithJobs(): Promise<IDBDatabase> {
     request.onupgradeneeded = (e: any) => {
       const db = request.result;
       if (!db.objectStoreNames.contains(FILE_STORE)) {
-        const store = db.createObjectStore(FILE_STORE, { keyPath: 'id' });
-        store.createIndex('byJob', 'jobKey', { unique: false });
+        const store = db.createObjectStore(FILE_STORE, { keyPath: "id" });
+        store.createIndex("byJob", "jobKey", { unique: false });
       }
       if (!db.objectStoreNames.contains(DOC_STORE)) {
-        const store = db.createObjectStore(DOC_STORE, { keyPath: 'id' });
-        store.createIndex('byJob', 'jobKey', { unique: false });
+        const store = db.createObjectStore(DOC_STORE, { keyPath: "id" });
+        store.createIndex("byJob", "jobKey", { unique: false });
       }
       if (!db.objectStoreNames.contains(RECEIPT_STORE)) {
-        const store = db.createObjectStore(RECEIPT_STORE, { keyPath: 'id' });
-        store.createIndex('byCategory', 'category', { unique: false });
-        store.createIndex('byDate', 'date', { unique: false });
-        store.createIndex('byVendor', 'vendorLower', { unique: false });
+        const store = db.createObjectStore(RECEIPT_STORE, { keyPath: "id" });
+        store.createIndex("byCategory", "category", { unique: false });
+        store.createIndex("byDate", "date", { unique: false });
+        store.createIndex("byVendor", "vendorLower", { unique: false });
       }
       if (!db.objectStoreNames.contains(JOBS_STORE)) {
-        const store = db.createObjectStore(JOBS_STORE, { keyPath: 'id' });
-        store.createIndex('byStatus', 'status', { unique: false });
-        store.createIndex('byUpdated', 'updatedAt', { unique: false });
+        const store = db.createObjectStore(JOBS_STORE, { keyPath: "id" });
+        store.createIndex("byStatus", "status", { unique: false });
+        store.createIndex("byUpdated", "updatedAt", { unique: false });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -370,11 +375,11 @@ export function openDbWithJobs(): Promise<IDBDatabase> {
   });
 }
 
-export async function upsertJob(job: Omit<SavedJob, 'createdAt' | 'updatedAt'>): Promise<SavedJob> {
+export async function upsertJob(job: Omit<SavedJob, "createdAt" | "updatedAt">): Promise<SavedJob> {
   const db = await openDbWithJobs();
   const now = Date.now();
   const record = await new Promise<SavedJob>((resolve, reject) => {
-    const tx = db.transaction(JOBS_STORE, 'readwrite');
+    const tx = db.transaction(JOBS_STORE, "readwrite");
     const store = tx.objectStore(JOBS_STORE);
     const getReq = store.get(job.id);
     getReq.onsuccess = () => {
@@ -398,9 +403,9 @@ export async function listJobs(): Promise<SavedJob[]> {
   const db = await openDbWithJobs();
   const jobs: SavedJob[] = [];
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(JOBS_STORE, 'readonly');
+    const tx = db.transaction(JOBS_STORE, "readonly");
     const store = tx.objectStore(JOBS_STORE);
-    const req = store.openCursor(null, 'prev');
+    const req = store.openCursor(null, "prev");
     req.onsuccess = () => {
       const cursor = req.result as IDBCursorWithValue | null;
       if (cursor) {
@@ -416,10 +421,14 @@ export async function listJobs(): Promise<SavedJob[]> {
   return jobs;
 }
 
-export async function setJobStatus(jobKey: string, status: JobStatus, competitor?: string): Promise<void> {
+export async function setJobStatus(
+  jobKey: string,
+  status: JobStatus,
+  competitor?: string,
+): Promise<void> {
   const db = await openDbWithJobs();
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(JOBS_STORE, 'readwrite');
+    const tx = db.transaction(JOBS_STORE, "readwrite");
     const store = tx.objectStore(JOBS_STORE);
     const getReq = store.get(jobKey);
     getReq.onsuccess = () => {

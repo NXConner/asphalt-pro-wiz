@@ -32,8 +32,10 @@ export function PremiumServices({
       <CardHeader>
         <CardTitle>Premium Services</CardTitle>
         <CardDescription>
-          Additional professional services to enhance durability, safety, appearance, and lifecycle value. Premium options are priced higher due to
-          added materials, specialized equipment, skilled labor time, logistics, and documentation that collectively deliver longer-lasting, lower-risk outcomes.
+          Additional professional services to enhance durability, safety, appearance, and lifecycle
+          value. Premium options are priced higher due to added materials, specialized equipment,
+          skilled labor time, logistics, and documentation that collectively deliver longer-lasting,
+          lower-risk outcomes.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -58,14 +60,16 @@ export function PremiumServices({
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Badge>Core Premium Add-ons</Badge>
-            <p className="text-sm text-muted-foreground">These integrate with the estimator&apos;s pricing model.</p>
+            <p className="text-sm text-muted-foreground">
+              These integrate with the estimator&apos;s pricing model.
+            </p>
           </div>
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="edge-pushing"
                 checked={edgePushing}
-                onCheckedChange={(checked) => onChange('premiumEdgePushing', checked as boolean)}
+                onCheckedChange={(checked) => onChange("premiumEdgePushing", checked as boolean)}
               />
               <Label htmlFor="edge-pushing" className="cursor-pointer">
                 Edge Pushing — Restore clean asphalt edges for better sealing and appearance
@@ -75,7 +79,7 @@ export function PremiumServices({
               <Checkbox
                 id="weed-killer"
                 checked={weedKiller}
-                onCheckedChange={(checked) => onChange('premiumWeedKiller', checked as boolean)}
+                onCheckedChange={(checked) => onChange("premiumWeedKiller", checked as boolean)}
               />
               <Label htmlFor="weed-killer" className="cursor-pointer">
                 Vegetation Control (Weed Killer) — Prevent growth through sealed areas
@@ -85,7 +89,7 @@ export function PremiumServices({
               <Checkbox
                 id="crack-cleaning"
                 checked={crackCleaning}
-                onCheckedChange={(checked) => onChange('premiumCrackCleaning', checked as boolean)}
+                onCheckedChange={(checked) => onChange("premiumCrackCleaning", checked as boolean)}
               />
               <Label htmlFor="crack-cleaning" className="cursor-pointer">
                 Professional Crack Cleaning — Heat-lance cleaning for maximum bond
@@ -95,7 +99,7 @@ export function PremiumServices({
               <Checkbox
                 id="power-washing"
                 checked={powerWashing}
-                onCheckedChange={(checked) => onChange('premiumPowerWashing', checked as boolean)}
+                onCheckedChange={(checked) => onChange("premiumPowerWashing", checked as boolean)}
               />
               <Label htmlFor="power-washing" className="cursor-pointer">
                 Power Washing — Heavy cleaning for a contaminant-free surface
@@ -105,7 +109,7 @@ export function PremiumServices({
               <Checkbox
                 id="debris-removal"
                 checked={debrisRemoval}
-                onCheckedChange={(checked) => onChange('premiumDebrisRemoval', checked as boolean)}
+                onCheckedChange={(checked) => onChange("premiumDebrisRemoval", checked as boolean)}
               />
               <Label htmlFor="debris-removal" className="cursor-pointer">
                 Debris Removal — Heavy debris hauling and proper disposal
@@ -117,28 +121,64 @@ export function PremiumServices({
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Badge variant="outline">Expanded Premium Options</Badge>
-            <p className="text-sm text-muted-foreground">Add these to estimate as custom services.</p>
+            <p className="text-sm text-muted-foreground">
+              Add these to estimate as custom services.
+            </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {PREMIUM_SERVICES.filter((svc) => !['edge-pushing','weed-killer','crack-cleaning','power-washing','debris-removal'].includes(svc.id)).map((svc) => {
+            {PREMIUM_SERVICES.filter(
+              (svc) =>
+                ![
+                  "edge-pushing",
+                  "weed-killer",
+                  "crack-cleaning",
+                  "power-washing",
+                  "debris-removal",
+                ].includes(svc.id),
+            ).map((svc) => {
               const alreadyAdded = addedServiceNames.includes(svc.name);
               return (
                 <div key={svc.id} className="border rounded-md p-3 space-y-2 bg-card">
                   <div className="flex items-center justify-between">
-                    <a href={`/service/${svc.id}`} className="font-semibold hover:text-primary transition-colors">
+                    <a
+                      href={`/service/${svc.id}`}
+                      className="font-semibold hover:text-primary transition-colors"
+                    >
                       {svc.name}
                     </a>
-                    <Badge variant="secondary">{svc.unitType === 'flat' ? 'Flat' : svc.unitType === 'perUnit' ? 'Per Unit' : svc.unitType === 'perSqFt' ? 'Per Sq Ft' : 'Per Linear Ft'}</Badge>
+                    <Badge variant="secondary">
+                      {svc.unitType === "flat"
+                        ? "Flat"
+                        : svc.unitType === "perUnit"
+                          ? "Per Unit"
+                          : svc.unitType === "perSqFt"
+                            ? "Per Sq Ft"
+                            : "Per Linear Ft"}
+                    </Badge>
                   </div>
                   <div className="text-sm text-muted-foreground">{svc.description}</div>
                   {svc.justification && (
-                    <div className="text-xs text-muted-foreground">Why premium: {svc.justification}</div>
+                    <div className="text-xs text-muted-foreground">
+                      Why premium: {svc.justification}
+                    </div>
                   )}
                   <div className="flex items-center justify-between pt-1">
                     <div className="text-sm">
-                      Default: ${'{'}svc.defaultUnitPrice.toFixed(2){'}'} {svc.unitType === 'perSqFt' ? '/sq ft' : svc.unitType === 'perLinearFt' ? '/lf' : svc.unitType === 'perUnit' ? '/unit' : ''}
+                      Default: ${"{"}svc.defaultUnitPrice.toFixed(2){"}"}{" "}
+                      {svc.unitType === "perSqFt"
+                        ? "/sq ft"
+                        : svc.unitType === "perLinearFt"
+                          ? "/lf"
+                          : svc.unitType === "perUnit"
+                            ? "/unit"
+                            : ""}
                     </div>
-                    <Button size="sm" variant={alreadyAdded ? 'secondary' : 'outline'} disabled={alreadyAdded || !onAddCustomService} onClick={() => onAddCustomService && onAddCustomService(svc.id)}>
+                    <Button
+                      size="sm"
+                      variant={alreadyAdded ? "secondary" : "outline"}
+                      disabled={alreadyAdded || !onAddCustomService}
+                      onClick={() => onAddCustomService && onAddCustomService(svc.id)}
+                    >
                       {alreadyAdded ? (
                         <>
                           <CheckCircle2 className="h-4 w-4 mr-1" /> Added

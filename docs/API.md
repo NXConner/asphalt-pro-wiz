@@ -3,6 +3,7 @@
 This project currently runs frontend-only with optional Supabase Edge Functions.
 
 ## Gemini Proxy (Supabase Edge Function)
+
 - Path: `supabase/functions/gemini-proxy`
 - Methods: `POST`
 - Body:
