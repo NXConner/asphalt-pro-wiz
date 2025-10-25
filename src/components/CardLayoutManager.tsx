@@ -17,6 +17,10 @@ export interface CardLayout {
   h: number;
   minW?: number;
   minH?: number;
+  // Per-item layout controls (override global GridLayout props)
+  isDraggable?: boolean;
+  isResizable?: boolean;
+  static?: boolean;
 }
 
 export interface LayoutPreset {
