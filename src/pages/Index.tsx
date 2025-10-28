@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, Suspense, lazy } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Calculator, FileText, Plus, Settings, MapPin } from "lucide-react";
-import Map from "@/components/Map";
+import { Skeleton } from "@/components/ui/skeleton";
+const Map = lazy(() => import("@/components/Map"));
 import AreaSection from "@/components/AreaSection";
 import ImageAreaAnalyzer from "@/components/ImageAreaAnalyzer";
 import { isEnabled, setFlag } from "@/lib/flags";
@@ -576,13 +577,15 @@ const Index = () => {
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <Map
-                          customerAddress={customerAddress}
-                          onAddressUpdate={handleAddressUpdate}
-                          onAreaDrawn={handleAreaDrawn}
-                          onCrackLengthDrawn={handleCrackLengthDrawn}
-                          refreshKey={mapRefreshKey}
-                        />
+                        <Suspense fallback={<Skeleton className="h-[450px] w-full" />}>
+                          <Map
+                            customerAddress={customerAddress}
+                            onAddressUpdate={handleAddressUpdate}
+                            onAreaDrawn={handleAreaDrawn}
+                            onCrackLengthDrawn={handleCrackLengthDrawn}
+                            refreshKey={mapRefreshKey}
+                          />
+                        </Suspense>
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           <div>
                             <Label>Business</Label>
