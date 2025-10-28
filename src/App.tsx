@@ -1,15 +1,18 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import PremiumServiceDetails from "./pages/PremiumServiceDetails";
-import { useEffect } from "react";
+import { useEffect, Suspense, lazy } from "react";
 import { toast as sonnerToast } from "sonner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { I18nProvider } from "@/lib/i18n";
-import NotFound from "./pages/NotFound";
+
+// Route-level code splitting for faster initial load
+const Index = lazy(() => import("./pages/Index"));
+const PremiumServiceDetails = lazy(() => import("./pages/PremiumServiceDetails"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -54,7 +57,8 @@ const App = () => {
     try {
       // Prefer Vite's injected BASE_URL when available, otherwise derive from document.baseURI
       const envAny = (import.meta as any)?.env ?? {};
-      const envBase = (envAny.BASE_URL as string | undefined) || (envAny.VITE_BASE_URL as string | undefined);
+      const envBase =
+        (envAny.BASE_URL as string | undefined) || (envAny.VITE_BASE_URL as string | undefined);
       if (envBase && envBase !== "/") {
         // Treat './' (relative base) as root for router basename
         const cleaned = envBase === "./" ? "/" : envBase;
@@ -78,12 +82,21 @@ const App = () => {
             <Toaster />
             <Sonner />
             <BrowserRouter basename={baseName}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/service/:serviceId" element={<PremiumServiceDetails />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <Suspense
+                fallback={
+                  <div className="p-6">
+                    <Skeleton className="h-6 w-1/3 mb-4" />
+                    <Skeleton className="h-96 w-full" />
+                  </div>
+                }
+              >
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/service/:serviceId" element={<PremiumServiceDetails />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
             </BrowserRouter>
           </TooltipProvider>
         </QueryClientProvider>

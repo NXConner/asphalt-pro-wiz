@@ -8,7 +8,7 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   // Ensure assets resolve under sub-path previews (e.g., /preview/xyz)
   // Use relative base in production to avoid absolute /assets paths breaking behind proxies
-  base: mode === 'development' ? '/' : (process.env.VITE_BASE_PATH || './'),
+  base: mode === "development" ? "/" : process.env.VITE_BASE_PATH || "./",
   server: {
     // Bind on IPv4 for Lovable proxy compatibility and enforce port 8080
     host: true,
@@ -49,5 +49,27 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  // Improve chunking to reduce initial bundle size and address chunk warnings
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (id.includes("node_modules")) {
+            if (id.includes("react") || id.includes("scheduler")) return "react-vendor";
+            if (id.includes("react-router")) return "router";
+            if (id.includes("@tanstack")) return "query";
+            if (id.includes("@radix-ui") || id.includes("cmdk")) return "radix";
+            if (id.includes("leaflet")) return "leaflet";
+            if (id.includes("@react-google-maps")) return "maps";
+            if (id.includes("@supabase")) return "supabase";
+            if (id.includes("recharts")) return "charts";
+            if (id.includes("date-fns")) return "date";
+          }
+        },
+      },
+    },
+    // Keep warnings meaningful while allowing split vendor chunks
+    chunkSizeWarningLimit: 900,
   },
 }));
