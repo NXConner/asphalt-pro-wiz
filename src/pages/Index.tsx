@@ -55,6 +55,9 @@ import { CustomizableCard, CardStyle } from "@/components/CustomizableCard";
 import { CardLayoutManager, CardLayout } from "@/components/CardLayoutManager";
 import WeatherCard from "@/components/WeatherCard";
 import { BlackoutEditor } from "@/components/Scheduler/BlackoutEditor";
+import { CrewAssign } from "@/components/Scheduler/CrewAssign";
+import { WeatherAdvisor } from "@/components/Scheduler/WeatherAdvisor";
+import { LayoutOptimizer } from "@/components/Optimizer/LayoutOptimizer";
 import GridLayout from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -709,6 +712,11 @@ const Index = () => {
                               Total: {totalArea.toFixed(1)} sq ft
                             </div>
                           )}
+                          {isEnabled("optimizer") && (
+                            <div className="mt-3">
+                              <LayoutOptimizer totalAreaSqft={totalArea} />
+                            </div>
+                          )}
                         </div>
 
                         {isEnabled("imageAreaAnalyzer") && (
@@ -1130,6 +1138,8 @@ const Index = () => {
             {isEnabled("aiAssistant") && <AIGemini />}
 
             {isEnabled("scheduler") && <BlackoutEditor />}
+            {isEnabled("scheduler") && <CrewAssign />}
+            {isEnabled("scheduler") && <WeatherAdvisor coords={customerCoords} />}
           </TabsContent>
         </Tabs>
       </div>
