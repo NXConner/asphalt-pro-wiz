@@ -42,6 +42,37 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         navigateFallbackDenylist: [/^\/api\//],
+        runtimeCaching: [
+          {
+            urlPattern: /https:\/\/tile\.openstreetmap\.org\/.*\.(png|jpg|jpeg)$/,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "osm-tiles",
+              expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 7 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern:
+              /https:\/\/services\.arcgisonline\.com\/ArcGIS\/rest\/services\/.*\/tile\//,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "arcgis-tiles",
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 7 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /https:\/\/api\.openweathermap\.org\/.*$/,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "weather-api",
+              networkTimeoutSeconds: 3,
+              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
     }),
   ].filter(Boolean),

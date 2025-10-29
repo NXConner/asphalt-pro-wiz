@@ -1,16 +1,18 @@
 ## Summary
+- Describe the changes and the motivation.
 
-- What does this PR change and why?
+## Changes
+- [ ] Feature flag(s) added or used
+- [ ] Logging and error handling added
+- [ ] Tests added/updated
+- [ ] Docs updated
+
+## Screenshots/Recordings (if UI)
+
+## Test Plan
+- Steps to verify manually
 
 ## Checklist
-
-- [ ] Lint passes locally (`npm run lint`)
-- [ ] Code formatted (`npm run format:check`)
-- [ ] Tests added/updated (if applicable)
-- [ ] Changes documented in README/CHANGELOG (if applicable)
-
-## Screenshots / Demos
-
-## Risks / Rollback
-
-- Rollback plan:
+- [ ] Lint passes (`npm run lint`)
+- [ ] Unit tests pass (`npm run test:unit`)
+- [ ] E2E tests pass if applicable (`npm run test:e2e`)

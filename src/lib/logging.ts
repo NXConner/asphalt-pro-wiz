@@ -1,4 +1,5 @@
 export type LogLevel = "debug" | "info" | "warn" | "error";
+import { nanoid } from "nanoid";
 
 const LOG_PREFIX = "[PPS]";
 
@@ -9,12 +10,53 @@ function isDev(): boolean {
   );
 }
 
+let globalContext: Record<string, unknown> = {};
+
+function getDeviceId(): string {
+  try {
+    const key = "pps:deviceId";
+    const existing = localStorage.getItem(key);
+    if (existing) return existing;
+    const id = nanoid(16);
+    localStorage.setItem(key, id);
+    return id;
+  } catch {
+    return "unknown-device";
+  }
+}
+
+function getSessionId(): string {
+  try {
+    const key = "pps:sessionId";
+    const existing = sessionStorage.getItem(key);
+    if (existing) return existing;
+    const id = nanoid(12);
+    sessionStorage.setItem(key, id);
+    return id;
+  } catch {
+    return "unknown-session";
+  }
+}
+
+export function setLogContext(context: Record<string, unknown>): void {
+  globalContext = { ...globalContext, ...context };
+}
+
 export function logEvent(
   event: string,
   data?: Record<string, unknown>,
   level: LogLevel = "info",
 ): void {
-  const payload = { ts: new Date().toISOString(), event, ...data };
+  const payload = {
+    ts: new Date().toISOString(),
+    level,
+    event,
+    deviceId: getDeviceId(),
+    sessionId: getSessionId(),
+    url: typeof location !== "undefined" ? location.href : undefined,
+    ...globalContext,
+    ...data,
+  };
   try {
     if (isDev()) {
       console.log(`${LOG_PREFIX} ${event}`, payload);
@@ -22,7 +64,7 @@ export function logEvent(
     // Hook for production observability (no-op by default)
     const beaconUrl = (import.meta as any)?.env?.VITE_LOG_BEACON_URL;
     if (beaconUrl && typeof navigator !== "undefined" && "sendBeacon" in navigator) {
-      const blob = new Blob([JSON.stringify({ level, ...payload })], { type: "application/json" });
+      const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
       navigator.sendBeacon(beaconUrl as string, blob);
     }
   } catch {
@@ -36,4 +78,12 @@ export function logError(error: unknown, context?: Record<string, unknown>): voi
       ? { name: error.name, message: error.message, stack: error.stack }
       : { error };
   logEvent("error", { ...context, ...err }, "error");
+}
+
+// Convenience API for web-vitals integration
+export type WebVitalName = "CLS" | "FID" | "LCP" | "FCP" | "TTFB" | "INP";
+export function logVital(name: WebVitalName, value: number, id?: string): void {
+  const sampleRate = Number((import.meta as any)?.env?.VITE_OBSERVABILITY_SAMPLE_RATE ?? 1);
+  if (Number.isFinite(sampleRate) && Math.random() > sampleRate) return;
+  logEvent("web_vital", { name, value, id });
 }
