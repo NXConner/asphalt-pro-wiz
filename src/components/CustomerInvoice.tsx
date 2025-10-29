@@ -1,4 +1,5 @@
 import { Costs, CostBreakdown } from "@/lib/calculations";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,8 @@ export function CustomerInvoice({
   breakdown,
   onPrint,
 }: CustomerInvoiceProps) {
+  const [taxRatePct, setTaxRatePct] = useState<number>(0);
+  const [discountPct, setDiscountPct] = useState<number>(0);
   const today = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -77,6 +80,16 @@ export function CustomerInvoice({
     .filter(([k]) => !["Measured Area"].includes(k))
     .map(([k, v]) => ({ item: k, value: `$${v.toFixed(2)}` }));
 
+  const totals = useMemo(() => {
+    const base = costs.total;
+    const discount = Math.max(0, Math.min(100, discountPct));
+    const afterDiscount = base * (1 - discount / 100);
+    const tax = Math.max(0, Math.min(100, taxRatePct));
+    const taxAmount = afterDiscount * (tax / 100);
+    const grand = afterDiscount + taxAmount;
+    return { base, discountPct: discount, afterDiscount, taxPct: tax, taxAmount, grand };
+  }, [costs.total, taxRatePct, discountPct]);
+
   return (
     <Card className="print:shadow-none">
       <CardHeader className="space-y-4 pb-8">
@@ -130,10 +143,50 @@ export function CustomerInvoice({
 
         <Separator className="my-6" />
 
-        <div className="bg-muted/50 p-6 rounded-lg">
+        <div className="bg-muted/50 p-6 rounded-lg space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-2xl font-bold">Total Estimate</span>
-            <span className="text-3xl font-bold text-primary">${costs.total.toFixed(2)}</span>
+            <span className="text-2xl font-bold">Subtotal</span>
+            <span className="text-2xl font-semibold">${totals.base.toFixed(2)}</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+            <div>
+              <label htmlFor="discountPct" className="text-xs text-muted-foreground">Discount (%)</label>
+              <input
+                id="discountPct"
+                className="w-full h-9 rounded border bg-background px-2"
+                type="number"
+                min={0}
+                max={100}
+                step={0.5}
+                value={discountPct}
+                onChange={(e) => setDiscountPct(parseFloat(e.target.value) || 0)}
+              />
+            </div>
+            <div>
+              <label htmlFor="taxRatePct" className="text-xs text-muted-foreground">Tax Rate (%)</label>
+              <input
+                id="taxRatePct"
+                className="w-full h-9 rounded border bg-background px-2"
+                type="number"
+                min={0}
+                max={100}
+                step={0.1}
+                value={taxRatePct}
+                onChange={(e) => setTaxRatePct(parseFloat(e.target.value) || 0)}
+              />
+            </div>
+            <div className="text-right">
+              <div className="text-sm text-muted-foreground">After Discount</div>
+              <div className="text-lg font-semibold">${totals.afterDiscount.toFixed(2)}</div>
+            </div>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Tax</span>
+            <span className="text-sm font-medium">${totals.taxAmount.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-3xl font-bold">Total Estimate</span>
+            <span className="text-3xl font-bold text-primary">${totals.grand.toFixed(2)}</span>
           </div>
         </div>
 
