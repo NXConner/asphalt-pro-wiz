@@ -13,6 +13,7 @@ import { I18nProvider } from "@/lib/i18n";
 const Index = lazy(() => import("./pages/Index"));
 const PremiumServiceDetails = lazy(() => import("./pages/PremiumServiceDetails"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Portal = lazy(() => import("./pages/Portal/Portal"));
 
 const queryClient = new QueryClient();
 
@@ -93,6 +94,7 @@ const App = () => {
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/service/:serviceId" element={<PremiumServiceDetails />} />
+                  <Route path="/portal" element={<Portal />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

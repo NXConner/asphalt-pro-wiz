@@ -12,7 +12,14 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import GoogleMap from "@/components/map/GoogleMap";
-import { loadMapSettings, saveMapSettings, type BaseLayerId } from "@/lib/mapSettings";
+import {
+  loadMapSettings,
+  saveMapSettings,
+  exportMapSettings,
+  importMapSettings,
+  type BaseLayerId,
+} from "@/lib/mapSettings";
+import { Button } from "@/components/ui/button";
 
 interface MapProps {
   onAddressUpdate: (coords: [number, number], address: string) => void;
@@ -285,6 +292,44 @@ const Map = ({
               >
                 Add Overlay
               </button>
+            </div>
+            <div className="md:col-span-2 flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  const json = exportMapSettings();
+                  const blob = new Blob([json], { type: "application/json" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "map-settings.json";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                Export Settings
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  const input = document.createElement("input");
+                  input.type = "file";
+                  input.accept = "application/json";
+                  input.onchange = async () => {
+                    const file = input.files?.[0];
+                    if (!file) return;
+                    const text = await file.text();
+                    const next = importMapSettings(text);
+                    setSettings(next);
+                    setSettingsKey((k) => k + 1);
+                  };
+                  input.click();
+                }}
+              >
+                Import Settings
+              </Button>
             </div>
           </div>
         </CardContent>

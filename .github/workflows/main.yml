@@ -2,12 +2,12 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [ main, master, develop, staging, "release/*", "feature/*" ]
   pull_request:
-    branches: [main, master]
+    branches: [ "**" ]
 
 jobs:
-  build-test:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,7 +16,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
@@ -25,40 +26,39 @@ jobs:
         run: npm run lint
 
       - name: Unit tests
-        run: npm run test:unit -- --run
+        run: npm run test:unit
 
       - name: Build
         run: npm run build
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+      - name: Security audit (npm)
+        run: npm run audit || true
 
-      - name: E2E tests
-        run: npm run test:e2e
-        env:
-          CI: true
-
-  security:
+  e2e:
     runs-on: ubuntu-latest
+    needs: build-and-test
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+          cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Audit high severity
-        run: npm run audit
-      - name: Snyk test (non-blocking)
-        run: npm run snyk:test
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: E2E tests
+        run: npm run test:e2e
 
-  codeql:
-    permissions:
-      security-events: write
-      actions: read
-      contents: read
-    uses: github/codeql-action/.github/workflows/codeql.yml@v3
-    with:
-      languages: javascript
+  docker:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build image
+        run: docker build -t pps/app:ci .

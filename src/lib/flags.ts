@@ -4,7 +4,11 @@ export type FeatureFlag =
   | "pwa"
   | "i18n"
   | "receipts"
-  | "ownerMode";
+  | "ownerMode"
+  | "scheduler"
+  | "optimizer"
+  | "customerPortal"
+  | "observability";
 
 const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   imageAreaAnalyzer: true,
@@ -13,6 +17,10 @@ const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   i18n: true,
   receipts: true,
   ownerMode: false,
+  scheduler: false,
+  optimizer: false,
+  customerPortal: false,
+  observability: true,
 };
 
 const STORAGE_KEY = "pps:flags";

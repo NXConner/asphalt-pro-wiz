@@ -161,6 +161,33 @@ export function setOverlayOpacity(id: string, opacity: number) {
   }));
 }
 
+// Export/import helpers for backup and sharing
+export function exportMapSettings(): string {
+  const settings = loadMapSettings();
+  const safe = { ...settings };
+  return JSON.stringify(safe, null, 2);
+}
+
+export function importMapSettings(json: string): MapSettings {
+  let parsed: MapSettings | null = null;
+  try {
+    parsed = JSON.parse(json) as MapSettings;
+  } catch {
+    parsed = null;
+  }
+  if (!parsed) return loadMapSettings();
+  const next = {
+    ...getDefaultMapSettings(),
+    ...parsed,
+    provider: "google",
+    baseLayer: parsed.baseLayer ?? "google_hybrid",
+    overlays: mergeOverlays(getDefaultMapSettings().overlays, parsed.overlays || []),
+    radar: { ...getDefaultMapSettings().radar, ...(parsed.radar || {}) },
+  } satisfies MapSettings;
+  saveMapSettings(next);
+  return next;
+}
+
 export function setRadarSettings(radar: Partial<RadarSettings>) {
   updateMapSettings((prev) => ({ ...prev, radar: { ...prev.radar, ...radar } }));
 }

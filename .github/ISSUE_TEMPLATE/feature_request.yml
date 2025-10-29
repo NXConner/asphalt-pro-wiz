@@ -1,0 +1,31 @@
+name: Feature request
+description: Suggest an idea for this project
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What problem are you trying to solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the feature and how it solves the problem
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope & acceptance
+      description: What should be in/out of scope? Acceptance criteria.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks & mitigations

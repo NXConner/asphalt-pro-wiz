@@ -54,6 +54,10 @@ import { Switch } from "@/components/ui/switch";
 import { CustomizableCard, CardStyle } from "@/components/CustomizableCard";
 import { CardLayoutManager, CardLayout } from "@/components/CardLayoutManager";
 import WeatherCard from "@/components/WeatherCard";
+import { BlackoutEditor } from "@/components/Scheduler/BlackoutEditor";
+import { CrewAssign } from "@/components/Scheduler/CrewAssign";
+import { WeatherAdvisor } from "@/components/Scheduler/WeatherAdvisor";
+import { LayoutOptimizer } from "@/components/Optimizer/LayoutOptimizer";
 import GridLayout from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -708,6 +712,11 @@ const Index = () => {
                               Total: {totalArea.toFixed(1)} sq ft
                             </div>
                           )}
+                          {isEnabled("optimizer") && (
+                            <div className="mt-3">
+                              <LayoutOptimizer totalAreaSqft={totalArea} />
+                            </div>
+                          )}
                         </div>
 
                         {isEnabled("imageAreaAnalyzer") && (
@@ -1052,6 +1061,66 @@ const Index = () => {
                     }}
                   />
                 </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="flag-scheduler" className="text-sm">
+                    Scheduler
+                  </Label>
+                  <Switch
+                    id="flag-scheduler"
+                    checked={isEnabled("scheduler")}
+                    onCheckedChange={(checked) => {
+                      setFlag("scheduler", checked);
+                      try {
+                        logEvent("flags.scheduler_toggled", { enabled: checked });
+                      } catch {}
+                    }}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="flag-optimizer" className="text-sm">
+                    Layout Optimizer
+                  </Label>
+                  <Switch
+                    id="flag-optimizer"
+                    checked={isEnabled("optimizer")}
+                    onCheckedChange={(checked) => {
+                      setFlag("optimizer", checked);
+                      try {
+                        logEvent("flags.optimizer_toggled", { enabled: checked });
+                      } catch {}
+                    }}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="flag-portal" className="text-sm">
+                    Customer Portal
+                  </Label>
+                  <Switch
+                    id="flag-portal"
+                    checked={isEnabled("customerPortal")}
+                    onCheckedChange={(checked) => {
+                      setFlag("customerPortal", checked);
+                      try {
+                        logEvent("flags.customerPortal_toggled", { enabled: checked });
+                      } catch {}
+                    }}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="flag-observability" className="text-sm">
+                    Observability
+                  </Label>
+                  <Switch
+                    id="flag-observability"
+                    checked={isEnabled("observability")}
+                    onCheckedChange={(checked) => {
+                      setFlag("observability", checked);
+                      try {
+                        logEvent("flags.observability_toggled", { enabled: checked });
+                      } catch {}
+                    }}
+                  />
+                </div>
               </CardContent>
             </Card>
 
@@ -1067,6 +1136,10 @@ const Index = () => {
             )}
 
             {isEnabled("aiAssistant") && <AIGemini />}
+
+            {isEnabled("scheduler") && <BlackoutEditor />}
+            {isEnabled("scheduler") && <CrewAssign />}
+            {isEnabled("scheduler") && <WeatherAdvisor coords={customerCoords} />}
           </TabsContent>
         </Tabs>
       </div>
