@@ -20,10 +20,9 @@ createRoot(document.getElementById("root")!).render(<App />);
 
 // Web-vitals (lazy) with sampling
 if ((import.meta as any)?.env?.VITE_ENABLE_WEB_VITALS) {
-  import("web-vitals").then(({ onCLS, onFID, onLCP, onFCP, onTTFB, onINP }) => {
+  import("web-vitals").then(({ onCLS, onLCP, onFCP, onTTFB, onINP }) => {
     try {
       onCLS((m) => logVital("CLS", m.value, m.id));
-      onFID((m) => logVital("FID", m.value, m.id));
       onLCP((m) => logVital("LCP", m.value, m.id));
       onFCP?.((m: any) => logVital("FCP", m.value, m.id));
       onTTFB?.((m: any) => logVital("TTFB", m.value, m.id));

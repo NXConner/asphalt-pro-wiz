@@ -12,6 +12,6 @@ serve(async (req) => {
     console.log("[PPS BEACON]", { body, ua: req.headers.get("user-agent") });
     return new Response("OK", { status: 200 });
   } catch (e) {
-    return new Response(String(e?.message || e), { status: 400 });
+    return new Response(String((e as Error)?.message || e), { status: 400 });
   }
 });

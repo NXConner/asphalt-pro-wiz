@@ -59,6 +59,6 @@ serve(async (req) => {
     if (action === "embed") return await handleEmbed(String(body?.text || ""), apiKey);
     return new Response("Bad Request", { status: 400 });
   } catch (e) {
-    return new Response(String(e?.message || e), { status: 500 });
+    return new Response(String((e as Error)?.message || e), { status: 500 });
   }
 });

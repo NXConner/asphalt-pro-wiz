@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Calculator, FileText, Plus, Settings, MapPin } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-const Map = lazy(() => import("@/components/Map"));
+const MapComponent = lazy(() => import("@/components/Map"));
 import AreaSection from "@/components/AreaSection";
 import ImageAreaAnalyzer from "@/components/ImageAreaAnalyzer";
 import { isEnabled, setFlag } from "@/lib/flags";
@@ -165,7 +165,7 @@ const Index = () => {
   const handleLayoutChange = (newLayout: any[]) => {
     // Merge changes from visible layout into full layout state
     setCardLayouts((prev) => {
-      const nextById = new Map<string, any>();
+      const nextById = new globalThis.Map<string, any>();
       for (const item of newLayout) {
         nextById.set(item.i, item);
       }
@@ -582,7 +582,7 @@ const Index = () => {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <Suspense fallback={<Skeleton className="h-[450px] w-full" />}>
-                          <Map
+                          <MapComponent
                             customerAddress={customerAddress}
                             onAddressUpdate={handleAddressUpdate}
                             onAreaDrawn={handleAreaDrawn}
@@ -1129,9 +1129,9 @@ const Index = () => {
                 waterPercent={waterPercent}
                 onWaterPercentChange={setWaterPercent}
                 sealerType={sealerType}
-                onSealerTypeChange={setSealerType}
+                onSealerTypeChange={(v) => setSealerType(v as any)}
                 sandType={sandType}
-                onSandTypeChange={setSandType}
+                onSandTypeChange={(v) => setSandType(v as any)}
               />
             )}
 
