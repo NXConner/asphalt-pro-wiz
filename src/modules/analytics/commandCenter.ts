@@ -4,6 +4,7 @@ export interface JobRecord {
   id: string;
   status: string;
   quote_value?: number | null;
+  total_area_sqft?: number | null;
   created_at: string;
   updated_at?: string;
 }
@@ -12,6 +13,7 @@ export interface EstimateRecord {
   id: string;
   job_id: string;
   amount: number;
+  total?: number;
   created_at: string;
 }
 
@@ -30,6 +32,7 @@ export interface CommandCenterMetrics {
     lostJobs: number;
     totalQuoteValue: number;
     totalRevenue: number;
+    totalAreaSqft: number;
   };
   efficiency: {
     averageTurnaroundDays: number | null;
@@ -62,10 +65,11 @@ export function calculateCommandCenterMetrics(
     lostJobs: 0,
     totalQuoteValue: 0,
     totalRevenue: 0,
+    totalAreaSqft: 0,
   };
 
   const statusMap = {
-    active: new Set(["pending", "in_progress", "scheduled", "draft", "open"]),
+    active: new Set(["pending", "in_progress", "scheduled", "draft", "open", "need_estimate", "estimated"]),
     completed: new Set(["completed", "closed"]),
     lost: new Set(["lost", "cancelled"]),
   };
@@ -73,6 +77,7 @@ export function calculateCommandCenterMetrics(
   for (const job of jobs) {
     const quoteValue = safeNumber(job.quote_value);
     totals.totalQuoteValue += quoteValue;
+    totals.totalAreaSqft += safeNumber(job.total_area_sqft);
     const status = (job.status || "").toLowerCase();
     if (statusMap.active.has(status)) totals.activeJobs += 1;
     if (statusMap.completed.has(status)) totals.completedJobs += 1;
@@ -80,7 +85,8 @@ export function calculateCommandCenterMetrics(
   }
 
   for (const estimate of estimates) {
-    totals.totalRevenue += safeNumber(estimate.amount);
+    const value = safeNumber(estimate.total ?? estimate.amount);
+    totals.totalRevenue += value;
   }
 
   const assignmentsByJob = crewAssignments.reduce<Record<string, number>>((acc, assignment) => {
@@ -114,8 +120,9 @@ export function calculateCommandCenterMetrics(
 
   const revenueByMonthMap = new Map<string, number>();
   for (const estimate of estimates) {
-    const key = toMonthKey(estimate.created_at);
-    revenueByMonthMap.set(key, (revenueByMonthMap.get(key) ?? 0) + safeNumber(estimate.amount));
+      const key = toMonthKey(estimate.created_at);
+      const contribution = safeNumber(estimate.total ?? estimate.amount);
+      revenueByMonthMap.set(key, (revenueByMonthMap.get(key) ?? 0) + contribution);
   }
 
   const revenueByMonth = Array.from(revenueByMonthMap.entries())

@@ -17,6 +17,8 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 
+const { supabase } = await import('@/integrations/supabase/client');
+
 describe('useRealtime', () => {
   const queryClient = new QueryClient();
 
@@ -29,8 +31,6 @@ describe('useRealtime', () => {
   });
 
   it('should subscribe to realtime changes', () => {
-    const { supabase } = require('@/integrations/supabase/client');
-
     renderHook(() => useRealtime({ table: 'test_table' }), { wrapper });
 
     expect(supabase.channel).toHaveBeenCalledWith('test_table_realtime');
@@ -62,5 +62,5 @@ describe('useRealtime', () => {
       }),
       expect.any(Function),
     );
-  });
+});
 });

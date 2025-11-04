@@ -95,6 +95,7 @@ describe("calculateCommandCenterMetrics", () => {
       completedJobs: 0,
       lostJobs: 0,
       totalAreaSqft: 0,
+      totalQuoteValue: 0,
       totalRevenue: 0,
     });
     expect(metrics.efficiency).toEqual({ averageTurnaroundDays: null, scheduledJobs: 0 });

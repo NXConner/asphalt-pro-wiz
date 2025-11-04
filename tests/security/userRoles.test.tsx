@@ -33,6 +33,8 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 
+const { supabase } = await import('@/integrations/supabase/client');
+
 describe('useUserRole', () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -50,7 +52,6 @@ describe('useUserRole', () => {
   });
 
   it('returns empty roles when not authenticated', async () => {
-    const { supabase } = require('@/integrations/supabase/client');
     supabase.auth.getSession.mockResolvedValue({
       data: { session: null },
       error: null,
@@ -65,7 +66,6 @@ describe('useUserRole', () => {
   });
 
   it('checks if user has specific role', async () => {
-    const { supabase } = require('@/integrations/supabase/client');
     supabase.auth.getSession.mockResolvedValue({
       data: {
         session: {
@@ -94,7 +94,6 @@ describe('useUserRole', () => {
   });
 
   it('identifies admin users correctly', async () => {
-    const { supabase } = require('@/integrations/supabase/client');
     supabase.auth.getSession.mockResolvedValue({
       data: {
         session: {
@@ -122,7 +121,6 @@ describe('useUserRole', () => {
   });
 
   it('identifies non-admin users correctly', async () => {
-    const { supabase } = require('@/integrations/supabase/client');
     supabase.auth.getSession.mockResolvedValue({
       data: {
         session: {

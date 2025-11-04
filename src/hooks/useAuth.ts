@@ -18,27 +18,33 @@ export function useAuth() {
   });
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const listenerResult = supabase.auth?.onAuthStateChange?.((_event, session) => {
       setState({
         user: session?.user ?? null,
-        session,
+        session: session ?? null,
         loading: false,
       });
     });
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setState({
-        user: session?.user ?? null,
-        session,
-        loading: false,
-      });
-    });
+    const subscription = listenerResult?.data?.subscription;
 
-    return () => subscription.unsubscribe();
+    const getSessionResult = supabase.auth?.getSession?.();
+    if (typeof getSessionResult?.then === 'function') {
+      getSessionResult
+        .then((result) => {
+          const session = result?.data?.session ?? null;
+          setState({ user: session?.user ?? null, session, loading: false });
+        })
+        .catch(() => {
+          setState((prev) => ({ ...prev, loading: false }));
+        });
+    } else {
+      setState((prev) => ({ ...prev, loading: false }));
+    }
+
+    return () => {
+      subscription?.unsubscribe?.();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
