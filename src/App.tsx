@@ -3,11 +3,15 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, Suspense, lazy } from "react";
 import { toast as sonnerToast } from "sonner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { I18nProvider } from "@/lib/i18n";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { PerformanceProvider } from "@/contexts/PerformanceContext";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { trackPageView } from "@/lib/analytics";
 
 // Route-level code splitting for faster initial load
 const Index = lazy(() => import("./pages/Index"));
@@ -17,6 +21,16 @@ const Portal = lazy(() => import("./pages/Portal/Portal"));
 const CommandCenter = lazy(() => import("./pages/CommandCenter"));
 
 const queryClient = new QueryClient();
+
+function RouteTracker() {
+  const location = useLocation();
+  
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location]);
+  
+  return null;
+}
 
 const App = () => {
   useEffect(() => {
@@ -78,33 +92,39 @@ const App = () => {
 
     return (
       <ErrorBoundary>
-        <I18nProvider>
-          <QueryClientProvider client={queryClient}>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter basename={baseName}>
-                <Suspense
-                  fallback={
-                    <div className="p-6">
-                      <Skeleton className="h-6 w-1/3 mb-4" />
-                      <Skeleton className="h-96 w-full" />
-                    </div>
-                  }
-                >
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/command-center" element={<CommandCenter />} />
-                    <Route path="/service/:serviceId" element={<PremiumServiceDetails />} />
-                    <Route path="/portal" element={<Portal />} />
-                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-              </BrowserRouter>
-            </TooltipProvider>
-          </QueryClientProvider>
-        </I18nProvider>
+        <PerformanceProvider>
+          <ThemeProvider>
+            <I18nProvider>
+              <QueryClientProvider client={queryClient}>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <BrowserRouter basename={baseName}>
+                    <RouteTracker />
+                    <OfflineIndicator />
+                    <Suspense
+                      fallback={
+                        <div className="p-6">
+                          <Skeleton className="h-6 w-1/3 mb-4" />
+                          <Skeleton className="h-96 w-full" />
+                        </div>
+                      }
+                    >
+                      <Routes>
+                        <Route path="/" element={<Index />} />
+                        <Route path="/command-center" element={<CommandCenter />} />
+                        <Route path="/service/:serviceId" element={<PremiumServiceDetails />} />
+                        <Route path="/portal" element={<Portal />} />
+                        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </Suspense>
+                  </BrowserRouter>
+                </TooltipProvider>
+              </QueryClientProvider>
+            </I18nProvider>
+          </ThemeProvider>
+        </PerformanceProvider>
       </ErrorBoundary>
     );
 };
