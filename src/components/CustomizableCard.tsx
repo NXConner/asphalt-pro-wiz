@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
@@ -329,13 +330,13 @@ export function CustomizableCard({
 
               {style.backgroundType === "image" && (
                 <div className="space-y-2">
-                  <Label className="text-xs">Background Image</Label>
+                  <Label htmlFor="card-bg-image" className="text-xs">Background Image</Label>
                   <div className="flex items-center gap-2">
-                    <input
+                    <Input
+                      id="card-bg-image"
                       type="file"
                       accept="image/*"
                       onChange={handleImageSelect}
-                      aria-label="Upload background image"
                     />
                     {style.backgroundImage && (
                       <Button variant="ghost" size="sm" onClick={clearImage} title="Clear image">
