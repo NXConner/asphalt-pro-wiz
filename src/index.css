@@ -71,7 +71,7 @@ All colors MUST be HSL.
     --secondary-hover: 210 40% 90%;
 
     --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted-foreground: 215 20% 40%;
 
     --accent: 142 76% 36%;
     --accent-foreground: 0 0% 100%;
@@ -135,7 +135,7 @@ All colors MUST be HSL.
     --secondary-hover: 0 0% 16%;
 
     --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 80%;
+    --muted-foreground: 0 0% 85%;
 
     --accent: 0 0% 12%;
     --accent-foreground: 0 0% 100%;

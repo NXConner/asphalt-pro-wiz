@@ -189,8 +189,8 @@ export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerP
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-end gap-3">
           <div>
-            <Label>Upload Image</Label>
-            <Input type="file" accept="image/*" onChange={onUpload} />
+            <Label htmlFor="area-image-upload">Upload Image</Label>
+            <Input id="area-image-upload" type="file" accept="image/*" onChange={onUpload} />
           </div>
           <div>
             <Label>Calibration Distance (feet)</Label>
