@@ -1,4 +1,5 @@
 import { Suspense, type ReactNode } from 'react';
+
 import { LoadingSpinner } from './common/LoadingSpinner';
 
 interface LoadingBoundaryProps {
@@ -13,9 +14,5 @@ export function LoadingBoundary({ children, fallback }: LoadingBoundaryProps) {
     </div>
   );
 
-  return (
-    <Suspense fallback={fallback || defaultFallback}>
-      {children}
-    </Suspense>
-  );
+  return <Suspense fallback={fallback || defaultFallback}>{children}</Suspense>;
 }

@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { X } from "lucide-react";
+import { X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface AreaSectionProps {
-  shape: "rectangle" | "triangle" | "circle" | "drawn" | "manual" | "image";
+  shape: 'rectangle' | 'triangle' | 'circle' | 'drawn' | 'manual' | 'image';
   initialArea?: number;
   onRemove: () => void;
   onChange: (area: number) => void;
@@ -21,26 +22,26 @@ const AreaSection = ({ shape, initialArea = 0, onRemove, onChange }: AreaSection
   const [area, setArea] = useState(initialArea);
 
   useEffect(() => {
-    if (shape === "manual") {
+    if (shape === 'manual') {
       // Manual entries are controlled by the dedicated input below
       return;
     }
     let calculatedArea = 0;
 
     switch (shape) {
-      case "rectangle":
+      case 'rectangle':
         calculatedArea = values.length * values.width;
         break;
-      case "triangle":
+      case 'triangle':
         calculatedArea = 0.5 * values.base * values.height;
         break;
-      case "circle":
+      case 'circle':
         calculatedArea = Math.PI * values.radius ** 2;
         break;
-      case "drawn":
+      case 'drawn':
         calculatedArea = initialArea;
         break;
-      case "image":
+      case 'image':
         calculatedArea = initialArea;
         break;
     }
@@ -57,7 +58,7 @@ const AreaSection = ({ shape, initialArea = 0, onRemove, onChange }: AreaSection
 
   return (
     <div className="flex items-center gap-2">
-      {shape === "manual" && (
+      {shape === 'manual' && (
         <>
           <Input
             type="number"
@@ -71,50 +72,50 @@ const AreaSection = ({ shape, initialArea = 0, onRemove, onChange }: AreaSection
           />
         </>
       )}
-      {shape === "rectangle" && (
+      {shape === 'rectangle' && (
         <>
           <Input
             type="number"
             placeholder="Length (ft)"
             className="w-1/3"
-            onChange={(e) => handleInputChange("length", e.target.value)}
+            onChange={(e) => handleInputChange('length', e.target.value)}
           />
           <Input
             type="number"
             placeholder="Width (ft)"
             className="w-1/3"
-            onChange={(e) => handleInputChange("width", e.target.value)}
+            onChange={(e) => handleInputChange('width', e.target.value)}
           />
         </>
       )}
-      {shape === "triangle" && (
+      {shape === 'triangle' && (
         <>
           <Input
             type="number"
             placeholder="Base (ft)"
             className="w-1/3"
-            onChange={(e) => handleInputChange("base", e.target.value)}
+            onChange={(e) => handleInputChange('base', e.target.value)}
           />
           <Input
             type="number"
             placeholder="Height (ft)"
             className="w-1/3"
-            onChange={(e) => handleInputChange("height", e.target.value)}
+            onChange={(e) => handleInputChange('height', e.target.value)}
           />
         </>
       )}
-      {shape === "circle" && (
+      {shape === 'circle' && (
         <Input
           type="number"
           placeholder="Radius (ft)"
           className="w-2/3"
-          onChange={(e) => handleInputChange("radius", e.target.value)}
+          onChange={(e) => handleInputChange('radius', e.target.value)}
         />
       )}
-      {shape === "drawn" && (
+      {shape === 'drawn' && (
         <span className="text-sm text-muted-foreground px-2">Drawn on map:</span>
       )}
-      {shape === "image" && (
+      {shape === 'image' && (
         <span className="text-sm text-muted-foreground px-2">From image analysis:</span>
       )}
       <div className="flex-grow px-3 py-2 bg-muted rounded-md text-center font-medium">

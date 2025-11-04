@@ -1,27 +1,28 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { analyzeImage, generateChat } from "@/lib/gemini";
-import { retrieveRelevantContext } from "@/lib/rag";
+import { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { analyzeImage, generateChat } from '@/lib/gemini';
+import { retrieveRelevantContext } from '@/lib/rag';
 
 export function AIGemini() {
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
+  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState('');
   const [busy, setBusy] = useState(false);
-  const [imageResult, setImageResult] = useState("");
+  const [imageResult, setImageResult] = useState('');
 
   const ask = async () => {
     setBusy(true);
     try {
       const ragContext = await retrieveRelevantContext(question);
-      const system = "You are an asphalt maintenance expert. Be concise.";
+      const system = 'You are an asphalt maintenance expert. Be concise.';
       const context = ragContext ? `${system}\n\nContext:\n${ragContext}` : system;
       const res = await generateChat(question, context);
       setAnswer(res);
     } catch (e: any) {
-      setAnswer(e?.message || "Error");
+      setAnswer(e?.message || 'Error');
     } finally {
       setBusy(false);
     }
@@ -36,14 +37,14 @@ export function AIGemini() {
       const res = await analyzeImage(
         base64,
         file.type,
-        "Analyze asphalt condition, cracks (length/width), patching needs, and estimated affected area in sq ft. Return a concise list with numeric estimates.",
+        'Analyze asphalt condition, cracks (length/width), patching needs, and estimated affected area in sq ft. Return a concise list with numeric estimates.',
       );
       setImageResult(res);
     } catch (e: any) {
-      setImageResult(e?.message || "Error");
+      setImageResult(e?.message || 'Error');
     } finally {
       setBusy(false);
-      e.currentTarget.value = "";
+      e.currentTarget.value = '';
     }
   };
 
@@ -89,7 +90,7 @@ export function AIGemini() {
 function toBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve((reader.result as string).split(",")[1] || "");
+    reader.onload = () => resolve((reader.result as string).split(',')[1] || '');
     reader.onerror = (e) => reject(e);
     reader.readAsDataURL(file);
   });

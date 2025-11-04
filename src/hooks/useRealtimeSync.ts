@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useEffect } from 'react';
+
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface RealtimeSyncOptions {
   table: string;
@@ -42,7 +43,7 @@ export function useRealtimeSync({
               description: `A new ${table.slice(0, -1)} was created`,
             });
           }
-        }
+        },
       )
       .on(
         'postgres_changes',
@@ -60,7 +61,7 @@ export function useRealtimeSync({
               description: `A ${table.slice(0, -1)} was updated`,
             });
           }
-        }
+        },
       )
       .on(
         'postgres_changes',
@@ -79,7 +80,7 @@ export function useRealtimeSync({
               variant: 'destructive',
             });
           }
-        }
+        },
       )
       .subscribe();
 

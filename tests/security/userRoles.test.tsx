@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useUserRole, useIsAdmin } from '@/hooks/useUserRole';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { renderHook, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+import { AuthProvider } from '@/contexts/AuthContext';
+import { useUserRole, useIsAdmin } from '@/hooks/useUserRole';
 
 const mockUser = {
   id: 'test-user-id',

@@ -1,3 +1,10 @@
+import { Settings2, Pin, PinOff, Trash2, Lock, Unlock } from 'lucide-react';
+import { ReactNode, useRef, useState, type CSSProperties } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ReactNode, useRef, useState, type CSSProperties } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,20 +18,20 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Settings2, Pin, PinOff, Trash2, Lock, Unlock } from "lucide-react";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { cn } from '@/lib/utils';
 
 export interface CardStyle {
   // Backgrounds
-  backgroundType?: "solid" | "gradient" | "image";
+  backgroundType?: 'solid' | 'gradient' | 'image';
   backgroundColor?: string; // for solid
   gradientFrom?: string; // for gradient
   gradientTo?: string; // for gradient
   gradientAngle?: number; // deg
   backgroundImage?: string; // data URL
-  backgroundSize?: "cover" | "contain" | "auto";
+  backgroundSize?: 'cover' | 'contain' | 'auto';
 
   // Effects
   blur?: number; // backdrop blur
@@ -33,11 +40,11 @@ export interface CardStyle {
   borderColor?: string;
   borderWidth?: number; // px
   borderRadius?: number; // px
-  animation?: "none" | "pulse" | "float" | "glow" | "shimmer";
+  animation?: 'none' | 'pulse' | 'float' | 'glow' | 'shimmer';
   hoverLift?: boolean;
 
   // Visual variants for future use
-  layoutVariant?: "default" | "compact" | "padded" | "dense";
+  layoutVariant?: 'default' | 'compact' | 'padded' | 'dense';
 }
 
 interface CustomizableCardProps {
@@ -88,37 +95,37 @@ export function CustomizableCard({
   };
 
   const computeBackground = () => {
-    const type = style.backgroundType || "solid";
-    if (type === "gradient") {
-      const from = style.gradientFrom || "hsl(var(--card))";
-      const to = style.gradientTo || "hsl(var(--secondary) / 0.4)";
+    const type = style.backgroundType || 'solid';
+    if (type === 'gradient') {
+      const from = style.gradientFrom || 'hsl(var(--card))';
+      const to = style.gradientTo || 'hsl(var(--secondary) / 0.4)';
       const angle = style.gradientAngle ?? 135;
       return { backgroundImage: `linear-gradient(${angle}deg, ${from}, ${to})` } as CSSProperties;
     }
-    if (type === "image" && style.backgroundImage) {
+    if (type === 'image' && style.backgroundImage) {
       return {
         backgroundImage: `url('${style.backgroundImage}')`,
-        backgroundSize: style.backgroundSize || "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
+        backgroundSize: style.backgroundSize || 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
       } as CSSProperties;
     }
-    return { backgroundColor: style.backgroundColor || "hsl(var(--card))" } as CSSProperties;
+    return { backgroundColor: style.backgroundColor || 'hsl(var(--card))' } as CSSProperties;
   };
 
   const boxShadow = (() => {
     const level = style.shadowLevel ?? 0;
     switch (level) {
       case 1:
-        return "0 4px 10px rgba(0,0,0,0.08)";
+        return '0 4px 10px rgba(0,0,0,0.08)';
       case 2:
-        return "0 6px 16px rgba(0,0,0,0.12)";
+        return '0 6px 16px rgba(0,0,0,0.12)';
       case 3:
-        return "0 10px 24px rgba(0,0,0,0.16)";
+        return '0 10px 24px rgba(0,0,0,0.16)';
       case 4:
-        return "0 14px 30px rgba(0,0,0,0.22)";
+        return '0 14px 30px rgba(0,0,0,0.22)';
       case 5:
-        return "0 18px 40px rgba(0,0,0,0.28)";
+        return '0 18px 40px rgba(0,0,0,0.28)';
       default:
         return undefined;
     }
@@ -126,14 +133,14 @@ export function CustomizableCard({
 
   const animationClass = (() => {
     switch (style.animation) {
-      case "float":
-        return "pps-anim-float";
-      case "glow":
-        return "pps-anim-glow";
-      case "shimmer":
-        return "pps-anim-shimmer";
-      case "pulse":
-        return "pps-anim-pulse";
+      case 'float':
+        return 'pps-anim-float';
+      case 'glow':
+        return 'pps-anim-glow';
+      case 'shimmer':
+        return 'pps-anim-shimmer';
+      case 'pulse':
+        return 'pps-anim-pulse';
       default:
         return undefined;
     }
@@ -151,13 +158,13 @@ export function CustomizableCard({
 
   const variantClass = (() => {
     switch (style.layoutVariant) {
-      case "compact":
-        return "pps-variant-compact";
-      case "dense":
-        return "pps-variant-dense";
-      case "padded":
-        return "pps-variant-spacious";
-      case "default":
+      case 'compact':
+        return 'pps-variant-compact';
+      case 'dense':
+        return 'pps-variant-dense';
+      case 'padded':
+        return 'pps-variant-spacious';
+      case 'default':
       default:
         return undefined;
     }
@@ -167,20 +174,20 @@ export function CustomizableCard({
     const file = e.target.files?.[0];
     if (!file) return;
     const dataUrl = await toDataUrl(file);
-    onStyleChange?.({ ...style, backgroundType: "image", backgroundImage: dataUrl });
-    if (fileRef.current) fileRef.current.value = "";
+    onStyleChange?.({ ...style, backgroundType: 'image', backgroundImage: dataUrl });
+    if (fileRef.current) fileRef.current.value = '';
   };
 
   const clearImage = () => {
-    onStyleChange?.({ ...style, backgroundImage: undefined, backgroundType: "solid" });
-    if (fileRef.current) fileRef.current.value = "";
+    onStyleChange?.({ ...style, backgroundImage: undefined, backgroundType: 'solid' });
+    if (fileRef.current) fileRef.current.value = '';
   };
 
   return (
     <Card
       className={cn(
-        "relative transition-all duration-300",
-        style.hoverLift && "pps-hover-lift",
+        'relative transition-all duration-300',
+        style.hoverLift && 'pps-hover-lift',
         animationClass,
         variantClass,
         className,
@@ -194,7 +201,7 @@ export function CustomizableCard({
             size="icon"
             className="h-7 w-7"
             onClick={() => onMovementLockToggle(!isMovementLocked)}
-            title={isMovementLocked ? "Unlock move/resize" : "Lock move/resize"}
+            title={isMovementLocked ? 'Unlock move/resize' : 'Lock move/resize'}
           >
             {isMovementLocked ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
           </Button>
@@ -210,7 +217,7 @@ export function CustomizableCard({
             size="icon"
             className="h-7 w-7"
             onClick={() => onCustomizationLockToggle(!isCustomizationLocked)}
-            title={isCustomizationLocked ? "Unlock customization" : "Lock customization"}
+            title={isCustomizationLocked ? 'Unlock customization' : 'Lock customization'}
           >
             {isCustomizationLocked ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
           </Button>
@@ -225,21 +232,22 @@ export function CustomizableCard({
               size="icon"
               className="h-7 w-7"
               disabled={isCustomizationLocked}
-              title={isCustomizationLocked ? "Customization locked" : "Customize card"}
+              title={isCustomizationLocked ? 'Customization locked' : 'Customize card'}
             >
               <Settings2 className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-96" align="end">
             <div className="space-y-4">
+              <h4 className="font-semibold text-sm">Customize {title || 'Card'}</h4>
               <h3 className="font-semibold text-sm">Customize {title || "Card"}</h3>
 
               <div className="space-y-2">
                 <Label className="text-xs">Background Type</Label>
                 <Select
-                  value={style.backgroundType || "solid"}
+                  value={style.backgroundType || 'solid'}
                   onValueChange={(v) =>
-                    handleStyleChange("backgroundType", v as CardStyle["backgroundType"])
+                    handleStyleChange('backgroundType', v as CardStyle['backgroundType'])
                   }
                 >
                   <SelectTrigger className="h-8">
@@ -253,25 +261,25 @@ export function CustomizableCard({
                 </Select>
               </div>
 
-              {(style.backgroundType ?? "solid") === "solid" && (
+              {(style.backgroundType ?? 'solid') === 'solid' && (
                 <div className="space-y-2">
                   <Label className="text-xs">Background Color</Label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
-                      value={style.backgroundColor || "#ffffff"}
-                      onChange={(e) => handleStyleChange("backgroundColor", e.target.value)}
+                      value={style.backgroundColor || '#ffffff'}
+                      onChange={(e) => handleStyleChange('backgroundColor', e.target.value)}
                       className="h-8 w-10 border rounded"
                       aria-label="Background color"
                     />
                     <div className="grid grid-cols-6 gap-2">
                       {[
-                        "hsl(var(--card))",
-                        "hsl(var(--primary) / 0.08)",
-                        "hsl(var(--secondary) / 0.18)",
-                        "hsl(var(--accent) / 0.18)",
-                        "transparent",
-                        "hsl(var(--background) / 0.6)",
+                        'hsl(var(--card))',
+                        'hsl(var(--primary) / 0.08)',
+                        'hsl(var(--secondary) / 0.18)',
+                        'hsl(var(--accent) / 0.18)',
+                        'transparent',
+                        'hsl(var(--background) / 0.6)',
                       ].map((color) => (
                         <button
                           key={color}
@@ -280,10 +288,10 @@ export function CustomizableCard({
                             background: color,
                             outline:
                               style.backgroundColor === color
-                                ? "2px solid hsl(var(--primary))"
-                                : "none",
+                                ? '2px solid hsl(var(--primary))'
+                                : 'none',
                           }}
-                          onClick={() => handleStyleChange("backgroundColor", color)}
+                          onClick={() => handleStyleChange('backgroundColor', color)}
                           aria-label={`Set color ${color}`}
                         />
                       ))}
@@ -292,7 +300,7 @@ export function CustomizableCard({
                 </div>
               )}
 
-              {style.backgroundType === "gradient" && (
+              {style.backgroundType === 'gradient' && (
                 <div className="space-y-2">
                   <Label className="text-xs">Gradient</Label>
                   <div className="grid grid-cols-2 gap-2 items-center">
@@ -300,8 +308,8 @@ export function CustomizableCard({
                       <span className="text-xs text-muted-foreground">From</span>
                       <input
                         type="color"
-                        value={style.gradientFrom || "#1f2937"}
-                        onChange={(e) => handleStyleChange("gradientFrom", e.target.value)}
+                        value={style.gradientFrom || '#1f2937'}
+                        onChange={(e) => handleStyleChange('gradientFrom', e.target.value)}
                         className="h-8 w-10 border rounded"
                       />
                     </div>
@@ -309,8 +317,8 @@ export function CustomizableCard({
                       <span className="text-xs text-muted-foreground">To</span>
                       <input
                         type="color"
-                        value={style.gradientTo || "#0ea5e9"}
-                        onChange={(e) => handleStyleChange("gradientTo", e.target.value)}
+                        value={style.gradientTo || '#0ea5e9'}
+                        onChange={(e) => handleStyleChange('gradientTo', e.target.value)}
                         className="h-8 w-10 border rounded"
                       />
                     </div>
@@ -319,7 +327,7 @@ export function CustomizableCard({
                     <Label className="text-xs">Angle: {style.gradientAngle ?? 135}°</Label>
                     <Slider
                       value={[style.gradientAngle ?? 135]}
-                      onValueChange={([v]) => handleStyleChange("gradientAngle", v)}
+                      onValueChange={([v]) => handleStyleChange('gradientAngle', v)}
                       min={0}
                       max={360}
                       step={5}
@@ -328,7 +336,7 @@ export function CustomizableCard({
                 </div>
               )}
 
-              {style.backgroundType === "image" && (
+              {style.backgroundType === 'image' && (
                 <div className="space-y-2">
                   <Label htmlFor="card-bg-image" className="text-xs">Background Image</Label>
                   <div className="flex items-center gap-2">
@@ -347,9 +355,9 @@ export function CustomizableCard({
                   <div className="space-y-2">
                     <Label className="text-xs">Image Fit</Label>
                     <Select
-                      value={style.backgroundSize || "cover"}
+                      value={style.backgroundSize || 'cover'}
                       onValueChange={(v) =>
-                        handleStyleChange("backgroundSize", v as "cover" | "contain" | "auto")
+                        handleStyleChange('backgroundSize', v as 'cover' | 'contain' | 'auto')
                       }
                     >
                       <SelectTrigger className="h-8">
@@ -369,7 +377,7 @@ export function CustomizableCard({
                 <Label className="text-xs">Blur Effect: {style.blur || 0}px</Label>
                 <Slider
                   value={[style.blur || 0]}
-                  onValueChange={([v]) => handleStyleChange("blur", v)}
+                  onValueChange={([v]) => handleStyleChange('blur', v)}
                   max={20}
                   step={1}
                 />
@@ -381,7 +389,7 @@ export function CustomizableCard({
                 </Label>
                 <Slider
                   value={[(style.opacity ?? 1) * 100]}
-                  onValueChange={([v]) => handleStyleChange("opacity", v / 100)}
+                  onValueChange={([v]) => handleStyleChange('opacity', v / 100)}
                   max={100}
                   step={5}
                 />
@@ -391,7 +399,7 @@ export function CustomizableCard({
                 <Label className="text-xs">Border Width: {style.borderWidth || 0}px</Label>
                 <Slider
                   value={[style.borderWidth || 0]}
-                  onValueChange={([v]) => handleStyleChange("borderWidth", v)}
+                  onValueChange={([v]) => handleStyleChange('borderWidth', v)}
                   max={8}
                   step={1}
                 />
@@ -401,8 +409,8 @@ export function CustomizableCard({
                 <Label className="text-xs">Border Color</Label>
                 <input
                   type="color"
-                  value={style.borderColor || "#000000"}
-                  onChange={(e) => handleStyleChange("borderColor", e.target.value)}
+                  value={style.borderColor || '#000000'}
+                  onChange={(e) => handleStyleChange('borderColor', e.target.value)}
                   className="h-8 w-10 border rounded"
                   aria-label="Border color"
                 />
@@ -412,7 +420,7 @@ export function CustomizableCard({
                 <Label className="text-xs">Border Radius: {style.borderRadius || 0}px</Label>
                 <Slider
                   value={[style.borderRadius || 0]}
-                  onValueChange={([v]) => handleStyleChange("borderRadius", v)}
+                  onValueChange={([v]) => handleStyleChange('borderRadius', v)}
                   max={24}
                   step={1}
                 />
@@ -422,7 +430,7 @@ export function CustomizableCard({
                 <Label className="text-xs">Shadow Level: {style.shadowLevel ?? 0}</Label>
                 <Slider
                   value={[style.shadowLevel ?? 0]}
-                  onValueChange={([v]) => handleStyleChange("shadowLevel", v)}
+                  onValueChange={([v]) => handleStyleChange('shadowLevel', v)}
                   max={5}
                   step={1}
                 />
@@ -432,9 +440,9 @@ export function CustomizableCard({
                 <div className="space-y-2">
                   <Label className="text-xs">Animation</Label>
                   <Select
-                    value={style.animation || "none"}
+                    value={style.animation || 'none'}
                     onValueChange={(v) =>
-                      handleStyleChange("animation", v as CardStyle["animation"])
+                      handleStyleChange('animation', v as CardStyle['animation'])
                     }
                   >
                     <SelectTrigger className="h-8">
@@ -453,7 +461,7 @@ export function CustomizableCard({
                   <Label className="text-xs">Hover Lift</Label>
                   <Switch
                     checked={!!style.hoverLift}
-                    onCheckedChange={(checked) => handleStyleChange("hoverLift", checked)}
+                    onCheckedChange={(checked) => handleStyleChange('hoverLift', checked)}
                   />
                 </div>
               </div>

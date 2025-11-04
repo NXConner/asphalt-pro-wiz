@@ -1,6 +1,7 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { supabase } from '@/integrations/supabase/client';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { PostgrestError } from '@supabase/supabase-js';
+
+import { supabase } from '@/integrations/supabase/client';
 
 export type { SupabaseClient };
 
@@ -38,7 +39,7 @@ export interface QueryResult<T> {
  * Safe query wrapper with error handling
  */
 export async function safeQuery<T>(
-  queryFn: () => Promise<{ data: T | null; error: PostgrestError | null }>
+  queryFn: () => Promise<{ data: T | null; error: PostgrestError | null }>,
 ): Promise<QueryResult<T>> {
   try {
     const result = await queryFn();
@@ -58,7 +59,7 @@ export async function safeQuery<T>(
 export async function checkPermission(
   table: string,
   id: string | number,
-  userId: string
+  userId: string,
 ): Promise<boolean> {
   const { data, error } = await supabase
     .from(table as any)
@@ -76,7 +77,7 @@ export async function checkPermission(
 export async function uploadFile(
   bucket: string,
   path: string,
-  file: File
+  file: File,
 ): Promise<{ url: string | null; error: Error | null }> {
   try {
     const { data, error } = await supabase.storage.from(bucket).upload(path, file, {
@@ -112,10 +113,13 @@ export async function deleteFile(bucket: string, path: string): Promise<{ error:
  */
 export async function batchInsert<T>(
   table: string,
-  records: Partial<T>[]
+  records: Partial<T>[],
 ): Promise<QueryResult<T[]>> {
   return safeQuery(async () => {
-    const { data, error } = await supabase.from(table as any).insert(records).select();
+    const { data, error } = await supabase
+      .from(table as any)
+      .insert(records)
+      .select();
     return { data: data as T[] | null, error };
   });
 }
@@ -137,17 +141,21 @@ export async function getCurrentUser() {
 export function subscribeToTable<T>(
   table: string,
   callback: (payload: T) => void,
-  filters?: Record<string, any>
+  filters?: Record<string, any>,
 ) {
-  let channel = supabase.channel(`${table}_changes`).on(
+  const channel = supabase.channel(`${table}_changes`).on(
     'postgres_changes',
     {
       event: '*',
       schema: 'public',
       table,
-      ...(filters && { filter: Object.entries(filters).map(([k, v]) => `${k}=eq.${v}`).join(',') }),
+      ...(filters && {
+        filter: Object.entries(filters)
+          .map(([k, v]) => `${k}=eq.${v}`)
+          .join(','),
+      }),
     },
-    (payload) => callback(payload.new as T)
+    (payload) => callback(payload.new as T),
   );
 
   channel.subscribe();

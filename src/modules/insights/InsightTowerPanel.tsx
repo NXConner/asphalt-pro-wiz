@@ -1,9 +1,9 @@
-import { Printer, Sparkles } from "lucide-react";
+import { Printer, Sparkles } from 'lucide-react';
 
-import WeatherCard from "@/components/WeatherCard";
-import { Button } from "@/components/ui/button";
-import { CanvasPanel } from "@/modules/layout/CanvasPanel";
-import type { EstimatorState } from "@/modules/estimate/useEstimatorState";
+import { Button } from '@/components/ui/button';
+import WeatherCard from '@/components/WeatherCard';
+import type { EstimatorState } from '@/modules/estimate/useEstimatorState';
+import { CanvasPanel } from '@/modules/layout/CanvasPanel';
 
 interface InsightTowerPanelProps {
   estimator: EstimatorState;
@@ -39,7 +39,7 @@ export function InsightTowerPanel({ estimator }: InsightTowerPanelProps) {
           <header className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h3 className="text-2xl font-semibold text-slate-50">
-                {calculation.costs ? `$${calculation.costs.total.toFixed(2)}` : "Awaiting Estimate"}
+                {calculation.costs ? `$${calculation.costs.total.toFixed(2)}` : 'Awaiting Estimate'}
               </h3>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-200/60">
                 {areas.total.toFixed(1)} sq ft · {striping.lines} lines · {materials.numCoats} coats
@@ -65,7 +65,8 @@ export function InsightTowerPanel({ estimator }: InsightTowerPanelProps) {
             </dl>
           ) : (
             <p className="rounded-2xl border border-dashed border-white/20 bg-white/5 p-6 text-sm text-slate-200/80">
-              Run an estimate from the Review step to view your live cost model, including overhead and margin recommendations.
+              Run an estimate from the Review step to view your live cost model, including overhead
+              and margin recommendations.
             </p>
           )}
         </section>
@@ -99,7 +100,7 @@ export function InsightTowerPanel({ estimator }: InsightTowerPanelProps) {
 }
 
 const OBSERVABILITY_POINTS = [
-  "Structured logging ready for crew events and anomaly alerts.",
-  "Automatic capture of weather risk thresholds for Supabase telemetry.",
-  "Audit trail tags each estimate with job key and estimator persona.",
+  'Structured logging ready for crew events and anomaly alerts.',
+  'Automatic capture of weather risk thresholds for Supabase telemetry.',
+  'Audit trail tags each estimate with job key and estimator persona.',
 ];

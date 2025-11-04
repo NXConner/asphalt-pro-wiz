@@ -1,8 +1,8 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-export type ComplianceTopic = "striping" | "sealcoating" | "crackfilling";
+export type ComplianceTopic = 'striping' | 'sealcoating' | 'crackfilling';
 
 interface ComplianceResourcesProps {
   open: boolean;

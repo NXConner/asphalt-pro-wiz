@@ -1,14 +1,15 @@
+import { AlertCircle, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { z } from 'zod';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCircle, Loader2 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { z } from 'zod';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 const emailSchema = z.string().email('Invalid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
@@ -95,9 +96,7 @@ export default function Auth() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Welcome</CardTitle>
-          <CardDescription>
-            Sign in to your account or create a new one
-          </CardDescription>
+          <CardDescription>Sign in to your account or create a new one</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
@@ -178,9 +177,7 @@ export default function Auth() {
                     disabled={isSubmitting}
                     required
                   />
-                  <p className="text-sm text-muted-foreground">
-                    Must be at least 6 characters
-                  </p>
+                  <p className="text-sm text-muted-foreground">Must be at least 6 characters</p>
                 </div>
 
                 {error && (

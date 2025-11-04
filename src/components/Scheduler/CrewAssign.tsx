@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface CrewMember {
   id: string;
@@ -10,7 +11,7 @@ interface CrewMember {
   role: string;
 }
 
-const STORAGE_KEY = "pps:schedule:crew";
+const STORAGE_KEY = 'pps:schedule:crew';
 
 function loadCrew(): CrewMember[] {
   try {
@@ -29,8 +30,8 @@ function saveCrew(items: CrewMember[]) {
 
 export function CrewAssign() {
   const [items, setItems] = useState<CrewMember[]>([]);
-  const [name, setName] = useState("");
-  const [role, setRole] = useState("");
+  const [name, setName] = useState('');
+  const [role, setRole] = useState('');
 
   useEffect(() => setItems(loadCrew()), []);
 
@@ -40,8 +41,8 @@ export function CrewAssign() {
     const next = [...items, { id, name: name.trim(), role: role.trim() }];
     setItems(next);
     saveCrew(next);
-    setName("");
-    setRole("");
+    setName('');
+    setRole('');
   };
 
   const remove = (id: string) => {
@@ -59,25 +60,37 @@ export function CrewAssign() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
           <div>
             <Label className="text-xs">Name</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Crew member name" />
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Crew member name"
+            />
           </div>
           <div>
             <Label className="text-xs">Role</Label>
-            <Input value={role} onChange={(e) => setRole(e.target.value)} placeholder="e.g., Lead, Operator" />
+            <Input
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              placeholder="e.g., Lead, Operator"
+            />
           </div>
           <div>
             <Button onClick={add}>Add</Button>
           </div>
         </div>
         <div className="space-y-2">
-          {items.length === 0 && <div className="text-sm text-muted-foreground">No crew assigned.</div>}
+          {items.length === 0 && (
+            <div className="text-sm text-muted-foreground">No crew assigned.</div>
+          )}
           {items.map((m) => (
             <div key={m.id} className="flex items-center justify-between border rounded p-2">
               <div>
                 <div className="font-medium text-sm">{m.name}</div>
-                <div className="text-xs text-muted-foreground">{m.role || "—"}</div>
+                <div className="text-xs text-muted-foreground">{m.role || '—'}</div>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => remove(m.id)}>Remove</Button>
+              <Button variant="ghost" size="sm" onClick={() => remove(m.id)}>
+                Remove
+              </Button>
             </div>
           ))}
         </div>

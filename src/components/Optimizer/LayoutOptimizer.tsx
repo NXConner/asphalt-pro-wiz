@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { useMemo, useState } from 'react';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export function LayoutOptimizer({ totalAreaSqft }: { totalAreaSqft: number }) {
   const [stallWidth, setStallWidth] = useState<number>(9); // ft
@@ -27,23 +28,57 @@ export function LayoutOptimizer({ totalAreaSqft }: { totalAreaSqft: number }) {
       <CardContent className="space-y-3">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
           <div>
-            <Label htmlFor="stallWidth" className="text-xs">Stall Width (ft)</Label>
-            <Input id="stallWidth" type="number" step={0.5} value={stallWidth} onChange={(e) => setStallWidth(parseFloat(e.target.value) || 0)} />
+            <Label htmlFor="stallWidth" className="text-xs">
+              Stall Width (ft)
+            </Label>
+            <Input
+              id="stallWidth"
+              type="number"
+              step={0.5}
+              value={stallWidth}
+              onChange={(e) => setStallWidth(parseFloat(e.target.value) || 0)}
+            />
           </div>
           <div>
-            <Label htmlFor="stallDepth" className="text-xs">Stall Depth (ft)</Label>
-            <Input id="stallDepth" type="number" step={0.5} value={stallDepth} onChange={(e) => setStallDepth(parseFloat(e.target.value) || 0)} />
+            <Label htmlFor="stallDepth" className="text-xs">
+              Stall Depth (ft)
+            </Label>
+            <Input
+              id="stallDepth"
+              type="number"
+              step={0.5}
+              value={stallDepth}
+              onChange={(e) => setStallDepth(parseFloat(e.target.value) || 0)}
+            />
           </div>
           <div>
-            <Label htmlFor="aisleWidth" className="text-xs">Aisle Width (ft)</Label>
-            <Input id="aisleWidth" type="number" step={1} value={aisleWidth} onChange={(e) => setAisleWidth(parseFloat(e.target.value) || 0)} />
+            <Label htmlFor="aisleWidth" className="text-xs">
+              Aisle Width (ft)
+            </Label>
+            <Input
+              id="aisleWidth"
+              type="number"
+              step={1}
+              value={aisleWidth}
+              onChange={(e) => setAisleWidth(parseFloat(e.target.value) || 0)}
+            />
           </div>
           <div>
-            <Label htmlFor="accessibleRatio" className="text-xs">Accessible Ratio (%)</Label>
-            <Input id="accessibleRatio" type="number" step={0.5} value={accessibleRatio * 100} onChange={(e) => setAccessibleRatio((parseFloat(e.target.value) || 0) / 100)} />
+            <Label htmlFor="accessibleRatio" className="text-xs">
+              Accessible Ratio (%)
+            </Label>
+            <Input
+              id="accessibleRatio"
+              type="number"
+              step={0.5}
+              value={accessibleRatio * 100}
+              onChange={(e) => setAccessibleRatio((parseFloat(e.target.value) || 0) / 100)}
+            />
           </div>
           <div className="flex items-end">
-            <div className="text-xs text-muted-foreground">Total Area: {Math.round(totalAreaSqft).toLocaleString()} sq ft</div>
+            <div className="text-xs text-muted-foreground">
+              Total Area: {Math.round(totalAreaSqft).toLocaleString()} sq ft
+            </div>
           </div>
         </div>
         {result ? (
@@ -62,7 +97,9 @@ export function LayoutOptimizer({ totalAreaSqft }: { totalAreaSqft: number }) {
             </div>
           </div>
         ) : (
-          <div className="text-sm text-muted-foreground">Enter or measure area to see optimization.</div>
+          <div className="text-sm text-muted-foreground">
+            Enter or measure area to see optimization.
+          </div>
         )}
       </CardContent>
     </Card>

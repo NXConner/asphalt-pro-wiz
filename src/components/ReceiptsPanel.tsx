@@ -1,17 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FileText, UploadCloud, Trash2, ScanText, Download, Filter, RefreshCw } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { toast } from "sonner";
-import { FileText, UploadCloud, Trash2, ScanText, Download, Filter, RefreshCw } from "lucide-react";
+} from '@/components/ui/select';
+import { analyzeImage } from '@/lib/gemini';
 import {
   listReceipts,
   saveReceipt,
@@ -20,9 +22,8 @@ import {
   makeJobKey,
   type SavedReceipt,
   type ReceiptCategory,
-} from "@/lib/idb";
-import { analyzeImage } from "@/lib/gemini";
-import { logEvent, logError } from "@/lib/logging";
+} from '@/lib/idb';
+import { logEvent, logError } from '@/lib/logging';
 
 export type ReceiptsPanelProps = {
   jobName?: string;
@@ -30,24 +31,24 @@ export type ReceiptsPanelProps = {
 };
 
 const RECEIPT_CATEGORIES: ReceiptCategory[] = [
-  "SealMaster",
-  "Fuel",
-  "Payroll",
-  "Parts",
-  "Equipment",
-  "Tools",
-  "Materials",
-  "Supplies",
-  "Entertainment",
-  "Meals",
-  "Lodging",
-  "Travel",
-  "Permits",
-  "Insurance",
-  "Utilities",
-  "Marketing",
-  "Office",
-  "Other",
+  'SealMaster',
+  'Fuel',
+  'Payroll',
+  'Parts',
+  'Equipment',
+  'Tools',
+  'Materials',
+  'Supplies',
+  'Entertainment',
+  'Meals',
+  'Lodging',
+  'Travel',
+  'Permits',
+  'Insurance',
+  'Utilities',
+  'Marketing',
+  'Office',
+  'Other',
 ];
 
 function tryParseJson(text: string): any | null {
@@ -65,8 +66,8 @@ function toBase64(blob: Blob): Promise<string> {
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const result = (reader.result as string) || "";
-        const base64 = result.includes(",") ? result.split(",")[1] : result;
+        const result = (reader.result as string) || '';
+        const base64 = result.includes(',') ? result.split(',')[1] : result;
         resolve(base64);
       } catch (e) {
         reject(e);
@@ -78,20 +79,20 @@ function toBase64(blob: Blob): Promise<string> {
 }
 
 function formatCurrency(n?: number | null): string {
-  if (n == null || Number.isNaN(n)) return "—";
+  if (n == null || Number.isNaN(n)) return '—';
   try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).format(n);
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(n);
   } catch {
     return `$${n.toFixed(2)}`;
   }
 }
 
-export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPanelProps) {
+export function ReceiptsPanel({ jobName = '', customerAddress = '' }: ReceiptsPanelProps) {
   const [receipts, setReceipts] = useState<SavedReceipt[]>([]);
-  const [categoryFilter, setCategoryFilter] = useState<ReceiptCategory | "All">("All");
-  const [vendorQuery, setVendorQuery] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<ReceiptCategory | 'All'>('All');
+  const [vendorQuery, setVendorQuery] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [autoExtract, setAutoExtract] = useState(true);
   const [busyIds, setBusyIds] = useState<Record<string, boolean>>({});
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -121,10 +122,10 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
     let uploaded = 0;
     for (const f of files) {
       try {
-        const isSealMaster = f.name.toLowerCase().includes("sealmaster");
+        const isSealMaster = f.name.toLowerCase().includes('sealmaster');
         const saved = await saveReceipt(f, {
-          vendor: isSealMaster ? "SealMaster" : "",
-          category: (isSealMaster ? "SealMaster" : "Other") as ReceiptCategory,
+          vendor: isSealMaster ? 'SealMaster' : '',
+          category: (isSealMaster ? 'SealMaster' : 'Other') as ReceiptCategory,
           jobKey,
           date: new Date().toISOString().slice(0, 10),
         });
@@ -136,57 +137,57 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
         logError(error, { name: f.name });
       }
     }
-    toast.success(`Uploaded ${uploaded} receipt${uploaded !== 1 ? "s" : ""}`);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    toast.success(`Uploaded ${uploaded} receipt${uploaded !== 1 ? 's' : ''}`);
+    if (fileInputRef.current) fileInputRef.current.value = '';
     await refresh();
   };
 
   const extractWithAI = async (r: SavedReceipt) => {
-    if (!r.type.startsWith("image/")) {
-      toast.info("AI extraction supports images only");
+    if (!r.type.startsWith('image/')) {
+      toast.info('AI extraction supports images only');
       return;
     }
     try {
       setBusyIds((s) => ({ ...s, [r.id]: true }));
       const base64 = await toBase64(r.blob);
       const prompt =
-        "Extract receipt details and return ONLY compact JSON with keys vendor,date (YYYY-MM-DD), subtotal, tax, total, paymentMethod, notes, suggestedCategory. If unknown, use null.";
-      const text = await analyzeImage(base64, r.type || "image/png", prompt);
+        'Extract receipt details and return ONLY compact JSON with keys vendor,date (YYYY-MM-DD), subtotal, tax, total, paymentMethod, notes, suggestedCategory. If unknown, use null.';
+      const text = await analyzeImage(base64, r.type || 'image/png', prompt);
       const data = tryParseJson(text) || {};
       const normalizedDate =
-        typeof data.date === "string" && data.date.length >= 10 ? data.date.slice(0, 10) : r.date;
+        typeof data.date === 'string' && data.date.length >= 10 ? data.date.slice(0, 10) : r.date;
       let nextCategory: ReceiptCategory | undefined;
-      const suggested = (data.suggestedCategory || data.category || "").toString().toLowerCase();
+      const suggested = (data.suggestedCategory || data.category || '').toString().toLowerCase();
       for (const c of RECEIPT_CATEGORIES) {
         if (c.toLowerCase() === suggested) nextCategory = c;
       }
       if (!nextCategory) {
         const v = (data.vendor || r.vendor).toString().toLowerCase();
-        if (v.includes("sealmaster")) nextCategory = "SealMaster";
+        if (v.includes('sealmaster')) nextCategory = 'SealMaster';
         else if (
-          v.includes("bp") ||
-          v.includes("shell") ||
-          v.includes("exxon") ||
-          v.includes("fuel")
+          v.includes('bp') ||
+          v.includes('shell') ||
+          v.includes('exxon') ||
+          v.includes('fuel')
         )
-          nextCategory = "Fuel";
+          nextCategory = 'Fuel';
       }
       await updateReceiptMeta(r.id, {
-        vendor: (data.vendor || r.vendor || "").toString(),
+        vendor: (data.vendor || r.vendor || '').toString(),
         date: normalizedDate,
-        subtotal: typeof data.subtotal === "number" ? data.subtotal : (r.subtotal ?? null),
-        tax: typeof data.tax === "number" ? data.tax : (r.tax ?? null),
-        total: typeof data.total === "number" ? data.total : (r.total ?? null),
+        subtotal: typeof data.subtotal === 'number' ? data.subtotal : (r.subtotal ?? null),
+        tax: typeof data.tax === 'number' ? data.tax : (r.tax ?? null),
+        total: typeof data.total === 'number' ? data.total : (r.total ?? null),
         paymentMethod: data.paymentMethod ? String(data.paymentMethod) : (r.paymentMethod ?? null),
         notes: data.notes ? String(data.notes) : (r.notes ?? null),
         ocrText: text,
         category: nextCategory || r.category,
       });
-      logEvent("receipts.ocr_extracted", { id: r.id });
+      logEvent('receipts.ocr_extracted', { id: r.id });
       await refresh();
     } catch (e) {
       logError(e, { id: r.id });
-      toast.error("AI extraction failed");
+      toast.error('AI extraction failed');
     } finally {
       setBusyIds((s) => ({ ...s, [r.id]: false }));
     }
@@ -204,36 +205,36 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
 
   const exportCsv = () => {
     const headers = [
-      "id",
-      "date",
-      "vendor",
-      "category",
-      "subtotal",
-      "tax",
-      "total",
-      "paymentMethod",
-      "jobKey",
-      "notes",
+      'id',
+      'date',
+      'vendor',
+      'category',
+      'subtotal',
+      'tax',
+      'total',
+      'paymentMethod',
+      'jobKey',
+      'notes',
     ];
-    const lines = [headers.join(",")];
+    const lines = [headers.join(',')];
     for (const r of receipts) {
       const row = [
         r.id,
         r.date,
-        (r.vendor || "").replace(/,/g, " "),
+        (r.vendor || '').replace(/,/g, ' '),
         r.category,
-        (r.subtotal ?? "").toString(),
-        (r.tax ?? "").toString(),
-        (r.total ?? "").toString(),
-        (r.paymentMethod ?? "").toString(),
-        (r.jobKey ?? "").toString(),
-        (r.notes ?? "").replace(/\n/g, " ").replace(/,/g, " "),
+        (r.subtotal ?? '').toString(),
+        (r.tax ?? '').toString(),
+        (r.total ?? '').toString(),
+        (r.paymentMethod ?? '').toString(),
+        (r.jobKey ?? '').toString(),
+        (r.notes ?? '').replace(/\n/g, ' ').replace(/,/g, ' '),
       ];
-      lines.push(row.map((x) => `"${x}"`).join(","));
+      lines.push(row.map((x) => `"${x}"`).join(','));
     }
-    const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
     a.download = `receipts_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
@@ -245,9 +246,9 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
     const byCategory = new Map<string, number>();
     for (const r of receipts) {
       const v =
-        typeof r.total === "number"
+        typeof r.total === 'number'
           ? r.total
-          : typeof r.subtotal === "number"
+          : typeof r.subtotal === 'number'
             ? r.subtotal + (r.tax || 0)
             : 0;
       sum += v;
@@ -305,10 +306,10 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
               type="button"
               variant="outline"
               onClick={() => {
-                setVendorQuery("");
-                setCategoryFilter("All");
-                setStartDate("");
-                setEndDate("");
+                setVendorQuery('');
+                setCategoryFilter('All');
+                setStartDate('');
+                setEndDate('');
               }}
             >
               <Filter className="w-4 h-4 mr-2" /> Clear
@@ -362,7 +363,7 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {receipts.map((r) => {
-            const isImage = r.type.startsWith("image/");
+            const isImage = r.type.startsWith('image/');
             return (
               <div key={r.id} className="p-3 border rounded-md">
                 <div className="flex items-start gap-3">
@@ -380,7 +381,7 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
                   <div className="flex-1 space-y-2 min-w-0">
                     <div className="flex items-center justify-between">
                       <div className="text-sm font-medium truncate max-w-[220px]" title={r.name}>
-                        {r.vendor || "(Vendor)"} • {r.category}
+                        {r.vendor || '(Vendor)'} • {r.category}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {new Date(r.createdAt).toLocaleString()}
@@ -423,7 +424,7 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
                       <div>
                         <Label className="text-xs">Payment</Label>
                         <Input
-                          value={r.paymentMethod || ""}
+                          value={r.paymentMethod || ''}
                           onChange={(e) => updateMeta(r.id, { paymentMethod: e.target.value })}
                         />
                       </div>
@@ -432,7 +433,7 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
                         <Input
                           type="number"
                           step="0.01"
-                          value={r.subtotal ?? ""}
+                          value={r.subtotal ?? ''}
                           onChange={(e) =>
                             updateMeta(r.id, { subtotal: parseFloat(e.target.value) || 0 })
                           }
@@ -443,7 +444,7 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
                         <Input
                           type="number"
                           step="0.01"
-                          value={r.tax ?? ""}
+                          value={r.tax ?? ''}
                           onChange={(e) =>
                             updateMeta(r.id, { tax: parseFloat(e.target.value) || 0 })
                           }
@@ -454,7 +455,7 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
                         <Input
                           type="number"
                           step="0.01"
-                          value={r.total ?? ""}
+                          value={r.total ?? ''}
                           onChange={(e) =>
                             updateMeta(r.id, { total: parseFloat(e.target.value) || 0 })
                           }
@@ -463,7 +464,7 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
                       <div className="col-span-2">
                         <Label className="text-xs">Notes</Label>
                         <Input
-                          value={r.notes || ""}
+                          value={r.notes || ''}
                           onChange={(e) => updateMeta(r.id, { notes: e.target.value })}
                         />
                       </div>
@@ -476,8 +477,8 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
                         onClick={() => extractWithAI(r)}
                         disabled={!!busyIds[r.id]}
                       >
-                        <ScanText className="w-4 h-4 mr-2" />{" "}
-                        {busyIds[r.id] ? "Extracting..." : "Extract with AI"}
+                        <ScanText className="w-4 h-4 mr-2" />{' '}
+                        {busyIds[r.id] ? 'Extracting...' : 'Extract with AI'}
                       </Button>
                       <a
                         className="text-primary text-sm underline"
@@ -499,12 +500,12 @@ export function ReceiptsPanel({ jobName = "", customerAddress = "" }: ReceiptsPa
                       </Button>
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground">
-                      Amount:{" "}
+                      Amount:{' '}
                       <strong>
                         {formatCurrency(
-                          typeof r.total === "number"
+                          typeof r.total === 'number'
                             ? r.total
-                            : typeof r.subtotal === "number"
+                            : typeof r.subtotal === 'number'
                               ? r.subtotal + (r.tax || 0)
                               : null,
                         )}

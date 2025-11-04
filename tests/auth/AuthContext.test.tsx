@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider, useAuthContext } from '@/contexts/AuthContext';
+import { renderHook, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+import { AuthProvider, useAuthContext } from '@/contexts/AuthContext';
 
 // Mock Supabase client
 vi.mock('@/integrations/supabase/client', () => ({

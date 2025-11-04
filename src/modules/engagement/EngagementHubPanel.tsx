@@ -1,22 +1,23 @@
-import type { FeatureFlag } from "@/lib/flags";
+import { useId } from 'react';
 
-import { PremiumServices } from "@/components/PremiumServices";
-import { CustomerInvoice } from "@/components/CustomerInvoice";
-import { DocumentGenerator } from "@/components/DocumentGenerator";
-import { ReceiptsPanel } from "@/components/ReceiptsPanel";
-import { UploadsPanel } from "@/components/UploadsPanel";
-import { BusinessSettings } from "@/components/BusinessSettings";
-import { ThemeCustomizer } from "@/components/ThemeCustomizer";
-import { OwnerSettings } from "@/components/OwnerSettings";
-import { AIGemini } from "@/components/AIGemini";
-import { BlackoutEditor } from "@/components/Scheduler/BlackoutEditor";
-import { CrewAssign } from "@/components/Scheduler/CrewAssign";
-import { WeatherAdvisor } from "@/components/Scheduler/WeatherAdvisor";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { CanvasPanel } from "@/modules/layout/CanvasPanel";
-import type { EstimatorState } from "@/modules/estimate/useEstimatorState";
+import { AIGemini } from '@/components/AIGemini';
+import { BusinessSettings } from '@/components/BusinessSettings';
+import { CustomerInvoice } from '@/components/CustomerInvoice';
+import { DocumentGenerator } from '@/components/DocumentGenerator';
+import { OwnerSettings } from '@/components/OwnerSettings';
+import { PremiumServices } from '@/components/PremiumServices';
+import { ReceiptsPanel } from '@/components/ReceiptsPanel';
+import { BlackoutEditor } from '@/components/Scheduler/BlackoutEditor';
+import { CrewAssign } from '@/components/Scheduler/CrewAssign';
+import { WeatherAdvisor } from '@/components/Scheduler/WeatherAdvisor';
+import { ThemeCustomizer } from '@/components/ThemeCustomizer';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { UploadsPanel } from '@/components/UploadsPanel';
+import type { FeatureFlag } from '@/lib/flags';
+import type { EstimatorState } from '@/modules/estimate/useEstimatorState';
+import { CanvasPanel } from '@/modules/layout/CanvasPanel';
 
 interface EngagementHubPanelProps {
   estimator: EstimatorState;
@@ -24,49 +25,51 @@ interface EngagementHubPanelProps {
 
 const FEATURE_FLAG_LABELS: Record<string, { title: string; description: string }> = {
   aiAssistant: {
-    title: "AI Copilot",
-    description: "Conversational support for quotes, risk alerts, and executive summaries.",
+    title: 'AI Copilot',
+    description: 'Conversational support for quotes, risk alerts, and executive summaries.',
   },
   imageAreaAnalyzer: {
-    title: "Image Area Analyzer",
-    description: "Upload blueprint or drone imagery to auto-detect lot boundaries.",
+    title: 'Image Area Analyzer',
+    description: 'Upload blueprint or drone imagery to auto-detect lot boundaries.',
   },
   receipts: {
-    title: "Receipts Ledger",
-    description: "Attach and categorize expenses for each job with indexed search.",
+    title: 'Receipts Ledger',
+    description: 'Attach and categorize expenses for each job with indexed search.',
   },
   scheduler: {
-    title: "Scheduler",
-    description: "Crew blackout calendar, assignments, and weather-sensitive planning.",
+    title: 'Scheduler',
+    description: 'Crew blackout calendar, assignments, and weather-sensitive planning.',
   },
   optimizer: {
-    title: "Layout Optimizer",
-    description: "AI-powered layout suggestions to max parking count and flow.",
+    title: 'Layout Optimizer',
+    description: 'AI-powered layout suggestions to max parking count and flow.',
   },
   customerPortal: {
-    title: "Customer Portal",
-    description: "Share proposals, invoices, and progress visuals with church admins.",
+    title: 'Customer Portal',
+    description: 'Share proposals, invoices, and progress visuals with church admins.',
   },
   observability: {
-    title: "Observability",
-    description: "Client-side telemetry + Supabase logging for reliability reporting.",
+    title: 'Observability',
+    description: 'Client-side telemetry + Supabase logging for reliability reporting.',
   },
   pwa: {
-    title: "Offline PWA",
-    description: "Enable installable experience for on-site crews with caching.",
+    title: 'Offline PWA',
+    description: 'Enable installable experience for on-site crews with caching.',
   },
   i18n: {
-    title: "Internationalization",
-    description: "Expose translation tooling for multi-lingual faith communities.",
+    title: 'Internationalization',
+    description: 'Expose translation tooling for multi-lingual faith communities.',
   },
   commandCenter: {
-    title: "Executive Command Center",
-    description: "Unlock the analytics dashboard for revenue, utilization, and scheduling insights.",
+    title: 'Executive Command Center',
+    description:
+      'Unlock the analytics dashboard for revenue, utilization, and scheduling insights.',
   },
 };
 
 export function EngagementHubPanel({ estimator }: EngagementHubPanelProps) {
   const { premium, customServices, calculation, job, business, featureFlags } = estimator;
+  const ownerModeId = useId();
 
   return (
     <div className="space-y-6">
@@ -138,17 +141,27 @@ export function EngagementHubPanel({ estimator }: EngagementHubPanelProps) {
                   title={meta.title}
                   description={meta.description}
                   checked={Boolean(featureFlags.values[flag as keyof typeof featureFlags.values])}
-                  onCheckedChange={(checked) => featureFlags.toggleFlag(flag as FeatureFlag, checked)}
+                  onCheckedChange={(checked) =>
+                    featureFlags.toggleFlag(flag as FeatureFlag, checked)
+                  }
                 />
               ))}
             </div>
           </div>
           <div className="flex items-center gap-3 rounded-2xl border border-white/15 bg-white/5 p-4">
-            <Switch checked={featureFlags.ownerMode} onCheckedChange={featureFlags.setOwnerMode} />
+            <Switch
+              id={ownerModeId}
+              checked={featureFlags.ownerMode}
+              onCheckedChange={featureFlags.setOwnerMode}
+              aria-describedby={`${ownerModeId}-description`}
+            />
             <div>
-              <Label className="text-sm font-semibold text-slate-50">Owner Mode</Label>
-              <p className="text-xs text-slate-200/70">
-                Unlock owner-only controls like material blends, margin guardrails, and observability sampling.
+              <Label htmlFor={ownerModeId} className="text-sm font-semibold text-slate-50">
+                Owner Mode
+              </Label>
+              <p id={`${ownerModeId}-description`} className="text-xs text-slate-200/70">
+                Unlock owner-only controls like material blends, margin guardrails, and
+                observability sampling.
               </p>
             </div>
           </div>
@@ -210,13 +223,26 @@ interface FlagToggleProps {
 }
 
 function FlagToggle({ title, description, checked, onCheckedChange }: FlagToggleProps) {
+  const switchId = useId();
+  const descriptionId = `${switchId}-description`;
+
   return (
-    <label className="flex items-start gap-3 rounded-2xl border border-white/15 bg-white/5 p-4">
-      <Switch checked={checked} onCheckedChange={onCheckedChange} className="mt-1" />
+    <div className="flex items-start gap-3 rounded-2xl border border-white/15 bg-white/5 p-4">
+      <Switch
+        id={switchId}
+        aria-describedby={descriptionId}
+        checked={checked}
+        onCheckedChange={onCheckedChange}
+        className="mt-1"
+      />
       <span className="space-y-1">
-        <span className="block text-sm font-semibold text-slate-50">{title}</span>
-        <span className="block text-xs text-slate-200/70">{description}</span>
+        <Label htmlFor={switchId} className="block text-sm font-semibold text-slate-50">
+          {title}
+        </Label>
+        <span id={descriptionId} className="block text-xs text-slate-200/70">
+          {description}
+        </span>
       </span>
-    </label>
+    </div>
   );
 }

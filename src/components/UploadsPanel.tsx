@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Trash2, UploadCloud, FileText, ImageIcon } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   listFiles,
   listDocs,
@@ -13,8 +15,7 @@ import {
   type SavedFile,
   deleteFile,
   deleteDoc,
-} from "@/lib/idb";
-import { Trash2, UploadCloud, FileText, ImageIcon } from "lucide-react";
+} from '@/lib/idb';
 
 interface UploadsPanelProps {
   jobName: string;
@@ -24,8 +25,8 @@ interface UploadsPanelProps {
 export function UploadsPanel({ jobName, customerAddress }: UploadsPanelProps) {
   const [files, setFiles] = useState<SavedFile[]>([]);
   const [docs, setDocs] = useState<SavedDoc[]>([]);
-  const [docTitle, setDocTitle] = useState("");
-  const [docContent, setDocContent] = useState("");
+  const [docTitle, setDocTitle] = useState('');
+  const [docContent, setDocContent] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const jobKey = makeJobKey(jobName, customerAddress);
@@ -49,14 +50,14 @@ export function UploadsPanel({ jobName, customerAddress }: UploadsPanelProps) {
       await saveFile(jobKey, f);
     }
     await refresh();
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleCreateDoc = async () => {
     if (!docTitle.trim()) return;
     await saveDoc(jobKey, docTitle.trim(), { content: docContent });
-    setDocTitle("");
-    setDocContent("");
+    setDocTitle('');
+    setDocContent('');
     await refresh();
   };
 
@@ -96,7 +97,7 @@ export function UploadsPanel({ jobName, customerAddress }: UploadsPanelProps) {
             {files.map((f) => (
               <div key={f.id} className="p-3 border rounded-md flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {f.type.startsWith("image/") ? (
+                  {f.type.startsWith('image/') ? (
                     <ImageIcon className="w-4 h-4" />
                   ) : (
                     <FileText className="w-4 h-4" />

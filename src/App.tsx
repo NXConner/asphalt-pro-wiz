@@ -1,3 +1,27 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Suspense, lazy, useEffect } from 'react';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { toast as sonnerToast } from 'sonner';
+
+import { SkipLink } from '@/components/A11y/SkipLink';
+import { CommandPalette } from '@/components/CommandPalette/CommandPalette';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorRecovery } from '@/components/ErrorRecovery/ErrorRecovery';
+import { MobileOptimizations } from '@/components/MobileOptimizations';
+import { OfflineIndicator } from '@/components/OfflineIndicator';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Toaster as Sonner } from '@/components/ui/sonner';
+import { Toaster } from '@/components/ui/toaster';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { ErrorProvider } from '@/contexts/ErrorContext';
+import { KeyboardProvider } from '@/contexts/KeyboardContext';
+import { PerformanceProvider } from '@/contexts/PerformanceContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import { trackPageView } from '@/lib/analytics';
+import { I18nProvider } from '@/lib/i18n';
+import { initializeMonitoring } from '@/lib/monitoring';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -24,44 +48,43 @@ import { trackPageView } from "@/lib/analytics";
 import { initializeMonitoring } from "@/lib/monitoring";
 
 // Route-level code splitting for faster initial load
-const Index = lazy(() => import("./pages/Index"));
-const PremiumServiceDetails = lazy(() => import("./pages/PremiumServiceDetails"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const Portal = lazy(() => import("./pages/Portal/Portal"));
-const CommandCenter = lazy(() => import("./pages/CommandCenter"));
-const Auth = lazy(() => import("./pages/Auth"));
-const AdminPanel = lazy(() => import("@/components/AdminPanel"));
+const Index = lazy(() => import('./pages/Index'));
+const PremiumServiceDetails = lazy(() => import('./pages/PremiumServiceDetails'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const Portal = lazy(() => import('./pages/Portal/Portal'));
+const CommandCenter = lazy(() => import('./pages/CommandCenter'));
+const Auth = lazy(() => import('./pages/Auth'));
+const AdminPanel = lazy(() => import('@/components/AdminPanel'));
 
 const queryClient = new QueryClient();
 
 function RouteTracker() {
   const location = useLocation();
-  
+
   useEffect(() => {
     trackPageView(location.pathname);
   }, [location]);
-  
+
   return null;
 }
 
 const App = () => {
   useEffect(() => {
-    // Initialize monitoring
     const cleanup = initializeMonitoring();
     return cleanup;
   }, []);
 
   useEffect(() => {
     let removeListener: (() => void) | undefined;
-    // Register Android hardware back button handler when running natively
+
     (async () => {
       try {
-const { Capacitor } = await import("@capacitor/core");
+        const { Capacitor } = await import('@capacitor/core');
         if (!Capacitor.isNativePlatform()) return;
-        const { App: CapApp } = await import("@capacitor/app");
+        const { App: CapApp } = await import('@capacitor/app');
         let lastBack = 0;
-        const listener = await CapApp.addListener("backButton", ({ canGoBack }) => {
-          const onRoot = location.pathname === "/";
+        const listener = await CapApp.addListener('backButton', ({ canGoBack }) => {
+          const onRoot = window.location.pathname === '/';
           if (canGoBack || (!onRoot && window.history.length > 1)) {
             window.history.back();
             return;
@@ -72,13 +95,14 @@ const { Capacitor } = await import("@capacitor/core");
           } else {
             lastBack = now;
             try {
-              sonnerToast("Press back again to exit");
+              sonnerToast('Press back again to exit');
             } catch {}
           }
         });
         removeListener = () => listener.remove();
       } catch {}
     })();
+
     return () => {
       try {
         removeListener?.();
@@ -86,28 +110,95 @@ const { Capacitor } = await import("@capacitor/core");
     };
   }, []);
 
-  // Ensure routing works when the app is served from a sub-path (e.g., lovable.dev preview)
   const baseName = (() => {
     try {
-      // Prefer Vite's injected BASE_URL when available, otherwise derive from document.baseURI
       const envAny = (import.meta as any)?.env ?? {};
       const envBase =
         (envAny.BASE_URL as string | undefined) || (envAny.VITE_BASE_URL as string | undefined);
-      if (envBase && envBase !== "/") {
-        // Treat './' (relative base) as root for router basename
-        const cleaned = envBase === "./" ? "/" : envBase;
-        return cleaned.replace(/\/$/, "");
+      if (envBase && envBase !== '/') {
+        const cleaned = envBase === './' ? '/' : envBase;
+        return cleaned.replace(/\/$/, '');
       }
       let { pathname } = new URL(document.baseURI);
-      // Strip index.html if present
-      pathname = pathname.replace(/\/?index\.html$/, "");
-      if (!pathname || pathname === "/") return "/";
-      return pathname.replace(/\/$/, "");
+      pathname = pathname.replace(/\/?index\.html$/, '');
+      if (!pathname || pathname === '/') return '/';
+      return pathname.replace(/\/$/, '');
     } catch {
-      return "/";
+      return '/';
     }
   })();
 
+  return (
+    <ErrorBoundary>
+      <ErrorRecovery>
+        <PerformanceProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <ErrorProvider>
+                <KeyboardProvider>
+                  <I18nProvider>
+                    <QueryClientProvider client={queryClient}>
+                      <TooltipProvider>
+                        <SkipLink />
+                        <MobileOptimizations />
+                        <CommandPalette />
+                        <Toaster />
+                        <Sonner />
+                        <BrowserRouter basename={baseName}>
+                          <RouteTracker />
+                          <OfflineIndicator />
+                          <Suspense
+                            fallback={
+                              <div className="p-6">
+                                <Skeleton className="mb-4 h-6 w-1/3" />
+                                <Skeleton className="h-96 w-full" />
+                              </div>
+                            }
+                          >
+                            <Routes>
+                              <Route path="/auth" element={<Auth />} />
+                              <Route
+                                path="/"
+                                element={
+                                  <ProtectedRoute>
+                                    <Index />
+                                  </ProtectedRoute>
+                                }
+                              />
+                              <Route
+                                path="/command-center"
+                                element={
+                                  <ProtectedRoute>
+                                    <CommandCenter />
+                                  </ProtectedRoute>
+                                }
+                              />
+                              <Route
+                                path="/admin"
+                                element={
+                                  <ProtectedRoute>
+                                    <AdminPanel />
+                                  </ProtectedRoute>
+                                }
+                              />
+                              <Route
+                                path="/service/:serviceId"
+                                element={
+                                  <ProtectedRoute>
+                                    <PremiumServiceDetails />
+                                  </ProtectedRoute>
+                                }
+                              />
+                              <Route
+                                path="/portal"
+                                element={
+                                  <ProtectedRoute>
+                                    <Portal />
+                                  </ProtectedRoute>
+                                }
+                              />
+                              <Route path="*" element={<NotFound />} />
+                            </Routes>
     return (
       <ErrorBoundary>
         <ErrorRecovery>
@@ -156,9 +247,9 @@ const { Capacitor } = await import("@capacitor/core");
             </AuthProvider>
           </ThemeProvider>
         </PerformanceProvider>
-        </ErrorRecovery>
-      </ErrorBoundary>
-    );
+      </ErrorRecovery>
+    </ErrorBoundary>
+  );
 };
 
 export default App;

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import { updateMetaTags, addStructuredData } from '@/utils/seo';
+
 import { APP_NAME, APP_DESCRIPTION } from '@/config/constants';
+import { updateMetaTags, addStructuredData } from '@/utils/seo';
 
 interface SEOHeadProps {
   title?: string;

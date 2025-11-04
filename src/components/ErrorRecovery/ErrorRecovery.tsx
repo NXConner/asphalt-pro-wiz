@@ -1,5 +1,6 @@
-import { Component, ReactNode } from 'react';
 import { AlertCircle, RefreshCw, Home } from 'lucide-react';
+import { Component, ReactNode } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { logError } from '@/lib/logging';
@@ -93,9 +94,7 @@ export class ErrorRecovery extends Component<Props, State> {
               {this.state.error && (
                 <div className="rounded-lg bg-muted p-3">
                   <p className="text-sm font-medium">Error Details:</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {this.state.error.message}
-                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">{this.state.error.message}</p>
                 </div>
               )}
 

@@ -1,10 +1,11 @@
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Plus } from "lucide-react";
-import { PREMIUM_SERVICES, STANDARD_SERVICES } from "@/lib/serviceCatalog";
+import { CheckCircle2, Plus } from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { PREMIUM_SERVICES, STANDARD_SERVICES } from '@/lib/serviceCatalog';
 
 interface PremiumServicesProps {
   edgePushing: boolean;
@@ -69,7 +70,7 @@ export function PremiumServices({
               <Checkbox
                 id="edge-pushing"
                 checked={edgePushing}
-                onCheckedChange={(checked) => onChange("premiumEdgePushing", checked as boolean)}
+                onCheckedChange={(checked) => onChange('premiumEdgePushing', checked as boolean)}
               />
               <Label htmlFor="edge-pushing" className="cursor-pointer">
                 Edge Pushing — Restore clean asphalt edges for better sealing and appearance
@@ -79,7 +80,7 @@ export function PremiumServices({
               <Checkbox
                 id="weed-killer"
                 checked={weedKiller}
-                onCheckedChange={(checked) => onChange("premiumWeedKiller", checked as boolean)}
+                onCheckedChange={(checked) => onChange('premiumWeedKiller', checked as boolean)}
               />
               <Label htmlFor="weed-killer" className="cursor-pointer">
                 Vegetation Control (Weed Killer) — Prevent growth through sealed areas
@@ -89,7 +90,7 @@ export function PremiumServices({
               <Checkbox
                 id="crack-cleaning"
                 checked={crackCleaning}
-                onCheckedChange={(checked) => onChange("premiumCrackCleaning", checked as boolean)}
+                onCheckedChange={(checked) => onChange('premiumCrackCleaning', checked as boolean)}
               />
               <Label htmlFor="crack-cleaning" className="cursor-pointer">
                 Professional Crack Cleaning — Heat-lance cleaning for maximum bond
@@ -99,7 +100,7 @@ export function PremiumServices({
               <Checkbox
                 id="power-washing"
                 checked={powerWashing}
-                onCheckedChange={(checked) => onChange("premiumPowerWashing", checked as boolean)}
+                onCheckedChange={(checked) => onChange('premiumPowerWashing', checked as boolean)}
               />
               <Label htmlFor="power-washing" className="cursor-pointer">
                 Power Washing — Heavy cleaning for a contaminant-free surface
@@ -109,7 +110,7 @@ export function PremiumServices({
               <Checkbox
                 id="debris-removal"
                 checked={debrisRemoval}
-                onCheckedChange={(checked) => onChange("premiumDebrisRemoval", checked as boolean)}
+                onCheckedChange={(checked) => onChange('premiumDebrisRemoval', checked as boolean)}
               />
               <Label htmlFor="debris-removal" className="cursor-pointer">
                 Debris Removal — Heavy debris hauling and proper disposal
@@ -129,11 +130,11 @@ export function PremiumServices({
             {PREMIUM_SERVICES.filter(
               (svc) =>
                 ![
-                  "edge-pushing",
-                  "weed-killer",
-                  "crack-cleaning",
-                  "power-washing",
-                  "debris-removal",
+                  'edge-pushing',
+                  'weed-killer',
+                  'crack-cleaning',
+                  'power-washing',
+                  'debris-removal',
                 ].includes(svc.id),
             ).map((svc) => {
               const alreadyAdded = addedServiceNames.includes(svc.name);
@@ -147,13 +148,13 @@ export function PremiumServices({
                       {svc.name}
                     </a>
                     <Badge variant="secondary">
-                      {svc.unitType === "flat"
-                        ? "Flat"
-                        : svc.unitType === "perUnit"
-                          ? "Per Unit"
-                          : svc.unitType === "perSqFt"
-                            ? "Per Sq Ft"
-                            : "Per Linear Ft"}
+                      {svc.unitType === 'flat'
+                        ? 'Flat'
+                        : svc.unitType === 'perUnit'
+                          ? 'Per Unit'
+                          : svc.unitType === 'perSqFt'
+                            ? 'Per Sq Ft'
+                            : 'Per Linear Ft'}
                     </Badge>
                   </div>
                   <div className="text-sm text-muted-foreground">{svc.description}</div>
@@ -164,18 +165,18 @@ export function PremiumServices({
                   )}
                   <div className="flex items-center justify-between pt-1">
                     <div className="text-sm">
-                      Default: ${"{"}svc.defaultUnitPrice.toFixed(2){"}"}{" "}
-                      {svc.unitType === "perSqFt"
-                        ? "/sq ft"
-                        : svc.unitType === "perLinearFt"
-                          ? "/lf"
-                          : svc.unitType === "perUnit"
-                            ? "/unit"
-                            : ""}
+                      Default: ${'{'}svc.defaultUnitPrice.toFixed(2){'}'}{' '}
+                      {svc.unitType === 'perSqFt'
+                        ? '/sq ft'
+                        : svc.unitType === 'perLinearFt'
+                          ? '/lf'
+                          : svc.unitType === 'perUnit'
+                            ? '/unit'
+                            : ''}
                     </div>
                     <Button
                       size="sm"
-                      variant={alreadyAdded ? "secondary" : "outline"}
+                      variant={alreadyAdded ? 'secondary' : 'outline'}
                       disabled={alreadyAdded || !onAddCustomService}
                       onClick={() => onAddCustomService && onAddCustomService(svc.id)}
                     >

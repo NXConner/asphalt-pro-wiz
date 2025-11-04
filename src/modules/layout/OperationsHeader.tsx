@@ -1,17 +1,26 @@
-import { memo } from "react";
-import { Droplets, Gauge, LayoutDashboard, LogIn, LogOut, Shield, Sparkles, SwitchCamera } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import {
+  Droplets,
+  Gauge,
+  LayoutDashboard,
+  LogIn,
+  LogOut,
+  Shield,
+  Sparkles,
+  SwitchCamera,
+} from 'lucide-react';
+import { memo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { RealtimeNotifications } from "@/components/RealtimeNotifications";
-import { UserPresence } from "@/components/UserPresence";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { isEnabled } from "@/lib/flags";
-import { useAuthContext } from "@/contexts/AuthContext";
-import { useIsAdmin } from "@/hooks/useUserRole";
+import type { CanvasWallpaper } from './wallpapers';
 
-import type { CanvasWallpaper } from "./wallpapers";
+import { RealtimeNotifications } from '@/components/RealtimeNotifications';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { Button } from '@/components/ui/button';
+import { UserPresence } from '@/components/UserPresence';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useIsAdmin } from '@/hooks/useUserRole';
+import { isEnabled } from '@/lib/flags';
+import { cn } from '@/lib/utils';
 
 interface OperationsHeaderProps {
   wallpaper: CanvasWallpaper;
@@ -25,7 +34,7 @@ interface OperationsHeaderProps {
 
 function formatArea(value: number): string {
   if (!Number.isFinite(value) || value <= 0) {
-    return "–";
+    return '–';
   }
   if (value > 100000) {
     return `${(value / 1000).toFixed(1)}k sq ft`;
@@ -34,10 +43,10 @@ function formatArea(value: number): string {
 }
 
 function formatCurrency(value: number | null): string {
-  if (value === null || Number.isNaN(value)) return "–";
+  if (value === null || Number.isNaN(value)) return '–';
   return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: "USD",
+    style: 'currency',
+    currency: 'USD',
     maximumFractionDigits: value >= 100000 ? 0 : 2,
   }).format(value);
 }
@@ -47,7 +56,7 @@ export const OperationsHeader = memo(function OperationsHeader({
   onNextWallpaper,
   summary,
 }: OperationsHeaderProps) {
-  const commandCenterEnabled = isEnabled("commandCenter");
+  const commandCenterEnabled = isEnabled('commandCenter');
   const { isAuthenticated, signOut, user } = useAuthContext();
   const { isAdmin } = useIsAdmin();
   const navigate = useNavigate();
@@ -69,7 +78,7 @@ export const OperationsHeader = memo(function OperationsHeader({
         </div>
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">
-            {summary.jobName ? summary.jobName : "New Pavement Mission"}
+            {summary.jobName ? summary.jobName : 'New Pavement Mission'}
           </h1>
           <p className="max-w-2xl text-sm text-slate-100/80 sm:text-base">
             {wallpaper.description}
@@ -91,67 +100,67 @@ export const OperationsHeader = memo(function OperationsHeader({
           </span>
         </div>
       </div>
-        <div className="flex flex-wrap items-center justify-end gap-3">
-          {commandCenterEnabled ? (
-            <Button
-              asChild
-              variant="default"
-              size="lg"
-              className="bg-white text-slate-900 shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5 hover:bg-white/90"
-            >
-              <Link to="/command-center">
-                <LayoutDashboard className="mr-2 h-4 w-4" />
-                Open Command Center
-              </Link>
-            </Button>
-          ) : null}
-          {isAuthenticated && isAdmin && (
-            <Button
-              asChild
-              variant="secondary"
-              size="lg"
-              className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
-            >
-              <Link to="/admin">
-                <Shield className="mr-2 h-4 w-4" />
-                Admin Panel
-              </Link>
-            </Button>
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        {commandCenterEnabled ? (
+          <Button
+            asChild
+            variant="default"
+            size="lg"
+            className="bg-white text-slate-900 shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5 hover:bg-white/90"
+          >
+            <Link to="/command-center">
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              Open Command Center
+            </Link>
+          </Button>
+        ) : null}
+        {isAuthenticated && isAdmin && (
+          <Button
+            asChild
+            variant="secondary"
+            size="lg"
+            className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
+          >
+            <Link to="/admin">
+              <Shield className="mr-2 h-4 w-4" />
+              Admin Panel
+            </Link>
+          </Button>
+        )}
+        <Button
+          type="button"
+          variant="secondary"
+          size="lg"
+          className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
+          onClick={onNextWallpaper}
+        >
+          <SwitchCamera className="mr-2 h-4 w-4" />
+          Cycle Atmosphere
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          size="lg"
+          className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
+          onClick={handleAuthAction}
+          title={isAuthenticated ? user?.email : 'Sign in'}
+        >
+          {isAuthenticated ? (
+            <>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </>
+          ) : (
+            <>
+              <LogIn className="mr-2 h-4 w-4" />
+              Sign In
+            </>
           )}
-          <Button
-            type="button"
-            variant="secondary"
-            size="lg"
-            className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
-            onClick={onNextWallpaper}
-          >
-            <SwitchCamera className="mr-2 h-4 w-4" />
-            Cycle Atmosphere
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            size="lg"
-            className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
-            onClick={handleAuthAction}
-            title={isAuthenticated ? user?.email : 'Sign in'}
-          >
-            {isAuthenticated ? (
-              <>
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign Out
-              </>
-            ) : (
-              <>
-                <LogIn className="mr-2 h-4 w-4" />
-                Sign In
-              </>
-            )}
-          </Button>
-          <UserPresence />
-          <RealtimeNotifications />
-          <ThemeToggle />
-        </div>
+        </Button>
+        <UserPresence />
+        <RealtimeNotifications />
+        <ThemeToggle />
+      </div>
     </header>
   );
 });
@@ -166,8 +175,8 @@ function StatPill({ icon, label, value }: StatPillProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2",
-        "text-left text-sm font-medium text-slate-50/90 shadow-lg backdrop-blur-md",
+        'inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2',
+        'text-left text-sm font-medium text-slate-50/90 shadow-lg backdrop-blur-md',
       )}
     >
       <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-slate-100">

@@ -1,13 +1,9 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PresenceState {
   [key: string]: {
@@ -36,12 +32,15 @@ export function UserPresence() {
         // Flatten presence state to get unique users
         const users = Object.values(state)
           .flat()
-          .reduce((acc, presence) => {
-            if (!acc.find(u => u.user_id === presence.user_id)) {
-              acc.push({ user_id: presence.user_id, email: presence.email });
-            }
-            return acc;
-          }, [] as Array<{ user_id: string; email: string }>);
+          .reduce(
+            (acc, presence) => {
+              if (!acc.find((u) => u.user_id === presence.user_id)) {
+                acc.push({ user_id: presence.user_id, email: presence.email });
+              }
+              return acc;
+            },
+            [] as Array<{ user_id: string; email: string }>,
+          );
 
         setOnlineUsers(users);
       })
@@ -53,7 +52,9 @@ export function UserPresence() {
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          const { data: { user } } = await supabase.auth.getUser();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
           if (user) {
             await channel.track({
               user_id: user.id,
@@ -93,9 +94,7 @@ export function UserPresence() {
             <Tooltip>
               <TooltipTrigger>
                 <Avatar className="border-2 border-background w-8 h-8">
-                  <AvatarFallback className="text-xs">
-                    +{onlineUsers.length - 5}
-                  </AvatarFallback>
+                  <AvatarFallback className="text-xs">+{onlineUsers.length - 5}</AvatarFallback>
                 </Avatar>
               </TooltipTrigger>
               <TooltipContent>

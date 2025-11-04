@@ -1,9 +1,10 @@
-import { useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { BusinessData, defaultBusinessData } from "@/lib/calculations";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useEffect } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { BusinessData, defaultBusinessData } from '@/lib/calculations';
 
 interface BusinessSettingsProps {
   data: BusinessData;
@@ -18,7 +19,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
   // Load/save settings for persistence
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("pps.businessData");
+      const saved = localStorage.getItem('pps.businessData');
       if (saved) {
         const parsed = JSON.parse(saved) as BusinessData;
         onChange(parsed);
@@ -29,7 +30,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
 
   const saveSettings = () => {
     try {
-      localStorage.setItem("pps.businessData", JSON.stringify(data));
+      localStorage.setItem('pps.businessData', JSON.stringify(data));
     } catch {}
   };
 
@@ -54,7 +55,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               type="number"
               min="1"
               value={data.employees}
-              onChange={(e) => updateField("employees", parseFloat(e.target.value) || 1)}
+              onChange={(e) => updateField('employees', parseFloat(e.target.value) || 1)}
             />
           </div>
           <div>
@@ -65,7 +66,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               min="0"
               step="0.5"
               value={data.laborRate}
-              onChange={(e) => updateField("laborRate", parseFloat(e.target.value) || 0)}
+              onChange={(e) => updateField('laborRate', parseFloat(e.target.value) || 0)}
             />
           </div>
         </div>
@@ -79,7 +80,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               max="100"
               step="1"
               value={data.overheadPercent}
-              onChange={(e) => updateField("overheadPercent", parseFloat(e.target.value) || 0)}
+              onChange={(e) => updateField('overheadPercent', parseFloat(e.target.value) || 0)}
             />
           </div>
           <div>
@@ -91,7 +92,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               max="100"
               step="1"
               value={data.profitPercent}
-              onChange={(e) => updateField("profitPercent", parseFloat(e.target.value) || 0)}
+              onChange={(e) => updateField('profitPercent', parseFloat(e.target.value) || 0)}
             />
           </div>
         </div>
@@ -106,7 +107,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
                 type="number"
                 step="0.01"
                 value={data.sealcoatPrice}
-                onChange={(e) => updateField("sealcoatPrice", parseFloat(e.target.value) || 0)}
+                onChange={(e) => updateField('sealcoatPrice', parseFloat(e.target.value) || 0)}
               />
             </div>
             <div>
@@ -116,7 +117,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
                 type="number"
                 step="0.01"
                 value={data.sandPrice}
-                onChange={(e) => updateField("sandPrice", parseFloat(e.target.value) || 0)}
+                onChange={(e) => updateField('sandPrice', parseFloat(e.target.value) || 0)}
               />
             </div>
             <div>
@@ -126,7 +127,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
                 type="number"
                 step="0.01"
                 value={data.fastDryPrice}
-                onChange={(e) => updateField("fastDryPrice", parseFloat(e.target.value) || 0)}
+                onChange={(e) => updateField('fastDryPrice', parseFloat(e.target.value) || 0)}
               />
             </div>
             <div>
@@ -136,7 +137,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
                 type="number"
                 step="0.01"
                 value={data.prepSealPrice}
-                onChange={(e) => updateField("prepSealPrice", parseFloat(e.target.value) || 0)}
+                onChange={(e) => updateField('prepSealPrice', parseFloat(e.target.value) || 0)}
               />
             </div>
             <div>
@@ -146,7 +147,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
                 type="number"
                 step="0.01"
                 value={data.crackFillerPrice}
-                onChange={(e) => updateField("crackFillerPrice", parseFloat(e.target.value) || 0)}
+                onChange={(e) => updateField('crackFillerPrice', parseFloat(e.target.value) || 0)}
               />
             </div>
           </div>
@@ -162,7 +163,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
                 type="number"
                 step="0.001"
                 value={data.gasPrice}
-                onChange={(e) => updateField("gasPrice", parseFloat(e.target.value) || 0)}
+                onChange={(e) => updateField('gasPrice', parseFloat(e.target.value) || 0)}
               />
             </div>
             <div>
@@ -172,7 +173,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
                 type="number"
                 step="0.1"
                 value={data.chevyMPG}
-                onChange={(e) => updateField("chevyMPG", parseFloat(e.target.value) || 0)}
+                onChange={(e) => updateField('chevyMPG', parseFloat(e.target.value) || 0)}
               />
             </div>
             <div>
@@ -182,7 +183,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
                 type="number"
                 step="0.1"
                 value={data.dodgeMPG}
-                onChange={(e) => updateField("dodgeMPG", parseFloat(e.target.value) || 0)}
+                onChange={(e) => updateField('dodgeMPG', parseFloat(e.target.value) || 0)}
               />
             </div>
             <div>
@@ -192,7 +193,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
                 type="number"
                 step="0.01"
                 value={data.propanePrice}
-                onChange={(e) => updateField("propanePrice", parseFloat(e.target.value) || 0)}
+                onChange={(e) => updateField('propanePrice', parseFloat(e.target.value) || 0)}
               />
             </div>
           </div>
@@ -207,7 +208,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
                 type="number"
                 step="0.0001"
                 value={data.sealCoatCoverage1}
-                onChange={(e) => updateField("sealCoatCoverage1", parseFloat(e.target.value) || 0)}
+                onChange={(e) => updateField('sealCoatCoverage1', parseFloat(e.target.value) || 0)}
               />
             </div>
             <div>
@@ -216,7 +217,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
                 type="number"
                 step="0.0001"
                 value={data.sealCoatCoverage2}
-                onChange={(e) => updateField("sealCoatCoverage2", parseFloat(e.target.value) || 0)}
+                onChange={(e) => updateField('sealCoatCoverage2', parseFloat(e.target.value) || 0)}
               />
             </div>
             <div>
@@ -225,7 +226,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
                 type="number"
                 step="0.0001"
                 value={data.sealCoatCoverage3}
-                onChange={(e) => updateField("sealCoatCoverage3", parseFloat(e.target.value) || 0)}
+                onChange={(e) => updateField('sealCoatCoverage3', parseFloat(e.target.value) || 0)}
               />
             </div>
             <div>
@@ -234,7 +235,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
                 type="number"
                 step="0.1"
                 value={data.sandRatio}
-                onChange={(e) => updateField("sandRatio", parseFloat(e.target.value) || 0)}
+                onChange={(e) => updateField('sandRatio', parseFloat(e.target.value) || 0)}
               />
             </div>
             <div>
@@ -243,7 +244,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
                 type="number"
                 step="1"
                 value={data.crackSealingSpeed}
-                onChange={(e) => updateField("crackSealingSpeed", parseFloat(e.target.value) || 0)}
+                onChange={(e) => updateField('crackSealingSpeed', parseFloat(e.target.value) || 0)}
               />
             </div>
             <div>
@@ -252,7 +253,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
                 type="number"
                 step="1"
                 value={data.sealcoatingSpeed1}
-                onChange={(e) => updateField("sealcoatingSpeed1", parseFloat(e.target.value) || 0)}
+                onChange={(e) => updateField('sealcoatingSpeed1', parseFloat(e.target.value) || 0)}
               />
             </div>
             <div>
@@ -261,7 +262,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
                 type="number"
                 step="1"
                 value={data.sealcoatingSpeed2}
-                onChange={(e) => updateField("sealcoatingSpeed2", parseFloat(e.target.value) || 0)}
+                onChange={(e) => updateField('sealcoatingSpeed2', parseFloat(e.target.value) || 0)}
               />
             </div>
           </div>

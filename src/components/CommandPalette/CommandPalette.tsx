@@ -1,5 +1,7 @@
+import { Home, BarChart3, Settings, FileText, Search, Moon, Sun, LogOut } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import {
   Command,
   CommandDialog,
@@ -9,16 +11,6 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import {
-  Home,
-  BarChart3,
-  Settings,
-  FileText,
-  Search,
-  Moon,
-  Sun,
-  LogOut,
-} from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/integrations/supabase/client';
 

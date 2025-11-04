@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
+import type { CustomService } from '@/components/CustomServices';
 import {
   calculateDistance,
   calculateProject,
@@ -9,25 +10,19 @@ import {
   type CostBreakdown,
   type Costs,
   type ProjectInputs,
-} from "@/lib/calculations";
+} from '@/lib/calculations';
+import { isEnabled, setFlag, type FeatureFlag } from '@/lib/flags';
+import { makeJobKey, setJobStatus, upsertJob, type JobStatus } from '@/lib/idb';
 import {
   BUSINESS_ADDRESS,
   BUSINESS_COORDS_FALLBACK,
   SUPPLIER_ADDRESS,
   SUPPLIER_COORDS_FALLBACK,
-} from "@/lib/locations";
-import { logEvent } from "@/lib/logging";
-import { isEnabled, setFlag, type FeatureFlag } from "@/lib/flags";
-import { getServiceById } from "@/lib/serviceCatalog";
-import {
-  makeJobKey,
-  setJobStatus,
-  upsertJob,
-  type JobStatus,
-} from "@/lib/idb";
-import type { CustomService } from "@/components/CustomServices";
+} from '@/lib/locations';
+import { logEvent } from '@/lib/logging';
+import { getServiceById } from '@/lib/serviceCatalog';
 
-export type AreaShape = "rectangle" | "triangle" | "circle" | "drawn" | "manual" | "image";
+export type AreaShape = 'rectangle' | 'triangle' | 'circle' | 'drawn' | 'manual' | 'image';
 
 export interface AreaItem {
   id: number;
@@ -35,7 +30,7 @@ export interface AreaItem {
   area: number;
 }
 
-export type StripingColor = "White" | "Blue" | "Yellow" | "Red" | "Green";
+export type StripingColor = 'White' | 'Blue' | 'Yellow' | 'Red' | 'Green';
 
 interface JobState {
   name: string;
@@ -60,8 +55,8 @@ interface JobState {
 interface AreaState {
   items: AreaItem[];
   total: number;
-  shapeType: Exclude<AreaShape, "drawn" | "image">;
-  setShapeType: (shape: Exclude<AreaShape, "drawn" | "image">) => void;
+  shapeType: Exclude<AreaShape, 'drawn' | 'image'>;
+  setShapeType: (shape: Exclude<AreaShape, 'drawn' | 'image'>) => void;
   manualInput: string;
   setManualInput: (value: string) => void;
   addEmpty: () => void;
@@ -90,10 +85,10 @@ interface MaterialState {
   setSandAdded: (value: boolean) => void;
   polymerAdded: boolean;
   setPolymerAdded: (value: boolean) => void;
-  sealerType: "Acrylic" | "Asphalt Emulsion" | "Coal Tar" | "PMM" | "Other";
-  setSealerType: (value: "Acrylic" | "Asphalt Emulsion" | "Coal Tar" | "PMM" | "Other") => void;
-  sandType: "Black Beauty" | "Black Diamond" | "Other";
-  setSandType: (value: "Black Beauty" | "Black Diamond" | "Other") => void;
+  sealerType: 'Acrylic' | 'Asphalt Emulsion' | 'Coal Tar' | 'PMM' | 'Other';
+  setSealerType: (value: 'Acrylic' | 'Asphalt Emulsion' | 'Coal Tar' | 'PMM' | 'Other') => void;
+  sandType: 'Black Beauty' | 'Black Diamond' | 'Other';
+  setSandType: (value: 'Black Beauty' | 'Black Diamond' | 'Other') => void;
   waterPercent: number;
   setWaterPercent: (value: number) => void;
 }
@@ -190,16 +185,16 @@ export interface EstimatorState {
 
 export function useEstimatorState(): EstimatorState {
   const [businessData, setBusinessData] = useState<BusinessData>(defaultBusinessData);
-  const [jobName, setJobName] = useState("");
-  const [customerAddress, setCustomerAddress] = useState("");
+  const [jobName, setJobName] = useState('');
+  const [customerAddress, setCustomerAddress] = useState('');
   const [customerCoords, setCustomerCoords] = useState<[number, number] | null>(null);
-  const [jobStatus, setJobStatusLocal] = useState<JobStatus>("need_estimate");
-  const [jobCompetitor, setJobCompetitor] = useState("");
+  const [jobStatus, setJobStatusLocal] = useState<JobStatus>('need_estimate');
+  const [jobCompetitor, setJobCompetitor] = useState('');
   const [mapRefreshKey, setMapRefreshKey] = useState(0);
   const [areas, setAreas] = useState<AreaItem[]>([]);
   const [nextAreaId, setNextAreaId] = useState(1);
-  const [shapeType, setShapeType] = useState<Exclude<AreaShape, "drawn" | "image">>("rectangle");
-  const [manualAreaInput, setManualAreaInput] = useState<string>("");
+  const [shapeType, setShapeType] = useState<Exclude<AreaShape, 'drawn' | 'image'>>('rectangle');
+  const [manualAreaInput, setManualAreaInput] = useState<string>('');
 
   const [numCoats, setNumCoats] = useState(2);
   const [sandAdded, setSandAdded] = useState(false);
@@ -234,10 +229,14 @@ export function useEstimatorState(): EstimatorState {
   const [includeStriping, setIncludeStriping] = useState(true);
 
   const [waterPercent, setWaterPercent] = useState(0);
-  const [sealerType, setSealerType] = useState<"Acrylic" | "Asphalt Emulsion" | "Coal Tar" | "PMM" | "Other">("PMM");
-  const [sandType, setSandType] = useState<"Black Beauty" | "Black Diamond" | "Other">("Black Beauty");
+  const [sealerType, setSealerType] = useState<
+    'Acrylic' | 'Asphalt Emulsion' | 'Coal Tar' | 'PMM' | 'Other'
+  >('PMM');
+  const [sandType, setSandType] = useState<'Black Beauty' | 'Black Diamond' | 'Other'>(
+    'Black Beauty',
+  );
 
-  const crackFillerProduct = "CrackMaster Parking Lot LP hot pour (30 lb box)";
+  const crackFillerProduct = 'CrackMaster Parking Lot LP hot pour (30 lb box)';
 
   const [showResults, setShowResults] = useState(false);
   const [costs, setCosts] = useState<Costs | null>(null);
@@ -253,28 +252,31 @@ export function useEstimatorState(): EstimatorState {
 
   const totalArea = useMemo(() => areas.reduce((sum, item) => sum + item.area, 0), [areas]);
 
-  const addedServiceNames = useMemo(() => customServices.map((service) => service.name), [customServices]);
+  const addedServiceNames = useMemo(
+    () => customServices.map((service) => service.name),
+    [customServices],
+  );
 
   const [flagVersion, setFlagVersion] = useState(0);
-  const [ownerMode, setOwnerModeInternal] = useState<boolean>(isEnabled("ownerMode"));
+  const [ownerMode, setOwnerModeInternal] = useState<boolean>(isEnabled('ownerMode'));
 
   useEffect(() => {
     // Sync local owner mode with persisted flag changes (e.g., across tabs)
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === "pps:flags") {
-        setOwnerModeInternal(isEnabled("ownerMode"));
+      if (event.key === 'pps:flags') {
+        setOwnerModeInternal(isEnabled('ownerMode'));
         setFlagVersion((version) => version + 1);
       }
     };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
   const ensureJobPersisted = (address: string, coords: [number, number] | null) => {
     const key = makeJobKey(jobName, address);
     void upsertJob({
       id: key,
-      name: jobName || "Job",
+      name: jobName || 'Job',
       address,
       coords: coords ?? undefined,
       status: jobStatus,
@@ -288,13 +290,13 @@ export function useEstimatorState(): EstimatorState {
     const distance = calculateDistance(businessCoords, coords) * 2;
     setJobDistance(distance);
     try {
-      logEvent("job.address_updated", { address, distanceRtMiles: distance });
+      logEvent('job.address_updated', { address, distanceRtMiles: distance });
     } catch {}
     ensureJobPersisted(address, coords);
   };
 
   const handleAreaDrawn = (area: number) => {
-    setAreas((prev) => [...prev, { id: nextAreaId, shape: "drawn", area }]);
+    setAreas((prev) => [...prev, { id: nextAreaId, shape: 'drawn', area }]);
     setNextAreaId((prev) => prev + 1);
     try {
       toast.success(`Added ${area.toFixed(1)} sq ft from map drawing`);
@@ -302,7 +304,7 @@ export function useEstimatorState(): EstimatorState {
   };
 
   const handleImageAreaDetected = (area: number) => {
-    setAreas((prev) => [...prev, { id: nextAreaId, shape: "image", area }]);
+    setAreas((prev) => [...prev, { id: nextAreaId, shape: 'image', area }]);
     setNextAreaId((prev) => prev + 1);
   };
 
@@ -314,14 +316,14 @@ export function useEstimatorState(): EstimatorState {
   const addManualArea = () => {
     const parsed = parseFloat(manualAreaInput);
     if (!parsed || parsed <= 0) {
-      toast.error("Enter a valid area in sq ft");
+      toast.error('Enter a valid area in sq ft');
       return;
     }
-    setAreas((prev) => [...prev, { id: nextAreaId, shape: "manual", area: parsed }]);
+    setAreas((prev) => [...prev, { id: nextAreaId, shape: 'manual', area: parsed }]);
     setNextAreaId((prev) => prev + 1);
-    setManualAreaInput("");
+    setManualAreaInput('');
     try {
-      logEvent("area.add_manual", { areaSqFt: parsed });
+      logEvent('area.add_manual', { areaSqFt: parsed });
     } catch {}
     toast.success(`Added ${parsed.toFixed(1)} sq ft`);
   };
@@ -347,19 +349,19 @@ export function useEstimatorState(): EstimatorState {
 
   const handlePremiumServiceChange = (service: string, value: boolean) => {
     switch (service) {
-      case "premiumEdgePushing":
+      case 'premiumEdgePushing':
         setPremiumEdgePushing(value);
         break;
-      case "premiumWeedKiller":
+      case 'premiumWeedKiller':
         setPremiumWeedKiller(value);
         break;
-      case "premiumCrackCleaning":
+      case 'premiumCrackCleaning':
         setPremiumCrackCleaning(value);
         break;
-      case "premiumPowerWashing":
+      case 'premiumPowerWashing':
         setPremiumPowerWashing(value);
         break;
-      case "premiumDebrisRemoval":
+      case 'premiumDebrisRemoval':
         setPremiumDebrisRemoval(value);
         break;
       default:
@@ -376,14 +378,14 @@ export function useEstimatorState(): EstimatorState {
       name: service.name,
       type: service.unitType,
       unitPrice: service.defaultUnitPrice,
-      quantity: service.unitType === "perUnit" ? 1 : undefined,
+      quantity: service.unitType === 'perUnit' ? 1 : undefined,
     };
     setCustomServices((prev) => [...prev, newService]);
   };
 
   const handleCalculate = () => {
     if (totalArea <= 0) {
-      toast.error("Please add an area measurement");
+      toast.error('Please add an area measurement');
       return;
     }
 
@@ -433,8 +435,8 @@ export function useEstimatorState(): EstimatorState {
     setBreakdown(result.breakdown);
     setShowResults(true);
     try {
-      logEvent("estimate.calculated", {
-        jobName: jobName || "Job",
+      logEvent('estimate.calculated', {
+        jobName: jobName || 'Job',
         totalArea,
         crackLength,
         includeSealcoating,
@@ -446,7 +448,7 @@ export function useEstimatorState(): EstimatorState {
     } catch {}
 
     const key = makeJobKey(jobName, customerAddress);
-    void setJobStatus(key, "estimated").then(() => setMapRefreshKey((value) => value + 1));
+    void setJobStatus(key, 'estimated').then(() => setMapRefreshKey((value) => value + 1));
   };
 
   const handlePrint = () => {
@@ -455,39 +457,40 @@ export function useEstimatorState(): EstimatorState {
 
   const setOwnerMode = (enabled: boolean) => {
     setOwnerModeInternal(enabled);
-    setFlag("ownerMode", enabled);
+    setFlag('ownerMode', enabled);
     setFlagVersion((version) => version + 1);
     try {
-      logEvent("flags.ownerMode_toggled", { enabled });
+      logEvent('flags.ownerMode_toggled', { enabled });
     } catch {}
   };
 
   const toggleFeatureFlag = (flag: FeatureFlag, enabled: boolean) => {
-    if (flag === "ownerMode") {
+    if (flag === 'ownerMode') {
       setOwnerMode(enabled);
       return;
     }
     setFlag(flag, enabled);
     setFlagVersion((version) => version + 1);
     try {
-      logEvent("flags.toggle", { flag, enabled });
+      logEvent('flags.toggle', { flag, enabled });
     } catch {}
   };
 
   const featureFlagValues = useMemo(
     () => ({
-      imageAreaAnalyzer: isEnabled("imageAreaAnalyzer"),
-      aiAssistant: isEnabled("aiAssistant"),
-      pwa: isEnabled("pwa"),
-      i18n: isEnabled("i18n"),
-      receipts: isEnabled("receipts"),
-      scheduler: isEnabled("scheduler"),
-      optimizer: isEnabled("optimizer"),
-      customerPortal: isEnabled("customerPortal"),
-      observability: isEnabled("observability"),
-      commandCenter: isEnabled("commandCenter"),
+      imageAreaAnalyzer: isEnabled('imageAreaAnalyzer'),
+      aiAssistant: isEnabled('aiAssistant'),
+      pwa: isEnabled('pwa'),
+      i18n: isEnabled('i18n'),
+      receipts: isEnabled('receipts'),
+      scheduler: isEnabled('scheduler'),
+      optimizer: isEnabled('optimizer'),
+      customerPortal: isEnabled('customerPortal'),
+      observability: isEnabled('observability'),
+      commandCenter: isEnabled('commandCenter'),
       ownerMode,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [flagVersion, ownerMode],
   );
 
@@ -634,7 +637,7 @@ export function useEstimatorState(): EstimatorState {
     setOwnerMode,
     toggleFlag: toggleFeatureFlag,
     isEnabled: (flag: FeatureFlag) =>
-      flag === "ownerMode" ? ownerMode : featureFlagValues[flag as keyof typeof featureFlagValues],
+      flag === 'ownerMode' ? ownerMode : featureFlagValues[flag as keyof typeof featureFlagValues],
   };
 
   return {

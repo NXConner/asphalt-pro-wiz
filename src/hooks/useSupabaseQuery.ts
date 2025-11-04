@@ -1,7 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 import type { PostgrestError } from '@supabase/supabase-js';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+
+import { supabase } from '@/integrations/supabase/client';
 
 interface QueryOptions<T> {
   queryKey: string[];
@@ -56,12 +57,20 @@ interface MutationOptions {
   successMessage?: string;
 }
 
-export function useSupabaseInsert<T>({ table, invalidateQueries, successMessage }: MutationOptions) {
+export function useSupabaseInsert<T>({
+  table,
+  invalidateQueries,
+  successMessage,
+}: MutationOptions) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: Partial<T>) => {
-      const { data: result, error } = await supabase.from(table as any).insert(data).select().single();
+      const { data: result, error } = await supabase
+        .from(table as any)
+        .insert(data)
+        .select()
+        .single();
 
       if (error) throw error;
       return result;
@@ -80,7 +89,11 @@ export function useSupabaseInsert<T>({ table, invalidateQueries, successMessage 
   });
 }
 
-export function useSupabaseUpdate<T>({ table, invalidateQueries, successMessage }: MutationOptions) {
+export function useSupabaseUpdate<T>({
+  table,
+  invalidateQueries,
+  successMessage,
+}: MutationOptions) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -114,7 +127,10 @@ export function useSupabaseDelete({ table, invalidateQueries, successMessage }: 
 
   return useMutation({
     mutationFn: async (id: string | number) => {
-      const { error } = await supabase.from(table as any).delete().eq('id', id);
+      const { error } = await supabase
+        .from(table as any)
+        .delete()
+        .eq('id', id);
 
       if (error) throw error;
     },

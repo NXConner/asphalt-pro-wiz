@@ -1,25 +1,26 @@
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState } from 'react';
+
+import GoogleMap from '@/components/map/GoogleMap';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
-import GoogleMap from "@/components/map/GoogleMap";
+} from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
 import {
   loadMapSettings,
   saveMapSettings,
   exportMapSettings,
   importMapSettings,
   type BaseLayerId,
-} from "@/lib/mapSettings";
-import { Button } from "@/components/ui/button";
+} from '@/lib/mapSettings';
 
 interface MapProps {
   onAddressUpdate: (coords: [number, number], address: string) => void;
@@ -30,10 +31,10 @@ interface MapProps {
 }
 
 const baseLayers: { id: BaseLayerId; label: string }[] = [
-  { id: "google_roadmap", label: "Google Roadmap" },
-  { id: "google_satellite", label: "Google Satellite" },
-  { id: "google_terrain", label: "Google Terrain" },
-  { id: "google_hybrid", label: "Google Hybrid" },
+  { id: 'google_roadmap', label: 'Google Roadmap' },
+  { id: 'google_satellite', label: 'Google Satellite' },
+  { id: 'google_terrain', label: 'Google Terrain' },
+  { id: 'google_hybrid', label: 'Google Hybrid' },
 ];
 
 const Map = ({
@@ -47,11 +48,11 @@ const Map = ({
   const [settingsKey, setSettingsKey] = useState(0);
   const [newOverlay, setNewOverlay] = useState<{
     name: string;
-    type: "tile" | "wms";
+    type: 'tile' | 'wms';
     url: string;
     layers: string;
     attribution: string;
-  }>({ name: "", type: "tile", url: "", layers: "", attribution: "" });
+  }>({ name: '', type: 'tile', url: '', layers: '', attribution: '' });
 
   const persist = (
     mut: (s: ReturnType<typeof loadMapSettings>) => ReturnType<typeof loadMapSettings>,
@@ -162,13 +163,13 @@ const Map = ({
           <div className="space-y-2">
             <Label>Google Maps API Key</Label>
             <Input
-              value={settings.googleApiKey ?? ""}
+              value={settings.googleApiKey ?? ''}
               onChange={(e) => handleGoogleKeyChange(e.target.value)}
               placeholder="Enter API key"
             />
             <Label>OpenWeather API Key (optional)</Label>
             <Input
-              value={settings.openWeatherApiKey ?? ""}
+              value={settings.openWeatherApiKey ?? ''}
               onChange={(e) => handleOpenWeatherKeyChange(e.target.value)}
               placeholder="For richer weather"
             />
@@ -188,7 +189,7 @@ const Map = ({
                     onCheckedChange={(v) => handleOverlayVisible(o.id, v)}
                   />
                 </div>
-                {o.type !== "radar" && (
+                {o.type !== 'radar' && (
                   <div className="mt-2">
                     <span className="text-xs text-muted-foreground">Opacity</span>
                     <Slider
@@ -256,30 +257,30 @@ const Map = ({
                 className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
                 onClick={() => {
                   if (!newOverlay.name || !newOverlay.url) return;
-                  const id = newOverlay.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+                  const id = newOverlay.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
                   persist((s) => ({
                     ...s,
                     overlays: [
                       ...s.overlays,
-                      newOverlay.type === "wms"
+                      newOverlay.type === 'wms'
                         ? {
                             id,
                             name: newOverlay.name,
-                            type: "wms",
+                            type: 'wms',
                             urlTemplate: newOverlay.url,
                             attribution: newOverlay.attribution || undefined,
                             opacity: 1,
                             visible: true,
                             wmsParams: {
-                              layers: newOverlay.layers || "",
+                              layers: newOverlay.layers || '',
                               transparent: true,
-                              format: "image/png",
+                              format: 'image/png',
                             },
                           }
                         : {
                             id,
                             name: newOverlay.name,
-                            type: "tile",
+                            type: 'tile',
                             urlTemplate: newOverlay.url,
                             attribution: newOverlay.attribution || undefined,
                             opacity: 1,
@@ -287,7 +288,7 @@ const Map = ({
                           },
                     ],
                   }));
-                  setNewOverlay({ name: "", type: "tile", url: "", layers: "", attribution: "" });
+                  setNewOverlay({ name: '', type: 'tile', url: '', layers: '', attribution: '' });
                 }}
               >
                 Add Overlay
@@ -299,11 +300,11 @@ const Map = ({
                 variant="outline"
                 onClick={() => {
                   const json = exportMapSettings();
-                  const blob = new Blob([json], { type: "application/json" });
+                  const blob = new Blob([json], { type: 'application/json' });
                   const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
+                  const a = document.createElement('a');
                   a.href = url;
-                  a.download = "map-settings.json";
+                  a.download = 'map-settings.json';
                   a.click();
                   URL.revokeObjectURL(url);
                 }}
@@ -314,9 +315,9 @@ const Map = ({
                 type="button"
                 variant="outline"
                 onClick={() => {
-                  const input = document.createElement("input");
-                  input.type = "file";
-                  input.accept = "application/json";
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'application/json';
                   input.onchange = async () => {
                     const file = input.files?.[0];
                     if (!file) return;

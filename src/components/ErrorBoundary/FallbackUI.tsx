@@ -1,6 +1,14 @@
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 interface FallbackUIProps {
   error: Error;
@@ -22,7 +30,7 @@ export function FallbackUI({ error, resetError }: FallbackUIProps) {
             An error occurred while rendering this component. Please try refreshing the page.
           </CardDescription>
         </CardHeader>
-        
+
         {isDev && (
           <CardContent className="space-y-2">
             <div className="rounded-md bg-muted p-3">
@@ -45,7 +53,7 @@ export function FallbackUI({ error, resetError }: FallbackUIProps) {
             <RefreshCw className="mr-2 h-4 w-4" />
             Try again
           </Button>
-          <Button onClick={() => window.location.href = '/'} variant="outline">
+          <Button onClick={() => (window.location.href = '/')} variant="outline">
             Go home
           </Button>
         </CardFooter>

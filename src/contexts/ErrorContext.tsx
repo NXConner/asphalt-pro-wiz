@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { toast } from 'sonner';
+
 import { logError } from '@/lib/logging';
 
 interface ErrorContextValue {
@@ -41,6 +42,7 @@ export function ErrorProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useError() {
   const context = useContext(ErrorContext);
   if (!context) {

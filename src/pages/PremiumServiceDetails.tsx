@@ -1,8 +1,9 @@
-import { useParams, Link } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { PREMIUM_SERVICES, STANDARD_SERVICES } from "@/lib/serviceCatalog";
+import { ArrowLeft } from 'lucide-react';
+import { useParams, Link } from 'react-router-dom';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PREMIUM_SERVICES, STANDARD_SERVICES } from '@/lib/serviceCatalog';
 
 export default function PremiumServiceDetails() {
   const { serviceId } = useParams<{ serviceId: string }>();
@@ -61,10 +62,10 @@ export default function PremiumServiceDetails() {
               <div className="bg-muted p-4 rounded-lg">
                 <p className="text-2xl font-bold">
                   ${service.defaultUnitPrice.toFixed(2)}
-                  {service.unitType === "perSqFt" && " per sq ft"}
-                  {service.unitType === "perLinearFt" && " per linear ft"}
-                  {service.unitType === "perUnit" && " per unit"}
-                  {service.unitType === "flat" && " (flat rate)"}
+                  {service.unitType === 'perSqFt' && ' per sq ft'}
+                  {service.unitType === 'perLinearFt' && ' per linear ft'}
+                  {service.unitType === 'perUnit' && ' per unit'}
+                  {service.unitType === 'flat' && ' (flat rate)'}
                 </p>
               </div>
             </div>

@@ -1,21 +1,22 @@
-import { useEffect, useMemo, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Trash2, Plus } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Trash2, Plus } from "lucide-react";
+} from '@/components/ui/select';
 
 export type CustomService = {
   id: string;
   name: string;
-  type: "flat" | "perUnit" | "perSqFt" | "perLinearFt";
+  type: 'flat' | 'perUnit' | 'perSqFt' | 'perLinearFt';
   unitPrice: number;
   quantity?: number;
   notes?: string;
@@ -36,7 +37,7 @@ export function CustomServices({ totalArea, crackLength, value, onChange }: Cust
   useEffect(() => {
     onChange(services);
     try {
-      localStorage.setItem("pps.customServices", JSON.stringify(services));
+      localStorage.setItem('pps.customServices', JSON.stringify(services));
     } catch {}
     // onChange is provided by parent; assume stable or parent memoized
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -45,7 +46,7 @@ export function CustomServices({ totalArea, crackLength, value, onChange }: Cust
   useEffect(() => {
     if (value.length === 0) {
       try {
-        const raw = localStorage.getItem("pps.customServices");
+        const raw = localStorage.getItem('pps.customServices');
         if (raw) {
           const parsed = JSON.parse(raw) as CustomService[];
           setServices(parsed);
@@ -60,16 +61,16 @@ export function CustomServices({ totalArea, crackLength, value, onChange }: Cust
     return services.map((svc) => {
       let qty = 1;
       switch (svc.type) {
-        case "flat":
+        case 'flat':
           qty = 1;
           break;
-        case "perUnit":
+        case 'perUnit':
           qty = Math.max(0, svc.quantity ?? 0);
           break;
-        case "perSqFt":
+        case 'perSqFt':
           qty = totalArea;
           break;
-        case "perLinearFt":
+        case 'perLinearFt':
           qty = crackLength;
           break;
       }
@@ -83,8 +84,8 @@ export function CustomServices({ totalArea, crackLength, value, onChange }: Cust
       ...prev,
       {
         id: crypto.randomUUID(),
-        name: "Custom Service",
-        type: "flat",
+        name: 'Custom Service',
+        type: 'flat',
         unitPrice: 0,
         quantity: 1,
       },
@@ -156,7 +157,7 @@ export function CustomServices({ totalArea, crackLength, value, onChange }: Cust
                   }
                 />
               </div>
-              {svc.type === "perUnit" && (
+              {svc.type === 'perUnit' && (
                 <div className="md:col-span-2">
                   <Label>Quantity</Label>
                   <Input
@@ -173,7 +174,7 @@ export function CustomServices({ totalArea, crackLength, value, onChange }: Cust
               <div className="md:col-span-2">
                 <Label>Computed Cost</Label>
                 <div className="p-2 border rounded-md bg-muted">
-                  ${computed.find((c) => c.id === svc.id)?.cost.toFixed(2) || "0.00"}
+                  ${computed.find((c) => c.id === svc.id)?.cost.toFixed(2) || '0.00'}
                 </div>
               </div>
               <div className="md:col-span-1 flex md:justify-end">

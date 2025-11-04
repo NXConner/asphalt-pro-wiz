@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+
 import { logError } from '@/lib/logging';
 
 /**
@@ -9,11 +10,11 @@ import { logError } from '@/lib/logging';
  */
 export function useLocalStorage<T>(
   key: string,
-  initialValue: T
+  initialValue: T,
 ): [T, (value: T | ((val: T) => T)) => void, () => void] {
   const [storedValue, setStoredValue] = useState<T>(() => {
     if (typeof window === 'undefined') return initialValue;
-    
+
     try {
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
@@ -28,7 +29,7 @@ export function useLocalStorage<T>(
       try {
         const valueToStore = value instanceof Function ? value(storedValue) : value;
         setStoredValue(valueToStore);
-        
+
         if (typeof window !== 'undefined') {
           window.localStorage.setItem(key, JSON.stringify(valueToStore));
         }
@@ -36,7 +37,7 @@ export function useLocalStorage<T>(
         logError(error, { context: 'useLocalStorage.setValue', key });
       }
     },
-    [key, storedValue]
+    [key, storedValue],
   );
 
   const removeValue = useCallback(() => {
