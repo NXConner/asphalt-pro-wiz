@@ -118,7 +118,7 @@ export function ExportMenu({ data, filename = 'export' }: ExportMenuProps) {
           doc.text(
             `Total rows: ${data.length.toLocaleString()}`,
             14,
-            doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : 40,
+            (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 10 : 40,
           );
         }
       } else if (data && typeof data === 'object') {
