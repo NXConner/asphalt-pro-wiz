@@ -114,8 +114,8 @@ export default function CommandCenter() {
         <MetricCard title="Completed" value={metrics.totals.completedJobs} footer="Closed this cycle" />
         <MetricCard title="Lost" value={metrics.totals.lostJobs} footer="Requires debrief" tone="warning" />
         <MetricCard
-          title="Total Area"
-          value={`${numberFormatter.format(Math.round(metrics.totals.totalAreaSqft))} sq ft`}
+          title="Total Quote Value"
+          value={currencyFormatter.format(metrics.totals.totalQuoteValue)}
           footer="Across all jobs"
         />
       </section>

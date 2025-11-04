@@ -3,7 +3,7 @@ import { differenceInCalendarDays, parseISO } from "date-fns";
 export interface JobRecord {
   id: string;
   status: string;
-  total_area_sqft?: number | null;
+  quote_value?: number | null;
   created_at: string;
   updated_at?: string;
 }
@@ -11,15 +11,15 @@ export interface JobRecord {
 export interface EstimateRecord {
   id: string;
   job_id: string;
-  total: number;
+  amount: number;
   created_at: string;
 }
 
 export interface CrewAssignmentRecord {
   id: string;
   job_id: string;
-  shift_start: string;
-  shift_end: string;
+  scheduled_start: string;
+  scheduled_end: string;
 }
 
 export interface CommandCenterMetrics {
@@ -28,7 +28,7 @@ export interface CommandCenterMetrics {
     activeJobs: number;
     completedJobs: number;
     lostJobs: number;
-    totalAreaSqft: number;
+    totalQuoteValue: number;
     totalRevenue: number;
   };
   efficiency: {
@@ -60,19 +60,19 @@ export function calculateCommandCenterMetrics(
     activeJobs: 0,
     completedJobs: 0,
     lostJobs: 0,
-    totalAreaSqft: 0,
+    totalQuoteValue: 0,
     totalRevenue: 0,
   };
 
   const statusMap = {
-    active: new Set(["need_estimate", "estimated", "scheduled", "draft"]),
-    completed: new Set(["completed"]),
-    lost: new Set(["lost"]),
+    active: new Set(["pending", "in_progress", "scheduled", "draft", "open"]),
+    completed: new Set(["completed", "closed"]),
+    lost: new Set(["lost", "cancelled"]),
   };
 
   for (const job of jobs) {
-    const area = safeNumber(job.total_area_sqft);
-    totals.totalAreaSqft += area;
+    const quoteValue = safeNumber(job.quote_value);
+    totals.totalQuoteValue += quoteValue;
     const status = (job.status || "").toLowerCase();
     if (statusMap.active.has(status)) totals.activeJobs += 1;
     if (statusMap.completed.has(status)) totals.completedJobs += 1;
@@ -80,7 +80,7 @@ export function calculateCommandCenterMetrics(
   }
 
   for (const estimate of estimates) {
-    totals.totalRevenue += safeNumber(estimate.total);
+    totals.totalRevenue += safeNumber(estimate.amount);
   }
 
   const assignmentsByJob = crewAssignments.reduce<Record<string, number>>((acc, assignment) => {
@@ -115,7 +115,7 @@ export function calculateCommandCenterMetrics(
   const revenueByMonthMap = new Map<string, number>();
   for (const estimate of estimates) {
     const key = toMonthKey(estimate.created_at);
-    revenueByMonthMap.set(key, (revenueByMonthMap.get(key) ?? 0) + safeNumber(estimate.total));
+    revenueByMonthMap.set(key, (revenueByMonthMap.get(key) ?? 0) + safeNumber(estimate.amount));
   }
 
   const revenueByMonth = Array.from(revenueByMonthMap.entries())
