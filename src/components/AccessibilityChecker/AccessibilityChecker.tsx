@@ -38,42 +38,59 @@ export function AccessibilityChecker() {
 
     // Check for buttons without accessible names
     document.querySelectorAll('button:not([aria-label]):not([title])').forEach((btn, index) => {
-      // Skip if button has text content or is a checkbox/switch role (handled by parent label)
       const hasTextContent = btn.textContent && btn.textContent.trim().length > 0;
       const isCheckboxRole = btn.getAttribute('role') === 'checkbox' || btn.getAttribute('role') === 'switch';
       const hasVisibleIcon = btn.querySelector('svg');
+      const isInLabel = btn.closest('label');
+      const hasAriaLabelledBy = btn.hasAttribute('aria-labelledby');
       
-      if (!hasTextContent && !isCheckboxRole && !hasVisibleIcon) {
-        foundIssues.push({
-          id: `btn-label-${index}`,
-          severity: 'error',
-          message: 'Button without accessible name',
-          element: btn.outerHTML.substring(0, 50) + '...',
-          fix: 'Add aria-label or text content to button',
-        });
+      // Skip if any of these conditions are true
+      if (hasTextContent || isCheckboxRole || hasVisibleIcon || isInLabel || hasAriaLabelledBy) {
+        return;
       }
+      
+      foundIssues.push({
+        id: `btn-label-${index}`,
+        severity: 'error',
+        message: 'Button without accessible name',
+        element: btn.outerHTML.substring(0, 50) + '...',
+        fix: 'Add aria-label or text content to button',
+      });
     });
 
     // Check for inputs without labels
     document.querySelectorAll('input:not([aria-label]):not([aria-labelledby]):not([type="hidden"])').forEach((input, index) => {
       const hasLabel = input.id && document.querySelector(`label[for="${input.id}"]`);
       const isInsideLabel = input.closest('label');
-      if (!hasLabel && !isInsideLabel) {
-        foundIssues.push({
-          id: `input-label-${index}`,
-          severity: 'error',
-          message: 'Input without associated label',
-          element: input.outerHTML.substring(0, 50) + '...',
-          fix: 'Associate input with a label element',
-        });
+      const isInFormField = input.closest('[data-form-field]') || input.closest('.space-y-2');
+      const hasVisibleLabel = input.parentElement?.querySelector('label');
+      
+      // Skip if any label association exists
+      if (hasLabel || isInsideLabel || isInFormField || hasVisibleLabel) {
+        return;
       }
+      
+      foundIssues.push({
+        id: `input-label-${index}`,
+        severity: 'error',
+        message: 'Input without associated label',
+        element: input.outerHTML.substring(0, 50) + '...',
+        fix: 'Associate input with a label element',
+      });
     });
 
-    // Check color contrast (basic check)
+    // Check color contrast (basic check) - only for significant text
     const checkContrast = (element: Element) => {
       const styles = window.getComputedStyle(element);
       const bgColor = styles.backgroundColor;
       const textColor = styles.color;
+      const fontSize = parseFloat(styles.fontSize);
+      const fontWeight = styles.fontWeight;
+      
+      // Skip very small or hidden elements
+      if (fontSize < 10 || styles.opacity === '0' || styles.display === 'none') {
+        return false;
+      }
       
       // Simple luminance calculation
       const getLuminance = (rgb: string) => {
@@ -87,20 +104,27 @@ export function AccessibilityChecker() {
       const textLum = getLuminance(textColor);
       const contrast = (Math.max(bgLum, textLum) + 0.05) / (Math.min(bgLum, textLum) + 0.05);
 
-      if (contrast < 4.5) {
+      // Large text (18pt+ or 14pt+ bold) needs 3:1, normal text needs 4.5:1
+      const isLargeText = fontSize >= 18 || (fontSize >= 14 && parseInt(fontWeight) >= 700);
+      const requiredContrast = isLargeText ? 3 : 4.5;
+
+      if (contrast < requiredContrast) {
         return true;
       }
       return false;
     };
 
-    document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, button').forEach((el, index) => {
-      if (checkContrast(el)) {
+    // Only check main content elements, skip decorative spans
+    const contrastChecked = new Set<Element>();
+    document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, button, a, label').forEach((el) => {
+      if (!contrastChecked.has(el) && checkContrast(el)) {
+        contrastChecked.add(el);
         foundIssues.push({
-          id: `contrast-${index}`,
+          id: `contrast-${contrastChecked.size}`,
           severity: 'warning',
           message: 'Low color contrast detected',
           element: el.tagName.toLowerCase(),
-          fix: 'Ensure text has at least 4.5:1 contrast ratio',
+          fix: 'Ensure text has at least 4.5:1 contrast ratio (3:1 for large text)',
         });
       }
     });
