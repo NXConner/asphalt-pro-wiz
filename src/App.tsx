@@ -20,6 +20,7 @@ const PremiumServiceDetails = lazy(() => import("./pages/PremiumServiceDetails")
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Portal = lazy(() => import("./pages/Portal/Portal"));
 const CommandCenter = lazy(() => import("./pages/CommandCenter"));
+const Auth = lazy(() => import("./pages/Auth"));
 
 const queryClient = new QueryClient();
 
@@ -113,6 +114,7 @@ const App = () => {
                         }
                       >
                         <Routes>
+                          <Route path="/auth" element={<Auth />} />
                           <Route path="/" element={<Index />} />
                           <Route path="/command-center" element={<CommandCenter />} />
                           <Route path="/service/:serviceId" element={<PremiumServiceDetails />} />

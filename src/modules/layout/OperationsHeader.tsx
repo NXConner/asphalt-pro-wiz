@@ -1,11 +1,12 @@
 import { memo } from "react";
-import { Droplets, Gauge, LayoutDashboard, Sparkles, SwitchCamera } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Droplets, Gauge, LayoutDashboard, LogIn, LogOut, Sparkles, SwitchCamera } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { isEnabled } from "@/lib/flags";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 import type { CanvasWallpaper } from "./wallpapers";
 
@@ -44,6 +45,17 @@ export const OperationsHeader = memo(function OperationsHeader({
   summary,
 }: OperationsHeaderProps) {
   const commandCenterEnabled = isEnabled("commandCenter");
+  const { isAuthenticated, signOut, user } = useAuthContext();
+  const navigate = useNavigate();
+
+  const handleAuthAction = async () => {
+    if (isAuthenticated) {
+      await signOut();
+    } else {
+      navigate('/auth');
+    }
+  };
+
   return (
     <header className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
       <div className="space-y-4">
@@ -98,6 +110,26 @@ export const OperationsHeader = memo(function OperationsHeader({
           >
             <SwitchCamera className="mr-2 h-4 w-4" />
             Cycle Atmosphere
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
+            onClick={handleAuthAction}
+            title={isAuthenticated ? user?.email : 'Sign in'}
+          >
+            {isAuthenticated ? (
+              <>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </>
+            ) : (
+              <>
+                <LogIn className="mr-2 h-4 w-4" />
+                Sign In
+              </>
+            )}
           </Button>
           <ThemeToggle />
         </div>
