@@ -194,12 +194,14 @@ export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerP
             <Input id="area-image-upload" type="file" accept="image/*" onChange={onUpload} />
           </div>
           <div>
-            <Label>Calibration Distance (feet)</Label>
+            <Label htmlFor="calibration-feet">Calibration Distance (feet)</Label>
             <Input
+              id="calibration-feet"
               type="number"
               min="1"
               value={calibrationFeet}
               onChange={(e) => setCalibrationFeet(parseFloat(e.target.value) || 0)}
+              aria-label="Calibration distance in feet"
             />
           </div>
           <div className="flex gap-2">

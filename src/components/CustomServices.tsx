@@ -122,19 +122,20 @@ export function CustomServices({ totalArea, crackLength, value, onChange }: Cust
               className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end border p-3 rounded-md"
             >
               <div className="md:col-span-3">
-                <Label>Name</Label>
+                <Label htmlFor={`svc-name-${svc.id}`}>Name</Label>
                 <Input
+                  id={`svc-name-${svc.id}`}
                   value={svc.name}
                   onChange={(e) => updateService(svc.id, { name: e.target.value })}
                 />
               </div>
               <div className="md:col-span-2">
-                <Label>Type</Label>
+                <Label htmlFor={`svc-type-${svc.id}`}>Type</Label>
                 <Select
                   value={svc.type}
                   onValueChange={(v: any) => updateService(svc.id, { type: v })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id={`svc-type-${svc.id}`} aria-label="Service type">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -146,8 +147,9 @@ export function CustomServices({ totalArea, crackLength, value, onChange }: Cust
                 </Select>
               </div>
               <div className="md:col-span-2">
-                <Label>Unit Price ($)</Label>
+                <Label htmlFor={`svc-price-${svc.id}`}>Unit Price ($)</Label>
                 <Input
+                  id={`svc-price-${svc.id}`}
                   type="number"
                   min={0}
                   step={0.01}
@@ -159,8 +161,9 @@ export function CustomServices({ totalArea, crackLength, value, onChange }: Cust
               </div>
               {svc.type === 'perUnit' && (
                 <div className="md:col-span-2">
-                  <Label>Quantity</Label>
+                  <Label htmlFor={`svc-qty-${svc.id}`}>Quantity</Label>
                   <Input
+                    id={`svc-qty-${svc.id}`}
                     type="number"
                     min={0}
                     step={1}

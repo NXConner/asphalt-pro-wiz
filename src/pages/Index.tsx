@@ -42,6 +42,7 @@ const Index = () => {
   return (
     <>
       <main id="main-content">
+        <h1 className="sr-only">Pavement Performance Suite</h1>
         <OperationsCanvas
           wallpaper={wallpaper}
           header={

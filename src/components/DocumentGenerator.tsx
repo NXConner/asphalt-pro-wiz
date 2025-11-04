@@ -121,8 +121,9 @@ export function DocumentGenerator({ jobName, customerAddress }: DocumentGenerato
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <Label>Document Type</Label>
+            <Label htmlFor="doc-type">Document Type</Label>
             <select
+              id="doc-type"
               className="w-full border rounded-md p-2 bg-background"
               value={docType}
               onChange={(e) => setDocType(e.target.value as any)}
@@ -136,12 +137,13 @@ export function DocumentGenerator({ jobName, customerAddress }: DocumentGenerato
             </select>
           </div>
           <div>
-            <Label>Client Name</Label>
-            <Input value={clientName} onChange={(e) => setClientName(e.target.value)} />
+            <Label htmlFor="client-name">Client Name</Label>
+            <Input id="client-name" value={clientName} onChange={(e) => setClientName(e.target.value)} />
           </div>
           <div>
-            <Label>Schedule</Label>
+            <Label htmlFor="schedule">Schedule</Label>
             <Input
+              id="schedule"
               placeholder="e.g., 2025-05-10 morning"
               value={schedule}
               onChange={(e) => setSchedule(e.target.value)}
@@ -150,8 +152,9 @@ export function DocumentGenerator({ jobName, customerAddress }: DocumentGenerato
         </div>
 
         <div>
-          <Label>Details / Notes</Label>
+          <Label htmlFor="details-notes">Details / Notes</Label>
           <Textarea
+            id="details-notes"
             rows={6}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -160,8 +163,9 @@ export function DocumentGenerator({ jobName, customerAddress }: DocumentGenerato
         </div>
 
         <div>
-          <Label>Pricing Summary (optional)</Label>
+          <Label htmlFor="pricing-summary">Pricing Summary (optional)</Label>
           <Textarea
+            id="pricing-summary"
             rows={3}
             value={priceSummary}
             onChange={(e) => setPriceSummary(e.target.value)}

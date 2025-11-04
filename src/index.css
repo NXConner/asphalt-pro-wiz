@@ -256,6 +256,10 @@ All colors MUST be HSL.
     background-position: center;
   }
 
+  a {
+    color: hsl(var(--primary));
+  }
+
   body.has-wallpaper {
     background-image:
       linear-gradient(

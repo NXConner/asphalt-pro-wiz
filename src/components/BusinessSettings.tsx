@@ -203,8 +203,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
           <h3 className="font-semibold mb-2">Sealcoat Coverage & Productivity</h3>
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <div>
-              <Label>Coat 1 gal/sq ft</Label>
+              <Label htmlFor="sealCoatCoverage1">Coat 1 gal/sq ft</Label>
               <Input
+                id="sealCoatCoverage1"
                 type="number"
                 step="0.0001"
                 value={data.sealCoatCoverage1}
@@ -212,8 +213,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               />
             </div>
             <div>
-              <Label>Coat 2 gal/sq ft</Label>
+              <Label htmlFor="sealCoatCoverage2">Coat 2 gal/sq ft</Label>
               <Input
+                id="sealCoatCoverage2"
                 type="number"
                 step="0.0001"
                 value={data.sealCoatCoverage2}
@@ -221,8 +223,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               />
             </div>
             <div>
-              <Label>Coat 3 gal/sq ft</Label>
+              <Label htmlFor="sealCoatCoverage3">Coat 3 gal/sq ft</Label>
               <Input
+                id="sealCoatCoverage3"
                 type="number"
                 step="0.0001"
                 value={data.sealCoatCoverage3}
@@ -230,8 +233,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               />
             </div>
             <div>
-              <Label>Sand Ratio (lb/100gal)</Label>
+              <Label htmlFor="sandRatio">Sand Ratio (lb/100gal)</Label>
               <Input
+                id="sandRatio"
                 type="number"
                 step="0.1"
                 value={data.sandRatio}
@@ -239,8 +243,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               />
             </div>
             <div>
-              <Label>Crack Sealing Speed (ft/hr)</Label>
+              <Label htmlFor="crackSealingSpeed">Crack Sealing Speed (ft/hr)</Label>
               <Input
+                id="crackSealingSpeed"
                 type="number"
                 step="1"
                 value={data.crackSealingSpeed}
@@ -248,8 +253,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               />
             </div>
             <div>
-              <Label>Sealcoating Speed 1 (sq ft/hr)</Label>
+              <Label htmlFor="sealcoatingSpeed1">Sealcoating Speed 1 (sq ft/hr)</Label>
               <Input
+                id="sealcoatingSpeed1"
                 type="number"
                 step="1"
                 value={data.sealcoatingSpeed1}
@@ -257,8 +263,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               />
             </div>
             <div>
-              <Label>Sealcoating Speed 2/3 (sq ft/hr)</Label>
+              <Label htmlFor="sealcoatingSpeed2">Sealcoating Speed 2/3 (sq ft/hr)</Label>
               <Input
+                id="sealcoatingSpeed2"
                 type="number"
                 step="1"
                 value={data.sealcoatingSpeed2}
@@ -272,8 +279,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
           <h3 className="font-semibold mb-2">Striping Rates ($)</h3>
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <div>
-              <Label>Line</Label>
+              <Label htmlFor="stripingLine">Line</Label>
               <Input
+                id="stripingLine"
                 type="number"
                 step="0.01"
                 value={data.striping.line}
@@ -286,8 +294,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               />
             </div>
             <div>
-              <Label>Handicap</Label>
+              <Label htmlFor="stripingHandicap">Handicap</Label>
               <Input
+                id="stripingHandicap"
                 type="number"
                 step="0.01"
                 value={data.striping.handicap}
@@ -300,8 +309,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               />
             </div>
             <div>
-              <Label>Arrow Large</Label>
+              <Label htmlFor="stripingArrowLarge">Arrow Large</Label>
               <Input
+                id="stripingArrowLarge"
                 type="number"
                 step="0.01"
                 value={data.striping.arrowLarge}
@@ -314,8 +324,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               />
             </div>
             <div>
-              <Label>Arrow Small</Label>
+              <Label htmlFor="stripingArrowSmall">Arrow Small</Label>
               <Input
+                id="stripingArrowSmall"
                 type="number"
                 step="0.01"
                 value={data.striping.arrowSmall}
@@ -328,8 +339,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               />
             </div>
             <div>
-              <Label>Lettering</Label>
+              <Label htmlFor="stripingLettering">Lettering</Label>
               <Input
+                id="stripingLettering"
                 type="number"
                 step="0.01"
                 value={data.striping.lettering}
@@ -342,8 +354,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               />
             </div>
             <div>
-              <Label>Curb (per ft)</Label>
+              <Label htmlFor="stripingCurb">Curb (per ft)</Label>
               <Input
+                id="stripingCurb"
                 type="number"
                 step="0.01"
                 value={data.striping.curb}
@@ -362,8 +375,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
           <h3 className="font-semibold mb-2">Premium Services ($)</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div>
-              <Label>Edge Pushing</Label>
+              <Label htmlFor="premiumEdgePushing">Edge Pushing</Label>
               <Input
+                id="premiumEdgePushing"
                 type="number"
                 step="0.01"
                 value={data.premiumServices.edgePushing}
@@ -379,8 +393,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               />
             </div>
             <div>
-              <Label>Weed Killer</Label>
+              <Label htmlFor="premiumWeedKiller">Weed Killer</Label>
               <Input
+                id="premiumWeedKiller"
                 type="number"
                 step="0.01"
                 value={data.premiumServices.weedKiller}
@@ -396,8 +411,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               />
             </div>
             <div>
-              <Label>Crack Cleaning</Label>
+              <Label htmlFor="premiumCrackCleaning">Crack Cleaning</Label>
               <Input
+                id="premiumCrackCleaning"
                 type="number"
                 step="0.01"
                 value={data.premiumServices.crackCleaning}
@@ -413,8 +429,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               />
             </div>
             <div>
-              <Label>Power Washing</Label>
+              <Label htmlFor="premiumPowerWashing">Power Washing</Label>
               <Input
+                id="premiumPowerWashing"
                 type="number"
                 step="0.01"
                 value={data.premiumServices.powerWashing}
@@ -430,8 +447,9 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
               />
             </div>
             <div>
-              <Label>Debris Removal</Label>
+              <Label htmlFor="premiumDebrisRemoval">Debris Removal</Label>
               <Input
+                id="premiumDebrisRemoval"
                 type="number"
                 step="0.01"
                 value={data.premiumServices.debrisRemoval}

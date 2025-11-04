@@ -275,6 +275,7 @@ export function ReceiptsPanel({ jobName = '', customerAddress = '' }: ReceiptsPa
             <div className="grid grid-cols-2 gap-2">
               <Input
                 placeholder="Vendor contains..."
+                aria-label="Vendor filter"
                 value={vendorQuery}
                 onChange={(e) => setVendorQuery(e.target.value)}
               />
@@ -294,12 +295,12 @@ export function ReceiptsPanel({ jobName = '', customerAddress = '' }: ReceiptsPa
             </div>
           </div>
           <div>
-            <Label>Start Date</Label>
-            <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            <Label htmlFor="start-date">Start Date</Label>
+            <Input id="start-date" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
           </div>
           <div>
-            <Label>End Date</Label>
-            <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+            <Label htmlFor="end-date">End Date</Label>
+            <Input id="end-date" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
           </div>
           <div className="flex gap-2">
             <Button
@@ -391,6 +392,7 @@ export function ReceiptsPanel({ jobName = '', customerAddress = '' }: ReceiptsPa
                       <div>
                         <Label className="text-xs">Vendor</Label>
                         <Input
+                          aria-label={`Vendor for receipt ${r.id}`}
                           value={r.vendor}
                           onChange={(e) => updateMeta(r.id, { vendor: e.target.value })}
                         />
@@ -399,6 +401,7 @@ export function ReceiptsPanel({ jobName = '', customerAddress = '' }: ReceiptsPa
                         <Label className="text-xs">Date</Label>
                         <Input
                           type="date"
+                          aria-label={`Date for receipt ${r.id}`}
                           value={r.date}
                           onChange={(e) => updateMeta(r.id, { date: e.target.value })}
                         />
@@ -424,6 +427,7 @@ export function ReceiptsPanel({ jobName = '', customerAddress = '' }: ReceiptsPa
                       <div>
                         <Label className="text-xs">Payment</Label>
                         <Input
+                          aria-label={`Payment method for receipt ${r.id}`}
                           value={r.paymentMethod || ''}
                           onChange={(e) => updateMeta(r.id, { paymentMethod: e.target.value })}
                         />
@@ -433,6 +437,7 @@ export function ReceiptsPanel({ jobName = '', customerAddress = '' }: ReceiptsPa
                         <Input
                           type="number"
                           step="0.01"
+                          aria-label={`Subtotal for receipt ${r.id}`}
                           value={r.subtotal ?? ''}
                           onChange={(e) =>
                             updateMeta(r.id, { subtotal: parseFloat(e.target.value) || 0 })
@@ -444,6 +449,7 @@ export function ReceiptsPanel({ jobName = '', customerAddress = '' }: ReceiptsPa
                         <Input
                           type="number"
                           step="0.01"
+                          aria-label={`Tax for receipt ${r.id}`}
                           value={r.tax ?? ''}
                           onChange={(e) =>
                             updateMeta(r.id, { tax: parseFloat(e.target.value) || 0 })
@@ -455,6 +461,7 @@ export function ReceiptsPanel({ jobName = '', customerAddress = '' }: ReceiptsPa
                         <Input
                           type="number"
                           step="0.01"
+                          aria-label={`Total for receipt ${r.id}`}
                           value={r.total ?? ''}
                           onChange={(e) =>
                             updateMeta(r.id, { total: parseFloat(e.target.value) || 0 })
@@ -464,6 +471,7 @@ export function ReceiptsPanel({ jobName = '', customerAddress = '' }: ReceiptsPa
                       <div className="col-span-2">
                         <Label className="text-xs">Notes</Label>
                         <Input
+                          aria-label={`Notes for receipt ${r.id}`}
                           value={r.notes || ''}
                           onChange={(e) => updateMeta(r.id, { notes: e.target.value })}
                         />
