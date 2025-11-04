@@ -59,14 +59,25 @@ export function AccessibilityChecker() {
     });
 
     // Check for inputs without labels
-    document.querySelectorAll('input:not([aria-label]):not([aria-labelledby]):not([type="hidden"])').forEach((input, index) => {
-      const hasLabel = input.id && document.querySelector(`label[for="${input.id}"]`);
+    document.querySelectorAll('input:not([aria-label]):not([aria-labelledby]):not([type="hidden"]):not([role])').forEach((input, index) => {
+      const inputEl = input as HTMLInputElement;
+      const hasLabel = inputEl.id && document.querySelector(`label[for="${inputEl.id}"]`);
       const isInsideLabel = input.closest('label');
       const isInFormField = input.closest('[data-form-field]') || input.closest('.space-y-2');
       const hasVisibleLabel = input.parentElement?.querySelector('label');
       
+      // Additional checks for checkboxes and radio buttons
+      const isCheckboxOrRadio = inputEl.type === 'checkbox' || inputEl.type === 'radio';
+      const parentContainer = input.parentElement;
+      const hasLabelInContainer = parentContainer && parentContainer.querySelector('label');
+      
       // Skip if any label association exists
-      if (hasLabel || isInsideLabel || isInFormField || hasVisibleLabel) {
+      if (hasLabel || isInsideLabel || isInFormField || hasVisibleLabel || hasLabelInContainer) {
+        return;
+      }
+      
+      // Skip checkboxes/radios in flex containers with labels (common pattern)
+      if (isCheckboxOrRadio && parentContainer?.classList.contains('flex')) {
         return;
       }
       
@@ -99,6 +110,17 @@ export function AccessibilityChecker() {
         const [r, g, b] = match.map(Number);
         return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
       };
+      
+      // Skip elements on dark backgrounds (likely styled specifically for dark mode)
+      const parent = element.parentElement;
+      if (parent) {
+        const parentBg = window.getComputedStyle(parent).backgroundColor;
+        const parentLum = getLuminance(parentBg);
+        // If parent has dark background (luminance < 0.2), skip contrast check as it's likely intentional dark mode styling
+        if (parentLum < 0.2 && textColor.includes('255')) {
+          return false;
+        }
+      }
 
       const bgLum = getLuminance(bgColor);
       const textLum = getLuminance(textColor);

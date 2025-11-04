@@ -232,7 +232,7 @@ export function CustomizableCard({
           </PopoverTrigger>
           <PopoverContent className="w-96" align="end">
             <div className="space-y-4">
-              <h4 className="font-semibold text-sm">Customize {title || "Card"}</h4>
+              <h3 className="font-semibold text-sm">Customize {title || "Card"}</h3>
 
               <div className="space-y-2">
                 <Label className="text-xs">Background Type</Label>

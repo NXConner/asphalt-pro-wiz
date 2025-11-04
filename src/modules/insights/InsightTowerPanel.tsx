@@ -80,9 +80,9 @@ export function InsightTowerPanel({ estimator }: InsightTowerPanelProps) {
         <div className="grid gap-6">
           <WeatherCard coords={job.coords} />
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200/80">
-            <h4 className="mb-2 flex items-center gap-2 text-base font-semibold text-slate-50">
+            <h3 className="mb-2 flex items-center gap-2 text-base font-semibold text-slate-50">
               <Sparkles className="h-4 w-4" /> Observability Pulse
-            </h4>
+            </h3>
             <ul className="space-y-1">
               {OBSERVABILITY_POINTS.map((point) => (
                 <li key={point} className="flex items-start gap-2">
