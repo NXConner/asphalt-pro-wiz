@@ -11,6 +11,7 @@ import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PerformanceProvider } from "@/contexts/PerformanceContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { trackPageView } from "@/lib/analytics";
 
@@ -21,6 +22,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Portal = lazy(() => import("./pages/Portal/Portal"));
 const CommandCenter = lazy(() => import("./pages/CommandCenter"));
 const Auth = lazy(() => import("./pages/Auth"));
+const AdminPanel = lazy(() => import("@/components/AdminPanel"));
 
 const queryClient = new QueryClient();
 
@@ -40,11 +42,11 @@ const App = () => {
     // Register Android hardware back button handler when running natively
     (async () => {
       try {
-        const { Capacitor } = await import("@capacitor/core");
+const { Capacitor } = await import("@capacitor/core");
         if (!Capacitor.isNativePlatform()) return;
-        const { App } = await import("@capacitor/app");
+        const { App: CapApp } = await import("@capacitor/app");
         let lastBack = 0;
-        const listener = await App.addListener("backButton", ({ canGoBack }) => {
+        const listener = await CapApp.addListener("backButton", ({ canGoBack }) => {
           const onRoot = location.pathname === "/";
           if (canGoBack || (!onRoot && window.history.length > 1)) {
             window.history.back();
@@ -52,7 +54,7 @@ const App = () => {
           }
           const now = Date.now();
           if (now - lastBack < 1500) {
-            App.exitApp();
+            CapApp.exitApp();
           } else {
             lastBack = now;
             try {
@@ -115,10 +117,11 @@ const App = () => {
                       >
                         <Routes>
                           <Route path="/auth" element={<Auth />} />
-                          <Route path="/" element={<Index />} />
-                          <Route path="/command-center" element={<CommandCenter />} />
-                          <Route path="/service/:serviceId" element={<PremiumServiceDetails />} />
-                          <Route path="/portal" element={<Portal />} />
+                          <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                          <Route path="/command-center" element={<ProtectedRoute><CommandCenter /></ProtectedRoute>} />
+                          <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
+                          <Route path="/service/:serviceId" element={<ProtectedRoute><PremiumServiceDetails /></ProtectedRoute>} />
+                          <Route path="/portal" element={<ProtectedRoute><Portal /></ProtectedRoute>} />
                           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                           <Route path="*" element={<NotFound />} />
                         </Routes>

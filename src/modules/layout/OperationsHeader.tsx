@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { Droplets, Gauge, LayoutDashboard, LogIn, LogOut, Sparkles, SwitchCamera } from "lucide-react";
+import { Droplets, Gauge, LayoutDashboard, LogIn, LogOut, Shield, Sparkles, SwitchCamera } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { isEnabled } from "@/lib/flags";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { useIsAdmin } from "@/hooks/useUserRole";
 
 import type { CanvasWallpaper } from "./wallpapers";
 
@@ -46,6 +47,7 @@ export const OperationsHeader = memo(function OperationsHeader({
 }: OperationsHeaderProps) {
   const commandCenterEnabled = isEnabled("commandCenter");
   const { isAuthenticated, signOut, user } = useAuthContext();
+  const { isAdmin } = useIsAdmin();
   const navigate = useNavigate();
 
   const handleAuthAction = async () => {
@@ -101,6 +103,19 @@ export const OperationsHeader = memo(function OperationsHeader({
               </Link>
             </Button>
           ) : null}
+          {isAuthenticated && isAdmin && (
+            <Button
+              asChild
+              variant="secondary"
+              size="lg"
+              className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
+            >
+              <Link to="/admin">
+                <Shield className="mr-2 h-4 w-4" />
+                Admin Panel
+              </Link>
+            </Button>
+          )}
           <Button
             type="button"
             variant="secondary"
