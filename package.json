@@ -16,6 +16,7 @@
     "audit:fix": "npm audit fix --audit-level=high || true",
     "snyk:test": "snyk test || true",
     "snyk:monitor": "snyk monitor || true",
+    "security:scan": "npm run audit && npm run snyk:test",
     "prepare": "husky",
     "lint-staged": "lint-staged",
     "precommit:hook": "echo Running pre-commit checks && npm run lint-staged && npm run lint && npm run test:unit -- --run",

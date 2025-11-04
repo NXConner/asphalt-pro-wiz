@@ -78,6 +78,10 @@ Modern, AI-assisted operations cockpit for asphalt estimation, scheduling, and c
   ```
   - Override build-time metadata via `VITE_APP_VERSION=1.0.0 docker compose build`
   - Shut down and remove the volume when resetting state: `docker compose down -v`
+- **Security Scan**: Audit dependencies before releases:
+  ```sh
+  npm run security:scan
+  ```
 - **Database**: Launch local Postgres with Docker Compose, run migrations + seeds via `npm run migrate:up` / `npm run seed` (requires `DATABASE_URL`).
 - **AI Proxy**: Deploy Supabase Edge `gemini-proxy` and set `VITE_GEMINI_PROXY_URL`. Direct API key usage is blocked in production builds.
 - **Android Build**: `npm run mobile:prep` prepares assets; gradle tasks under `android/` handle APK generation.

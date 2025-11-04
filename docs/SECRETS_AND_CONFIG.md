@@ -17,4 +17,15 @@ env:
 - VITE_LOG_BEACON_URL: Optional endpoint to receive client-side structured logs via `navigator.sendBeacon`.
 - DATABASE_URL: For local Postgres when running migrations and seed scripts.
 
-Use a secrets manager (Doppler, Vault, AWS Secrets Manager) in production. Do not commit secrets.
+Use a secrets manager (Doppler, Vault, AWS Secrets Manager) in production. Templates and integration snippets live in `config/secrets/`:
+
+- `README.md` – usage instructions for Doppler, Vault, and AWS Secrets Manager
+- `doppler.yaml.example` – sample Doppler CLI configuration
+
+After secrets are mounted, run the consolidated security scan:
+
+```
+npm run security:scan
+```
+
+The script wraps `npm audit --audit-level=high` and `snyk test` so CI/CD pipelines can fail fast on dependency vulnerabilities.
