@@ -70,17 +70,17 @@ export const OperationsHeader = memo(function OperationsHeader({
   };
 
   return (
-    <header className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 text-sm uppercase tracking-[0.28em] text-slate-200/70">
-          <Sparkles className="h-4 w-4" />
-          <span>Operations Canvas</span>
+      <header className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+        <div className="space-y-5">
+          <div className="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.5em] text-slate-200/70">
+            <Sparkles className="h-4 w-4 text-orange-400" />
+            <span>Operations Canvas : Tactical Command</span>
         </div>
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">
+          <div className="flex flex-col gap-3">
+            <h1 className="font-display text-4xl uppercase tracking-[0.28em] text-slate-50 sm:text-5xl">
             {summary.jobName ? summary.jobName : 'New Pavement Mission'}
           </h1>
-          <p className="max-w-2xl text-sm text-slate-100/80 sm:text-base">
+            <p className="max-w-2xl font-mono text-xs uppercase tracking-[0.45em] text-slate-200/70 sm:text-sm">
             {wallpaper.description}
           </p>
         </div>
@@ -127,16 +127,16 @@ export const OperationsHeader = memo(function OperationsHeader({
             </Link>
           </Button>
         )}
-        <Button
-          type="button"
-          variant="secondary"
-          size="lg"
-          className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
-          onClick={onNextWallpaper}
-        >
-          <SwitchCamera className="mr-2 h-4 w-4" />
-          Cycle Atmosphere
-        </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
+            onClick={onNextWallpaper}
+          >
+            <SwitchCamera className="mr-2 h-4 w-4" />
+            Cycle Atmosphere
+          </Button>
         <Button
           type="button"
           variant="secondary"
@@ -175,16 +175,17 @@ function StatPill({ icon, label, value }: StatPillProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2',
-        'text-left text-sm font-medium text-slate-50/90 shadow-lg backdrop-blur-md',
+        'group relative inline-flex items-center gap-3 overflow-hidden rounded-[var(--hud-radius-md)] border border-white/15 bg-white/5 px-4 py-3',
+        'text-left text-sm font-medium text-slate-50/90 shadow-[0_18px_45px_rgba(8,12,24,0.45)] backdrop-blur-lg transition-transform duration-300 hover:-translate-y-1',
       )}
     >
-      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-slate-100">
+      <span className="absolute inset-0 bg-[linear-gradient(130deg,rgba(255,255,255,0.12)_10%,transparent_60%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" aria-hidden />
+      <span className="relative flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-orange-300">
         {icon}
       </span>
-      <span className="flex flex-col leading-tight">
-        <span className="text-xs uppercase tracking-widest text-slate-200/70">{label}</span>
-        <span className="text-sm font-semibold text-slate-50">{value}</span>
+      <span className="relative flex flex-col leading-tight">
+        <span className="text-[0.65rem] uppercase tracking-[0.42em] text-slate-200/70">{label}</span>
+        <span className="font-mono text-sm text-slate-50">{value}</span>
       </span>
     </span>
   );

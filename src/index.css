@@ -53,245 +53,67 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 222 47% 11%;
+    color-scheme: dark;
+    --hud-font-heading: 'Rajdhani', 'Roboto Condensed', sans-serif;
+    --hud-font-display: 'Orbitron', 'Rajdhani', sans-serif;
+    --hud-font-body: 'Rajdhani', 'Inter', 'system-ui', sans-serif;
+    --hud-font-mono: 'Share Tech Mono', 'Roboto Mono', 'Menlo', monospace;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-
-    --primary: 221 83% 53%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 221 83% 48%;
-
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 15%;
-    --secondary-hover: 210 40% 90%;
-
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 25% 30%;
-
-    --accent: 142 76% 36%;
+    --background: 220 50% 4%;
+    --foreground: 220 22% 92%;
+    --card: 222 50% 6%;
+    --card-foreground: 222 18% 92%;
+    --popover: 222 50% 7%;
+    --popover-foreground: 222 22% 92%;
+    --primary: 25 100% 55%;
+    --primary-foreground: 16 88% 95%;
+    --primary-hover: 25 100% 62%;
+    --secondary: 197 86% 48%;
+    --secondary-foreground: 210 100% 96%;
+    --secondary-hover: 197 86% 55%;
+    --muted: 226 42% 10%;
+    --muted-foreground: 226 20% 70%;
+    --accent: 206 92% 55%;
     --accent-foreground: 0 0% 100%;
-    --accent-hover: 142 76% 32%;
-
-    --destructive: 0 84% 50%;
-    --destructive-foreground: 0 0% 100%;
-
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-
-    --info: 221 83% 53%;
-    --info-foreground: 0 0% 100%;
-
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%;
-
-    --radius: 0.5rem;
-
-    /* Elevation shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(222 47% 11% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(222 47% 11% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(222 47% 11% / 0.1);
-    --shadow-xl: 0 20px 25px -5px hsl(222 47% 11% / 0.1);
-
-    /* Wallpaper */
-    --app-wallpaper: initial;
-    --wallpaper-opacity: 0.25;
-    --wallpaper-blur: 0px;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 0 0% 7%;
-    --foreground: 0 0% 95%;
-
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 95%;
-
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 95%;
-
-    --primary: 210 100% 65%;
-    --primary-foreground: 0 0% 5%;
-    --primary-hover: 210 100% 60%;
-
-    --secondary: 0 0% 20%;
-    --secondary-foreground: 0 0% 95%;
-    --secondary-hover: 0 0% 25%;
-
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 70%;
-
-    --accent: 0 0% 20%;
-    --accent-foreground: 0 0% 95%;
-    --accent-hover: 0 0% 25%;
-
-    --destructive: 0 84% 60%;
+    --accent-hover: 205 92% 61%;
+    --destructive: 358 86% 54%;
     --destructive-foreground: 0 0% 98%;
+    --success: 135 56% 45%;
+    --success-foreground: 120 44% 92%;
+    --warning: 45 100% 52%;
+    --warning-foreground: 40 85% 96%;
+    --info: 190 90% 58%;
+    --info-foreground: 189 100% 96%;
+    --border: 213 32% 22%;
+    --input: 215 32% 16%;
+    --ring: 206 92% 55%;
 
-    --success: 142 76% 45%;
-    --success-foreground: 0 0% 98%;
+    --sidebar-background: 223 52% 7%;
+    --sidebar-foreground: 220 22% 88%;
+    --sidebar-border: 219 40% 18%;
+    --sidebar-ring: 208 82% 58%;
+    --sidebar-primary: 25 100% 55%;
+    --sidebar-primary-foreground: 20 80% 96%;
+    --sidebar-accent: 203 82% 48%;
+    --sidebar-accent-foreground: 0 0% 100%;
 
-    --warning: 38 92% 55%;
-    --warning-foreground: 0 0% 10%;
+    --radius: var(--hud-radius-md, 1.25rem);
+    --shadow-sm: 0 4px 16px rgba(15, 23, 42, 0.25);
+    --shadow-md: 0 12px 32px rgba(8, 12, 24, 0.35);
+    --shadow-lg: 0 22px 64px rgba(5, 8, 18, 0.45);
+    --shadow-xl: 0 30px 120px rgba(11, 17, 35, 0.55);
 
-    --info: 210 100% 65%;
-    --info-foreground: 0 0% 5%;
+    --hud-grid-opacity: 0.18;
+    --hud-card-opacity: 0.65;
+    --hud-panel-blur: 28px;
 
-    --border: 0 0% 25%;
-    --input: 0 0% 25%;
-    --ring: 210 100% 65%;
-
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.5);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.6);
-
-    --sidebar-background: 0 0% 7%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 224.3 76.3% 55%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 0 0% 20%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 25%;
-    --sidebar-ring: 217.2 91.2% 65%;
-  }
-
-  /* Theme variants */
-  .theme-default {
-    /* keep base */
-  }
-  .theme-emerald {
-    --primary: 142 76% 40%;
-    --accent: 142 76% 40%;
-  }
-  .theme-sunset {
-    --primary: 25 95% 55%;
-    --accent: 340 82% 52%;
-  }
-  .theme-royal {
-    --primary: 260 90% 55%;
-    --accent: 220 90% 60%;
-  }
-  .theme-crimson {
-    --primary: 0 84% 60%;
-    --accent: 340 82% 52%;
-  }
-  .theme-forest {
-    --primary: 125 55% 40%;
-    --accent: 45 95% 50%;
-  }
-  .theme-ocean {
-    --primary: 200 85% 50%;
-    --accent: 170 70% 45%;
-  }
-  .theme-amber {
-    --primary: 38 92% 55%;
-    --accent: 14 90% 55%;
-  }
-  .theme-mono {
-    --primary: 0 0% 85%;
-    --accent: 0 0% 60%;
-  }
-  .theme-cyber {
-    --primary: 285 80% 60%;
-    --accent: 162 85% 45%;
+    --app-wallpaper: initial;
+    --wallpaper-opacity: 0.22;
+    --wallpaper-blur: 0px;
   }
 
-  /* The Division Tactical Themes */
-  .theme-division-agent {
-    --primary: 25 100% 55%; /* Signature Division orange */
-    --primary-hover: 25 100% 50%;
-    --accent: 200 80% 50%; /* Tech blue */
-    --background: 0 0% 7%;
-    --foreground: 0 0% 95%;
-    --card: 220 15% 12%;
-    --border: 25 50% 30%;
-  }
-
-  .theme-division-rogue {
-    --primary: 0 85% 55%; /* Rogue red */
-    --primary-hover: 0 85% 50%;
-    --accent: 340 75% 50%; /* Dark crimson */
-    --background: 0 0% 5%;
-    --foreground: 0 90% 90%;
-    --card: 0 15% 10%;
-    --border: 0 40% 25%;
-  }
-
-  .theme-division-darkzone {
-    --primary: 340 80% 50%; /* Dark Zone red */
-    --primary-hover: 340 80% 45%;
-    --accent: 25 100% 55%; /* Warning orange */
-    --background: 0 0% 6%;
-    --foreground: 0 0% 92%;
-    --card: 340 10% 11%;
-    --border: 340 30% 20%;
-  }
-
-  .theme-division-tech {
-    --primary: 190 90% 55%; /* Cyan tech */
-    --primary-hover: 190 90% 50%;
-    --accent: 160 85% 50%; /* Bright teal */
-    --background: 200 20% 8%;
-    --foreground: 180 10% 94%;
-    --card: 200 18% 12%;
-    --border: 190 40% 25%;
-  }
-
-  .theme-division-stealth {
-    --primary: 120 25% 45%; /* Tactical green */
-    --primary-hover: 120 25% 40%;
-    --accent: 85 80% 55%; /* Night vision lime */
-    --background: 120 10% 6%;
-    --foreground: 120 5% 90%;
-    --card: 120 15% 10%;
-    --border: 120 20% 20%;
-  }
-
-  .theme-division-combat {
-    --primary: 15 95% 55%; /* Combat orange-red */
-    --primary-hover: 15 95% 50%;
-    --accent: 45 100% 60%; /* Alert yellow */
-    --background: 15 15% 8%;
-    --foreground: 15 5% 93%;
-    --card: 15 20% 11%;
-    --border: 15 40% 25%;
-  }
-
-  .theme-division-tactical {
-    --primary: 210 80% 55%; /* Tactical blue */
-    --primary-hover: 210 80% 50%;
-    --accent: 25 100% 55%; /* SHD orange */
-    --background: 210 20% 8%;
-    --foreground: 210 10% 94%;
-    --card: 210 18% 12%;
-    --border: 210 35% 25%;
-  }
-
-  .theme-division-hunter {
-    --primary: 280 70% 55%; /* Hunter purple */
-    --primary-hover: 280 70% 50%;
-    --accent: 160 80% 50%; /* Pulse green */
-    --background: 280 15% 7%;
-    --foreground: 280 5% 92%;
-    --card: 280 18% 11%;
-    --border: 280 30% 22%;
+  .light {
+    color-scheme: light;
   }
 }
 
@@ -311,6 +133,7 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--hud-font-body);
     background-repeat: no-repeat;
     background-size: cover;
     background-attachment: fixed;
