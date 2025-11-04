@@ -9,7 +9,15 @@ export type ThemeName =
   | "ocean"
   | "amber"
   | "mono"
-  | "cyber";
+  | "cyber"
+  | "division-agent"
+  | "division-rogue"
+  | "division-darkzone"
+  | "division-tech"
+  | "division-stealth"
+  | "division-combat"
+  | "division-tactical"
+  | "division-hunter";
 
 export interface ThemePreferences {
   mode: ThemeMode;
@@ -84,6 +92,14 @@ export function applyThemePreferences(prefs: ThemePreferences): void {
     "theme-amber",
     "theme-mono",
     "theme-cyber",
+    "theme-division-agent",
+    "theme-division-rogue",
+    "theme-division-darkzone",
+    "theme-division-tech",
+    "theme-division-stealth",
+    "theme-division-combat",
+    "theme-division-tactical",
+    "theme-division-hunter",
   );
   root.classList.add(`theme-${prefs.name}`);
 
