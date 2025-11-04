@@ -45,6 +45,7 @@ const Index = () => {
 
   return (
     <>
+      <main id="main-content">
       <OperationsCanvas
         wallpaper={wallpaper}
         header={
@@ -111,6 +112,7 @@ const Index = () => {
           </span>
         }
       />
+      </main>
       <ComplianceResources
         open={complianceOpen}
         onOpenChange={setComplianceOpen}

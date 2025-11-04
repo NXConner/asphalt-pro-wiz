@@ -7,14 +7,20 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, Suspense, lazy } from "react";
 import { toast as sonnerToast } from "sonner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ErrorRecovery } from "@/components/ErrorRecovery/ErrorRecovery";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PerformanceProvider } from "@/contexts/PerformanceContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ErrorProvider } from "@/contexts/ErrorContext";
+import { KeyboardProvider } from "@/contexts/KeyboardContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { MobileOptimizations } from "@/components/MobileOptimizations";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { CommandPalette } from "@/components/CommandPalette/CommandPalette";
+import { SkipLink } from "@/components/A11y/SkipLink";
 import { trackPageView } from "@/lib/analytics";
+import { initializeMonitoring } from "@/lib/monitoring";
 
 // Route-level code splitting for faster initial load
 const Index = lazy(() => import("./pages/Index"));
@@ -38,6 +44,12 @@ function RouteTracker() {
 }
 
 const App = () => {
+  useEffect(() => {
+    // Initialize monitoring
+    const cleanup = initializeMonitoring();
+    return cleanup;
+  }, []);
+
   useEffect(() => {
     let removeListener: (() => void) | undefined;
     // Register Android hardware back button handler when running natively
@@ -97,18 +109,23 @@ const { Capacitor } = await import("@capacitor/core");
 
     return (
       <ErrorBoundary>
-        <PerformanceProvider>
-          <ThemeProvider>
-            <AuthProvider>
-              <I18nProvider>
-                <QueryClientProvider client={queryClient}>
-                  <TooltipProvider>
-                    <MobileOptimizations />
-                    <Toaster />
-                    <Sonner />
-                    <BrowserRouter basename={baseName}>
-                      <RouteTracker />
-                      <OfflineIndicator />
+        <ErrorRecovery>
+          <PerformanceProvider>
+            <ThemeProvider>
+              <AuthProvider>
+                <ErrorProvider>
+                  <KeyboardProvider>
+                    <I18nProvider>
+                      <QueryClientProvider client={queryClient}>
+                        <TooltipProvider>
+                          <SkipLink />
+                          <MobileOptimizations />
+                          <CommandPalette />
+                          <Toaster />
+                          <Sonner />
+                          <BrowserRouter basename={baseName}>
+                            <RouteTracker />
+                            <OfflineIndicator />
                       <Suspense
                         fallback={
                           <div className="p-6">
@@ -127,14 +144,17 @@ const { Capacitor } = await import("@capacitor/core");
                           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                           <Route path="*" element={<NotFound />} />
                         </Routes>
-                      </Suspense>
-                    </BrowserRouter>
-                  </TooltipProvider>
-                </QueryClientProvider>
-              </I18nProvider>
+                          </Suspense>
+                        </BrowserRouter>
+                      </TooltipProvider>
+                    </QueryClientProvider>
+                  </I18nProvider>
+                </KeyboardProvider>
+              </ErrorProvider>
             </AuthProvider>
           </ThemeProvider>
         </PerformanceProvider>
+        </ErrorRecovery>
       </ErrorBoundary>
     );
 };
