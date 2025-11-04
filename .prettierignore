@@ -1,6 +1,13 @@
 dist
-node_modules
+build
 coverage
-playwright-report
+android
+supabase/migrations
+supabase/functions
 supabase/.temp
-.deleted files
+node_modules
+package-lock.json
+playwright-report
+test-results
+*.log
+deleted files
