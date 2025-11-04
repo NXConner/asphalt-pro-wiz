@@ -1,29 +1,69 @@
 version: "3.9"
+
+x-app-env: &app_env
+  APP_ENV: ${APP_ENV:-development}
+  VITE_LOG_BEACON_URL: ${VITE_LOG_BEACON_URL:-}
+  VITE_OBSERVABILITY_EXPORTER_URL: ${VITE_OBSERVABILITY_EXPORTER_URL:-}
+  VITE_FLAG_AIASSISTANT: ${VITE_FLAG_AIASSISTANT:-1}
+  VITE_FLAG_IMAGEAREAANALYZER: ${VITE_FLAG_IMAGEAREAANALYZER:-1}
+  VITE_FLAG_RECEIPTS: ${VITE_FLAG_RECEIPTS:-1}
+  VITE_FLAG_PWA: ${VITE_FLAG_PWA:-1}
+  VITE_FLAG_I18N: ${VITE_FLAG_I18N:-1}
+  VITE_FLAG_OWNERMODE: ${VITE_FLAG_OWNERMODE:-0}
+
 services:
-  web:
-    build: .
-    image: pavement-suite:web
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+      args:
+        NODE_VERSION: ${NODE_VERSION:-22-alpine}
+        VITE_APP_VERSION: ${VITE_APP_VERSION:-local-dev}
+        VITE_BASE_PATH: ${VITE_BASE_PATH:-/}
+        VITE_ENVIRONMENT: ${APP_ENV:-development}
+    image: ${APP_IMAGE:-pavement-performance-suite:web}
+    container_name: pavement-web
+    init: true
     ports:
-      - "8080:80"
+      - "${WEB_PORT:-8080}:80"
+    environment:
+      <<: *app_env
     depends_on:
-      - db
-    environment:
-      - VITE_LOG_BEACON_URL=${VITE_LOG_BEACON_URL}
-      - VITE_FLAG_RECEIPTS=${VITE_FLAG_RECEIPTS:-1}
-      - VITE_FLAG_AIASSISTANT=${VITE_FLAG_AIASSISTANT:-1}
-      - VITE_FLAG_IMAGEAREAANALYZER=${VITE_FLAG_IMAGEAREAANALYZER:-1}
-      - VITE_FLAG_PWA=${VITE_FLAG_PWA:-1}
-      - VITE_FLAG_I18N=${VITE_FLAG_I18N:-1}
-      - VITE_FLAG_OWNERMODE=${VITE_FLAG_OWNERMODE:-0}
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - pavement
+
   db:
-    image: pgvector/pgvector:pg16
+    image: ${DB_IMAGE:-pgvector/pgvector:pg16}
+    container_name: pavement-db
     environment:
-      POSTGRES_DB: pavement
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-pavement}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-pavement}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - pavement
+
 volumes:
   pg_data:
+
+networks:
+  pavement:
+    driver: bridge

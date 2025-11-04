@@ -8,7 +8,8 @@ export type FeatureFlag =
   | "scheduler"
   | "optimizer"
   | "customerPortal"
-  | "observability";
+  | "observability"
+  | "commandCenter";
 
 const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   imageAreaAnalyzer: true,
@@ -21,6 +22,7 @@ const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   optimizer: false,
   customerPortal: false,
   observability: true,
+  commandCenter: true,
 };
 
 const STORAGE_KEY = "pps:flags";

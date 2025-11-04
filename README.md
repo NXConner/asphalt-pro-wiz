@@ -1,158 +1,105 @@
-# Welcome to your Lovable project
+# Pavement Performance Suite
 
-## Project info
+Modern, AI-assisted operations cockpit for asphalt estimation, scheduling, and client collaboration with a focus on church facilities across Virginia.
 
-**URL**: https://lovable.dev/projects/1282c161-32ae-4cc0-9d0c-60535b8cd60d
+## System Overview
 
-## How can I edit this code?
+- **Frontend**: React 18 + Vite + TypeScript, shadcn/ui, TailwindCSS, `react-grid-layout` for adaptive canvases.
+- **State & Data**: React Query, IndexedDB caching, Supabase client, feature-flag service.
+- **Tooling**: ESLint (flat config) + Prettier + Husky + lint-staged, Vitest + Playwright, k6/Artillery load kits.
+- **Mobile**: Capacitor Android shell for native deployments.
 
-There are several ways of editing your application.
+## Quickstart (Dev, Test, Prod-ready)
 
-**Use Lovable**
+1. Clone and enter the repo.
+2. Duplicate the environment template and provide real secrets (never placeholders):
+   ```sh
+   cp .env.example .env
+   ```
+3. Install dependencies and prepare tooling (PowerShell users can run the `.ps1` variant):
+   ```sh
+   scripts/install_dependencies.sh
+   # or
+   pwsh ./scripts/install_dependencies.ps1
+   ```
+   - `--skip-playwright` to avoid browser downloads (CI containers)
+   - `--skip-husky` on read-only CI runners
+4. Start the dev server and refresh existing preview:
+   ```sh
+   npm run dev
+   ```
+5. Run quality gates before opening a PR:
+   ```sh
+   npm run lint
+   npm run test:unit -- --run
+   npm run test:e2e   # requires dev server
+   ```
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/1282c161-32ae-4cc0-9d0c-60535b8cd60d) and start prompting.
+## Environment Configuration
 
-Changes made via Lovable will be committed automatically to this repo.
+- All variables live in `.env` (template in `.env.example`). Key values:
+  - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+  - `VITE_GEMINI_PROXY_URL` (required outside local dev), `GEMINI_API_KEY` for server scripts
+  - Observability exporters (`VITE_LOG_BEACON_URL`, `VITE_OBSERVABILITY_EXPORTER_URL`, `OBSERVABILITY_API_KEY`)
+  - Mapping + weather integrations (`VITE_GOOGLE_MAPS_API_KEY`, `VITE_OPENWEATHER_API_KEY`, `VITE_MAPBOX_TOKEN`)
+  - `VITE_APP_VERSION` surfaced in structured logs
+- Feature flags (set to `1`/`0`): `VITE_FLAG_OBSERVABILITY`, `VITE_FLAG_COMMANDCENTER`, plus UI toggles for other labs features
+- Config is environment-specific; never commit `.env`.
+- Supabase setup, seed strategy, and shared project guidance: `docs/UNIFIED_SUPABASE_GUIDE.md`.
 
-**Use your preferred IDE**
+## Branching Strategy
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- `main`: production-ready, auto-deployed on passing CI.
+- `develop`: integration branch for completed epics before release hardening.
+- Feature branches: `feature/<scope>-<ticket>` (e.g., `feature/operations-canvas-PPS-102`).
+- Hotfix branches from `main`: `hotfix/<scope>`.
+- Use PR templates in `.github/` and ensure Husky hooks pass before merge.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Developer Tooling & Standards
 
-Follow these steps:
+- **Formatting**: Prettier + `prettier-plugin-tailwindcss` (`npm run format` / `format:check`).
+- **Linting**: ESLint with React, security, accessibility, import-order, and Prettier alignment (`npm run lint`).
+- **Type Safety**: TypeScript strictness enforced in lib/modules.
+- **Python utilities**: `pyproject.toml` configures Black/Flake8/isort for Supabase scripts or data tooling.
+- **Commit Hygiene**: Husky pre-commit runs lint-staged diff formatting + full lint + unit suite. Commit messages validated against Conventional Commits via `commitlint`.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Testing Matrix
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- `npm run test:unit` – Vitest with jsdom.
+- `npm run coverage` – coverage gate (85% target).
+- `npm run test:e2e` – Playwright smoke covering estimator, feature flags, uploads.
+- Load packs in `scripts/load/` (`k6` + `artillery`).
+- Accessibility audits included via `vitest-axe` suites.
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Operational Guides
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+### Executive Command Center
 
-**Edit a file directly in GitHub**
+- Navigate to `/command-center` (or use the header shortcut) once the `commandCenter` flag is enabled.
+- Requires Supabase credentials (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) to hydrate analytics.
+- Surfaces live metrics for job statuses, revenue, and crew coverage; logs telemetric events for observability when loaded.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- **Containers**: Build the optimized Nginx image and launch Postgres locally:
+  ```sh
+  docker compose --env-file .env up --build
+  ```
+  - Override build-time metadata via `VITE_APP_VERSION=1.0.0 docker compose build`
+  - Shut down and remove the volume when resetting state: `docker compose down -v`
+- **Security Scan**: Audit dependencies before releases:
+  ```sh
+  npm run security:scan
+  ```
+- **Database**: Launch local Postgres with Docker Compose, run migrations + seeds via `npm run migrate:up` / `npm run seed` (requires `DATABASE_URL`).
+- **AI Proxy**: Deploy Supabase Edge `gemini-proxy` and set `VITE_GEMINI_PROXY_URL`. Direct API key usage is blocked in production builds.
+- **Android Build**: `npm run mobile:prep` prepares assets; gradle tasks under `android/` handle APK generation.
+- **Observability**: Client logs beaconed when `VITE_LOG_BEACON_URL` is set; additional exporters controlled via `VITE_OBSERVABILITY_EXPORTER_URL` and sampling flags.
 
-**Use GitHub Codespaces**
+## Contribution Reference
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## Quickstart
-
-1. Copy env template and fill secrets:
-
-```sh
-cp .env.example .env
-```
-
-2. Install deps, hooks, and Playwright browsers:
-
-```sh
-./scripts/install_dependencies.sh
-```
-
-3. Start dev server (then refresh if running):
-
-```sh
-npm run dev
-```
-
-### Unified Supabase (single project for all apps)
-
-See `docs/UNIFIED_SUPABASE_GUIDE.md` for step-by-step setup to connect this and other repositories to one Supabase project, run unified migrations, seed admin access, and use compatibility views for legacy schemas.
-
-4. Optional: Build RAG index for AI:
-
-```sh
-npm run ingest:repos
-```
-
-## Database (optional for local dev)
-
-```sh
-docker compose up -d db
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/pavement npm run migrate:up
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/pavement npm run seed
-```
-
-See `docs/ADMIN_SETUP.md` for Supabase admin instructions.
-
-### Gemini Proxy (recommended)
-
-- Deploy Supabase Edge Function `gemini-proxy` (see `docs/SECRETS_AND_CONFIG.md`).
-- Set `VITE_GEMINI_PROXY_URL` to the function URL; avoid exposing API keys in the browser.
-
-## Tests
-
-```sh
-npm run test:unit
-```
-
-E2E (requires dev server):
-
-```sh
-npm run test:e2e
-```
-
-Key E2E flows covered:
-
-- Theme toggle switches between light/dark.
-- Feature Flags toggles (Image Area Analyzer, AI Assistant, Receipts).
-- Uploads panel accepts a file and displays a Download link.
-
-## Load Testing
-
-With k6:
-
-```sh
-BASE_URL=http://localhost:8080 k6 run scripts/load/k6-estimate.js
-```
-
-With Artillery:
-
-```sh
-artillery run scripts/load/artillery.yml
-```
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/1282c161-32ae-4cc0-9d0c-60535b8cd60d) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
-
-## Ownership & Contributions
-
-See `CODEOWNERS` and `CONTRIBUTING.md`.
+- Ownership rules: `CODEOWNERS`
+- Workflow expectations and review checklist: `CONTRIBUTING.md`
+- Architectural notes, Supabase admin setup, and security posture: see `docs/` folder.
 
 ## License
 
-MIT — see `LICENSE`.
+MIT – see `LICENSE`.

@@ -1,13 +1,13 @@
 ## Unified Supabase: Single Project for All Apps
 
-This guide explains how to use one Supabase project across all current and future repositories (asphalt-pro-wiz, explore-sensei, hero-ops-suite, Asphalt-OS_Overwatch-Systems, and future apps), including setup, migrations, environment variables, security, and compatibility with legacy schemas.
+This guide documents the streamlined Supabase schema that powers the Pavement Performance Suite and any future companion apps. It covers setup, migrations, environment variables, security, and how to seed realistic demo data.
 
 ### 1) Overview
 
-- One Supabase project per environment: development, staging, production.
-- Canonical schema includes: organizations/tenancy, users and memberships, clients, jobs, employees, time tracking, inventory, invoicing, safety/compliance, mapping/measurements, analysis/scans/defects/reports, AI detections, and gamification.
-- Strict org-based Row Level Security (RLS) across all tables.
-- Compatibility views expose legacy shapes like `public.users`, `public.roles`, `public.user_roles`, `public.customers`, `public."Mapmeasurements"`, and `public.clients_compat` for existing apps.
+- One Supabase project per environment (development, staging, production).
+- Canonical schema focuses on: organizations, user memberships, jobs, premium services, estimates, documents/uploads, receipts, crew scheduling, and telemetry events.
+- Strict organization-based Row Level Security (RLS) is enforced across all tables.
+- Database migrations and seed data are idempotent, making it safe to re-run them during CI or local development.
 
 ### 2) Prerequisites
 
@@ -28,111 +28,68 @@ Create a `.env` from `.env.example` at the repo root and set:
 
 ### 4) Applying Migrations
 
-Option A: Local Postgres (development)
-
-- Set `DATABASE_URL` to your local Postgres
-- Run:
+The project uses `node-pg-migrate`. Run migrations against either a local Postgres instance or your Supabase database.
 
 ```
 npm run migrate:up
 ```
 
-Option B: Supabase project
+This executes every migration inside `supabase/migrations/`, including `1700000016000_pavement_core.js`, which provisions the full Pavement Performance Suite schema:
 
-- Open Supabase SQL editor and run the migration SQL files in `supabase/migrations` in ascending order:
-  - `1700000001000_unified_tenancy.js`
-  - `1700000001100_unified_core.js`
-  - `1700000001200_unified_analysis.js`
-  - `1700000001300_unified_ai_gamification.js`
-  - `1700000001400_unified_rls.js`
-  - `1700000001500_unified_compatibility.js`
-- Alternatively, connect `node-pg-migrate` to your Supabase DB using a direct connection string in `DATABASE_URL` and run `npm run migrate:up`.
+- `organizations` and `user_org_memberships`
+- `jobs`, `job_events`, `job_documents`, `job_uploads`
+- `estimates` and `estimate_line_items`
+- `job_receipts`, `job_premium_services`
+- `crew_blackouts`, `crew_assignments`
+- `premium_services_catalog`
 
-Notes:
-
-- Migrations are idempotent; running them multiple times is safe.
+All tables are created with RLS enabled. Re-running the migration is safe.
 
 ### 5) Seeding
 
-- Ensure the `ADMIN_EMAIL` exists in Supabase Auth (create the user in the Supabase Dashboard).
-- Run:
+1. Create the admin user in Supabase Auth using the `ADMIN_EMAIL` from `.env` (defaults to `n8ter8@gmail.com`).
+2. Run the seed script:
 
-```
-npm run seed
-```
+   ```
+   npm run seed
+   ```
 
-- This will:
-  - Ensure default organization exists
-  - Assign `Super Administrator` membership in default org to the `ADMIN_EMAIL`
+The seed script:
 
-### 6) Connecting Apps (Current and Future Repos)
+- Ensures an organization with slug `conner-asphalt` exists.
+- Grants the admin user `super_admin` membership in that org.
+- Creates a sample job (`St. Mark Sanctuary Reseal`) with demo estimates, line items, premium services, and a crew blackout entry to exercise the UI.
+- Can be re-run safely; it upserts records.</n+
 
-All apps should use the same environment variable names:
+### 6) Connecting Apps
 
-- Frontend clients (Vite/React):
-  - `VITE_SUPABASE_URL`
-  - `VITE_SUPABASE_ANON_KEY`
-- Server-side utilities/scripts:
-  - `SUPABASE_SERVICE_ROLE_KEY`
-  - `DATABASE_URL` (if using direct Postgres access)
+Use the same environment variables across CLI scripts, backend services, and frontend clients:
 
-Minimal steps per repo:
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `DATABASE_URL` (for migrations and seeds)
 
-1. Add a `.env` with the above variables pointing to the unified Supabase.
-2. Use a client helper. In this repo you can import `getBrowserClient` from `src/lib/supabase`.
-3. Legacy table names are supported via compatibility views:
-   - asphalt-pro-wiz: `public.users`, `public.roles`, `public.user_roles`
-   - hero-ops-suite: `public.customers` maps to unified `clients` shape; `public.clients_compat` exposes `client_id` and `org` fields; analysis tables are present as in canonical schema.
-   - explore-sensei: `public."Mapmeasurements"` view exists mapping to `map_measurements`; roles map via memberships.
-4. No code changes are needed unless a repo writes to a table not covered by views or uses restricted operations disallowed by RLS. In that case, update queries to target canonical tables or add an additional compatibility view.
+Frontends in this repo import the helper from `src/lib/supabase`. Additional apps can reuse the same variables to share the tenancy model.
 
 ### 7) Row Level Security (RLS)
 
-- Every table enforces org-based isolation with these principles:
-  - Read: any member of the row’s `org_id` can read
-  - Write (insert/update/delete): roles `Manager` and above in the same org
-- Helper functions:
-  - `public.is_admin(user_id)`
-  - `public.has_role(user_id, app_role)`
-  - Membership: `public.user_org_memberships(user_id, org_id, role)`
-- New users automatically get a `Viewer` membership in the default org via trigger `on_auth_user_created`.
+- `organizations`/`user_org_memberships`: only super administrators can mutate membership; all authenticated members can read their organization.
+- `jobs` and job-scoped tables (`estimates`, `job_documents`, `job_uploads`, `job_receipts`, `job_premium_services`, `crew_assignments`, `job_events`):
+  - Read: any member of the organization
+  - Insert: `operator`, `manager`, or `super_admin`
+  - Update/Delete: `manager` or `super_admin`
+- `crew_blackouts`: organization-level scheduling resource with similar policies as jobs.
+- RLS leverages `auth.uid()`; no table is readable by anonymous users.
 
-### 8) Storage Buckets
+### 8) Troubleshooting
 
-Create these buckets in Supabase Storage (public or protected per your needs):
+- **Missing permissions**: confirm the user has a membership in `user_org_memberships` with the correct role.
+- **Table not found**: ensure `npm run migrate:up` completed successfully.
+- **Seed script fails**: verify the admin email exists in `auth.users` and that `DATABASE_URL` grants suitable privileges.
 
-- `meshes/`, `raw_images/`, `snapshots/`, `tiles/`, `reports/`, `photos/`
+### 9) Security Notes
 
-### 9) Edge Functions
-
-If needed, deploy shared Edge Functions (from repos like explore-sensei) into this unified project.
-
-- Examples: `ai-chat`, `analyze-asphalt`, `get-mapbox-token`, `game-*`
-- Names and auth should remain consistent across apps.
-
-### 10) Adding New Repositories
-
-- Point env variables to the same Supabase project.
-- Use canonical tables; if you need a legacy shape, add a view to `1700000001500_unified_compatibility.js`.
-- Keep migrations idempotent and RLS-consistent.
-
-### 11) Troubleshooting
-
-- Missing permissions: check RLS policies and the user’s membership/role in `user_org_memberships`.
-- Table not found: confirm migrations ran and the exact table/view name.
-- Admin not assigned: confirm `ADMIN_EMAIL` exists in `auth.users` and re-run `npm run seed`.
-
-### 12) Security Notes
-
-- Never expose `SUPABASE_SERVICE_ROLE_KEY` to the browser.
-- Keep RLS strict; only relax via specific policies.
-- Use audit logs and triggers if you need higher accountability.
-
-### 13) Migration/ETL from Legacy Projects
-
-- Export data from old Supabase projects and map to canonical tables, adding `org_id`.
-- Import respecting FKs (clients -> jobs -> invoices, etc.).
-
-### 14) Contacts & Ownership
-
-- Codeowners and maintainers should ensure all new projects follow this guide and re-use the same Supabase.
+- Never expose `SUPABASE_SERVICE_ROLE_KEY` to clients.
+- Audit membership changes with Supabase logs; only super admins can modify memberships.
+- All write operations are scoped to the actor’s organization through RLS policies.

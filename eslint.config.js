@@ -5,6 +5,8 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 import jsxA11y from "eslint-plugin-jsx-a11y";
 import pluginSecurity from "eslint-plugin-security";
+import eslintConfigPrettier from "eslint-config-prettier";
+import importPlugin from "eslint-plugin-import";
 
 export default tseslint.config(
   {
@@ -17,7 +19,7 @@ export default tseslint.config(
     ],
   },
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended, eslintConfigPrettier],
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
       ecmaVersion: 2020,
@@ -29,6 +31,7 @@ export default tseslint.config(
       "react-refresh": reactRefresh,
       "jsx-a11y": jsxA11y,
       security: pluginSecurity,
+      import: importPlugin,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -40,6 +43,21 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-require-imports": "off",
       "no-empty": ["error", { allowEmptyCatch: true }],
+      "import/order": [
+        "warn",
+        {
+          "newlines-between": "always",
+          alphabetize: { order: "asc", caseInsensitive: true },
+          pathGroupsExcludedImportTypes: ["builtin"],
+          pathGroups: [
+            {
+              pattern: "@/**",
+              group: "internal",
+              position: "before",
+            },
+          ],
+        },
+      ],
     },
   },
   {
