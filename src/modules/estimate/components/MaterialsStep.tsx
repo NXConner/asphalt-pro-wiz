@@ -1,7 +1,8 @@
-import type { ReactNode } from "react";
+import type { ReactNode, ReactElement } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cloneElement, isValidElement } from "react";
 import {
   Select,
   SelectContent,
@@ -25,7 +26,7 @@ export function MaterialsStep({ materials, options, cracks, logistics, onNext, o
     <>
       <section className="grid gap-4 md:grid-cols-2">
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-slate-50">Sealcoating Blend</h3>
+          <h2 className="text-lg font-semibold text-slate-50">Sealcoating Blend</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Coats">
               <Select value={materials.numCoats.toString()} onValueChange={(value) => materials.setNumCoats(parseInt(value, 10))}>
@@ -76,7 +77,7 @@ export function MaterialsStep({ materials, options, cracks, logistics, onNext, o
           </div>
         </div>
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-slate-50">Material Preferences</h3>
+          <h2 className="text-lg font-semibold text-slate-50">Material Preferences</h2>
           <Field label="Sealer Type">
             <Select value={materials.sealerType} onValueChange={materials.setSealerType}>
               <SelectTrigger className="mt-1 h-10 bg-white/10 text-slate-50">
@@ -109,8 +110,8 @@ export function MaterialsStep({ materials, options, cracks, logistics, onNext, o
       {options.includeCleaningRepair ? (
         <section className="space-y-3">
           <header className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-slate-50">Crack Filling Profile</h3>
-            <span className="text-xs uppercase tracking-[0.3em] text-slate-200/60">{cracks.length.toFixed(1)} ft total</span>
+            <h2 className="text-lg font-semibold text-slate-50">Crack Filling Profile</h2>
+            <span className="text-xs uppercase tracking-[0.3em] text-slate-200/80 font-medium">{cracks.length.toFixed(1)} ft total</span>
           </header>
           <div className="grid gap-3 sm:grid-cols-3">
             <Field label="Length (ft)">
@@ -189,13 +190,22 @@ export function MaterialsStep({ materials, options, cracks, logistics, onNext, o
 interface FieldProps {
   label: string;
   children: ReactNode;
+  htmlFor?: string;
 }
 
-function Field({ label, children }: FieldProps) {
+function Field({ label, children, htmlFor }: FieldProps) {
+  // Generate a unique ID if not provided
+  const fieldId = htmlFor || `field-${label.toLowerCase().replace(/\s+/g, '-')}`;
+  
+  // Clone child element and add id if it's a valid React element
+  const childWithId = isValidElement(children)
+    ? cloneElement(children as ReactElement<any>, { id: fieldId })
+    : children;
+  
   return (
-    <label className="block">
-      <span className="text-xs uppercase tracking-widest text-slate-200/60">{label}</span>
-      {children}
+    <label className="block" htmlFor={fieldId}>
+      <span className="text-xs uppercase tracking-widest text-slate-200/80 font-medium">{label}</span>
+      {childWithId}
     </label>
   );
 }

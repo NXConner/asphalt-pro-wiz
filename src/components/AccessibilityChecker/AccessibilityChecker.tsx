@@ -37,20 +37,28 @@ export function AccessibilityChecker() {
     });
 
     // Check for buttons without accessible names
-    document.querySelectorAll('button:not([aria-label]):empty').forEach((btn, index) => {
-      foundIssues.push({
-        id: `btn-label-${index}`,
-        severity: 'error',
-        message: 'Button without accessible name',
-        element: btn.outerHTML.substring(0, 50) + '...',
-        fix: 'Add aria-label or text content to button',
-      });
+    document.querySelectorAll('button:not([aria-label]):not([title])').forEach((btn, index) => {
+      // Skip if button has text content or is a checkbox/switch role (handled by parent label)
+      const hasTextContent = btn.textContent && btn.textContent.trim().length > 0;
+      const isCheckboxRole = btn.getAttribute('role') === 'checkbox' || btn.getAttribute('role') === 'switch';
+      const hasVisibleIcon = btn.querySelector('svg');
+      
+      if (!hasTextContent && !isCheckboxRole && !hasVisibleIcon) {
+        foundIssues.push({
+          id: `btn-label-${index}`,
+          severity: 'error',
+          message: 'Button without accessible name',
+          element: btn.outerHTML.substring(0, 50) + '...',
+          fix: 'Add aria-label or text content to button',
+        });
+      }
     });
 
     // Check for inputs without labels
-    document.querySelectorAll('input:not([aria-label]):not([aria-labelledby])').forEach((input, index) => {
+    document.querySelectorAll('input:not([aria-label]):not([aria-labelledby]):not([type="hidden"])').forEach((input, index) => {
       const hasLabel = input.id && document.querySelector(`label[for="${input.id}"]`);
-      if (!hasLabel) {
+      const isInsideLabel = input.closest('label');
+      if (!hasLabel && !isInsideLabel) {
         foundIssues.push({
           id: `input-label-${index}`,
           severity: 'error',

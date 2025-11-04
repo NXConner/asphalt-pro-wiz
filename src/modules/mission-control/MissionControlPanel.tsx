@@ -75,9 +75,9 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             <fieldset>
-              <Label className="text-xs uppercase tracking-wide text-slate-200/70">Job Status</Label>
+              <Label htmlFor="jobStatus" className="text-xs uppercase tracking-wide text-slate-200/70">Job Status</Label>
               <Select value={job.status} onValueChange={(value: JobStatus) => job.setStatus(value)}>
-                <SelectTrigger className="mt-1 h-10 bg-white/10 text-slate-50">
+                <SelectTrigger id="jobStatus" className="mt-1 h-10 bg-white/10 text-slate-50" aria-label="Select job status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -90,10 +90,11 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
               </Select>
             </fieldset>
             <fieldset>
-              <Label className="text-xs uppercase tracking-wide text-slate-200/70">
+              <Label htmlFor="competitor" className="text-xs uppercase tracking-wide text-slate-200/70">
                 Competitor Intel
               </Label>
               <Input
+                id="competitor"
                 value={job.competitor}
                 placeholder="Optional"
                 onChange={(event) => job.setCompetitor(event.target.value)}
@@ -101,15 +102,17 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
               />
             </fieldset>
             <fieldset>
-              <Label className="text-xs uppercase tracking-wide text-slate-200/70">
+              <Label htmlFor="refreshButton" className="text-xs uppercase tracking-wide text-slate-200/70">
                 Refresh Field Data
               </Label>
               <Button
+                id="refreshButton"
                 type="button"
                 variant="outline"
                 className="mt-1 h-10 border-white/30 bg-white/10 text-slate-50 hover:bg-white/20"
                 onClick={() => job.handleAddressUpdate(job.coords ?? job.businessCoords, job.address)}
                 disabled={!job.coords && !job.address}
+                aria-label="Sync to latest field data"
               >
                 Sync To Latest
               </Button>

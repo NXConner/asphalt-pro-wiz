@@ -54,14 +54,14 @@ export function ScopeStep({ areas, options, featureFlags, onNext }: ScopeStepPro
       <section className="space-y-4">
         <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-slate-50">Area Capture</h3>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-200/60">
+            <h2 className="text-lg font-semibold text-slate-50">Area Capture</h2>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-200/80 font-medium">
               {areas.items.length} segments • {areas.total.toFixed(1)} sq ft
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Select value={areas.shapeType} onValueChange={areas.setShapeType}>
-              <SelectTrigger className="h-9 w-[160px] bg-white/10 text-slate-50">
+              <SelectTrigger className="h-9 w-[160px] bg-white/10 text-slate-50" aria-label="Select shape type">
                 <SelectValue placeholder="Select Shape" />
               </SelectTrigger>
               <SelectContent>
@@ -76,6 +76,7 @@ export function ScopeStep({ areas, options, featureFlags, onNext }: ScopeStepPro
               variant="outline"
               className="h-9 border-white/30 bg-white/10 text-slate-50 hover:bg-white/20"
               onClick={areas.addEmpty}
+              aria-label="Add new area shape"
             >
               Add Shape
             </Button>
@@ -85,21 +86,24 @@ export function ScopeStep({ areas, options, featureFlags, onNext }: ScopeStepPro
         <div className="grid gap-3">
           <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
             <div className="flex-1 min-w-[180px]">
-              <Label className="text-xs uppercase tracking-widest text-slate-200/60">
+              <Label htmlFor="manualArea" className="text-xs uppercase tracking-widest text-slate-200/60">
                 Quick Manual Area (sq ft)
               </Label>
               <Input
+                id="manualArea"
                 type="number"
                 value={areas.manualInput}
                 onChange={(event) => areas.setManualInput(event.target.value)}
                 placeholder="e.g. 1450"
                 className="mt-1 bg-white/10 text-slate-50"
+                aria-label="Enter area in square feet"
               />
             </div>
             <Button
               type="button"
               className="h-10 border border-white/20 bg-orange-500/80 px-4 font-semibold text-white hover:bg-orange-500"
               onClick={areas.addManual}
+              aria-label="Add area segment"
             >
               Add Segment
             </Button>
