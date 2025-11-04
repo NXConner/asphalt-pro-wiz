@@ -121,11 +121,11 @@ const { Capacitor } = await import("@capacitor/core");
                         <TooltipProvider>
                           <SkipLink />
                           <MobileOptimizations />
-                          <CommandPalette />
-                          {process.env.NODE_ENV === 'development' && <AccessibilityChecker />}
                           <Toaster />
                           <Sonner />
                           <BrowserRouter basename={baseName}>
+                            <CommandPalette />
+                            {process.env.NODE_ENV === 'development' && <AccessibilityChecker />}
                             <RouteTracker />
                             <OfflineIndicator />
                       <Suspense
