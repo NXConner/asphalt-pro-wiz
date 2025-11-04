@@ -118,10 +118,10 @@ const App = () => {
                       <TooltipProvider>
                         <SkipLink />
                         <MobileOptimizations />
-                        <CommandPalette />
                         <Toaster />
                         <Sonner />
                         <BrowserRouter basename={baseName}>
+                          <CommandPalette />
                           {process.env.NODE_ENV === 'development' && <AccessibilityChecker />}
                           <RouteTracker />
                           <OfflineIndicator />
