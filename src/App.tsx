@@ -10,6 +10,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { I18nProvider } from "@/lib/i18n";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PerformanceProvider } from "@/contexts/PerformanceContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { trackPageView } from "@/lib/analytics";
 
@@ -94,35 +95,37 @@ const App = () => {
       <ErrorBoundary>
         <PerformanceProvider>
           <ThemeProvider>
-            <I18nProvider>
-              <QueryClientProvider client={queryClient}>
-                <TooltipProvider>
-                  <Toaster />
-                  <Sonner />
-                  <BrowserRouter basename={baseName}>
-                    <RouteTracker />
-                    <OfflineIndicator />
-                    <Suspense
-                      fallback={
-                        <div className="p-6">
-                          <Skeleton className="h-6 w-1/3 mb-4" />
-                          <Skeleton className="h-96 w-full" />
-                        </div>
-                      }
-                    >
-                      <Routes>
-                        <Route path="/" element={<Index />} />
-                        <Route path="/command-center" element={<CommandCenter />} />
-                        <Route path="/service/:serviceId" element={<PremiumServiceDetails />} />
-                        <Route path="/portal" element={<Portal />} />
-                        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </Suspense>
-                  </BrowserRouter>
-                </TooltipProvider>
-              </QueryClientProvider>
-            </I18nProvider>
+            <AuthProvider>
+              <I18nProvider>
+                <QueryClientProvider client={queryClient}>
+                  <TooltipProvider>
+                    <Toaster />
+                    <Sonner />
+                    <BrowserRouter basename={baseName}>
+                      <RouteTracker />
+                      <OfflineIndicator />
+                      <Suspense
+                        fallback={
+                          <div className="p-6">
+                            <Skeleton className="h-6 w-1/3 mb-4" />
+                            <Skeleton className="h-96 w-full" />
+                          </div>
+                        }
+                      >
+                        <Routes>
+                          <Route path="/" element={<Index />} />
+                          <Route path="/command-center" element={<CommandCenter />} />
+                          <Route path="/service/:serviceId" element={<PremiumServiceDetails />} />
+                          <Route path="/portal" element={<Portal />} />
+                          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </Suspense>
+                    </BrowserRouter>
+                  </TooltipProvider>
+                </QueryClientProvider>
+              </I18nProvider>
+            </AuthProvider>
           </ThemeProvider>
         </PerformanceProvider>
       </ErrorBoundary>

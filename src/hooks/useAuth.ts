@@ -1,0 +1,77 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import type { User, Session } from '@supabase/supabase-js';
+import { toast } from 'sonner';
+
+interface AuthState {
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+}
+
+export function useAuth() {
+  const [state, setState] = useState<AuthState>({
+    user: null,
+    session: null,
+    loading: true,
+  });
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setState({
+        user: session?.user ?? null,
+        session,
+        loading: false,
+      });
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setState({
+        user: session?.user ?? null,
+        session,
+        loading: false,
+      });
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      toast.error(error.message);
+      throw error;
+    }
+    toast.success('Signed in successfully');
+  };
+
+  const signUp = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+      toast.error(error.message);
+      throw error;
+    }
+    toast.success('Check your email to confirm your account');
+  };
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error(error.message);
+      throw error;
+    }
+    toast.success('Signed out successfully');
+  };
+
+  return {
+    ...state,
+    signIn,
+    signUp,
+    signOut,
+    isAuthenticated: !!state.user,
+  };
+}
