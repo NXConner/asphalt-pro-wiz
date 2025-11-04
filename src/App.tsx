@@ -19,6 +19,7 @@ import { MobileOptimizations } from "@/components/MobileOptimizations";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { CommandPalette } from "@/components/CommandPalette/CommandPalette";
 import { SkipLink } from "@/components/A11y/SkipLink";
+import { AccessibilityChecker } from "@/components/AccessibilityChecker/AccessibilityChecker";
 import { trackPageView } from "@/lib/analytics";
 import { initializeMonitoring } from "@/lib/monitoring";
 
@@ -121,6 +122,7 @@ const { Capacitor } = await import("@capacitor/core");
                           <SkipLink />
                           <MobileOptimizations />
                           <CommandPalette />
+                          {process.env.NODE_ENV === 'development' && <AccessibilityChecker />}
                           <Toaster />
                           <Sonner />
                           <BrowserRouter basename={baseName}>
