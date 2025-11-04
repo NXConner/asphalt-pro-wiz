@@ -1,14 +1,29 @@
 {
-  "$schema": "https://json.schemastore.org/prettierrc.json",
+  "$schema": "https://json.schemastore.org/prettierrc",
   "printWidth": 100,
-  "singleQuote": false,
   "tabWidth": 2,
   "semi": true,
+  "singleQuote": true,
   "trailingComma": "all",
   "bracketSpacing": true,
+  "arrowParens": "avoid",
   "plugins": ["prettier-plugin-tailwindcss"],
-  "importOrder": ["^@/", "^../", "^./", "^[^.]"],
+  "tailwindFunctions": ["clsx", "cn"],
+  "importOrder": ["^@/", "^[.]{2}/", "^[.]/", "^\u0000"],
   "importOrderSeparation": true,
   "importOrderSortSpecifiers": true,
-  "arrowParens": "always"
+  "overrides": [
+    {
+      "files": "*.md",
+      "options": {
+        "proseWrap": "always"
+      }
+    },
+    {
+      "files": ["*.yml", "*.yaml"],
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ]
 }
