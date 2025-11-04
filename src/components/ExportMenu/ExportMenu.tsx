@@ -1,4 +1,9 @@
-import { Download, FileText, Table, Image } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { Download, FileText, Table } from 'lucide-react';
+import { toast } from 'sonner';
+
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,8 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
 
 interface ExportMenuProps {
   data: any;
@@ -34,7 +37,7 @@ export function ExportMenu({ data, filename = 'export' }: ExportMenuProps) {
     try {
       // Convert object/array to CSV
       let csvContent = '';
-      
+
       if (Array.isArray(data)) {
         if (data.length === 0) {
           toast.error('No data to export');
@@ -71,8 +74,87 @@ export function ExportMenu({ data, filename = 'export' }: ExportMenuProps) {
   };
 
   const exportAsPDF = () => {
-    toast.info('PDF export coming soon');
-    // TODO: Implement PDF export using jsPDF or similar
+    try {
+      const doc = new jsPDF({ orientation: 'landscape' });
+      const createdAt = new Date().toLocaleString();
+
+      doc.setFontSize(18);
+      doc.text(`${filename}`, 14, 20);
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Generated ${createdAt}`, 14, 28);
+
+      const normalizeRow = (row: Record<string, unknown>, headers: string[]) =>
+        headers.map((header) => {
+          const value = row[header];
+          if (value == null) return '';
+          if (typeof value === 'number') return value.toLocaleString();
+          if (typeof value === 'object') return JSON.stringify(value);
+          return String(value);
+        });
+
+      if (Array.isArray(data)) {
+        if (data.length === 0) {
+          doc.text('No rows available for export.', 14, 40);
+        } else {
+          const headers = Object.keys(data[0]);
+          autoTable(doc, {
+            startY: 36,
+            head: [headers],
+            body: data.map((row) => normalizeRow(row, headers)),
+            styles: {
+              fontSize: 9,
+              cellPadding: 3,
+            },
+            headStyles: {
+              fillColor: [33, 37, 41],
+              textColor: 255,
+            },
+            alternateRowStyles: {
+              fillColor: [245, 245, 245],
+            },
+          });
+          doc.setFontSize(10);
+          doc.text(
+            `Total rows: ${data.length.toLocaleString()}`,
+            14,
+            doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : 40,
+          );
+        }
+      } else if (data && typeof data === 'object') {
+        const entries = Object.entries(data);
+        autoTable(doc, {
+          startY: 36,
+          head: [['Field', 'Value']],
+          body: entries.map(([key, value]) => {
+            const serialized =
+              value == null
+                ? ''
+                : typeof value === 'object'
+                  ? JSON.stringify(value, null, 2)
+                  : String(value);
+            return [key, serialized];
+          }),
+          styles: {
+            fontSize: 10,
+            cellPadding: 3,
+          },
+          headStyles: {
+            fillColor: [33, 37, 41],
+            textColor: 255,
+          },
+        });
+      } else {
+        doc.setFontSize(12);
+        doc.text(String(data), 14, 40, { maxWidth: 250 });
+      }
+
+      doc.save(`${filename}.pdf`);
+      toast.success('Exported as PDF');
+    } catch (error) {
+      console.error('Failed to export as PDF', error);
+      toast.error('Failed to export PDF');
+    }
   };
 
   const downloadBlob = (blob: Blob, filename: string) => {

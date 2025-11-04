@@ -1,16 +1,18 @@
-import { useEffect, useRef, useState } from "react";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Palette, UploadCloud, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Palette, UploadCloud, X } from "lucide-react";
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import {
   applyThemePreferences,
   getDefaultPreferences,
@@ -23,13 +25,12 @@ import {
   setWallpaperBlur,
   setWallpaperOpacity,
   type ThemeName,
-} from "@/lib/theme";
-import { Switch } from "@/components/ui/switch";
+} from '@/lib/theme';
 
 export function ThemeCustomizer() {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [primaryHueLocal, setPrimaryHueLocal] = useState(210);
-  const [themeName, setThemeNameLocal] = useState<ThemeName>("default");
+  const [themeName, setThemeNameLocal] = useState<ThemeName>('default');
   const [radius, setRadiusLocal] = useState(8);
   const [opacity, setOpacityLocal] = useState(0.25);
   const [blur, setBlurLocal] = useState(0);
@@ -54,11 +55,11 @@ export function ThemeCustomizer() {
     const dataUrl = await toDataUrl(file);
     setWallpaper(dataUrl);
     setHasWallpaper(true);
-    if (fileRef.current) fileRef.current.value = "";
+    if (fileRef.current) fileRef.current.value = '';
   };
 
   const clearWallpaper = () => {
-    setWallpaper("");
+    setWallpaper('');
     setHasWallpaper(false);
   };
 

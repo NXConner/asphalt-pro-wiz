@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
+
 import { logEvent } from '@/lib/logging';
 
 export type AreaShape = 'rectangle' | 'triangle' | 'circle' | 'drawn' | 'manual' | 'image';
@@ -46,18 +47,24 @@ export function useAreaState() {
     setAreas((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
-  const handleAreaDrawn = useCallback((area: number) => {
-    setAreas((prev) => [...prev, { id: nextAreaId, shape: 'drawn', area }]);
-    setNextAreaId((prev) => prev + 1);
-    try {
-      toast.success(`Added ${area.toFixed(1)} sq ft from map drawing`);
-    } catch {}
-  }, [nextAreaId]);
+  const handleAreaDrawn = useCallback(
+    (area: number) => {
+      setAreas((prev) => [...prev, { id: nextAreaId, shape: 'drawn', area }]);
+      setNextAreaId((prev) => prev + 1);
+      try {
+        toast.success(`Added ${area.toFixed(1)} sq ft from map drawing`);
+      } catch {}
+    },
+    [nextAreaId],
+  );
 
-  const handleImageAreaDetected = useCallback((area: number) => {
-    setAreas((prev) => [...prev, { id: nextAreaId, shape: 'image', area }]);
-    setNextAreaId((prev) => prev + 1);
-  }, [nextAreaId]);
+  const handleImageAreaDetected = useCallback(
+    (area: number) => {
+      setAreas((prev) => [...prev, { id: nextAreaId, shape: 'image', area }]);
+      setNextAreaId((prev) => prev + 1);
+    },
+    [nextAreaId],
+  );
 
   return {
     items: areas,

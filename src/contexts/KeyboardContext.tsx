@@ -1,4 +1,5 @@
 import { createContext, useContext, ReactNode } from 'react';
+
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import type { ShortcutConfig } from '@/hooks/useKeyboardShortcuts';
 
@@ -49,6 +50,7 @@ export function KeyboardProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useKeyboard() {
   const context = useContext(KeyboardContext);
   if (!context) {

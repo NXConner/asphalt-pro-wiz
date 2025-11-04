@@ -1,10 +1,11 @@
-import { describe, it, expect } from "vitest";
-import { getDefaultPreferences, applyThemePreferences } from "@/lib/theme";
+import { describe, it, expect } from 'vitest';
 
-describe("theme", () => {
-  it("applies theme variables to document", () => {
+import { getDefaultPreferences, applyThemePreferences } from '@/lib/theme';
+
+describe('theme', () => {
+  it('applies theme variables to document', () => {
     const prefs = getDefaultPreferences();
     applyThemePreferences(prefs);
-    expect(document.documentElement.classList.contains("dark")).toBe(true);
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
   });
 });

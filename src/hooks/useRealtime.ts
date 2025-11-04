@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useQueryClient } from '@tanstack/react-query';
 import type { RealtimeChannel } from '@supabase/supabase-js';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+
+import { supabase } from '@/integrations/supabase/client';
 
 interface RealtimeOptions {
   table: string;

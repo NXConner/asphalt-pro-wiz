@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const mockNavigate = vi.fn();
 
@@ -55,7 +56,7 @@ describe('ProtectedRoute', () => {
         <ProtectedRoute>
           <div>Protected Content</div>
         </ProtectedRoute>
-      </wrapper>
+      </wrapper>,
     );
 
     // Initially shows loading
@@ -74,7 +75,7 @@ describe('ProtectedRoute', () => {
         <ProtectedRoute>
           <div>Protected Content</div>
         </ProtectedRoute>
-      </wrapper>
+      </wrapper>,
     );
 
     await waitFor(() => {
@@ -99,7 +100,7 @@ describe('ProtectedRoute', () => {
         <ProtectedRoute>
           <div>Protected Content</div>
         </ProtectedRoute>
-      </wrapper>
+      </wrapper>,
     );
 
     await waitFor(() => {

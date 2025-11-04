@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
+
 import { reportWebVitals } from '@/lib/performance';
 
 interface PerformanceContextValue {
@@ -21,12 +22,11 @@ export function PerformanceProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <PerformanceContext.Provider value={{ markFeature }}>
-      {children}
-    </PerformanceContext.Provider>
+    <PerformanceContext.Provider value={{ markFeature }}>{children}</PerformanceContext.Provider>
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function usePerformance() {
   const context = useContext(PerformanceContext);
   if (!context) {

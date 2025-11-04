@@ -1,22 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
+import { useEffect, useMemo, useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 
 // Lightweight, read-only portal for customers
 // MVP: enter a code (future), or paste a tokenized estimate snapshot
 // For now, supports manual paste of a JSON snapshot to preview totals.
 
 export default function Portal() {
-  const [snapshot, setSnapshot] = useState<string>("");
-  const [error, setError] = useState<string>("");
+  const [snapshot, setSnapshot] = useState<string>('');
+  const [error, setError] = useState<string>('');
   const [data, setData] = useState<any | null>(null);
 
   useEffect(() => {
     const url = new URL(location.href);
-    const s = url.searchParams.get("s");
+    const s = url.searchParams.get('s');
     if (s) {
       try {
         const decoded = atob(s);
@@ -24,7 +25,7 @@ export default function Portal() {
         const json = JSON.parse(decoded);
         setData(json);
       } catch (e: any) {
-        setError(e?.message || "Invalid snapshot");
+        setError(e?.message || 'Invalid snapshot');
       }
     }
   }, []);
@@ -42,7 +43,8 @@ export default function Portal() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Paste a proposal snapshot provided by your contractor to view a read-only summary. No data is uploaded.
+            Paste a proposal snapshot provided by your contractor to view a read-only summary. No
+            data is uploaded.
           </p>
           <Textarea
             rows={8}
@@ -53,12 +55,12 @@ export default function Portal() {
           <div className="flex items-center gap-2">
             <Button
               onClick={() => {
-                setError("");
+                setError('');
                 try {
                   const json = JSON.parse(snapshot);
                   setData(json);
                 } catch (e: any) {
-                  setError(e?.message || "Invalid JSON");
+                  setError(e?.message || 'Invalid JSON');
                   setData(null);
                 }
               }}
@@ -71,8 +73,8 @@ export default function Portal() {
                 try {
                   const encoded = btoa(snapshot);
                   const url = new URL(location.href);
-                  url.searchParams.set("s", encoded);
-                  history.replaceState({}, "", url.toString());
+                  url.searchParams.set('s', encoded);
+                  history.replaceState({}, '', url.toString());
                 } catch {}
               }}
             >
@@ -87,8 +89,8 @@ export default function Portal() {
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <div className="text-xs text-muted-foreground">Job</div>
-                  <div className="text-lg font-semibold">{data?.jobName || "N/A"}</div>
-                  <div className="text-sm text-muted-foreground">{data?.customerAddress || ""}</div>
+                  <div className="text-lg font-semibold">{data?.jobName || 'N/A'}</div>
+                  <div className="text-sm text-muted-foreground">{data?.customerAddress || ''}</div>
                 </div>
                 <div className="text-right">
                   <div className="text-xs text-muted-foreground">Estimated Total</div>

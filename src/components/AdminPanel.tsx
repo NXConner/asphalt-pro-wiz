@@ -1,15 +1,16 @@
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useIsAdmin, type AppRole } from '@/hooks/useUserRole';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Shield, UserPlus, UserX, Loader2, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Shield, UserPlus, UserX, Loader2, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useIsAdmin, type AppRole } from '@/hooks/useUserRole';
+import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -46,11 +47,11 @@ export function AdminPanel() {
       if (rolesError) throw rolesError;
 
       // Combine profiles with their roles
-      const usersWithRoles: UserWithRoles[] = profiles.map(profile => ({
+      const usersWithRoles: UserWithRoles[] = profiles.map((profile) => ({
         id: profile.id,
         email: profile.email,
         full_name: profile.full_name,
-        roles: roles.filter(r => r.user_id === profile.id).map(r => r.role),
+        roles: roles.filter((r) => r.user_id === profile.id).map((r) => r.role),
       }));
 
       return usersWithRoles;
@@ -119,9 +120,7 @@ export function AdminPanel() {
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          You do not have permission to access the admin panel.
-        </AlertDescription>
+        <AlertDescription>You do not have permission to access the admin panel.</AlertDescription>
       </Alert>
     );
   }
@@ -134,9 +133,7 @@ export function AdminPanel() {
             <Shield className="h-6 w-6 text-primary" />
             <CardTitle>Admin Panel</CardTitle>
           </div>
-          <CardDescription>
-            Manage user roles and permissions
-          </CardDescription>
+          <CardDescription>Manage user roles and permissions</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
@@ -151,7 +148,7 @@ export function AdminPanel() {
               />
               <Button
                 onClick={() => {
-                  const user = users.find(u => u.email === newAdminEmail);
+                  const user = users.find((u) => u.email === newAdminEmail);
                   if (user) {
                     handleGrantAdmin(user.id);
                     setNewAdminEmail('');
@@ -187,14 +184,19 @@ export function AdminPanel() {
                       <p className="text-sm text-muted-foreground">{user.email}</p>
                       <div className="mt-1 flex gap-1">
                         {user.roles.map((role) => (
-                          <Badge key={role} variant={role.includes('Administrator') ? 'default' : 'secondary'}>
+                          <Badge
+                            key={role}
+                            variant={role.includes('Administrator') ? 'default' : 'secondary'}
+                          >
                             {role}
                           </Badge>
                         ))}
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      {user.roles.some(r => r === 'Administrator' || r === 'Super Administrator') ? (
+                      {user.roles.some(
+                        (r) => r === 'Administrator' || r === 'Super Administrator',
+                      ) ? (
                         <Button
                           variant="outline"
                           size="sm"

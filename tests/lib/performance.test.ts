@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { mark, measure, getRating, withPerformanceMonitoring } from '@/lib/performance';
 
 describe('Performance Utilities', () => {
@@ -10,9 +11,9 @@ describe('Performance Utilities', () => {
     it('should create performance mark', () => {
       const mockMark = vi.fn();
       global.performance.mark = mockMark;
-      
+
       mark('test-mark');
-      
+
       expect(mockMark).toHaveBeenCalledWith('test-mark');
     });
   });
@@ -35,9 +36,9 @@ describe('Performance Utilities', () => {
     it('should wrap function with performance monitoring', () => {
       const testFn = vi.fn(() => 'result');
       const wrapped = withPerformanceMonitoring(testFn, 'TestComponent');
-      
+
       const result = wrapped();
-      
+
       expect(result).toBe('result');
       expect(testFn).toHaveBeenCalled();
     });

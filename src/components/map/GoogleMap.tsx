@@ -1,6 +1,8 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useJsApiLoader, GoogleMap as GMap, DrawingManager, Circle } from "@react-google-maps/api";
-import type { Coordinates } from "@/lib/locations";
+import { useJsApiLoader, GoogleMap as GMap, DrawingManager, Circle } from '@react-google-maps/api';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import { listJobs, type SavedJob } from '@/lib/idb';
+import type { Coordinates } from '@/lib/locations';
 import {
   getBusinessCoords,
   getSupplierCoords,
@@ -8,10 +10,9 @@ import {
   SUPPLIER_ADDRESS,
   BUSINESS_COORDS_FALLBACK,
   SUPPLIER_COORDS_FALLBACK,
-} from "@/lib/locations";
-import { loadMapSettings, type TileOverlayConfig, type BaseLayerId } from "@/lib/mapSettings";
-import { listJobs, type SavedJob } from "@/lib/idb";
-import { fetchRadarFrames, getTileUrlForFrame } from "@/lib/radar";
+} from '@/lib/locations';
+import { loadMapSettings, type TileOverlayConfig, type BaseLayerId } from '@/lib/mapSettings';
+import { fetchRadarFrames, getTileUrlForFrame } from '@/lib/radar';
 
 export interface GoogleMapProps {
   onAddressUpdate: (coords: [number, number], address: string) => void;
@@ -22,14 +23,14 @@ export interface GoogleMapProps {
 }
 
 const statusColor: Record<string, string> = {
-  need_estimate: "#f59e0b",
-  estimated: "#3b82f6",
-  active: "#22c55e",
-  completed: "#6b7280",
-  lost: "#ef4444",
+  need_estimate: '#f59e0b',
+  estimated: '#3b82f6',
+  active: '#22c55e',
+  completed: '#6b7280',
+  lost: '#ef4444',
 };
 
-const containerStyle: google.maps.MapOptions["styles"] | undefined = undefined;
+const containerStyle: google.maps.MapOptions['styles'] | undefined = undefined;
 
 export const GoogleMap = memo(
   ({
@@ -40,11 +41,11 @@ export const GoogleMap = memo(
     refreshKey,
   }: GoogleMapProps) => {
     const settings = loadMapSettings();
-    const apiKey = settings.googleApiKey || "";
+    const apiKey = settings.googleApiKey || '';
     const { isLoaded } = useJsApiLoader({
-      googleMapsApiKey: apiKey || "invalid-key",
-      libraries: ["places", "drawing", "geometry"],
-      id: "google-map-script-pps",
+      googleMapsApiKey: apiKey || 'invalid-key',
+      libraries: ['places', 'drawing', 'geometry'],
+      id: 'google-map-script-pps',
     });
 
     const mapRef = useRef<google.maps.Map | null>(null);
@@ -73,13 +74,13 @@ export const GoogleMap = memo(
               userMarkerRef.current = new google.maps.Marker({
                 position: { lat: coords[0], lng: coords[1] },
                 map: mapRef.current,
-                title: "Your Location",
+                title: 'Your Location',
                 icon: {
                   path: google.maps.SymbolPath.CIRCLE,
                   scale: 6,
-                  fillColor: "#3b82f6",
+                  fillColor: '#3b82f6',
                   fillOpacity: 0.95,
-                  strokeColor: "#2563eb",
+                  strokeColor: '#2563eb',
                   strokeWeight: 2,
                 },
               });
@@ -102,13 +103,13 @@ export const GoogleMap = memo(
 
     const getMapTypeId = (base: BaseLayerId): google.maps.MapTypeId | string => {
       switch (base) {
-        case "google_roadmap":
+        case 'google_roadmap':
           return google.maps.MapTypeId.ROADMAP;
-        case "google_satellite":
+        case 'google_satellite':
           return google.maps.MapTypeId.SATELLITE;
-        case "google_terrain":
+        case 'google_terrain':
           return google.maps.MapTypeId.TERRAIN;
-        case "google_hybrid":
+        case 'google_hybrid':
         default:
           return google.maps.MapTypeId.HYBRID;
       }
@@ -167,7 +168,7 @@ export const GoogleMap = memo(
       while ((map.overlayMapTypes?.getLength?.() || 0) > 0) {
         map.overlayMapTypes?.pop();
       }
-      const nonRadar = settings.overlays.filter((o) => o.visible && o.id !== "radar");
+      const nonRadar = settings.overlays.filter((o) => o.visible && o.id !== 'radar');
       for (const o of nonRadar) {
         const type = createOverlayMapTypeFromConfig(o);
         if (type) map.overlayMapTypes.push(type);
@@ -180,7 +181,7 @@ export const GoogleMap = memo(
         window.clearInterval(radarIntervalRef.current);
         radarIntervalRef.current = null;
       }
-      const radarCfg = settings.overlays.find((o) => o.id === "radar" && o.visible);
+      const radarCfg = settings.overlays.find((o) => o.id === 'radar' && o.visible);
       if (!settings.radar.enabled || !radarCfg) return;
       const frames = await fetchRadarFrames();
       if (!frames.length) return;
@@ -190,9 +191,9 @@ export const GoogleMap = memo(
           new google.maps.ImageMapType({
             getTileUrl: (coord, z) =>
               getTileUrlForFrame(f)
-                .replace("{z}", String(z))
-                .replace("{x}", String(coord.x))
-                .replace("{y}", String(coord.y)),
+                .replace('{z}', String(z))
+                .replace('{x}', String(coord.x))
+                .replace('{y}', String(coord.y)),
             tileSize: new google.maps.Size(256, 256),
             opacity: radarCfg.opacity ?? settings.radar.opacity,
             name: `radar-${f.time}`,
@@ -325,7 +326,7 @@ export const GoogleMap = memo(
         onLoad={onLoad}
         onUnmount={onUnmount}
         onClick={handleClick}
-        mapContainerStyle={{ height: "450px", width: "100%", borderRadius: 8 }}
+        mapContainerStyle={{ height: '450px', width: '100%', borderRadius: 8 }}
         options={{
           mapTypeId: getMapTypeId(settings.baseLayer),
           streetViewControl: false,
@@ -356,10 +357,10 @@ export const GoogleMap = memo(
               center={{ lat: (job.coords as any)[0], lng: (job.coords as any)[1] }}
               radius={3}
               options={{
-                strokeColor: statusColor[job.status] || "#10b981",
+                strokeColor: statusColor[job.status] || '#10b981',
                 strokeOpacity: 0.9,
                 strokeWeight: 2,
-                fillColor: statusColor[job.status] || "#10b981",
+                fillColor: statusColor[job.status] || '#10b981',
                 fillOpacity: 0.7,
               }}
             />
@@ -372,19 +373,19 @@ export const GoogleMap = memo(
 
 function createOverlayMapTypeFromConfig(o: TileOverlayConfig): google.maps.ImageMapType | null {
   if (!o.visible) return null;
-  if (o.type === "tile" && o.urlTemplate) {
+  if (o.type === 'tile' && o.urlTemplate) {
     return new google.maps.ImageMapType({
       getTileUrl: (coord, z) =>
         o
-          .urlTemplate!.replace("{z}", String(z))
-          .replace("{x}", String(coord.x))
-          .replace("{y}", String(coord.y)),
+          .urlTemplate!.replace('{z}', String(z))
+          .replace('{x}', String(coord.x))
+          .replace('{y}', String(coord.y)),
       tileSize: new google.maps.Size(256, 256),
       opacity: o.opacity ?? 1,
       name: o.name,
     });
   }
-  if (o.type === "wms" && o.urlTemplate && o.wmsParams?.layers) {
+  if (o.type === 'wms' && o.urlTemplate && o.wmsParams?.layers) {
     return new google.maps.ImageMapType({
       getTileUrl: (coord, z) =>
         buildWmsUrl(o.urlTemplate!, o.wmsParams!.layers, z, coord.x, coord.y),
@@ -406,19 +407,19 @@ function buildWmsUrl(baseUrl: string, layers: string, z: number, x: number, y: n
   const [minx, miny] = lonLatToMercator(lonLeft, latBottom);
   const [maxx, maxy] = lonLatToMercator(lonRight, latTop);
   const params = new URLSearchParams({
-    service: "WMS",
-    request: "GetMap",
+    service: 'WMS',
+    request: 'GetMap',
     layers,
-    styles: "",
-    format: "image/png",
-    transparent: "true",
-    version: "1.3.0",
-    crs: "EPSG:3857",
-    width: "256",
-    height: "256",
+    styles: '',
+    format: 'image/png',
+    transparent: 'true',
+    version: '1.3.0',
+    crs: 'EPSG:3857',
+    width: '256',
+    height: '256',
     bbox: `${minx},${miny},${maxx},${maxy}`,
   });
-  const sep = baseUrl.includes("?") ? "&" : "?";
+  const sep = baseUrl.includes('?') ? '&' : '?';
   return `${baseUrl}${sep}${params.toString()}`;
 }
 

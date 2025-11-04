@@ -1,28 +1,28 @@
-import { useMemo, useState } from "react";
-import { ClipboardList, Compass, FlaskConical, ThermometerSun } from "lucide-react";
+import { ClipboardList, Compass, FlaskConical, ThermometerSun } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CanvasPanel } from "@/modules/layout/CanvasPanel";
-import type { EstimatorState } from "@/modules/estimate/useEstimatorState";
-import { ScopeStep } from "@/modules/estimate/components/ScopeStep";
-import { MaterialsStep } from "@/modules/estimate/components/MaterialsStep";
-import { StripingStep } from "@/modules/estimate/components/StripingStep";
-import { ReviewStep } from "@/modules/estimate/components/ReviewStep";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MaterialsStep } from '@/modules/estimate/components/MaterialsStep';
+import { ReviewStep } from '@/modules/estimate/components/ReviewStep';
+import { ScopeStep } from '@/modules/estimate/components/ScopeStep';
+import { StripingStep } from '@/modules/estimate/components/StripingStep';
+import type { EstimatorState } from '@/modules/estimate/useEstimatorState';
+import { CanvasPanel } from '@/modules/layout/CanvasPanel';
 
 interface EstimatorStudioProps {
   estimator: EstimatorState;
 }
 
 const STEP_DEFINITIONS = [
-  { id: "scope", title: "Scope", icon: <Compass className="h-4 w-4" /> },
-  { id: "materials", title: "Materials", icon: <FlaskConical className="h-4 w-4" /> },
-  { id: "striping", title: "Striping", icon: <ThermometerSun className="h-4 w-4" /> },
-  { id: "review", title: "Review", icon: <ClipboardList className="h-4 w-4" /> },
+  { id: 'scope', title: 'Scope', icon: <Compass className="h-4 w-4" /> },
+  { id: 'materials', title: 'Materials', icon: <FlaskConical className="h-4 w-4" /> },
+  { id: 'striping', title: 'Striping', icon: <ThermometerSun className="h-4 w-4" /> },
+  { id: 'review', title: 'Review', icon: <ClipboardList className="h-4 w-4" /> },
 ];
 
 export function EstimatorStudio({ estimator }: EstimatorStudioProps) {
   const steps = useMemo(() => STEP_DEFINITIONS, []);
-  const [activeStep, setActiveStep] = useState<string>(steps[0]?.id ?? "scope");
+  const [activeStep, setActiveStep] = useState<string>(steps[0]?.id ?? 'scope');
 
   const goToStep = (stepId: string) => setActiveStep(stepId);
   const nextStep = () => {

@@ -1,26 +1,36 @@
-import { Calculator } from "lucide-react";
+import { Calculator } from 'lucide-react';
 
-import { Button } from "@/components/ui/button";
-import { CustomServices } from "@/components/CustomServices";
-import type { EstimatorState } from "@/modules/estimate/useEstimatorState";
+import { CustomServices } from '@/components/CustomServices';
+import { Button } from '@/components/ui/button';
+import type { EstimatorState } from '@/modules/estimate/useEstimatorState';
 
 interface ReviewStepProps {
-  areas: EstimatorState["areas"];
-  striping: EstimatorState["striping"];
-  materials: EstimatorState["materials"];
-  customServices: EstimatorState["customServices"];
-  calculation: EstimatorState["calculation"];
-  cracks: EstimatorState["cracks"];
+  areas: EstimatorState['areas'];
+  striping: EstimatorState['striping'];
+  materials: EstimatorState['materials'];
+  customServices: EstimatorState['customServices'];
+  calculation: EstimatorState['calculation'];
+  cracks: EstimatorState['cracks'];
   onBack: () => void;
 }
 
-export function ReviewStep({ areas, striping, materials, customServices, calculation, cracks, onBack }: ReviewStepProps) {
+export function ReviewStep({
+  areas,
+  striping,
+  materials,
+  customServices,
+  calculation,
+  cracks,
+  onBack,
+}: ReviewStepProps) {
   return (
     <>
       <section className="space-y-4">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="text-lg font-semibold text-slate-50">Custom Services &amp; Final Checks</h3>
+            <h3 className="text-lg font-semibold text-slate-50">
+              Custom Services &amp; Final Checks
+            </h3>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-200/60">
               {customServices.items.length} custom line items | {areas.total.toFixed(1)} sq ft scope
             </p>
@@ -39,17 +49,26 @@ export function ReviewStep({ areas, striping, materials, customServices, calcula
           <div>
             <h3 className="text-lg font-semibold text-slate-50">Readiness Summary</h3>
             <ul className="mt-2 space-y-1 text-sm text-slate-200/80">
-              <li>• {areas.total.toFixed(1)} sq ft across {areas.items.length} area segments</li>
-              <li>• {striping.lines} lines, {striping.handicap} handicap stalls, {striping.arrowsLarge + striping.arrowsSmall} arrow markings</li>
               <li>
-                • {materials.numCoats} coat plan · {materials.sandAdded ? "Sand Additive" : "No Sand"} · {materials.polymerAdded ? "Fast-dry polymer" : "Standard dry time"}
+                • {areas.total.toFixed(1)} sq ft across {areas.items.length} area segments
+              </li>
+              <li>
+                • {striping.lines} lines, {striping.handicap} handicap stalls,{' '}
+                {striping.arrowsLarge + striping.arrowsSmall} arrow markings
+              </li>
+              <li>
+                • {materials.numCoats} coat plan ·{' '}
+                {materials.sandAdded ? 'Sand Additive' : 'No Sand'} ·{' '}
+                {materials.polymerAdded ? 'Fast-dry polymer' : 'Standard dry time'}
               </li>
             </ul>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <span className="text-xs uppercase tracking-[0.3em] text-slate-200/60">Estimated Total</span>
+            <span className="text-xs uppercase tracking-[0.3em] text-slate-200/60">
+              Estimated Total
+            </span>
             <span className="text-3xl font-semibold text-slate-50">
-              {calculation.costs ? `$${calculation.costs.total.toFixed(2)}` : "Pending"}
+              {calculation.costs ? `$${calculation.costs.total.toFixed(2)}` : 'Pending'}
             </span>
           </div>
         </div>

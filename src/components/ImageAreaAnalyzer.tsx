@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { analyzeImage } from "@/lib/gemini";
-import { logEvent, logError } from "@/lib/logging";
+import { useEffect, useRef, useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { analyzeImage } from '@/lib/gemini';
+import { logEvent, logError } from '@/lib/logging';
 
 interface ImageAreaAnalyzerProps {
   onAreaDetected: (areaSqFt: number) => void;
@@ -23,14 +24,14 @@ function shoelaceArea(points: Point[]): number {
 }
 
 export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerProps) {
-  const [imageUrl, setImageUrl] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>('');
   const [busy, setBusy] = useState(false);
   const [pixelsPerFoot, setPixelsPerFoot] = useState<number | null>(null);
   const [calibrationPx, setCalibrationPx] = useState<number | null>(null);
   const [calibrationFeet, setCalibrationFeet] = useState<number>(10);
   const [points, setPoints] = useState<Point[]>([]);
   const [areaSqFt, setAreaSqFt] = useState<number>(0);
-  const [aiNotes, setAiNotes] = useState<string>("");
+  const [aiNotes, setAiNotes] = useState<string>('');
 
   const imgRef = useRef<HTMLImageElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -42,22 +43,22 @@ export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerP
     const canvas = canvasRef.current;
     const img = imgRef.current;
     if (!canvas || !img) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (points.length) {
-      ctx.strokeStyle = "#22c55e";
+      ctx.strokeStyle = '#22c55e';
       ctx.lineWidth = 2;
-      ctx.fillStyle = "rgba(34,197,94,0.15)";
+      ctx.fillStyle = 'rgba(34,197,94,0.15)';
       ctx.beginPath();
       ctx.moveTo(points[0].x, points[0].y);
       for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
-      ctx.fillStyle = "#16a34a";
+      ctx.fillStyle = '#16a34a';
       for (const p of points) {
         ctx.beginPath();
         ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
@@ -66,7 +67,7 @@ export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerP
     }
     const cps = calibrationPointsRef.current;
     if (cps.length === 2) {
-      ctx.strokeStyle = "#60a5fa";
+      ctx.strokeStyle = '#60a5fa';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(cps[0].x, cps[0].y);
@@ -107,7 +108,7 @@ export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerP
         const ppf = calibrationFeet > 0 ? distPx / calibrationFeet : null;
         if (ppf) setPixelsPerFoot(ppf);
         isCalibratingRef.current = false;
-        logEvent("image_area.calibrated", { distPx, calibrationFeet });
+        logEvent('image_area.calibrated', { distPx, calibrationFeet });
       }
     } else {
       setPoints((prev) => [...prev, { x, y }]);
@@ -126,7 +127,7 @@ export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerP
     const url = URL.createObjectURL(file);
     setImageUrl(url);
     setPoints([]);
-    setAiNotes("");
+    setAiNotes('');
   };
 
   const undoPoint = () => setPoints((prev) => prev.slice(0, -1));
@@ -154,13 +155,13 @@ export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerP
           (b) =>
             new Promise<string>((resolve) => {
               const reader = new FileReader();
-              reader.onload = () => resolve((reader.result as string).split(",")[1] || "");
+              reader.onload = () => resolve((reader.result as string).split(',')[1] || '');
               reader.readAsDataURL(b);
             }),
         );
       const prompt =
-        "Estimate paved surface area (sq ft). If polygon provided, prefer that. Return a concise numeric answer like: Area: 1234 sq ft.";
-      const res = await analyzeImage(base64, "image/png", prompt);
+        'Estimate paved surface area (sq ft). If polygon provided, prefer that. Return a concise numeric answer like: Area: 1234 sq ft.';
+      const res = await analyzeImage(base64, 'image/png', prompt);
       setAiNotes(res);
       const match = res.match(/([0-9]+(?:\.[0-9]+)?)\s*(sq\s*ft|ft\^2|square\s*feet)/i);
       if (match) {
@@ -169,7 +170,7 @@ export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerP
           setAreaSqFt((prev) => (prev > 0 ? prev : value));
         }
       }
-      logEvent("image_area.ai_analysis_done");
+      logEvent('image_area.ai_analysis_done');
     } catch (e) {
       logError(e, { areaSqFt });
     } finally {
@@ -219,10 +220,10 @@ export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerP
           </div>
           <div className="ml-auto flex gap-2">
             <Button type="button" onClick={acceptArea} disabled={areaSqFt <= 0}>
-              Add {areaSqFt > 0 ? `${areaSqFt.toFixed(1)} sq ft` : "Area"}
+              Add {areaSqFt > 0 ? `${areaSqFt.toFixed(1)} sq ft` : 'Area'}
             </Button>
             <Button type="button" variant="secondary" onClick={askAI} disabled={!imageUrl || busy}>
-              {busy ? "Analyzing..." : "Analyze with AI"}
+              {busy ? 'Analyzing...' : 'Analyze with AI'}
             </Button>
           </div>
         </div>
@@ -240,7 +241,7 @@ export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerP
               <canvas
                 ref={canvasRef}
                 className="absolute top-0 left-0 pointer-events-none"
-                style={{ width: "100%", height: "100%" }}
+                style={{ width: '100%', height: '100%' }}
               />
             </button>
           </div>
@@ -249,17 +250,17 @@ export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerP
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div className="p-3 rounded-md bg-muted">
             <div className="font-medium">Calibration</div>
-            <div>Pixels per foot: {pixelsPerFoot ? pixelsPerFoot.toFixed(2) : "—"}</div>
-            <div>Calibration (px): {calibrationPx ? calibrationPx.toFixed(1) : "—"}</div>
+            <div>Pixels per foot: {pixelsPerFoot ? pixelsPerFoot.toFixed(2) : '—'}</div>
+            <div>Calibration (px): {calibrationPx ? calibrationPx.toFixed(1) : '—'}</div>
           </div>
           <div className="p-3 rounded-md bg-muted">
             <div className="font-medium">Polygon</div>
             <div>Vertices: {points.length}</div>
-            <div>Area: {areaSqFt > 0 ? <strong>{areaSqFt.toFixed(1)} sq ft</strong> : "—"}</div>
+            <div>Area: {areaSqFt > 0 ? <strong>{areaSqFt.toFixed(1)} sq ft</strong> : '—'}</div>
           </div>
           <div className="p-3 rounded-md bg-muted">
             <div className="font-medium">AI Notes</div>
-            <div className="whitespace-pre-wrap min-h-[2.5rem]">{aiNotes || "—"}</div>
+            <div className="whitespace-pre-wrap min-h-[2.5rem]">{aiNotes || '—'}</div>
           </div>
         </div>
       </CardContent>

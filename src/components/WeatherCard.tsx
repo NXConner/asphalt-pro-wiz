@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getWeather, getWorkRecommendations, type WeatherBundle } from "@/lib/weather";
+import { useEffect, useState } from 'react';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getWeather, getWorkRecommendations, type WeatherBundle } from '@/lib/weather';
 
 interface WeatherCardProps {
   coords: [number, number] | null;
@@ -38,7 +39,7 @@ export const WeatherCard = ({ coords }: WeatherCardProps) => {
             <div className="flex items-center gap-4">
               <div className="text-3xl font-bold">{Math.round(weather.current.temperatureF)}°F</div>
               <div className="text-muted-foreground">
-                Wind {Math.round(weather.current.windMph)} mph · Humidity{" "}
+                Wind {Math.round(weather.current.windMph)} mph · Humidity{' '}
                 {Math.round(weather.current.humidityPct)}%
                 {weather.current.precipitationChancePct !== undefined &&
                   ` · Precip ${weather.current.precipitationChancePct}%`}
@@ -46,7 +47,7 @@ export const WeatherCard = ({ coords }: WeatherCardProps) => {
             </div>
             {weather.hourlyNext6hPopPct && (
               <div className="text-xs text-muted-foreground">
-                Next 6h precip chance: {weather.hourlyNext6hPopPct.join("% · ")}%
+                Next 6h precip chance: {weather.hourlyNext6hPopPct.join('% · ')}%
               </div>
             )}
             <div className="grid grid-cols-4 gap-2">

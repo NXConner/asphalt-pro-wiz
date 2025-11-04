@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { useEffect } from 'react';
+
 import { useToast } from '@/hooks/use-toast';
 
 export function MobileOptimizations() {

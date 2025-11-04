@@ -1,23 +1,23 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import AreaSection from '@/components/AreaSection';
+import ImageAreaAnalyzer from '@/components/ImageAreaAnalyzer';
+import { LayoutOptimizer } from '@/components/Optimizer/LayoutOptimizer';
+import { ServiceCategories } from '@/components/ServiceCategories';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import AreaSection from "@/components/AreaSection";
-import { ServiceCategories } from "@/components/ServiceCategories";
-import ImageAreaAnalyzer from "@/components/ImageAreaAnalyzer";
-import { LayoutOptimizer } from "@/components/Optimizer/LayoutOptimizer";
-import type { EstimatorState } from "@/modules/estimate/useEstimatorState";
+} from '@/components/ui/select';
+import type { EstimatorState } from '@/modules/estimate/useEstimatorState';
 
 interface ScopeStepProps {
-  areas: EstimatorState["areas"];
-  options: EstimatorState["options"];
-  featureFlags: EstimatorState["featureFlags"];
+  areas: EstimatorState['areas'];
+  options: EstimatorState['options'];
+  featureFlags: EstimatorState['featureFlags'];
   onNext: () => void;
 }
 
@@ -26,8 +26,8 @@ export function ScopeStep({ areas, options, featureFlags, onNext }: ScopeStepPro
     <>
       <section className="space-y-4">
         <p className="text-sm text-slate-200/80">
-          Choose the service pillars for this opportunity and capture square footage using quick-add shapes,
-          map drawings, or imagery.
+          Choose the service pillars for this opportunity and capture square footage using quick-add
+          shapes, map drawings, or imagery.
         </p>
         <ServiceCategories
           cleaningRepair={options.includeCleaningRepair}
@@ -35,13 +35,13 @@ export function ScopeStep({ areas, options, featureFlags, onNext }: ScopeStepPro
           striping={options.includeStriping}
           onChange={(category, value) => {
             switch (category) {
-              case "includeCleaningRepair":
+              case 'includeCleaningRepair':
                 options.setIncludeCleaningRepair(value);
                 break;
-              case "includeSealcoating":
+              case 'includeSealcoating':
                 options.setIncludeSealcoating(value);
                 break;
-              case "includeStriping":
+              case 'includeStriping':
                 options.setIncludeStriping(value);
                 break;
               default:
@@ -119,18 +119,19 @@ export function ScopeStep({ areas, options, featureFlags, onNext }: ScopeStepPro
             </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-white/20 bg-white/5 p-6 text-sm text-slate-200/80">
-              No segments yet. Use the quick add controls above or trace directly on the Mission Control map.
+              No segments yet. Use the quick add controls above or trace directly on the Mission
+              Control map.
             </div>
           )}
         </div>
 
-        {featureFlags.isEnabled("optimizer") && areas.total > 0 ? (
+        {featureFlags.isEnabled('optimizer') && areas.total > 0 ? (
           <div className="rounded-2xl border border-white/15 bg-white/5 p-4">
             <LayoutOptimizer totalAreaSqft={areas.total} />
           </div>
         ) : null}
 
-        {featureFlags.isEnabled("imageAreaAnalyzer") ? (
+        {featureFlags.isEnabled('imageAreaAnalyzer') ? (
           <div className="rounded-2xl border border-white/15 bg-white/5 p-4">
             <ImageAreaAnalyzer onAreaDetected={areas.handleImageAreaDetected} />
           </div>

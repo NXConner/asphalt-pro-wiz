@@ -1,4 +1,5 @@
-import { ReactNode } from "react";
+import { ReactNode } from 'react';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 export function ConfirmDialog(props: {
   trigger: ReactNode;
@@ -19,7 +20,14 @@ export function ConfirmDialog(props: {
   cancelText?: string;
   onConfirm?: () => void;
 }) {
-  const { trigger, title, description, confirmText = "Confirm", cancelText = "Cancel", onConfirm } = props;
+  const {
+    trigger,
+    title,
+    description,
+    confirmText = 'Confirm',
+    cancelText = 'Cancel',
+    onConfirm,
+  } = props;
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>

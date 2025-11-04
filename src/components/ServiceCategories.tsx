@@ -1,6 +1,6 @@
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface ServiceCategoriesProps {
   cleaningRepair: boolean;
@@ -26,7 +26,7 @@ export function ServiceCategories({
           <Checkbox
             id="cleaning-repair"
             checked={cleaningRepair}
-            onCheckedChange={(checked) => onChange("includeCleaningRepair", checked as boolean)}
+            onCheckedChange={(checked) => onChange('includeCleaningRepair', checked as boolean)}
           />
           <Label htmlFor="cleaning-repair" className="cursor-pointer font-semibold">
             Cleaning & Crack Repair
@@ -37,7 +37,7 @@ export function ServiceCategories({
           <Checkbox
             id="sealcoating"
             checked={sealcoating}
-            onCheckedChange={(checked) => onChange("includeSealcoating", checked as boolean)}
+            onCheckedChange={(checked) => onChange('includeSealcoating', checked as boolean)}
           />
           <Label htmlFor="sealcoating" className="cursor-pointer font-semibold">
             Sealcoating
@@ -48,7 +48,7 @@ export function ServiceCategories({
           <Checkbox
             id="striping"
             checked={striping}
-            onCheckedChange={(checked) => onChange("includeStriping", checked as boolean)}
+            onCheckedChange={(checked) => onChange('includeStriping', checked as boolean)}
           />
           <Label htmlFor="striping" className="cursor-pointer font-semibold">
             Line Striping

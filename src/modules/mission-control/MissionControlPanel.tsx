@@ -1,29 +1,29 @@
-import { lazy, Suspense } from "react";
-import { Building2, MapPin, Ruler, Waypoints } from "lucide-react";
+import { Building2, MapPin, Ruler, Waypoints } from 'lucide-react';
+import { lazy, Suspense } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { CanvasPanel } from "@/modules/layout/CanvasPanel";
-import type { EstimatorState } from "@/modules/estimate/useEstimatorState";
-import type { JobStatus } from "@/lib/idb";
+} from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { JobStatus } from '@/lib/idb';
+import type { EstimatorState } from '@/modules/estimate/useEstimatorState';
+import { CanvasPanel } from '@/modules/layout/CanvasPanel';
 
-const MapComponent = lazy(() => import("@/components/Map"));
+const MapComponent = lazy(() => import('@/components/Map'));
 
 const JOB_STATUS_OPTIONS: { value: JobStatus; label: string }[] = [
-  { value: "need_estimate", label: "Needs Estimate" },
-  { value: "estimated", label: "Estimated" },
-  { value: "active", label: "Active" },
-  { value: "completed", label: "Completed" },
-  { value: "lost", label: "Lost" },
+  { value: 'need_estimate', label: 'Needs Estimate' },
+  { value: 'estimated', label: 'Estimated' },
+  { value: 'active', label: 'Active' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'lost', label: 'Lost' },
 ];
 
 interface MissionControlPanelProps {
@@ -41,7 +41,7 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
       tone="aurora"
       action={
         <span className="hidden sm:inline-flex items-center rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-slate-100/80">
-          {job.distance > 0 ? `${job.distance.toFixed(1)} mi RT to site` : "Awaiting location"}
+          {job.distance > 0 ? `${job.distance.toFixed(1)} mi RT to site` : 'Awaiting location'}
         </span>
       }
     >
@@ -49,19 +49,25 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
         <div className="space-y-3 lg:col-span-2">
           <div className="grid gap-3 sm:grid-cols-2">
             <fieldset>
-              <Label htmlFor="jobName" className="text-xs uppercase tracking-wide text-slate-200/70">
+              <Label
+                htmlFor="jobName"
+                className="text-xs uppercase tracking-wide text-slate-200/70"
+              >
                 Job Name
               </Label>
               <Input
                 id="jobName"
                 value={job.name}
-                placeholder="St. Mark Sanctuary" 
+                placeholder="St. Mark Sanctuary"
                 onChange={(event) => job.setName(event.target.value)}
                 className="mt-1 bg-white/10 text-base text-slate-50 placeholder:text-slate-200/50"
               />
             </fieldset>
             <fieldset>
-              <Label htmlFor="jobAddress" className="text-xs uppercase tracking-wide text-slate-200/70">
+              <Label
+                htmlFor="jobAddress"
+                className="text-xs uppercase tracking-wide text-slate-200/70"
+              >
                 Site Address (optional manual override)
               </Label>
               <Input
@@ -75,7 +81,9 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             <fieldset>
-              <Label className="text-xs uppercase tracking-wide text-slate-200/70">Job Status</Label>
+              <Label className="text-xs uppercase tracking-wide text-slate-200/70">
+                Job Status
+              </Label>
               <Select value={job.status} onValueChange={(value: JobStatus) => job.setStatus(value)}>
                 <SelectTrigger className="mt-1 h-10 bg-white/10 text-slate-50">
                   <SelectValue />
@@ -108,7 +116,9 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
                 type="button"
                 variant="outline"
                 className="mt-1 h-10 border-white/30 bg-white/10 text-slate-50 hover:bg-white/20"
-                onClick={() => job.handleAddressUpdate(job.coords ?? job.businessCoords, job.address)}
+                onClick={() =>
+                  job.handleAddressUpdate(job.coords ?? job.businessCoords, job.address)
+                }
                 disabled={!job.coords && !job.address}
               >
                 Sync To Latest
@@ -132,13 +142,15 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
           <DataStat
             icon={<Ruler className="h-4 w-4" />}
             label="Mapped Area"
-            value={areas.total > 0 ? `${areas.total.toFixed(1)} sq ft` : "Awaiting capture"}
+            value={areas.total > 0 ? `${areas.total.toFixed(1)} sq ft` : 'Awaiting capture'}
             sub={`${areas.items.length} segments tracked`}
           />
         </aside>
       </section>
       <Suspense
-        fallback={<Skeleton className="h-[420px] w-full rounded-3xl border border-white/10 bg-white/10" />}
+        fallback={
+          <Skeleton className="h-[420px] w-full rounded-3xl border border-white/10 bg-white/10" />
+        }
       >
         <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-xl">
           <MapComponent
@@ -152,10 +164,12 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
       </Suspense>
       <footer className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
         <InfoChip icon={<MapPin className="h-4 w-4" />} label="Site Coordinates">
-          {job.coords ? `${job.coords[0].toFixed(5)}, ${job.coords[1].toFixed(5)}` : "Not captured yet"}
+          {job.coords
+            ? `${job.coords[0].toFixed(5)}, ${job.coords[1].toFixed(5)}`
+            : 'Not captured yet'}
         </InfoChip>
         <InfoChip icon={<Waypoints className="h-4 w-4" />} label="Round Trip Distance">
-          {job.distance > 0 ? `${job.distance.toFixed(1)} mi` : "Pending address"}
+          {job.distance > 0 ? `${job.distance.toFixed(1)} mi` : 'Pending address'}
         </InfoChip>
         <InfoChip icon={<Ruler className="h-4 w-4" />} label="Segments">
           {areas.items.length} recorded | {areas.total.toFixed(1)} sq ft

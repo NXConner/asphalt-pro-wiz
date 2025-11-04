@@ -1,6 +1,7 @@
-import { createContext, useContext, type ReactNode } from 'react';
-import { useAuth } from '@/hooks/useAuth';
 import type { User, Session } from '@supabase/supabase-js';
+import { createContext, useContext, type ReactNode } from 'react';
+
+import { useAuth } from '@/hooks/useAuth';
 
 interface AuthContextValue {
   user: User | null;
@@ -20,6 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuthContext() {
   const context = useContext(AuthContext);
   if (!context) {

@@ -1,13 +1,16 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import type { EstimatorState, StripingColor } from "@/modules/estimate/useEstimatorState";
+import { useId } from 'react';
 
-const STRIPING_COLORS: StripingColor[] = ["White", "Yellow", "Blue", "Red", "Green"];
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import type { EstimatorState, StripingColor } from '@/modules/estimate/useEstimatorState';
+
+const STRIPING_COLORS: StripingColor[] = ['White', 'Yellow', 'Blue', 'Red', 'Green'];
 
 interface StripingStepProps {
-  striping: EstimatorState["striping"];
-  premium: EstimatorState["premium"];
+  striping: EstimatorState['striping'];
+  premium: EstimatorState['premium'];
   onNext: () => void;
   onBack: () => void;
 }
@@ -19,7 +22,11 @@ export function StripingStep({ striping, premium, onNext, onBack }: StripingStep
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <NumericField label="Lines" value={striping.lines} onChange={striping.setLines} />
-            <NumericField label="Handicap" value={striping.handicap} onChange={striping.setHandicap} />
+            <NumericField
+              label="Handicap"
+              value={striping.handicap}
+              onChange={striping.setHandicap}
+            />
             <NumericField
               label="Large Arrows"
               value={striping.arrowsLarge}
@@ -30,7 +37,11 @@ export function StripingStep({ striping, premium, onNext, onBack }: StripingStep
               value={striping.arrowsSmall}
               onChange={striping.setArrowsSmall}
             />
-            <NumericField label="Lettering" value={striping.lettering} onChange={striping.setLettering} />
+            <NumericField
+              label="Lettering"
+              value={striping.lettering}
+              onChange={striping.setLettering}
+            />
             <NumericField label="Curb ft" value={striping.curb} onChange={striping.setCurb} />
           </div>
         </div>
@@ -43,11 +54,11 @@ export function StripingStep({ striping, premium, onNext, onBack }: StripingStep
                 <Button
                   key={color}
                   type="button"
-                  variant={checked ? "default" : "outline"}
+                  variant={checked ? 'default' : 'outline'}
                   className={
                     checked
-                      ? "border-white/40 bg-white/20 text-slate-50"
-                      : "border-white/20 bg-white/5 text-slate-100/80"
+                      ? 'border-white/40 bg-white/20 text-slate-50'
+                      : 'border-white/20 bg-white/5 text-slate-100/80'
                   }
                   onClick={() => striping.toggleColor(color, !checked)}
                 >
@@ -74,31 +85,41 @@ export function StripingStep({ striping, premium, onNext, onBack }: StripingStep
             label="Edge Pushing"
             description="Paired for sidewalk control near sanctuary entrances."
             checked={premium.edgePushing}
-            onCheckedChange={(value) => premium.handlePremiumServiceChange("premiumEdgePushing", value)}
+            onCheckedChange={(value) =>
+              premium.handlePremiumServiceChange('premiumEdgePushing', value)
+            }
           />
           <PremiumToggle
             label="Weed Killer"
             description="Perimeter pre-treatment for gravel and island edges."
             checked={premium.weedKiller}
-            onCheckedChange={(value) => premium.handlePremiumServiceChange("premiumWeedKiller", value)}
+            onCheckedChange={(value) =>
+              premium.handlePremiumServiceChange('premiumWeedKiller', value)
+            }
           />
           <PremiumToggle
             label="Crack Cleaning"
             description="Heat-lance cleaning for maximum crack sealing bond."
             checked={premium.crackCleaning}
-            onCheckedChange={(value) => premium.handlePremiumServiceChange("premiumCrackCleaning", value)}
+            onCheckedChange={(value) =>
+              premium.handlePremiumServiceChange('premiumCrackCleaning', value)
+            }
           />
           <PremiumToggle
             label="Power Washing"
             description="Sanctuary-facing facades and guest drop-offs."
             checked={premium.powerWashing}
-            onCheckedChange={(value) => premium.handlePremiumServiceChange("premiumPowerWashing", value)}
+            onCheckedChange={(value) =>
+              premium.handlePremiumServiceChange('premiumPowerWashing', value)
+            }
           />
           <PremiumToggle
             label="Debris Removal"
             description="Parking islands and curbs cleared before seal."
             checked={premium.debrisRemoval}
-            onCheckedChange={(value) => premium.handlePremiumServiceChange("premiumDebrisRemoval", value)}
+            onCheckedChange={(value) =>
+              premium.handlePremiumServiceChange('premiumDebrisRemoval', value)
+            }
           />
         </div>
       </section>
@@ -122,16 +143,21 @@ interface NumericFieldProps {
 }
 
 function NumericField({ label, value, onChange }: NumericFieldProps) {
+  const inputId = useId();
+
   return (
-    <label className="block">
-      <span className="text-xs uppercase tracking-widest text-slate-200/60">{label}</span>
+    <div className="block">
+      <Label htmlFor={inputId} className="text-xs uppercase tracking-widest text-slate-200/60">
+        {label}
+      </Label>
       <Input
+        id={inputId}
         type="number"
         value={value}
         onChange={(event) => onChange(Number(event.target.value) || 0)}
         className="mt-1 bg-white/10 text-slate-50"
       />
-    </label>
+    </div>
   );
 }
 
@@ -143,13 +169,26 @@ interface PremiumToggleProps {
 }
 
 function PremiumToggle({ label, description, checked, onCheckedChange }: PremiumToggleProps) {
+  const switchId = useId();
+  const descriptionId = `${switchId}-description`;
+
   return (
-    <label className="flex items-start gap-3 rounded-2xl border border-white/15 bg-white/5 p-4">
-      <Switch checked={checked} onCheckedChange={onCheckedChange} className="mt-1" />
+    <div className="flex items-start gap-3 rounded-2xl border border-white/15 bg-white/5 p-4">
+      <Switch
+        id={switchId}
+        aria-describedby={descriptionId}
+        checked={checked}
+        onCheckedChange={onCheckedChange}
+        className="mt-1"
+      />
       <span className="space-y-1">
-        <span className="block text-sm font-semibold text-slate-50">{label}</span>
-        <span className="block text-xs text-slate-200/70">{description}</span>
+        <Label htmlFor={switchId} className="block text-sm font-semibold text-slate-50">
+          {label}
+        </Label>
+        <span id={descriptionId} className="block text-xs text-slate-200/70">
+          {description}
+        </span>
       </span>
-    </label>
+    </div>
   );
 }

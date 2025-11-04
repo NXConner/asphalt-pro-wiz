@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+
 import { useAuthContext } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 
 export type AppRole = Database['public']['Enums']['app_role'];
@@ -14,11 +15,8 @@ export function useUserRole() {
     queryKey: ['user-roles', user?.id],
     queryFn: async () => {
       if (!user) return [];
-      
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('*')
-        .eq('user_id', user.id);
+
+      const { data, error } = await supabase.from('user_roles').select('*').eq('user_id', user.id);
 
       if (error) throw error;
       return data;
@@ -27,7 +25,7 @@ export function useUserRole() {
   });
 
   const hasRole = (role: AppRole): boolean => {
-    return roles.some(r => r.role === role);
+    return roles.some((r) => r.role === role);
   };
 
   const isAdmin = hasRole('Administrator') || hasRole('Super Administrator');
