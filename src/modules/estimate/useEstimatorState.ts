@@ -485,6 +485,7 @@ export function useEstimatorState(): EstimatorState {
       optimizer: isEnabled("optimizer"),
       customerPortal: isEnabled("customerPortal"),
       observability: isEnabled("observability"),
+      commandCenter: isEnabled("commandCenter"),
       ownerMode,
     }),
     [flagVersion, ownerMode],

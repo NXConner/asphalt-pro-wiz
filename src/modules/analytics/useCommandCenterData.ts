@@ -26,10 +26,10 @@ async function fetchCommandCenterData(): Promise<CommandCenterMetrics> {
   }
 
   const [jobsRes, estimatesRes, assignmentsRes] = await Promise.all([
-    client.from<JobRecord>("jobs").select("id,status,total_area_sqft,created_at,updated_at").limit(500),
-    client.from<EstimateRecord>("estimates").select("id,job_id,total,created_at").limit(500),
+    client.from("jobs").select("id,status,total_area_sqft,created_at,updated_at").limit(500),
+    client.from("estimates").select("id,job_id,total,created_at").limit(500),
     client
-      .from<CrewAssignmentRecord>("crew_assignments")
+      .from("crew_assignments")
       .select("id,job_id,shift_start,shift_end")
       .limit(500),
   ]);
