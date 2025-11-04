@@ -12,6 +12,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PerformanceProvider } from "@/contexts/PerformanceContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { MobileOptimizations } from "@/components/MobileOptimizations";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { trackPageView } from "@/lib/analytics";
 
@@ -102,6 +103,7 @@ const { Capacitor } = await import("@capacitor/core");
               <I18nProvider>
                 <QueryClientProvider client={queryClient}>
                   <TooltipProvider>
+                    <MobileOptimizations />
                     <Toaster />
                     <Sonner />
                     <BrowserRouter basename={baseName}>

@@ -3,6 +3,8 @@ import { Droplets, Gauge, LayoutDashboard, LogIn, LogOut, Shield, Sparkles, Swit
 import { Link, useNavigate } from "react-router-dom";
 
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { RealtimeNotifications } from "@/components/RealtimeNotifications";
+import { UserPresence } from "@/components/UserPresence";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { isEnabled } from "@/lib/flags";
@@ -146,6 +148,8 @@ export const OperationsHeader = memo(function OperationsHeader({
               </>
             )}
           </Button>
+          <UserPresence />
+          <RealtimeNotifications />
           <ThemeToggle />
         </div>
     </header>
