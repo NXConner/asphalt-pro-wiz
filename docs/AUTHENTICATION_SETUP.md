@@ -138,11 +138,15 @@ function MyComponent() {
 ## Next Steps
 
 ### Critical (Before Production)
-1. **Configure RLS Policies**: Set up Row Level Security for user-specific data
+1. ✅ **Configure RLS Policies**: Set up Row Level Security for user-specific data (COMPLETED - see `RLS_SECURITY.md`)
 2. **Enable Email Confirmation**: Re-enable for production
 3. **Configure Email Templates**: Customize Supabase auth emails
 4. **Add Password Reset**: Implement forgot password flow
 5. **Add Profile Management**: Allow users to update their profile
+6. **Configure URL Settings**: Set Site URL and Redirect URLs in Supabase Dashboard
+   - Go to Authentication > URL Configuration
+   - Set Site URL to your app URL
+   - Add redirect URLs for all deployment environments
 
 ### Optional Enhancements
 1. **Social Login**: Add Google, GitHub, etc.
