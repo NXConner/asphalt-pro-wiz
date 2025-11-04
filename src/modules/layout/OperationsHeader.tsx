@@ -1,9 +1,11 @@
 import { memo } from "react";
-import { Droplets, Gauge, Sparkles, SwitchCamera } from "lucide-react";
+import { Droplets, Gauge, LayoutDashboard, Sparkles, SwitchCamera } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { isEnabled } from "@/lib/flags";
 
 import type { CanvasWallpaper } from "./wallpapers";
 
@@ -41,6 +43,7 @@ export const OperationsHeader = memo(function OperationsHeader({
   onNextWallpaper,
   summary,
 }: OperationsHeaderProps) {
+  const commandCenterEnabled = isEnabled("commandCenter");
   return (
     <header className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
       <div className="space-y-4">
@@ -72,19 +75,32 @@ export const OperationsHeader = memo(function OperationsHeader({
           </span>
         </div>
       </div>
-      <div className="flex items-center gap-3">
-        <Button
-          type="button"
-          variant="secondary"
-          size="lg"
-          className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
-          onClick={onNextWallpaper}
-        >
-          <SwitchCamera className="mr-2 h-4 w-4" />
-          Cycle Atmosphere
-        </Button>
-        <ThemeToggle />
-      </div>
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          {commandCenterEnabled ? (
+            <Button
+              asChild
+              variant="default"
+              size="lg"
+              className="bg-white text-slate-900 shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5 hover:bg-white/90"
+            >
+              <Link to="/command-center">
+                <LayoutDashboard className="mr-2 h-4 w-4" />
+                Open Command Center
+              </Link>
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
+            onClick={onNextWallpaper}
+          >
+            <SwitchCamera className="mr-2 h-4 w-4" />
+            Cycle Atmosphere
+          </Button>
+          <ThemeToggle />
+        </div>
     </header>
   );
 });

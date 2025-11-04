@@ -59,6 +59,10 @@ const FEATURE_FLAG_LABELS: Record<string, { title: string; description: string }
     title: "Internationalization",
     description: "Expose translation tooling for multi-lingual faith communities.",
   },
+  commandCenter: {
+    title: "Executive Command Center",
+    description: "Unlock the analytics dashboard for revenue, utilization, and scheduling insights.",
+  },
 };
 
 export function EngagementHubPanel({ estimator }: EngagementHubPanelProps) {

@@ -14,6 +14,7 @@ const Index = lazy(() => import("./pages/Index"));
 const PremiumServiceDetails = lazy(() => import("./pages/PremiumServiceDetails"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Portal = lazy(() => import("./pages/Portal/Portal"));
+const CommandCenter = lazy(() => import("./pages/CommandCenter"));
 
 const queryClient = new QueryClient();
 
@@ -75,36 +76,37 @@ const App = () => {
     }
   })();
 
-  return (
-    <ErrorBoundary>
-      <I18nProvider>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter basename={baseName}>
-              <Suspense
-                fallback={
-                  <div className="p-6">
-                    <Skeleton className="h-6 w-1/3 mb-4" />
-                    <Skeleton className="h-96 w-full" />
-                  </div>
-                }
-              >
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/service/:serviceId" element={<PremiumServiceDetails />} />
-                  <Route path="/portal" element={<Portal />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </BrowserRouter>
-          </TooltipProvider>
-        </QueryClientProvider>
-      </I18nProvider>
-    </ErrorBoundary>
-  );
+    return (
+      <ErrorBoundary>
+        <I18nProvider>
+          <QueryClientProvider client={queryClient}>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter basename={baseName}>
+                <Suspense
+                  fallback={
+                    <div className="p-6">
+                      <Skeleton className="h-6 w-1/3 mb-4" />
+                      <Skeleton className="h-96 w-full" />
+                    </div>
+                  }
+                >
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/command-center" element={<CommandCenter />} />
+                    <Route path="/service/:serviceId" element={<PremiumServiceDetails />} />
+                    <Route path="/portal" element={<Portal />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </BrowserRouter>
+            </TooltipProvider>
+          </QueryClientProvider>
+        </I18nProvider>
+      </ErrorBoundary>
+    );
 };
 
 export default App;

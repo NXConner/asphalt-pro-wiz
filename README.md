@@ -43,6 +43,7 @@ Modern, AI-assisted operations cockpit for asphalt estimation, scheduling, and c
   - Observability exporters (`VITE_LOG_BEACON_URL`, `VITE_OBSERVABILITY_EXPORTER_URL`, `OBSERVABILITY_API_KEY`)
   - Mapping + weather integrations (`VITE_GOOGLE_MAPS_API_KEY`, `VITE_OPENWEATHER_API_KEY`, `VITE_MAPBOX_TOKEN`)
   - `VITE_APP_VERSION` surfaced in structured logs
+- Feature flags (set to `1`/`0`): `VITE_FLAG_OBSERVABILITY`, `VITE_FLAG_COMMANDCENTER`, plus UI toggles for other labs features
 - Config is environment-specific; never commit `.env`.
 - Supabase setup, seed strategy, and shared project guidance: `docs/UNIFIED_SUPABASE_GUIDE.md`.
 
@@ -71,6 +72,12 @@ Modern, AI-assisted operations cockpit for asphalt estimation, scheduling, and c
 - Accessibility audits included via `vitest-axe` suites.
 
 ## Operational Guides
+
+### Executive Command Center
+
+- Navigate to `/command-center` (or use the header shortcut) once the `commandCenter` flag is enabled.
+- Requires Supabase credentials (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) to hydrate analytics.
+- Surfaces live metrics for job statuses, revenue, and crew coverage; logs telemetric events for observability when loaded.
 
 - **Containers**: Build the optimized Nginx image and launch Postgres locally:
   ```sh
