@@ -147,9 +147,9 @@ export function ThemeCustomizer() {
           </div>
 
           <div className="space-y-3">
-            <Label>Wallpaper</Label>
+            <Label htmlFor="wallpaper-upload">Wallpaper</Label>
             <div className="flex items-center gap-2">
-              <Input ref={fileRef} type="file" accept="image/*" onChange={handleWallpaper} />
+              <Input id="wallpaper-upload" ref={fileRef} type="file" accept="image/*" onChange={handleWallpaper} />
               <UploadCloud className="w-5 h-5" />
               {hasWallpaper && (
                 <Button type="button" variant="ghost" size="sm" onClick={clearWallpaper}>

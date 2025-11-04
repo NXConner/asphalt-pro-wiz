@@ -325,9 +325,10 @@ export function ReceiptsPanel({ jobName = '', customerAddress = '' }: ReceiptsPa
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
           <div className="md:col-span-2">
-            <Label>Upload Receipts</Label>
+            <Label htmlFor="receipt-upload">Upload Receipts</Label>
             <div className="flex items-center gap-2">
               <Input
+                id="receipt-upload"
                 ref={fileInputRef}
                 type="file"
                 multiple

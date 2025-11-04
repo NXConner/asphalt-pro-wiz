@@ -43,7 +43,7 @@ export function PremiumServices({
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Badge variant="secondary">Included</Badge>
-            <h4 className="font-semibold">Standard Expected Services</h4>
+            <h3 className="font-semibold">Standard Expected Services</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {STANDARD_SERVICES.map((svc) => (

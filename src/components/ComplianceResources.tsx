@@ -131,7 +131,7 @@ function Section({ children }: { children: React.ReactNode }) {
 function Category({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h4 className="font-semibold mb-2">{title}</h4>
+      <h3 className="font-semibold mb-2">{title}</h3>
       <ul className="list-disc pl-5 space-y-1 text-sm">{children}</ul>
     </div>
   );

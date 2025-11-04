@@ -5,6 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ReactNode, useRef, useState, type CSSProperties } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -233,6 +240,7 @@ export function CustomizableCard({
           <PopoverContent className="w-96" align="end">
             <div className="space-y-4">
               <h4 className="font-semibold text-sm">Customize {title || 'Card'}</h4>
+              <h3 className="font-semibold text-sm">Customize {title || "Card"}</h3>
 
               <div className="space-y-2">
                 <Label className="text-xs">Background Type</Label>
@@ -330,13 +338,13 @@ export function CustomizableCard({
 
               {style.backgroundType === 'image' && (
                 <div className="space-y-2">
-                  <Label className="text-xs">Background Image</Label>
+                  <Label htmlFor="card-bg-image" className="text-xs">Background Image</Label>
                   <div className="flex items-center gap-2">
-                    <input
+                    <Input
+                      id="card-bg-image"
                       type="file"
                       accept="image/*"
                       onChange={handleImageSelect}
-                      aria-label="Upload background image"
                     />
                     {style.backgroundImage && (
                       <Button variant="ghost" size="sm" onClick={clearImage} title="Clear image">

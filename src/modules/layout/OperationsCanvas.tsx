@@ -36,6 +36,8 @@ export function OperationsCanvas({
         }}
       />
       <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col gap-10 px-4 pb-12 pt-12 sm:px-8 lg:px-12">
+        {/* Hidden h1 for SEO and accessibility */}
+        <h1 className="sr-only">Pavement Performance Suite - Asphalt Maintenance Estimating</h1>
         {header}
         <main className="grid grid-cols-1 gap-6 xl:grid-cols-12 xl:gap-8">
           <div className="flex flex-col gap-6 xl:col-span-7">

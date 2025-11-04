@@ -98,7 +98,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
         </div>
 
         <div>
-          <h4 className="font-semibold mb-2">Material Costs ($)</h4>
+          <h3 className="font-semibold mb-2">Material Costs ($)</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="sealcoatPrice">Sealer (per gal)</Label>
@@ -154,7 +154,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
         </div>
 
         <div>
-          <h4 className="font-semibold mb-2">Travel & Fuel</h4>
+          <h3 className="font-semibold mb-2">Travel & Fuel</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <Label htmlFor="gasPrice">Gas Price ($/gal)</Label>
@@ -200,7 +200,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
         </div>
 
         <div>
-          <h4 className="font-semibold mb-2">Sealcoat Coverage & Productivity</h4>
+          <h3 className="font-semibold mb-2">Sealcoat Coverage & Productivity</h3>
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <div>
               <Label>Coat 1 gal/sq ft</Label>
@@ -269,7 +269,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
         </div>
 
         <div>
-          <h4 className="font-semibold mb-2">Striping Rates ($)</h4>
+          <h3 className="font-semibold mb-2">Striping Rates ($)</h3>
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <div>
               <Label>Line</Label>
@@ -359,7 +359,7 @@ export function BusinessSettings({ data, onChange }: BusinessSettingsProps) {
         </div>
 
         <div>
-          <h4 className="font-semibold mb-2">Premium Services ($)</h4>
+          <h3 className="font-semibold mb-2">Premium Services ($)</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div>
               <Label>Edge Pushing</Label>
