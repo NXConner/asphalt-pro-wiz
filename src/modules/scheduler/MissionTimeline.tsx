@@ -1,16 +1,23 @@
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 
-import { addDays, addMinutes, differenceInCalendarDays, format, parseISO, startOfDay } from 'date-fns';
+import {
+  addDays,
+  addMinutes,
+  differenceInCalendarDays,
+  format,
+  parseISO,
+  startOfDay,
+} from 'date-fns';
+import { useMemo } from 'react';
 import type { Layout } from 'react-grid-layout';
 import GridLayout, { WidthProvider } from 'react-grid-layout';
-import { useMemo } from 'react';
+
+import { useMissionSchedulerContext } from './MissionSchedulerContext';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-import { useMissionSchedulerContext } from './MissionSchedulerContext';
 
 const TimelineGrid = WidthProvider(GridLayout);
 
@@ -53,16 +60,28 @@ export function MissionTimeline({ weekStart, onShiftWeek }: MissionTimelineProps
     [tasks, weekStart, weekEnd],
   );
 
-  const conflictIds = useMemo(() => new Set(conflicts.flatMap((conflict) => conflict.taskIds)), [conflicts]);
+  const conflictIds = useMemo(
+    () => new Set(conflicts.flatMap((conflict) => conflict.taskIds)),
+    [conflicts],
+  );
 
   const layout: Layout[] = weeklyTasks.map((task) => {
     const start = parseISO(task.start);
     const end = parseISO(task.end);
     const clampedStart = start < weekStart ? weekStart : start;
-    const dayIndex = Math.max(0, Math.min(6, differenceInCalendarDays(startOfDay(clampedStart), startOfDay(weekStart))));
-    const minutesFromMidnight = Math.max(0, Math.round((clampedStart.getHours() * 60 + clampedStart.getMinutes()) / 30) * 30);
+    const dayIndex = Math.max(
+      0,
+      Math.min(6, differenceInCalendarDays(startOfDay(clampedStart), startOfDay(weekStart))),
+    );
+    const minutesFromMidnight = Math.max(
+      0,
+      Math.round((clampedStart.getHours() * 60 + clampedStart.getMinutes()) / 30) * 30,
+    );
     const x = Math.min(COLS - 1, Math.floor(minutesFromMidnight / 30));
-    const durationMinutes = Math.max(30, Math.round((end.getTime() - start.getTime()) / (1000 * 60)));
+    const durationMinutes = Math.max(
+      30,
+      Math.round((end.getTime() - start.getTime()) / (1000 * 60)),
+    );
     const width = Math.min(COLS - x, Math.max(1, Math.round(durationMinutes / 30)));
     return {
       i: task.id,
@@ -118,7 +137,10 @@ export function MissionTimeline({ weekStart, onShiftWeek }: MissionTimelineProps
             <Button variant="ghost" size="sm" onClick={() => shiftWeek(-1)}>
               ← Prev Week
             </Button>
-            <Badge variant="outline" className="border-white/20 bg-white/5 text-[10px] uppercase tracking-[0.28em] text-slate-200">
+            <Badge
+              variant="outline"
+              className="border-white/20 bg-white/5 text-[10px] uppercase tracking-[0.28em] text-slate-200"
+            >
               {format(weekStart, 'MMM d')} – {format(addDays(weekStart, 6), 'MMM d')}
             </Badge>
             <Button variant="ghost" size="sm" onClick={() => shiftWeek(1)}>
@@ -153,7 +175,11 @@ export function MissionTimeline({ weekStart, onShiftWeek }: MissionTimelineProps
                 const conflicting = conflictIds.has(task.id);
                 const tone = statusTone[task.status] ?? statusTone.scheduled;
                 return (
-                  <div key={task.id} className={`mission-item relative h-full w-full overflow-hidden rounded-2xl border backdrop-blur ${tone}`} data-task-id={task.id}>
+                  <div
+                    key={task.id}
+                    className={`mission-item relative h-full w-full overflow-hidden rounded-2xl border backdrop-blur ${tone}`}
+                    data-task-id={task.id}
+                  >
                     <div className="flex h-full w-full flex-col justify-between gap-3 p-4">
                       <div className="flex items-start justify-between gap-2">
                         <div className="space-y-1">
@@ -253,4 +279,3 @@ function TimelineAxis() {
     </div>
   );
 }
-

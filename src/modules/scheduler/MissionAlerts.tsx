@@ -1,10 +1,10 @@
 import { format } from 'date-fns';
 
+import { useMissionSchedulerContext } from './MissionSchedulerContext';
+
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-
-import { useMissionSchedulerContext } from './MissionSchedulerContext';
 
 const severityLabel: Record<'info' | 'warning' | 'critical', string> = {
   info: 'Info',
@@ -33,7 +33,8 @@ export function MissionAlerts() {
           Mission Alerts & ADA Oversight
         </CardTitle>
         <p className="text-xs text-slate-300/80">
-          We surface blackouts, overlapping crews, and accessibility considerations so Sunday services stay frictionless.
+          We surface blackouts, overlapping crews, and accessibility considerations so Sunday
+          services stay frictionless.
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -42,7 +43,10 @@ export function MissionAlerts() {
             <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-200">
               Conflict Watch ({sortedConflicts.length})
             </h3>
-            <Badge variant="outline" className="border-white/20 bg-white/5 text-[10px] uppercase tracking-[0.28em] text-slate-200">
+            <Badge
+              variant="outline"
+              className="border-white/20 bg-white/5 text-[10px] uppercase tracking-[0.28em] text-slate-200"
+            >
               Live
             </Badge>
           </div>
@@ -53,7 +57,10 @@ export function MissionAlerts() {
           ) : (
             <ul className="space-y-3">
               {sortedConflicts.map((conflict) => (
-                <li key={conflict.id} className={`rounded-xl border px-4 py-3 shadow-inner ${severityTone[conflict.severity]}`}>
+                <li
+                  key={conflict.id}
+                  className={`rounded-xl border px-4 py-3 shadow-inner ${severityTone[conflict.severity]}`}
+                >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-semibold uppercase tracking-[0.3em]">
                       {severityLabel[conflict.severity]}
@@ -64,7 +71,8 @@ export function MissionAlerts() {
                   </div>
                   <p className="mt-2 text-xs text-slate-50/90">{conflict.description}</p>
                   <p className="mt-1 text-[11px] uppercase tracking-[0.25em] text-slate-200/70">
-                    {format(new Date(conflict.window.start), 'MMM d, h:mma')} → {format(new Date(conflict.window.end), 'h:mma')}
+                    {format(new Date(conflict.window.start), 'MMM d, h:mma')} →{' '}
+                    {format(new Date(conflict.window.end), 'h:mma')}
                   </p>
                 </li>
               ))}
@@ -87,9 +95,14 @@ export function MissionAlerts() {
           ) : (
             <ul className="space-y-3">
               {accessibilityInsights.map((insight) => (
-                <li key={insight.id} className="rounded-xl border border-cyan-400/40 bg-cyan-400/5 px-4 py-3 text-xs text-cyan-100">
+                <li
+                  key={insight.id}
+                  className="rounded-xl border border-cyan-400/40 bg-cyan-400/5 px-4 py-3 text-xs text-cyan-100"
+                >
                   <p className="font-semibold uppercase tracking-[0.28em]">{insight.description}</p>
-                  <p className="mt-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100/80">{insight.recommendation}</p>
+                  <p className="mt-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100/80">
+                    {insight.recommendation}
+                  </p>
                 </li>
               ))}
             </ul>
@@ -111,7 +124,10 @@ export function MissionAlerts() {
           ) : (
             <ul className="space-y-2">
               {suggestions.map((suggestion) => (
-                <li key={suggestion.id} className="rounded-xl border border-orange-400/50 bg-orange-400/10 px-3 py-2 text-[11px] uppercase tracking-[0.25em] text-orange-100">
+                <li
+                  key={suggestion.id}
+                  className="rounded-xl border border-orange-400/50 bg-orange-400/10 px-3 py-2 text-[11px] uppercase tracking-[0.25em] text-orange-100"
+                >
                   {suggestion.message}
                 </li>
               ))}
@@ -122,4 +138,3 @@ export function MissionAlerts() {
     </Card>
   );
 }
-

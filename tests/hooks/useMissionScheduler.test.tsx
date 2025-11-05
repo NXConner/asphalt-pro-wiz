@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { act, render } from '@testing-library/react';
 import { useEffect } from 'react';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { MissionSchedulerProvider, useMissionSchedulerContext } from '@/modules/scheduler';
 
@@ -26,9 +26,11 @@ describe('useMissionScheduler', () => {
     latest = null;
     render(
       <MissionSchedulerProvider>
-        <SchedulerHarness onUpdate={(state) => {
-          latest = state;
-        }} />
+        <SchedulerHarness
+          onUpdate={(state) => {
+            latest = state;
+          }}
+        />
       </MissionSchedulerProvider>,
     );
   });
@@ -43,7 +45,11 @@ describe('useMissionScheduler', () => {
 
     let missionAId = '';
     act(() => {
-      const crew = scheduler.addCrewMember({ name: 'Lead', role: 'Supervisor', maxHoursPerDay: 10 });
+      const crew = scheduler.addCrewMember({
+        name: 'Lead',
+        role: 'Supervisor',
+        maxHoursPerDay: 10,
+      });
       const missionA = scheduler.addTask({
         jobName: 'Sealcoat East Lot',
         site: 'East Lot',
@@ -71,7 +77,11 @@ describe('useMissionScheduler', () => {
       });
     });
 
-    expect(latest?.conflicts.some((conflict) => conflict.type === 'crew-overlap' && conflict.taskIds.includes(missionAId))).toBe(true);
+    expect(
+      latest?.conflicts.some(
+        (conflict) => conflict.type === 'crew-overlap' && conflict.taskIds.includes(missionAId),
+      ),
+    ).toBe(true);
   });
 
   test('detects blackout conflict when mission overlaps protected window', () => {
@@ -100,7 +110,11 @@ describe('useMissionScheduler', () => {
       });
     });
 
-    expect(latest?.conflicts.some((conflict) => conflict.type === 'blackout' && conflict.window.start === blackoutStart)).toBe(true);
+    expect(
+      latest?.conflicts.some(
+        (conflict) => conflict.type === 'blackout' && conflict.window.start === blackoutStart,
+      ),
+    ).toBe(true);
   });
 
   test('capacity adjustments persist and affect timeline insights', () => {
@@ -126,4 +140,3 @@ describe('useMissionScheduler', () => {
     expect(latest?.conflicts.some((conflict) => conflict.type === 'capacity')).toBe(true);
   });
 });
-

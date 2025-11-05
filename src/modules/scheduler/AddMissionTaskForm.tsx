@@ -2,17 +2,27 @@ import { addHours, addMinutes, startOfHour } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useMissionSchedulerContext } from './MissionSchedulerContext';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { CrewMember, MissionTaskPriority, MissionTaskStatus } from '@/hooks/useMissionScheduler';
+import type {
+  CrewMember,
+  MissionTaskPriority,
+  MissionTaskStatus,
+} from '@/hooks/useMissionScheduler';
 import { listJobs, type SavedJob } from '@/lib/idb';
-
-import { useMissionSchedulerContext } from './MissionSchedulerContext';
 
 interface MissionTaskDraft {
   jobName: string;
@@ -56,17 +66,8 @@ function nextMissionStart(): Date {
   return candidate;
 }
 
-export function AddMissionTaskForm({
-  defaultStart = nextMissionStart(),
-}: {
-  defaultStart?: Date;
-}) {
-  const {
-    addTask,
-    assignCrew,
-    crewMembers,
-    capacityPerShift,
-  } = useMissionSchedulerContext();
+export function AddMissionTaskForm({ defaultStart = nextMissionStart() }: { defaultStart?: Date }) {
+  const { addTask, assignCrew, crewMembers, capacityPerShift } = useMissionSchedulerContext();
 
   const [draft, setDraft] = useState<MissionTaskDraft>(() => ({
     jobName: '',
@@ -177,7 +178,12 @@ export function AddMissionTaskForm({
       priority: draft.priority,
       accessibilityImpact: draft.accessibilityImpact,
       notes: draft.notes.trim(),
-      color: draft.priority === 'critical' ? '#f97316' : draft.priority === 'standard' ? '#38bdf8' : '#22c55e',
+      color:
+        draft.priority === 'critical'
+          ? '#f97316'
+          : draft.priority === 'standard'
+            ? '#38bdf8'
+            : '#22c55e',
     });
     if (draft.crewAssigned.length > 0) {
       assignCrew(task.id, draft.crewAssigned);
@@ -198,13 +204,17 @@ export function AddMissionTaskForm({
           </span>
         </div>
         <p className="text-xs text-slate-300/80">
-          Drop new missions onto the tactical schedule with ADA-safe windows and crew staffing baked in.
+          Drop new missions onto the tactical schedule with ADA-safe windows and crew staffing baked
+          in.
         </p>
       </CardHeader>
       <CardContent>
         <form className="grid gap-4" onSubmit={handleSubmit} data-testid="mission-task-form">
           <div className="grid gap-2">
-            <Label htmlFor="mission-title" className="text-xs uppercase tracking-[0.3em] text-slate-200">
+            <Label
+              htmlFor="mission-title"
+              className="text-xs uppercase tracking-[0.3em] text-slate-200"
+            >
               Mission Title
             </Label>
             <Input
@@ -216,7 +226,9 @@ export function AddMissionTaskForm({
             />
             {jobSuggestions.length > 0 ? (
               <div className="flex flex-wrap gap-2 text-xs text-slate-300/70">
-                <span className="uppercase tracking-[0.3em] text-[10px] text-slate-400">Quick Fill:</span>
+                <span className="uppercase tracking-[0.3em] text-[10px] text-slate-400">
+                  Quick Fill:
+                </span>
                 {jobSuggestions.slice(0, 3).map((suggestion) => (
                   <button
                     key={suggestion.id}
@@ -230,12 +242,17 @@ export function AddMissionTaskForm({
               </div>
             ) : null}
             {isLoadingJobs ? (
-              <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Loading job history…</p>
+              <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                Loading job history…
+              </p>
             ) : null}
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="mission-site" className="text-xs uppercase tracking-[0.3em] text-slate-200">
+            <Label
+              htmlFor="mission-site"
+              className="text-xs uppercase tracking-[0.3em] text-slate-200"
+            >
               Site / Campus Zone
             </Label>
             <Input
@@ -248,7 +265,10 @@ export function AddMissionTaskForm({
 
           <div className="grid gap-3 md:grid-cols-2">
             <div className="grid gap-2">
-              <Label htmlFor="mission-start" className="text-xs uppercase tracking-[0.3em] text-slate-200">
+              <Label
+                htmlFor="mission-start"
+                className="text-xs uppercase tracking-[0.3em] text-slate-200"
+              >
                 Start Window
               </Label>
               <Input
@@ -260,7 +280,10 @@ export function AddMissionTaskForm({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="mission-duration" className="text-xs uppercase tracking-[0.3em] text-slate-200">
+              <Label
+                htmlFor="mission-duration"
+                className="text-xs uppercase tracking-[0.3em] text-slate-200"
+              >
                 Duration (Hours)
               </Label>
               <Input
@@ -280,7 +303,9 @@ export function AddMissionTaskForm({
 
           <div className="grid gap-3 md:grid-cols-3">
             <div className="grid gap-2">
-              <Label className="text-xs uppercase tracking-[0.3em] text-slate-200">Crew Required</Label>
+              <Label className="text-xs uppercase tracking-[0.3em] text-slate-200">
+                Crew Required
+              </Label>
               <Input
                 type="number"
                 min={1}
@@ -310,7 +335,9 @@ export function AddMissionTaskForm({
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label className="text-xs uppercase tracking-[0.3em] text-slate-200">Accessibility Impact</Label>
+              <Label className="text-xs uppercase tracking-[0.3em] text-slate-200">
+                Accessibility Impact
+              </Label>
               <Select
                 value={draft.accessibilityImpact}
                 onValueChange={(value: MissionTaskDraft['accessibilityImpact']) =>
@@ -333,7 +360,7 @@ export function AddMissionTaskForm({
           </div>
 
           <div className="grid gap-2">
-            <Label className="text-xs uppercase tracking-[0.3em] text-slate-200">Crew Assignments</Label>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-200">Crew Assignments</p>
             {crewOptions.length === 0 ? (
               <p className="rounded-xl border border-dashed border-white/10 bg-white/5 px-4 py-3 text-[11px] uppercase tracking-[0.25em] text-slate-400">
                 Add crew members below to unlock targeted assignments.
@@ -341,7 +368,7 @@ export function AddMissionTaskForm({
             ) : (
               <div className="grid gap-2 md:grid-cols-2">
                 {crewOptions.map((member) => (
-                  <label
+                  <div
                     key={member.id}
                     className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-100"
                   >
@@ -358,14 +385,16 @@ export function AddMissionTaskForm({
                         {member.role}
                       </span>
                     </span>
-                  </label>
+                  </div>
                 ))}
               </div>
             )}
           </div>
 
           <div className="grid gap-2">
-            <Label className="text-xs uppercase tracking-[0.3em] text-slate-200">Mission Notes</Label>
+            <Label className="text-xs uppercase tracking-[0.3em] text-slate-200">
+              Mission Notes
+            </Label>
             <Textarea
               value={draft.notes}
               onChange={(event) => setDraft((prev) => ({ ...prev, notes: event.target.value }))}
@@ -379,7 +408,12 @@ export function AddMissionTaskForm({
               Crew assigned: {draft.crewAssigned.length}/{capacityPerShift}
             </div>
             <div className="flex items-center gap-3">
-              <Button type="submit" variant="tactical" className="px-6" data-testid="mission-submit">
+              <Button
+                type="submit"
+                variant="tactical"
+                className="px-6"
+                data-testid="mission-submit"
+              >
                 Queue Mission
               </Button>
               <Button type="button" variant="ghost" onClick={resetForm}>
@@ -392,4 +426,3 @@ export function AddMissionTaskForm({
     </Card>
   );
 }
-

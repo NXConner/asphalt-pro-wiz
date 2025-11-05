@@ -1,17 +1,16 @@
 import { startOfWeek } from 'date-fns';
 import { useMemo, useState } from 'react';
 
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AddMissionTaskForm } from './AddMissionTaskForm';
+import { CrewCapacityCard } from './CrewCapacityCard';
+import { MissionAlerts } from './MissionAlerts';
+import { useMissionSchedulerContext } from './MissionSchedulerContext';
+import { MissionTimeline } from './MissionTimeline';
 
 import { BlackoutEditor } from '@/components/Scheduler/BlackoutEditor';
 import { CrewAssign } from '@/components/Scheduler/CrewAssign';
 import { WeatherAdvisor } from '@/components/Scheduler/WeatherAdvisor';
-
-import { useMissionSchedulerContext } from './MissionSchedulerContext';
-import { AddMissionTaskForm } from './AddMissionTaskForm';
-import { CrewCapacityCard } from './CrewCapacityCard';
-import { MissionAlerts } from './MissionAlerts';
-import { MissionTimeline } from './MissionTimeline';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface MissionSchedulerPanelProps {
   coords: [number, number] | null;
@@ -60,7 +59,8 @@ export function MissionSchedulerPanel({ coords }: MissionSchedulerPanelProps) {
         <Alert variant="destructive" className="border-red-500/40 bg-red-500/10 text-red-100">
           <AlertTitle>Scheduler Storage Issue</AlertTitle>
           <AlertDescription>
-            Unable to persist mission planner state to local storage. Check browser storage quotas and retry.
+            Unable to persist mission planner state to local storage. Check browser storage quotas
+            and retry.
           </AlertDescription>
         </Alert>
       ) : null}
@@ -68,4 +68,3 @@ export function MissionSchedulerPanel({ coords }: MissionSchedulerPanelProps) {
     </div>
   );
 }
-
