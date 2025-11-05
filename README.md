@@ -24,6 +24,7 @@ Modern, AI-assisted operations cockpit for asphalt estimation, scheduling, and c
    ```
    - `--skip-playwright` to avoid browser downloads (CI containers)
    - `--skip-husky` on read-only CI runners
+   - Windows shells **must** run the PowerShell script (`.ps1`). See `docs/WINDOWS_SETUP.md` for end-to-end Windows guidance, including environment variables and migrations.
 4. Start the dev server and refresh existing preview:
    ```sh
    npm run dev
@@ -46,6 +47,7 @@ Modern, AI-assisted operations cockpit for asphalt estimation, scheduling, and c
 - Feature flags (set to `1`/`0`): `VITE_FLAG_OBSERVABILITY`, `VITE_FLAG_COMMANDCENTER`, plus UI toggles for other labs features
 - Config is environment-specific; never commit `.env`.
 - Supabase setup, seed strategy, and shared project guidance: `docs/UNIFIED_SUPABASE_GUIDE.md`.
+- Detailed Windows setup (PowerShell commands, env vars, migrations): `docs/WINDOWS_SETUP.md`.
 
 ## Branching Strategy
 
