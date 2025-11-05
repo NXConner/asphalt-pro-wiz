@@ -42,6 +42,8 @@ This executes every migration inside `supabase/migrations/`, including `17000000
 - `job_receipts`, `job_premium_services`
 - `crew_blackouts`, `crew_assignments`
 - `premium_services_catalog`
+- `feature_flags`, `org_feature_flags`, `user_feature_flags`
+- `telemetry_events`, `telemetry_metrics`
 
 All tables are created with RLS enabled. Re-running the migration is safe.
 
@@ -57,11 +59,21 @@ All tables are created with RLS enabled. Re-running the migration is safe.
 The seed script:
 
 - Ensures an organization with slug `conner-asphalt` exists.
-- Grants the admin user `super_admin` membership in that org.
+- Grants the admin user `super_admin` membership in that org and records the platform role in `user_roles`.
 - Creates a sample job (`St. Mark Sanctuary Reseal`) with demo estimates, line items, premium services, and a crew blackout entry to exercise the UI.
 - Can be re-run safely; it upserts records.</n+
 
-### 6) Connecting Apps
+### 6) Feature Flags & Telemetry
+
+- Global catalog lives in `feature_flags`; per-organization overrides sit in `org_feature_flags`, and targeted user grants in `user_feature_flags`.
+- Helper functions added by the migrations:
+  - `public.user_has_role(text)` — checks platform-level roles via `user_roles`.
+  - `public.user_has_org_role(uuid, text[])` — validates organization roles (e.g., `ARRAY['manager','super_admin']`).
+  - `public.user_is_member_of_org(uuid)` and `public.current_user_default_org()` — shared utilities leveraged by RLS policies and triggers.
+- Telemetry data flows into `telemetry_events` (raw stream) and `telemetry_metrics` (aggregated rollups). Both tables are guarded by organization-aware RLS policies.
+- Trigger helpers `public.set_updated_at()` and `public.set_org_and_created_by()` keep timestamps and ownership metadata consistent across tables created in these migrations.
+
+### 7) Connecting Apps
 
 Use the same environment variables across CLI scripts, backend services, and frontend clients:
 
@@ -72,7 +84,7 @@ Use the same environment variables across CLI scripts, backend services, and fro
 
 Frontends in this repo import the helper from `src/lib/supabase`. Additional apps can reuse the same variables to share the tenancy model.
 
-### 7) Row Level Security (RLS)
+### 8) Row Level Security (RLS)
 
 - `organizations`/`user_org_memberships`: only super administrators can mutate membership; all authenticated members can read their organization.
 - `jobs` and job-scoped tables (`estimates`, `job_documents`, `job_uploads`, `job_receipts`, `job_premium_services`, `crew_assignments`, `job_events`):
@@ -82,13 +94,13 @@ Frontends in this repo import the helper from `src/lib/supabase`. Additional app
 - `crew_blackouts`: organization-level scheduling resource with similar policies as jobs.
 - RLS leverages `auth.uid()`; no table is readable by anonymous users.
 
-### 8) Troubleshooting
+### 9) Troubleshooting
 
 - **Missing permissions**: confirm the user has a membership in `user_org_memberships` with the correct role.
 - **Table not found**: ensure `npm run migrate:up` completed successfully.
 - **Seed script fails**: verify the admin email exists in `auth.users` and that `DATABASE_URL` grants suitable privileges.
 
-### 9) Security Notes
+### 10) Security Notes
 
 - Never expose `SUPABASE_SERVICE_ROLE_KEY` to clients.
 - Audit membership changes with Supabase logs; only super admins can modify memberships.

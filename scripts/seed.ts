@@ -40,19 +40,19 @@ async function main() {
     );
     const orgId = orgRows[0].id;
 
-      await client.query(
-        `INSERT INTO public.user_org_memberships (user_id, org_id, role)
-         VALUES ($1, $2, 'super_admin')
-         ON CONFLICT (user_id, org_id) DO UPDATE SET role = EXCLUDED.role;`,
-        [adminUserId, orgId] satisfies QueryOptions,
-      );
+    await client.query(
+      `INSERT INTO public.user_org_memberships (user_id, org_id, role)
+       VALUES ($1, $2, 'super_admin')
+       ON CONFLICT (user_id, org_id) DO UPDATE SET role = EXCLUDED.role;`,
+      [adminUserId, orgId] satisfies QueryOptions,
+    );
 
-      await client.query(
-        `INSERT INTO public.user_roles (user_id, role_name)
-         VALUES ($1, 'super_admin')
-         ON CONFLICT (user_id, role_name) DO NOTHING;`,
-        [adminUserId] satisfies QueryOptions,
-      );
+    await client.query(
+      `INSERT INTO public.user_roles (user_id, role_name)
+       VALUES ($1, 'super_admin')
+       ON CONFLICT (user_id, role_name) DO NOTHING;`,
+      [adminUserId] satisfies QueryOptions,
+    );
 
     const { rows: jobRows } = await client.query<{ id: string }>(
       `INSERT INTO public.jobs (org_id, name, customer_name, customer_address, status, total_area_sqft, created_by)
