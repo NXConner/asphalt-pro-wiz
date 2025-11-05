@@ -20,6 +20,6 @@ Notes:
 
 Seed behavior (idempotent):
 
-- `scripts/seed.ts` ensures default organization and assigns the admin user (`ADMIN_EMAIL`) a high-privilege role/membership if the user exists in `auth.users`.
+- `scripts/seed.ts` ensures the default organization exists and assigns the admin user (`ADMIN_EMAIL`) the `super_admin` role in both `user_org_memberships` and `user_roles` when the user is present in `auth.users`.
 - Re-running the seed will not duplicate roles or orgs.
 - For local development via Docker Compose, the default `DATABASE_URL` is provided in `.env.example`.
