@@ -15,13 +15,14 @@ vi.mock('leaflet', () => {
   const circleMarker = vi.fn(() => ({
     addTo: vi.fn().mockReturnValue({ bindPopup: vi.fn() }),
   }));
-  return {
+  const mocked = {
     map: vi.fn(() => mockMap),
     tileLayer: vi.fn(() => ({ addTo: vi.fn() })),
     circleMarker,
     LayerGroup: vi.fn(() => mockLayerGroup),
     latLngBounds: vi.fn(() => ({ pad: vi.fn(() => ({})) })),
   };
+  return { ...mocked, default: mocked };
 });
 
 const refetch = vi.fn();
