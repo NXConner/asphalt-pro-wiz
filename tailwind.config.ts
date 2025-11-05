@@ -27,6 +27,147 @@ const config: Config = {
         hud: ["Rajdhani", "Orbitron", "var(--font-sans)", "sans-serif"],
         hudMono: ["Share Tech Mono", "ui-monospace", "monospace"],
       },
+          heading: ["var(--hud-font-heading)", "Rajdhani", "sans-serif"],
+          display: ["var(--hud-font-display)", "Orbitron", "sans-serif"],
+          body: ["var(--hud-font-body)", "Rajdhani", "sans-serif"],
+          mono: ["var(--hud-font-mono)", "Share Tech Mono", "monospace"],
+      },
+      fontWeight: {
+          "hud-display": "var(--hud-weight-display)",
+          "hud-heading": "var(--hud-weight-heading)",
+          "hud-body": "var(--hud-weight-body)",
+          "hud-mono": "var(--hud-weight-mono)",
+      },
+      letterSpacing: {
+          "hud-body": "var(--hud-letter-spacing-body)",
+          "hud-tight": "var(--hud-letter-spacing-tight)",
+          "hud-compact": "var(--hud-letter-spacing-compact)",
+          "hud-wide": "var(--hud-letter-spacing-wide)",
+          "hud-ultra": "var(--hud-letter-spacing-ultra)",
+      },
+      lineHeight: {
+          "hud-display": "var(--hud-line-height-display)",
+          "hud-title": "var(--hud-line-height-title)",
+          "hud-heading": "var(--hud-line-height-heading)",
+          "hud-body": "var(--hud-line-height-body)",
+          "hud-compact": "var(--hud-line-height-compact)",
+      },
+      fontSize: {
+          "hud-display-xxl": [
+            "var(--hud-type-display-xxl)",
+            {
+              lineHeight: "var(--hud-line-height-display)",
+              letterSpacing: "var(--hud-letter-spacing-ultra)",
+              fontWeight: "var(--hud-weight-display)",
+            },
+          ],
+          "hud-display-xl": [
+            "var(--hud-type-display-xl)",
+            {
+              lineHeight: "var(--hud-line-height-display)",
+              letterSpacing: "var(--hud-letter-spacing-ultra)",
+              fontWeight: "var(--hud-weight-display)",
+            },
+          ],
+          "hud-display-lg": [
+            "var(--hud-type-display-lg)",
+            {
+              lineHeight: "var(--hud-line-height-display)",
+              letterSpacing: "var(--hud-letter-spacing-wide)",
+              fontWeight: "var(--hud-weight-display)",
+            },
+          ],
+          "hud-title-lg": [
+            "var(--hud-type-title-lg)",
+            {
+              lineHeight: "var(--hud-line-height-title)",
+              letterSpacing: "var(--hud-letter-spacing-wide)",
+              fontWeight: "var(--hud-weight-heading)",
+            },
+          ],
+          "hud-title-md": [
+            "var(--hud-type-title-md)",
+            {
+              lineHeight: "var(--hud-line-height-title)",
+              letterSpacing: "var(--hud-letter-spacing-compact)",
+              fontWeight: "var(--hud-weight-heading)",
+            },
+          ],
+          "hud-heading-lg": [
+            "var(--hud-type-heading-lg)",
+            {
+              lineHeight: "var(--hud-line-height-heading)",
+              letterSpacing: "var(--hud-letter-spacing-compact)",
+              fontWeight: "var(--hud-weight-heading)",
+            },
+          ],
+          "hud-heading-md": [
+            "var(--hud-type-heading-md)",
+            {
+              lineHeight: "var(--hud-line-height-heading)",
+              letterSpacing: "var(--hud-letter-spacing-tight)",
+              fontWeight: "var(--hud-weight-heading)",
+            },
+          ],
+          "hud-heading-sm": [
+            "var(--hud-type-heading-sm)",
+            {
+              lineHeight: "var(--hud-line-height-heading)",
+              letterSpacing: "var(--hud-letter-spacing-tight)",
+              fontWeight: "var(--hud-weight-heading)",
+            },
+          ],
+          "hud-body-lg": [
+            "var(--hud-type-body-lg)",
+            {
+              lineHeight: "var(--hud-line-height-body)",
+              letterSpacing: "var(--hud-letter-spacing-body)",
+              fontWeight: "var(--hud-weight-body)",
+            },
+          ],
+          "hud-body-md": [
+            "var(--hud-type-body-md)",
+            {
+              lineHeight: "var(--hud-line-height-body)",
+              letterSpacing: "var(--hud-letter-spacing-body)",
+              fontWeight: "var(--hud-weight-body)",
+            },
+          ],
+          "hud-body-sm": [
+            "var(--hud-type-body-sm)",
+            {
+              lineHeight: "var(--hud-line-height-body)",
+              letterSpacing: "var(--hud-letter-spacing-body)",
+              fontWeight: "var(--hud-weight-body)",
+            },
+          ],
+          "hud-body-xs": [
+            "var(--hud-type-body-xs)",
+            {
+              lineHeight: "var(--hud-line-height-compact)",
+              letterSpacing: "var(--hud-letter-spacing-body)",
+              fontWeight: "var(--hud-weight-body)",
+            },
+          ],
+          "hud-mono-xs": [
+            "var(--hud-type-mono-xs)",
+            {
+              lineHeight: "var(--hud-line-height-compact)",
+              letterSpacing: "var(--hud-letter-spacing-tight)",
+              fontWeight: "var(--hud-weight-mono)",
+              fontFamily: "var(--hud-font-mono)",
+            },
+          ],
+          "hud-eyebrow": [
+            "var(--hud-type-eyebrow)",
+            {
+              lineHeight: "var(--hud-line-height-compact)",
+              letterSpacing: "var(--hud-letter-spacing-ultra)",
+              fontWeight: "var(--hud-weight-heading)",
+              textTransform: "uppercase",
+            },
+          ],
+        },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

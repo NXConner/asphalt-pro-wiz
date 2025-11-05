@@ -10,4 +10,5 @@ export * from './TacticalAlert';
 export * from './TacticalOverlay';
 export * from './ParticleBackground';
 export * from './TacticalLoader';
+export * from './TacticalHudOverlay';
 

@@ -18,27 +18,23 @@ export interface CommandCenterQueryResult {
 }
 
   async function fetchCommandCenterData(): Promise<CommandCenterMetrics> {
-    const [jobsRes, estimatesRes, schedulesRes] = await Promise.all([
+    const [jobsRes, estimatesRes] = await Promise.all([
       supabase
-        .from('jobs')
-        .select('id,name,status,quote_value,total_area_sqft,created_at,updated_at')
+        .from('jobs' as any)
+        .select('id,status,quote_value,total_area_sqft,created_at,updated_at')
         .limit(500),
-      supabase.from('estimates').select('id,job_id,amount,total,created_at').limit(500),
-      supabase
-        .from('crew_assignments')
-        .select('id,job_id,shift_start,shift_end')
-        .limit(500),
+      supabase.from('estimates' as any).select('id,job_id,amount,created_at').limit(500),
     ]);
 
-  const errors = [jobsRes.error, estimatesRes.error, schedulesRes.error].filter(Boolean);
-  if (errors.length) {
-    throw errors[0]!;
-  }
+    const errors = [jobsRes.error, estimatesRes.error].filter(Boolean);
+    if (errors.length) {
+      throw errors[0]!;
+    }
 
     return calculateCommandCenterMetrics(
-      (jobsRes.data ?? []) as JobRecord[],
-      (estimatesRes.data ?? []) as EstimateRecord[],
-      (schedulesRes.data ?? []) as CrewAssignmentRecord[],
+      (jobsRes.data ?? []) as any as JobRecord[],
+      (estimatesRes.data ?? []) as any as EstimateRecord[],
+      [] as CrewAssignmentRecord[],
     );
 }
 
