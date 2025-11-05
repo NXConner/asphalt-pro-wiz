@@ -1,8 +1,6 @@
 import { forwardRef } from 'react';
 
-import { CanvasGrid } from './CanvasGrid';
-import { CornerBracket } from './CornerBracket';
-import { ScanOverlay } from './ScanOverlay';
+import { TacticalOverlay } from './TacticalOverlay';
 
 import { cn } from '@/lib/utils';
 
@@ -16,62 +14,77 @@ interface TacticalCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const TacticalCard = forwardRef<HTMLDivElement, TacticalCardProps>(
-  ({
-    className,
-    heading,
-    eyebrow,
-    subtitle,
-    children,
-    accent = 'dusk',
-    scan = true,
-    compact = false,
-    ...props
-  }, ref) => {
-    const accentClass = {
-      ember: 'from-rose-500/20 via-orange-500/15 to-transparent border-rose-400/40',
-      aurora: 'from-cyan-400/20 via-emerald-400/15 to-transparent border-cyan-300/40',
-      lagoon: 'from-indigo-400/18 via-blue-500/12 to-transparent border-indigo-400/40',
-      dusk: 'from-orange-400/22 via-amber-300/10 to-transparent border-orange-400/40',
-    }[accent];
+  (
+    {
+      className,
+      heading,
+      eyebrow,
+      subtitle,
+      children,
+      accent = 'dusk',
+      scan = true,
+      compact = false,
+      ...props
+    },
+    ref,
+  ) => {
+    const accentColorMap: Record<TacticalCardProps['accent'], string> = {
+      ember: 'rgba(255,115,85,0.88)',
+      aurora: 'rgba(56,235,214,0.88)',
+      lagoon: 'rgba(114,159,255,0.88)',
+      dusk: 'rgba(255,176,72,0.88)',
+    };
+    const accentColor = accentColorMap[accent];
+
+    const backgroundTintMap: Record<TacticalCardProps['accent'], string> = {
+      ember: 'rgba(35,12,6,0.84)',
+      aurora: 'rgba(6,24,26,0.82)',
+      lagoon: 'rgba(10,16,32,0.82)',
+      dusk: 'rgba(24,18,8,0.84)',
+    };
 
     return (
-      <div
-        ref={ref}
-        className={cn(
-          'relative overflow-hidden rounded-[var(--hud-radius-lg)] border border-white/10 bg-slate-950/60 shadow-[0_25px_80px_rgba(8,12,24,0.55)] backdrop-blur-[var(--hud-panel-blur)] transition-transform duration-300 hover:-translate-y-1',
-          className,
-        )}
-        {...props}
-      >
+      <div ref={ref} className={cn('relative', className)} {...props}>
+        <TacticalOverlay
+          className="h-full w-full"
+          accentColor={accentColor}
+          backgroundTint={backgroundTintMap[accent]}
+          showScanLines={scan}
+          scanLinesProps={{ opacity: scan ? 0.5 : 0, speedMs: 3000 }}
+          cornerProps={{ size: compact ? 34 : 42, thickness: 2.2, accentColor }}
+          gridDensity={88}
+          gridOpacity={0.22}
+        >
+          <div
+            className={cn(
+              'relative z-20 flex flex-col gap-5',
+              compact ? 'px-5 py-5' : 'px-8 py-8',
+            )}
+          >
+            {(eyebrow || heading || subtitle) && (
+              <header className="space-y-1">
+                {eyebrow ? (
+                  <span className="text-[0.65rem] font-semibold uppercase tracking-[0.5em] text-slate-200/60">
+                    {eyebrow}
+                  </span>
+                ) : null}
+                {heading ? (
+                  <h3 className="font-display text-2xl uppercase tracking-[0.18em] text-slate-50">
+                    {heading}
+                  </h3>
+                ) : null}
+                {subtitle ? (
+                  <p className="font-mono text-[0.75rem] text-slate-300/70">{subtitle}</p>
+                ) : null}
+              </header>
+            )}
+            <div className="space-y-4 text-sm text-slate-100/85">{children}</div>
+          </div>
+        </TacticalOverlay>
         <div
-          className={cn(
-            'absolute inset-0 bg-gradient-to-br opacity-70',
-            accentClass,
-          )}
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-2xl border border-white/5"
         />
-        <CanvasGrid className="opacity-[var(--hud-grid-opacity)]" />
-        {scan ? <ScanOverlay className="opacity-60" /> : null}
-        <CornerBracket size={42} />
-        <div className={cn('relative z-10 flex flex-col gap-5', compact ? 'p-5' : 'p-8')}> 
-          {(eyebrow || heading || subtitle) && (
-            <header className="space-y-1">
-              {eyebrow ? (
-                <span className="text-[0.65rem] font-semibold uppercase tracking-[0.5em] text-slate-200/60">
-                  {eyebrow}
-                </span>
-              ) : null}
-              {heading ? (
-                <h3 className="font-display text-2xl uppercase tracking-[0.18em] text-slate-50">
-                  {heading}
-                </h3>
-              ) : null}
-              {subtitle ? (
-                <p className="font-mono text-[0.75rem] text-slate-300/70">{subtitle}</p>
-              ) : null}
-            </header>
-          )}
-          <div className="space-y-4 text-sm text-slate-100/85">{children}</div>
-        </div>
       </div>
     );
   },

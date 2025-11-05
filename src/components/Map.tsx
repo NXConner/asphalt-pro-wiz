@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
-import GoogleMap from '@/components/map/GoogleMap';
+import { TacticalMap, type TacticalWaypoint, type TacticalZone } from '@/components/map/TacticalMap';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,7 @@ import {
   importMapSettings,
   type BaseLayerId,
 } from '@/lib/mapSettings';
+import { BUSINESS_COORDS_FALLBACK, SUPPLIER_COORDS_FALLBACK } from '@/lib/locations';
 
 interface MapProps {
   onAddressUpdate: (coords: [number, number], address: string) => void;
@@ -111,6 +112,43 @@ const Map = ({
   const handleAddressUpdateWrapped = (coords: [number, number], address: string) => {
     onAddressUpdate(coords, address);
   };
+
+  const tacticalWaypoints = useMemo<TacticalWaypoint[]>(
+    () => [
+      {
+        id: 'mission-hq',
+        coordinates: BUSINESS_COORDS_FALLBACK,
+        label: 'HQ',
+        status: 'active',
+      },
+      {
+        id: 'supplier-node',
+        coordinates: SUPPLIER_COORDS_FALLBACK,
+        label: 'Supplier',
+        status: 'pending',
+        color: '#22d3ee',
+      },
+    ],
+    [],
+  );
+
+  const tacticalZones = useMemo<TacticalZone[]>(() => {
+    const [lat, lng] = BUSINESS_COORDS_FALLBACK;
+    const delta = 0.0012;
+    return [
+      {
+        id: 'priority-sweep',
+        label: 'Priority Sweep',
+        color: 'rgba(255,145,0,0.55)',
+        points: [
+          [lat + delta, lng - delta],
+          [lat + delta, lng + delta],
+          [lat - delta, lng + delta],
+          [lat - delta, lng - delta],
+        ],
+      },
+    ];
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -336,13 +374,18 @@ const Map = ({
         </CardContent>
       </Card>
 
-      <GoogleMap
+      <TacticalMap
         key={`google-${settingsKey}`}
         customerAddress={customerAddress}
         onAddressUpdate={handleAddressUpdateWrapped}
         onAreaDrawn={onAreaDrawn}
         onCrackLengthDrawn={onCrackLengthDrawn}
         refreshKey={refreshKey}
+        waypoints={tacticalWaypoints}
+        zones={tacticalZones}
+        showPulse={settings.radar.enabled}
+        mapHeight={480}
+        className="shadow-[0_45px_80px_rgba(8,12,24,0.6)]"
       />
     </div>
   );
