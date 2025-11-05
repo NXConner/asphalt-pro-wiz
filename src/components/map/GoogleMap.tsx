@@ -1,5 +1,5 @@
 import { useJsApiLoader, GoogleMap as GMap, DrawingManager, Circle } from '@react-google-maps/api';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { listJobs, type SavedJob } from '@/lib/idb';
 import type { Coordinates } from '@/lib/locations';
@@ -20,6 +20,7 @@ export interface GoogleMapProps {
   onCrackLengthDrawn: (length: number) => void;
   customerAddress: string;
   refreshKey?: number;
+  children?: ReactNode;
 }
 
 const statusColor: Record<string, string> = {
@@ -39,6 +40,7 @@ export const GoogleMap = memo(
     onCrackLengthDrawn,
     customerAddress,
     refreshKey,
+    children,
   }: GoogleMapProps) => {
     const settings = loadMapSettings();
     const apiKey = settings.googleApiKey || '';
@@ -349,25 +351,26 @@ export const GoogleMap = memo(
           }}
         />
 
-        {/* Job markers */}
-        {jobs.map((job) =>
-          job.coords ? (
-            <Circle
-              key={job.id}
-              center={{ lat: (job.coords as any)[0], lng: (job.coords as any)[1] }}
-              radius={3}
-              options={{
-                strokeColor: statusColor[job.status] || '#10b981',
-                strokeOpacity: 0.9,
-                strokeWeight: 2,
-                fillColor: statusColor[job.status] || '#10b981',
-                fillOpacity: 0.7,
-              }}
-            />
-          ) : null,
-        )}
+          {/* Job markers */}
+          {jobs.map((job) =>
+            job.coords ? (
+              <Circle
+                key={job.id}
+                center={{ lat: (job.coords as any)[0], lng: (job.coords as any)[1] }}
+                radius={3}
+                options={{
+                  strokeColor: statusColor[job.status] || '#10b981',
+                  strokeOpacity: 0.9,
+                  strokeWeight: 2,
+                  fillColor: statusColor[job.status] || '#10b981',
+                  fillOpacity: 0.7,
+                }}
+              />
+            ) : null,
+          )}
+          {children}
       </GMap>
-    );
+      );
   },
 );
 

@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
+import plugin from "tailwindcss/plugin";
 
-export default {
+const config: Config = {
   darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
@@ -18,12 +19,14 @@ export default {
       },
     },
     extend: {
-        fontFamily: {
-          heading: ["var(--hud-font-heading)", "Rajdhani", "sans-serif"],
-          display: ["var(--hud-font-display)", "Orbitron", "sans-serif"],
-          body: ["var(--hud-font-body)", "Rajdhani", "sans-serif"],
-          mono: ["var(--hud-font-mono)", "Share Tech Mono", "monospace"],
-        },
+      fontFamily: {
+        heading: ["Orbitron", "Rajdhani", "var(--hud-font-heading)", "sans-serif"],
+        display: ["Orbitron", "Rajdhani", "var(--hud-font-display)", "sans-serif"],
+        body: ["Rajdhani", "var(--hud-font-body)", "sans-serif"],
+        mono: ["Share Tech Mono", "var(--hud-font-mono)", "ui-monospace", "monospace"],
+        hud: ["Rajdhani", "Orbitron", "var(--font-sans)", "sans-serif"],
+        hudMono: ["Share Tech Mono", "ui-monospace", "monospace"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -90,6 +93,11 @@ export default {
         lg: "var(--shadow-lg)",
         xl: "var(--shadow-xl)",
       },
+      dropShadow: {
+        "hud-ember": "0 0 12px rgba(255,145,0,0.65)",
+        "hud-aurora": "0 0 12px rgba(56,235,214,0.55)",
+        "hud-lagoon": "0 0 14px rgba(114,159,255,0.55)",
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -97,50 +105,73 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
-          "hud-scanline": {
-            "0%": { opacity: "0", transform: "translateY(-30%)" },
-            "20%": { opacity: "0.4" },
-            "50%": { opacity: "0.6" },
-            "100%": { opacity: "0", transform: "translateY(120%)" },
-          },
-          "hud-pulse": {
-            "0%": { opacity: "0.35", transform: "scale3d(0.92,0.92,1)" },
-            "30%": { opacity: "0.7", transform: "scale3d(1.02,1.02,1)" },
-            "60%": { opacity: "0.45", transform: "scale3d(0.98,0.98,1)" },
-            "100%": { opacity: "0.35", transform: "scale3d(0.92,0.92,1)" },
-          },
-          "hud-glitch": {
-            "0%": { clipPath: "inset(10% 0 90% 0)", transform: "translate(-2px,-1px)" },
-            "20%": { clipPath: "inset(30% 0 60% 0)", transform: "translate(2px,1px)" },
-            "40%": { clipPath: "inset(50% 0 30% 0)", transform: "translate(-1px,0)" },
-            "60%": { clipPath: "inset(80% 0 10% 0)", transform: "translate(1px,-1px)" },
-            "80%": { clipPath: "inset(20% 0 70% 0)", transform: "translate(-2px,0)" },
-            "100%": { clipPath: "inset(0 0 0 0)", transform: "translate(0,0)" },
-          },
+        "hud-scanline": {
+          "0%": { opacity: "0", transform: "translateY(-30%)" },
+          "20%": { opacity: "0.4" },
+          "50%": { opacity: "0.6" },
+          "100%": { opacity: "0", transform: "translateY(120%)" },
+        },
+        "hud-pulse": {
+          "0%": { opacity: "0.35", transform: "scale3d(0.92,0.92,1)" },
+          "30%": { opacity: "0.7", transform: "scale3d(1.02,1.02,1)" },
+          "60%": { opacity: "0.45", transform: "scale3d(0.98,0.98,1)" },
+          "100%": { opacity: "0.35", transform: "scale3d(0.92,0.92,1)" },
+        },
+        "hud-glitch": {
+          "0%": { clipPath: "inset(10% 0 90% 0)", transform: "translate(-2px,-1px)" },
+          "20%": { clipPath: "inset(30% 0 60% 0)", transform: "translate(2px,1px)" },
+          "40%": { clipPath: "inset(50% 0 30% 0)", transform: "translate(-1px,0)" },
+          "60%": { clipPath: "inset(80% 0 10% 0)", transform: "translate(1px,-1px)" },
+          "80%": { clipPath: "inset(20% 0 70% 0)", transform: "translate(-2px,0)" },
+          "100%": { clipPath: "inset(0 0 0 0)", transform: "translate(0,0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-          "hud-scanline": "hud-scanline 2.4s cubic-bezier(0.22,1,0.36,1) infinite",
-          "hud-pulse": "hud-pulse 2.6s cubic-bezier(0.34,0,0.69,1) infinite",
-          "hud-glitch": "hud-glitch 0.7s steps(2, jump-start) infinite",
+        "hud-scanline": "hud-scanline 2.4s cubic-bezier(0.22,1,0.36,1) infinite",
+        "hud-pulse": "hud-pulse 2.6s cubic-bezier(0.34,0,0.69,1) infinite",
+        "hud-glitch": "hud-glitch 0.7s steps(2, jump-start) infinite",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-} satisfies Config;
+  plugins: [
+    require("tailwindcss-animate"),
+    plugin(({ addUtilities }) => {
+      const glowUtilities = {
+        ".text-glow-ember": {
+          textShadow: "0 0 14px rgba(255,145,0,0.7), 0 0 32px rgba(255,145,0,0.45)",
+        },
+        ".text-glow-aurora": {
+          textShadow: "0 0 16px rgba(56,235,214,0.65), 0 0 36px rgba(56,235,214,0.4)",
+        },
+        ".text-glow-lagoon": {
+          textShadow: "0 0 16px rgba(114,159,255,0.65), 0 0 38px rgba(114,159,255,0.4)",
+        },
+        ".heading-division": {
+          fontFamily: '"Orbitron","Rajdhani",var(--hud-font-heading),sans-serif',
+          textTransform: "uppercase",
+          letterSpacing: "0.32em",
+          fontWeight: "600",
+        },
+        ".heading-division-sub": {
+          fontFamily: '"Rajdhani",var(--hud-font-heading),sans-serif',
+          textTransform: "uppercase",
+          letterSpacing: "0.28em",
+          fontWeight: "500",
+        },
+      } as Record<string, Record<string, string>>;
+
+      addUtilities(glowUtilities, ["responsive"]);
+    }),
+  ],
+};
+
+export default config;
