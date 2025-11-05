@@ -165,8 +165,7 @@ export default function CommandCenter() {
           <TacticalCard
             eyebrow="Mission Totals"
             heading="Crew Readiness"
-            tone="lagoon"
-            badge={`${metrics.totals.jobs} jobs`}
+            accent="lagoon"
           >
             <div className="grid gap-4 sm:grid-cols-2">
               <StatusBar label="Active" value={metrics.totals.activeJobs} max={totalJobs} />
@@ -190,8 +189,7 @@ export default function CommandCenter() {
           <TacticalCard
             eyebrow="Revenue"
             heading="Monthly Signal"
-            tone="ember"
-            badge={currencyFormatter.format(metrics.totals.totalRevenue)}
+            accent="ember"
           >
             <div className="flex flex-wrap items-center gap-6">
               <ProgressRing
@@ -217,8 +215,7 @@ export default function CommandCenter() {
           <TacticalCard
             eyebrow="Risk Feed"
             heading="Operational Alerts"
-            tone="dusk"
-            badge={`${metrics.alerts.length} notices`}
+            accent="dusk"
             compact
           >
             <div className="space-y-3">
@@ -242,7 +239,7 @@ export default function CommandCenter() {
         </section>
 
         <section className="grid gap-4 lg:grid-cols-2">
-          <TacticalCard eyebrow="Recent Missions" heading="Activity Ledger" tone="aurora">
+          <TacticalCard eyebrow="Recent Missions" heading="Activity Ledger" accent="aurora">
             <div className="space-y-3">
               {metrics.recentJobs.length === 0 ? (
                 <p className="text-sm text-slate-200/70">No mission activity recorded yet.</p>
@@ -270,7 +267,7 @@ export default function CommandCenter() {
             </div>
           </TacticalCard>
 
-          <TacticalCard eyebrow="Crew Outlook" heading="Upcoming Assignments" tone="ember">
+          <TacticalCard eyebrow="Crew Outlook" heading="Upcoming Assignments" accent="ember">
             <div className="space-y-3">
               {metrics.upcomingAssignments.length === 0 ? (
                 <p className="text-sm text-slate-200/70">No assignments scheduled in the next window.</p>
