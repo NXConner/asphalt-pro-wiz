@@ -8,6 +8,18 @@ COPY package.json package-lock.json ./
 RUN --mount=type=cache,id=pavement-npm-cache,target=/root/.npm \
   npm ci --include=dev && npm cache clean --force
 
+FROM node:${NODE_VERSION} AS tooling
+WORKDIR /app
+ENV NODE_ENV=development
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json package-lock.json ./
+COPY tsconfig*.json ./
+COPY vitest.config.ts vite.config.ts ./
+COPY src ./src
+COPY public ./public
+COPY scripts ./scripts
+COPY supabase ./supabase
+
 FROM node:${NODE_VERSION} AS build
 ARG VITE_APP_VERSION=local-dev
 ARG VITE_BASE_PATH=/
@@ -19,7 +31,7 @@ ENV NODE_ENV=production \
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build && npm prune --omit=dev
+RUN npm run build -- --base ${VITE_BASE_PATH} && npm prune --omit=dev
 
 FROM nginx:1.27-alpine AS runtime
 ARG VITE_APP_VERSION=local-dev
