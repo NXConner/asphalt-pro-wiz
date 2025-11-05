@@ -200,6 +200,12 @@ export default function CommandCenter() {
               badge={<DivisionCardBadge>{metrics.totals.jobs} Jobs</DivisionCardBadge>}
             />
             <div className="grid gap-3 sm:grid-cols-2">
+          <TacticalCard
+            eyebrow="Mission Totals"
+            heading="Crew Readiness"
+            accent="lagoon"
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
               <StatusBar label="Active" value={metrics.totals.activeJobs} max={totalJobs} />
               <StatusBar label="Completed" value={metrics.totals.completedJobs} max={totalJobs} />
             </div>
@@ -234,6 +240,11 @@ export default function CommandCenter() {
                 </DivisionCardBadge>
               }
             />
+          <TacticalCard
+            eyebrow="Revenue"
+            heading="Monthly Signal"
+            accent="ember"
+          >
             <div className="flex flex-wrap items-center gap-6">
               <ProgressRing
                 value={metrics.totals.totalRevenue}
@@ -300,6 +311,85 @@ export default function CommandCenter() {
               <DivisionCardList items={assignmentItems} />
             )}
           </DivisionCard>
+          <TacticalCard
+            eyebrow="Risk Feed"
+            heading="Operational Alerts"
+            accent="dusk"
+            compact
+          >
+            <div className="space-y-3">
+              {metrics.alerts.length === 0 ? (
+                <p className="text-sm text-slate-200/70">All systems nominal.</p>
+              ) : (
+                metrics.alerts.map((alert) => (
+                  <TacticalAlert
+                    key={alert.id}
+                    tone={alert.severity === 'critical' ? 'danger' : alert.severity === 'warning' ? 'warning' : 'info'}
+                    eyebrow={alert.severity.toUpperCase()}
+                    headline={alert.message}
+                    dense
+                  >
+                    {alert.detail}
+                  </TacticalAlert>
+                ))
+              )}
+            </div>
+          </TacticalCard>
+        </section>
+
+        <section className="grid gap-4 lg:grid-cols-2">
+          <TacticalCard eyebrow="Recent Missions" heading="Activity Ledger" accent="aurora">
+            <div className="space-y-3">
+              {metrics.recentJobs.length === 0 ? (
+                <p className="text-sm text-slate-200/70">No mission activity recorded yet.</p>
+              ) : (
+                metrics.recentJobs.map((job) => (
+                  <div
+                    key={job.id}
+                    className="flex items-center justify-between gap-6 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200/90"
+                  >
+                    <div className="space-y-1">
+                      <p className="font-semibold text-slate-50">{job.name ?? job.id}</p>
+                      <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
+                        {formatStatusLabel(job.status)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p>{currencyFormatter.format(job.quoteValue)}</p>
+                      <p className="text-xs text-slate-400">
+                        {dateTimeFormatter.format(Date.parse(job.updatedAt ?? job.createdAt))}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </TacticalCard>
+
+          <TacticalCard eyebrow="Crew Outlook" heading="Upcoming Assignments" accent="ember">
+            <div className="space-y-3">
+              {metrics.upcomingAssignments.length === 0 ? (
+                <p className="text-sm text-slate-200/70">No assignments scheduled in the next window.</p>
+              ) : (
+                metrics.upcomingAssignments.map((assignment) => (
+                  <div
+                    key={assignment.id}
+                    className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200/90"
+                  >
+                    <div>
+                      <p className="font-semibold text-slate-50">{assignment.jobId}</p>
+                      <p className="text-xs text-slate-400">
+                        {dayFormatter.format(Date.parse(assignment.shiftStart))}
+                      </p>
+                    </div>
+                    <span className="text-xs uppercase tracking-[0.35em] text-orange-200/80">
+                      {dayFormatter.format(Date.parse(assignment.shiftEnd))}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </TacticalCard>
         </section>
 
         <section className="space-y-3">

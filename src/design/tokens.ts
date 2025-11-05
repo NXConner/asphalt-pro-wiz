@@ -146,7 +146,7 @@ export function formatThemeCSS(
 export function toCSSProperties(tokens: Record<string, string>): CSSProperties {
   return Object.entries(tokens).reduce<CSSProperties>((acc, [key, value]) => {
     const cssKey = key.startsWith('--') ? key : `--${key}`;
-    acc[cssKey as keyof CSSProperties] = value;
+    (acc as any)[cssKey] = value;
     return acc;
   }, {});
 }

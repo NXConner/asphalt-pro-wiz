@@ -19,7 +19,7 @@ const ScanOverlayComponent = ({ className, color = 'rgba(255,128,0,0.35)', delay
       className="absolute inset-x-0 h-1/3 bg-gradient-to-b from-transparent via-[color:var(--scan-color)] to-transparent"
       style={{
         '--scan-color': color,
-      }}
+      } as React.CSSProperties}
       initial={{ y: '-110%', opacity: 0 }}
       animate={{ y: '110%', opacity: [0, 0.6, 0] }}
       transition={{
