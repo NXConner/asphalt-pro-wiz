@@ -11,6 +11,7 @@ import {
   DivisionCardMetric,
 } from '@/components/division';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { isEnabled } from '@/lib/flags';
 import { logEvent } from '@/lib/logging';
 import { useCommandCenterData } from '@/modules/analytics/useCommandCenterData';
@@ -148,24 +149,24 @@ export default function CommandCenter() {
     meta: alert.severity.toUpperCase(),
     tone:
       alert.severity === 'critical'
-        ? 'critical'
+        ? ('critical' as const)
         : alert.severity === 'warning'
-          ? 'warning'
-          : 'neutral',
+          ? ('warning' as const)
+          : ('neutral' as const),
   }));
   const recentJobItems = metrics.recentJobs.map((job) => ({
     id: job.id,
     headline: job.name ?? job.id,
     subline: `${formatStatusLabel(job.status)} • ${currencyFormatter.format(job.quoteValue)}`,
     meta: dateTimeFormatter.format(Date.parse(job.updatedAt ?? job.createdAt)),
-    tone: job.status === 'active' ? 'positive' : job.status === 'lost' ? 'critical' : 'neutral',
+    tone: job.status === 'active' ? ('positive' as const) : job.status === 'lost' ? ('critical' as const) : ('neutral' as const),
   }));
   const assignmentItems = metrics.upcomingAssignments.map((assignment) => ({
     id: assignment.id,
     headline: assignment.jobId,
     subline: dayFormatter.format(Date.parse(assignment.shiftStart)),
     meta: dayFormatter.format(Date.parse(assignment.shiftEnd)),
-    tone: 'warning',
+    tone: 'warning' as const,
   }));
 
   return (
@@ -199,16 +200,6 @@ export default function CommandCenter() {
               subtitle="Live job allocation across active crews"
               badge={<DivisionCardBadge>{metrics.totals.jobs} Jobs</DivisionCardBadge>}
             />
-            <div className="grid gap-3 sm:grid-cols-2">
-          <TacticalCard
-            eyebrow="Mission Totals"
-            heading="Crew Readiness"
-            accent="lagoon"
-          >
-            <div className="grid gap-4 sm:grid-cols-2">
-              <StatusBar label="Active" value={metrics.totals.activeJobs} max={totalJobs} />
-              <StatusBar label="Completed" value={metrics.totals.completedJobs} max={totalJobs} />
-            </div>
             <DivisionCardDivider />
             <div className="grid gap-3 sm:grid-cols-3">
               <DivisionCardMetric
@@ -240,11 +231,6 @@ export default function CommandCenter() {
                 </DivisionCardBadge>
               }
             />
-          <TacticalCard
-            eyebrow="Revenue"
-            heading="Monthly Signal"
-            accent="ember"
-          >
             <div className="flex flex-wrap items-center gap-6">
               <ProgressRing
                 value={metrics.totals.totalRevenue}
@@ -311,85 +297,6 @@ export default function CommandCenter() {
               <DivisionCardList items={assignmentItems} />
             )}
           </DivisionCard>
-          <TacticalCard
-            eyebrow="Risk Feed"
-            heading="Operational Alerts"
-            accent="dusk"
-            compact
-          >
-            <div className="space-y-3">
-              {metrics.alerts.length === 0 ? (
-                <p className="text-sm text-slate-200/70">All systems nominal.</p>
-              ) : (
-                metrics.alerts.map((alert) => (
-                  <TacticalAlert
-                    key={alert.id}
-                    tone={alert.severity === 'critical' ? 'danger' : alert.severity === 'warning' ? 'warning' : 'info'}
-                    eyebrow={alert.severity.toUpperCase()}
-                    headline={alert.message}
-                    dense
-                  >
-                    {alert.detail}
-                  </TacticalAlert>
-                ))
-              )}
-            </div>
-          </TacticalCard>
-        </section>
-
-        <section className="grid gap-4 lg:grid-cols-2">
-          <TacticalCard eyebrow="Recent Missions" heading="Activity Ledger" accent="aurora">
-            <div className="space-y-3">
-              {metrics.recentJobs.length === 0 ? (
-                <p className="text-sm text-slate-200/70">No mission activity recorded yet.</p>
-              ) : (
-                metrics.recentJobs.map((job) => (
-                  <div
-                    key={job.id}
-                    className="flex items-center justify-between gap-6 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200/90"
-                  >
-                    <div className="space-y-1">
-                      <p className="font-semibold text-slate-50">{job.name ?? job.id}</p>
-                      <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
-                        {formatStatusLabel(job.status)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p>{currencyFormatter.format(job.quoteValue)}</p>
-                      <p className="text-xs text-slate-400">
-                        {dateTimeFormatter.format(Date.parse(job.updatedAt ?? job.createdAt))}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </TacticalCard>
-
-          <TacticalCard eyebrow="Crew Outlook" heading="Upcoming Assignments" accent="ember">
-            <div className="space-y-3">
-              {metrics.upcomingAssignments.length === 0 ? (
-                <p className="text-sm text-slate-200/70">No assignments scheduled in the next window.</p>
-              ) : (
-                metrics.upcomingAssignments.map((assignment) => (
-                  <div
-                    key={assignment.id}
-                    className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200/90"
-                  >
-                    <div>
-                      <p className="font-semibold text-slate-50">{assignment.jobId}</p>
-                      <p className="text-xs text-slate-400">
-                        {dayFormatter.format(Date.parse(assignment.shiftStart))}
-                      </p>
-                    </div>
-                    <span className="text-xs uppercase tracking-[0.35em] text-orange-200/80">
-                      {dayFormatter.format(Date.parse(assignment.shiftEnd))}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-          </TacticalCard>
         </section>
 
         <section className="space-y-3">

@@ -398,8 +398,8 @@ export function ThemeCustomizer() {
           </header>
           <div className="grid gap-4 sm:grid-cols-3">
             <TokenPanel title="Spacing" tokens={Object.entries(DESIGN_SYSTEM.spacing)} formatter={(value) => `${value}px`} />
-            <TokenPanel title="Typography" tokens={Object.entries(DESIGN_SYSTEM.typography).slice(0, 6)} formatter={(value) => value} />
-            <TokenPanel title="Shadows" tokens={Object.entries(DESIGN_SYSTEM.shadows)} formatter={(value) => value} />
+            <TokenPanel title="Typography" tokens={Object.entries(DESIGN_SYSTEM.typography).slice(0, 6)} formatter={(value) => String(value)} />
+            <TokenPanel title="Shadows" tokens={Object.entries(DESIGN_SYSTEM.shadows)} formatter={(value) => String(value)} />
           </div>
         </section>
 

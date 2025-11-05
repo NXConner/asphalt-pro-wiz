@@ -122,7 +122,7 @@ const Index = () => {
         return 'Reconnaissance';
       case 'estimated':
         return 'Proposal Ready';
-      case 'scheduled':
+      case 'active':
         return 'Deployment Prep';
       case 'completed':
         return 'Mission Complete';

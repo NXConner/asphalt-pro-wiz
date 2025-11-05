@@ -33,17 +33,17 @@ const buildCornerStyle = (
     position: 'absolute' as const,
   };
 
-  const positions: Record<Corner, Partial<CSSStyleDeclaration>> = {
-    tl: { top: offset, left: offset, borderRight: 'none', borderBottom: 'none' },
-    tr: { top: offset, right: offset, borderLeft: 'none', borderBottom: 'none' },
-    bl: { bottom: offset, left: offset, borderRight: 'none', borderTop: 'none' },
-    br: { bottom: offset, right: offset, borderLeft: 'none', borderTop: 'none' },
+  const positions: Record<Corner, React.CSSProperties> = {
+    tl: { top: `${offset}px`, left: `${offset}px`, borderRight: 'none', borderBottom: 'none' },
+    tr: { top: `${offset}px`, right: `${offset}px`, borderLeft: 'none', borderBottom: 'none' },
+    bl: { bottom: `${offset}px`, left: `${offset}px`, borderRight: 'none', borderTop: 'none' },
+    br: { bottom: `${offset}px`, right: `${offset}px`, borderLeft: 'none', borderTop: 'none' },
   };
 
   return {
     ...base,
     ...positions[corner],
-  } satisfies CSSStyleDeclaration;
+  } as React.CSSProperties;
 };
 
 const CornerElement = ({
@@ -70,10 +70,10 @@ const CornerElement = ({
     [corner, size, thickness, offset, accent],
   );
 
-  const shimmer = {
+  const shimmer: React.CSSProperties = {
     boxShadow: glow ? `0 0 16px ${accent}` : undefined,
     filter: glow ? 'drop-shadow(0 0 10px rgba(255,128,0,0.55))' : undefined,
-  } satisfies CSSStyleDeclaration;
+  };
 
   if (!animated) {
     return <span aria-hidden className="pointer-events-none rounded-none border absolute" style={{ ...style, ...shimmer }} />;
@@ -83,7 +83,7 @@ const CornerElement = ({
     <motion.span
       aria-hidden
       className="pointer-events-none rounded-none border absolute"
-      style={{ ...style, ...shimmer }}
+      style={{ ...style, ...shimmer } as any}
       initial={{ opacity: 0.35 }}
       animate={{ opacity: [0.35, 1, 0.35] }}
       transition={{

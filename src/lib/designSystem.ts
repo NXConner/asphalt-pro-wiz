@@ -25,9 +25,7 @@ const LEGACY_THEME_IDS = [
   'cyber',
 ] as const;
 
-const DIVISION_THEME_NAMES = (
-  DIVISION_THEME_IDS.map((id) => id.replace(/^theme-/, ''))
-) as const;
+const DIVISION_THEME_NAMES = DIVISION_THEME_IDS.map((id) => id.replace(/^theme-/, ''));
 
 export const THEME_NAMES = [...LEGACY_THEME_IDS, ...DIVISION_THEME_NAMES] as const;
 
