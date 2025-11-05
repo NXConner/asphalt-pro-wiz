@@ -5,105 +5,199 @@ collecting typed API route definitions for a future backend and outputting
 an initial swagger.json. Replace with real backend route annotations later.
 */
 
-import fs from "fs";
-import path from "path";
+import fs from 'fs';
+import path from 'path';
 
 const ROOT = process.cwd();
-const OUT = path.join(ROOT, "docs", "swagger.json");
+const OUT = path.join(ROOT, 'docs', 'swagger.json');
 
 const spec = {
-  openapi: "3.0.3",
+  openapi: '3.0.3',
   info: {
-    title: "Pavement Performance Suite API",
-    version: "0.1.0",
-    description: "Placeholder OpenAPI spec; replace with backend-generated spec once routes exist.",
+    title: 'Pavement Performance Suite – Edge Functions API',
+    version: '0.2.0',
+    description:
+      'Documented endpoints for Supabase Edge Functions that power PPS AI proxying and observability beacons.',
+    contact: {
+      name: 'Pavement Performance Suite',
+      url: 'https://github.com/continue-repo',
+    },
   },
-  servers: [{ url: "http://localhost:3000" }],
+  servers: [
+    {
+      url: 'https://{projectRef}.functions.supabase.co',
+      description: 'Supabase hosted Edge Functions',
+      variables: {
+        projectRef: {
+          default: 'your-project-ref',
+          description: 'Supabase project reference ID (e.g. vodglzbgqsafghlihivy)',
+        },
+      },
+    },
+    {
+      url: 'http://localhost:54321/functions/v1',
+      description: 'Local Supabase CLI',
+    },
+  ],
+  tags: [
+    { name: 'AI', description: 'Generative AI proxy endpoints' },
+    { name: 'Observability', description: 'Telemetry capture and log beacons' },
+  ],
   paths: {
-    "/api/estimates": {
+    '/gemini-proxy': {
       post: {
-        summary: "Create estimate from inputs",
+        tags: ['AI'],
+        summary: 'Proxy Gemini API calls',
         description:
-          "Calculates a project estimate based on input parameters (area, materials, services).",
-        tags: ["Estimates"],
+          'Routes chat, image, and embedding requests to Google Gemini models while keeping API keys server-side.',
+        operationId: 'GeminiProxy',
+        security: [{ supabaseAnonKey: [] }],
         requestBody: {
           required: true,
           content: {
-            "application/json": { schema: { $ref: "#/components/schemas/EstimateRequest" } },
+            'application/json': {
+              schema: { $ref: '#/components/schemas/GeminiProxyRequest' },
+              examples: {
+                chat: {
+                  summary: 'Chat prompt',
+                  value: {
+                    action: 'chat',
+                    contents: [{ role: 'user', parts: [{ text: 'Summarize sealcoating steps' }] }],
+                  },
+                },
+                embed: {
+                  summary: 'Embedding request',
+                  value: {
+                    action: 'embed',
+                    text: 'Church lot resurfacing quote',
+                  },
+                },
+              },
+            },
           },
         },
         responses: {
-          "200": {
-            description: "Estimate result",
+          '200': {
+            description: 'Gemini response payload',
             content: {
-              "application/json": { schema: { $ref: "#/components/schemas/EstimateResponse" } },
+              'application/json': {
+                schema: { $ref: '#/components/schemas/GeminiProxyResponse' },
+              },
             },
+          },
+          '400': {
+            description: 'Unsupported action or malformed body',
+          },
+          '405': {
+            description: 'Method not allowed',
+          },
+          '500': {
+            description: 'Upstream error or missing API key',
           },
         },
       },
     },
-    "/api/ai/chat": {
+    '/log-beacon': {
       post: {
-        summary: "AI chat (RAG-assisted) for asphalt domain",
+        tags: ['Observability'],
+        summary: 'Ingest client log beacons',
         description:
-          "Proxy to Gemini chat through Supabase edge function, augmented with repo RAG context.",
-        tags: ["AI"],
+          'Receives structured telemetry events from the PPS frontend for centralized logging and later fan-out.',
+        operationId: 'LogBeacon',
+        security: [{ supabaseAnonKey: [] }],
         requestBody: {
           required: true,
           content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: { question: { type: "string" } },
-                required: ["question"],
-              },
+            'application/json': {
+              schema: { $ref: '#/components/schemas/LogBeaconPayload' },
             },
           },
         },
         responses: {
-          "200": {
-            description: "Chat response",
-            content: {
-              "application/json": {
-                schema: { type: "object", properties: { text: { type: "string" } } },
-              },
-            },
-          },
-        },
-      },
-    },
-    "/api/ai/image": {
-      post: {
-        summary: "AI image analysis (asphalt condition)",
-        description: "Proxy to Gemini image generateContent via Supabase edge function.",
-        tags: ["AI"],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": { schema: { type: "object", additionalProperties: true } },
-          },
-        },
-        responses: {
-          "200": {
-            description: "Analysis response",
-            content: {
-              "application/json": {
-                schema: { type: "object", properties: { text: { type: "string" } } },
-              },
-            },
-          },
+          '200': { description: 'Beacon accepted' },
+          '400': { description: 'Invalid JSON payload' },
+          '405': { description: 'Method not allowed' },
         },
       },
     },
   },
   components: {
+    securitySchemes: {
+      supabaseAnonKey: {
+        type: 'apiKey',
+        in: 'header',
+        name: 'apikey',
+        description:
+          "Supabase anon/service key. When calling from browsers use the anon public key, for server-to-server use service role escorts via 'Authorization: Bearer <token>'.",
+      },
+    },
     schemas: {
-      EstimateRequest: {
-        type: "object",
+      GeminiProxyRequest: {
+        type: 'object',
+        properties: {
+          action: {
+            type: 'string',
+            description: 'Operation to perform',
+            enum: ['chat', 'image', 'embed'],
+          },
+          contents: {
+            type: 'array',
+            description: 'Gemini content payload, required for chat/image actions',
+            items: { type: 'object', additionalProperties: true },
+          },
+          text: {
+            type: 'string',
+            description: "Plain text to embed when action === 'embed'",
+          },
+        },
+        required: ['action'],
+        additionalProperties: false,
+      },
+      GeminiProxyResponse: {
+        type: 'object',
+        properties: {
+          text: {
+            type: 'string',
+            description: 'Generated text for chat/image requests',
+          },
+          embedding: {
+            type: 'object',
+            properties: {
+              values: {
+                type: 'array',
+                items: { type: 'number' },
+              },
+            },
+          },
+        },
         additionalProperties: true,
       },
-      EstimateResponse: {
-        type: "object",
+      LogBeaconPayload: {
+        type: 'object',
+        description: 'Structured client telemetry with arbitrary metadata',
+        properties: {
+          event: {
+            type: 'string',
+            description: 'Event name (e.g. mission_scheduler.conflict)',
+          },
+          level: {
+            type: 'string',
+            description: 'Log level',
+            enum: ['debug', 'info', 'warn', 'error'],
+            default: 'info',
+          },
+          context: {
+            type: 'object',
+            description: 'Arbitrary contextual fields',
+            additionalProperties: true,
+          },
+          timestamp: {
+            type: 'string',
+            format: 'date-time',
+            description: 'ISO-8601 timestamp from client (optional)',
+          },
+        },
+        required: ['event'],
         additionalProperties: true,
       },
     },
