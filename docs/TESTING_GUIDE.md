@@ -3,6 +3,7 @@
 This guide covers testing strategies, running tests, and writing new tests for the Pavement Performance Suite.
 
 ## Table of Contents
+
 1. [Testing Stack](#testing-stack)
 2. [Running Tests](#running-tests)
 3. [Writing Tests](#writing-tests)
@@ -14,17 +15,20 @@ This guide covers testing strategies, running tests, and writing new tests for t
 ## Testing Stack
 
 ### Unit & Integration Tests
+
 - **Framework**: Vitest
 - **Testing Library**: React Testing Library
 - **Mocking**: Vitest mocks
 - **Coverage**: V8
 
 ### E2E Tests
+
 - **Framework**: Playwright
 - **Browsers**: Chromium (can be extended)
 - **Parallelization**: Supported
 
 ### Test Location
+
 ```
 project/
 ├── tests/              # Unit and integration tests
@@ -84,6 +88,23 @@ npm run test:e2e -- --debug
 npm run test:e2e -- --reporter=html
 ```
 
+### Load Tests
+
+> **Prerequisites:** Install [k6](https://k6.io/docs/get-started/installation/) locally or run via Docker. Artillery can execute directly with `npx`. When running Playwright-based validation alongside load tests, the host system must provide required GTK/GStreamer libraries (see Playwright output for a full list).
+
+```bash
+# k6 mission-control sweep (BASE_URL defaults to http://localhost:5173)
+BASE_URL=http://localhost:5173 npx k6 run scripts/load/k6-estimate.js
+
+# Optional: scale intensity (multiplies virtual user targets)
+STAGE_MULTIPLIER=3 BASE_URL=https://preview.app.example npx k6 run scripts/load/k6-estimate.js
+
+# Artillery quick pulse (respects BASE_URL if provided)
+npx artillery run scripts/load/artillery.yml
+```
+
+The k6 scenario ramps traffic up to ~20 req/s (scaled by `STAGE_MULTIPLIER`) and enforces latency/availability thresholds while checking `/auth`, `/`, `/command-center`, and `/robots.txt`. Artillery provides a lighter-weight CI smoke that hits the same surfaces.
+
 ---
 
 ## Writing Tests
@@ -109,7 +130,7 @@ describe('useYourHook', () => {
 
   it('returns expected initial state', () => {
     const { result } = renderHook(() => useYourHook());
-    
+
     expect(result.current.loading).toBe(true);
     expect(result.current.data).toBeNull();
   });
@@ -117,7 +138,7 @@ describe('useYourHook', () => {
   it('fetches data successfully', async () => {
     const mockData = { id: '1', name: 'Test' };
     const { supabase } = require('@/integrations/supabase/client');
-    
+
     supabase.from.mockReturnValue({
       select: vi.fn(() => ({
         data: [mockData],
@@ -146,17 +167,17 @@ import { YourComponent } from '@/components/YourComponent';
 describe('YourComponent', () => {
   it('renders correctly', () => {
     render(<YourComponent />);
-    
+
     expect(screen.getByText('Expected Text')).toBeInTheDocument();
   });
 
   it('handles user interaction', async () => {
     const handleClick = vi.fn();
     render(<YourComponent onClick={handleClick} />);
-    
+
     const button = screen.getByRole('button', { name: /click me/i });
     await userEvent.click(button);
-    
+
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 });
@@ -175,11 +196,11 @@ test.describe('Feature Name', () => {
   test('user can complete main flow', async ({ page }) => {
     // Navigate
     await page.goto('/feature');
-    
+
     // Interact
     await page.getByLabel('Input Label').fill('value');
     await page.getByRole('button', { name: /submit/i }).click();
-    
+
     // Assert
     await expect(page.getByText('Success')).toBeVisible();
   });
@@ -217,6 +238,7 @@ open coverage/index.html
 ### What to Test
 
 **High Priority:**
+
 - ✅ Authentication flows
 - ✅ Authorization checks
 - ✅ RLS policy enforcement
@@ -224,12 +246,14 @@ open coverage/index.html
 - ✅ Critical user paths
 
 **Medium Priority:**
+
 - ✅ Form validation
 - ✅ Error handling
 - ✅ Navigation
 - ✅ State management
 
 **Low Priority:**
+
 - UI styling
 - Static content
 - Third-party library wrappers
@@ -244,10 +268,10 @@ open coverage/index.html
 it('describes what is being tested', () => {
   // Arrange: Set up test data and conditions
   const input = 'test';
-  
+
   // Act: Perform the action being tested
   const result = yourFunction(input);
-  
+
   // Assert: Verify the expected outcome
   expect(result).toBe('expected');
 });
@@ -257,14 +281,14 @@ it('describes what is being tested', () => {
 
 ```typescript
 // Good ✅
-it('redirects unauthenticated users to login page')
-it('calculates total price with tax correctly')
-it('validates email format before submission')
+it('redirects unauthenticated users to login page');
+it('calculates total price with tax correctly');
+it('validates email format before submission');
 
 // Bad ❌
-it('test 1')
-it('works')
-it('should do something')
+it('test 1');
+it('works');
+it('should do something');
 ```
 
 ### 3. Mocking
@@ -314,11 +338,8 @@ fireEvent.click(wrapper.find('.btn-submit'));
 describe('RLS Policies', () => {
   it('prevents unauthorized access to jobs', async () => {
     // Set up user context
-    const { data, error } = await supabase
-      .from('jobs')
-      .select('*')
-      .eq('id', 'other-user-job');
-    
+    const { data, error } = await supabase.from('jobs').select('*').eq('id', 'other-user-job');
+
     // Should return no data or error
     expect(data).toEqual([]);
   });
@@ -331,7 +352,7 @@ describe('RLS Policies', () => {
 describe('Authentication', () => {
   it('requires authentication for protected routes', async ({ page }) => {
     await page.goto('/admin');
-    
+
     // Should redirect to auth page
     await expect(page).toHaveURL(/.*auth/);
   });
@@ -345,13 +366,13 @@ describe('Authorization', () => {
   it('blocks non-admin users from admin panel', async () => {
     // Authenticate as regular user
     await signIn('user@example.com');
-    
+
     // Attempt to access admin panel
     const { data, error } = await supabase
       .from('user_roles')
       .select('*')
       .eq('role', 'Administrator');
-    
+
     // Should fail
     expect(error).toBeDefined();
   });
@@ -372,24 +393,24 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run unit tests
         run: npm test -- --coverage
-      
+
       - name: Run E2E tests
         run: npm run test:e2e
-      
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
@@ -440,21 +461,21 @@ npm run test:e2e -- --slow-mo=1000
 ```typescript
 it('validates form inputs', async () => {
   render(<YourForm />);
-  
+
   const emailInput = screen.getByLabelText(/email/i);
   const submitButton = screen.getByRole('button', { name: /submit/i });
-  
+
   // Invalid input
   await userEvent.type(emailInput, 'invalid-email');
   await userEvent.click(submitButton);
-  
+
   expect(screen.getByText(/invalid email/i)).toBeInTheDocument();
-  
+
   // Valid input
   await userEvent.clear(emailInput);
   await userEvent.type(emailInput, 'valid@example.com');
   await userEvent.click(submitButton);
-  
+
   await waitFor(() => {
     expect(screen.queryByText(/invalid email/i)).not.toBeInTheDocument();
   });
@@ -466,16 +487,16 @@ it('validates form inputs', async () => {
 ```typescript
 it('fetches data from API', async () => {
   const mockData = [{ id: 1, name: 'Test' }];
-  
+
   vi.spyOn(supabase, 'from').mockReturnValue({
     select: vi.fn(() => ({
       data: mockData,
       error: null,
     })),
   });
-  
+
   const { result } = renderHook(() => useData());
-  
+
   await waitFor(() => {
     expect(result.current.data).toEqual(mockData);
   });
@@ -487,16 +508,16 @@ it('fetches data from API', async () => {
 ```typescript
 it('handles errors gracefully', async () => {
   const mockError = new Error('Network error');
-  
+
   vi.spyOn(supabase, 'from').mockReturnValue({
     select: vi.fn(() => ({
       data: null,
       error: mockError,
     })),
   });
-  
+
   const { result } = renderHook(() => useData());
-  
+
   await waitFor(() => {
     expect(result.current.error).toBeDefined();
     expect(result.current.data).toBeNull();
@@ -509,12 +530,14 @@ it('handles errors gracefully', async () => {
 ## Continuous Improvement
 
 ### Regular Test Reviews
+
 - Review test coverage monthly
 - Update tests when features change
 - Remove obsolete tests
 - Improve flaky tests
 
 ### Test Metrics
+
 - Track test execution time
 - Monitor coverage trends
 - Identify slow tests

@@ -7,9 +7,7 @@ import { DocumentGenerator } from '@/components/DocumentGenerator';
 import { OwnerSettings } from '@/components/OwnerSettings';
 import { PremiumServices } from '@/components/PremiumServices';
 import { ReceiptsPanel } from '@/components/ReceiptsPanel';
-import { BlackoutEditor } from '@/components/Scheduler/BlackoutEditor';
-import { CrewAssign } from '@/components/Scheduler/CrewAssign';
-import { WeatherAdvisor } from '@/components/Scheduler/WeatherAdvisor';
+import { MissionSchedulerPanel, MissionSchedulerProvider } from '@/modules/scheduler';
 import { ThemeCustomizer } from '@/components/ThemeCustomizer';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -197,20 +195,18 @@ export function EngagementHubPanel({ estimator }: EngagementHubPanelProps) {
         </CanvasPanel>
       ) : null}
 
-      {featureFlags.values.scheduler ? (
-        <CanvasPanel
-          title="Crew Scheduler"
-          subtitle="Align crews to blackout windows and weather advisories for minimal Sunday disruption."
-          eyebrow="Operations"
-          tone="lagoon"
-        >
-          <div className="space-y-6">
-            <BlackoutEditor />
-            <CrewAssign />
-            <WeatherAdvisor coords={job.coords} />
-          </div>
-        </CanvasPanel>
-      ) : null}
+        {featureFlags.values.scheduler ? (
+          <MissionSchedulerProvider>
+            <CanvasPanel
+              title="Crew Scheduler"
+              subtitle="Align crews to blackout windows and weather advisories for minimal Sunday disruption."
+              eyebrow="Operations"
+              tone="lagoon"
+            >
+              <MissionSchedulerPanel coords={job.coords} />
+            </CanvasPanel>
+          </MissionSchedulerProvider>
+        ) : null}
     </div>
   );
 }
