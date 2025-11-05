@@ -3,6 +3,51 @@
 ## Overview
 The application implements a secure, scalable user roles system following security best practices to prevent privilege escalation attacks.
 
+> **Schema refresh (November 2025)**
+>
+> The production schema now normalizes roles into two tables maintained by the migration `1700000015000_platform_foundation.js`:
+> 
+> - `public.roles` — canonical catalog of platform roles (`viewer`, `operator`, `manager`, `super_admin`).
+> - `public.user_roles` — association table linking `auth.users` to entries in `public.roles` with a composite primary key `(user_id, role_name)`.
+>
+> This supersedes the legacy enum-based approach documented later in this file. New integrations should target the normalized schema shown below.
+
+```sql
+CREATE TABLE public.roles (
+  name        text PRIMARY KEY,
+  description text NOT NULL,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE public.user_roles (
+  user_id    uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  role_name  text NOT NULL REFERENCES public.roles(name) ON DELETE CASCADE,
+  granted_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, role_name)
+);
+```
+
+Key behaviors:
+
+- `npm run migrate:up` ensures both tables (and default role records) exist.
+- `scripts/seed.ts` promotes the configured `ADMIN_EMAIL` user to `super_admin` in both `user_org_memberships` and `user_roles`.
+- To grant a role programmatically:
+
+  ```sql
+  INSERT INTO public.user_roles (user_id, role_name)
+  VALUES ($1, 'manager')
+  ON CONFLICT (user_id, role_name) DO NOTHING;
+  ```
+
+- To revoke a role:
+
+  ```sql
+  DELETE FROM public.user_roles
+  WHERE user_id = $1 AND role_name = 'manager';
+  ```
+
+The remainder of this guide captures the previous enum-based design for historical reference. Retain it when auditing legacy data, but prefer the normalized schema above for new work.
+
 ## Security Architecture
 
 ### Key Security Principles

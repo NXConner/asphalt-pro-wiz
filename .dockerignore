@@ -9,9 +9,6 @@ android
 docs
 tests
 e2e
-scripts
-supabase/migrations
-supabase/functions
 supabase/.temp
 deleted files
 .git

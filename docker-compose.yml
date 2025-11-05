@@ -2,6 +2,12 @@ version: "3.9"
 
 x-app-env: &app_env
   APP_ENV: ${APP_ENV:-development}
+  NODE_ENV: ${NODE_ENV:-production}
+  VITE_APP_VERSION: ${VITE_APP_VERSION:-local-dev}
+  VITE_BASE_PATH: ${VITE_BASE_PATH:-/}
+  VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+  VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
+  VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY:-}
   VITE_LOG_BEACON_URL: ${VITE_LOG_BEACON_URL:-}
   VITE_OBSERVABILITY_EXPORTER_URL: ${VITE_OBSERVABILITY_EXPORTER_URL:-}
   VITE_FLAG_AIASSISTANT: ${VITE_FLAG_AIASSISTANT:-1}
@@ -10,6 +16,11 @@ x-app-env: &app_env
   VITE_FLAG_PWA: ${VITE_FLAG_PWA:-1}
   VITE_FLAG_I18N: ${VITE_FLAG_I18N:-1}
   VITE_FLAG_OWNERMODE: ${VITE_FLAG_OWNERMODE:-0}
+  VITE_FLAG_SCHEDULER: ${VITE_FLAG_SCHEDULER:-0}
+  VITE_FLAG_OPTIMIZER: ${VITE_FLAG_OPTIMIZER:-0}
+  VITE_FLAG_CUSTOMERPORTAL: ${VITE_FLAG_CUSTOMERPORTAL:-0}
+  VITE_FLAG_OBSERVABILITY: ${VITE_FLAG_OBSERVABILITY:-1}
+  VITE_FLAG_COMMANDCENTER: ${VITE_FLAG_COMMANDCENTER:-1}
 
 services:
   app:
@@ -29,15 +40,41 @@ services:
       - "${WEB_PORT:-8080}:80"
     environment:
       <<: *app_env
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost"]
       interval: 30s
       timeout: 5s
       retries: 3
     restart: unless-stopped
+    networks:
+      - pavement
+
+  migrator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: tooling
+      args:
+        NODE_VERSION: ${NODE_VERSION:-22-alpine}
+    image: ${TOOLING_IMAGE:-pavement-performance-suite-tooling:latest}
+    container_name: pavement-migrator
+    command: ["npm", "run", "migrate:up"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgres://postgres:postgres@db:5432/pavement}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
     networks:
       - pavement
 

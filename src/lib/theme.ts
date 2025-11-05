@@ -1,73 +1,107 @@
+import { THEME_PRESETS, getThemePreset, type ThemeNameFromTokens } from '@/lib/designSystem';
 import {
-  DIVISION_THEMES,
-  DIVISION_THEME_IDS,
-  composeThemeVariables,
-  type DivisionThemeId,
-} from '@/design';
-export type ThemeMode = "light" | "dark" | "system";
-export type ThemeName =
-  | 'default'
-  | 'emerald'
-  | 'sunset'
-  | 'royal'
-  | 'crimson'
-  | 'forest'
-  | 'ocean'
-  | 'amber'
-  | 'mono'
-  | 'cyber'
-  | 'division-agent'
-  | 'division-rogue'
-  | 'division-darkzone'
-  | 'division-tech'
-  | 'division-stealth'
-  | 'division-combat'
-  | 'division-tactical'
-  | 'division-hunter';
+  getDefaultWallpaperAsset,
+  getWallpaperAssetById,
+  type WallpaperSource,
+} from '@/modules/layout/wallpaperLibrary';
+
+export type ThemeMode = 'light' | 'dark' | 'system';
+export type ThemeName = ThemeNameFromTokens;
 
 export interface ThemePreferences {
   mode: ThemeMode;
   name: ThemeName;
-  /**
-   * Primary color hue override in degrees (0-360).
-   * When {@link useHueOverride} is false, this value is ignored so that theme presets take effect.
-   */
-  primaryHue: number; // 0-360
-  /**
-   * Controls whether {@link primaryHue} should override the active theme preset.
-   * This prevents inline style precedence from blocking theme changes.
-   */
+  primaryHue: number;
   useHueOverride: boolean;
-  wallpaperDataUrl: string; // data URL or empty
-  wallpaperOpacity: number; // 0-1
-  wallpaperBlur: number; // px
-  radius: number; // px
-  /** High-contrast accessibility mode */
+  wallpaperId: string | null;
+  wallpaperSource: WallpaperSource | null;
+  wallpaperDataUrl: string;
+  wallpaperOpacity: number;
+  wallpaperBlur: number;
+  radius: number;
   highContrast?: boolean;
+  wallpaperName?: string | null;
+  wallpaperDescription?: string | null;
 }
 
-const STORAGE_KEY = "pps:theme";
+export type ThemeWallpaperSelection =
+  | string
+  | {
+      id?: string | null;
+      dataUrl?: string;
+      source?: WallpaperSource | null;
+      name?: string | null;
+      description?: string | null;
+    };
 
-export function getDefaultPreferences(): ThemePreferences {
+const STORAGE_KEY = 'pps:theme';
+const DEFAULT_THEME_NAME: ThemeName = 'division-agent';
+
+const createDefaults = (): ThemePreferences => {
+  const fallback = getDefaultWallpaperAsset();
   return {
-    mode: "dark",
-      name: 'division-agent',
+    mode: 'dark',
+    name: DEFAULT_THEME_NAME,
     primaryHue: 210,
     useHueOverride: false,
-    wallpaperDataUrl: "",
+    wallpaperId: fallback.id,
+    wallpaperSource: fallback.source,
+    wallpaperDataUrl: fallback.dataUrl,
     wallpaperOpacity: 0.25,
     wallpaperBlur: 0,
     radius: 8,
     highContrast: false,
+    wallpaperName: fallback.name,
+    wallpaperDescription: fallback.description,
   };
+};
+
+const coerceWallpaper = (prefs: ThemePreferences): ThemePreferences => {
+  if (!prefs.wallpaperId) {
+    const fallback = getDefaultWallpaperAsset();
+    return {
+      ...prefs,
+      wallpaperId: fallback.id,
+      wallpaperSource: fallback.source,
+      wallpaperDataUrl: fallback.dataUrl,
+      wallpaperName: fallback.name,
+      wallpaperDescription: fallback.description,
+    };
+  }
+  const asset = getWallpaperAssetById(prefs.wallpaperId);
+  if (!asset) {
+    const fallback = getDefaultWallpaperAsset();
+    return {
+      ...prefs,
+      wallpaperId: fallback.id,
+      wallpaperSource: fallback.source,
+      wallpaperDataUrl: fallback.dataUrl,
+      wallpaperName: fallback.name,
+      wallpaperDescription: fallback.description,
+    };
+  }
+  return {
+    ...prefs,
+    wallpaperSource: asset.source,
+    wallpaperDataUrl: asset.dataUrl,
+    wallpaperName: prefs.wallpaperName ?? asset.name,
+    wallpaperDescription: prefs.wallpaperDescription ?? asset.description,
+  };
+};
+
+const normalisePreferences = (partial?: Partial<ThemePreferences>): ThemePreferences =>
+  coerceWallpaper({ ...createDefaults(), ...(partial ?? {}) } as ThemePreferences);
+
+export function getDefaultPreferences(): ThemePreferences {
+  return createDefaults();
 }
 
 export function loadThemePreferences(): ThemePreferences {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return getDefaultPreferences();
-    const parsed = JSON.parse(raw);
-    return { ...getDefaultPreferences(), ...parsed } as ThemePreferences;
+    const parsed = JSON.parse(raw) as Partial<ThemePreferences>;
+    return normalisePreferences(parsed);
   } catch {
     return getDefaultPreferences();
   }
@@ -77,102 +111,57 @@ export function saveThemePreferences(prefs: ThemePreferences): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
 }
 
-const BASE_THEME_TOKENS = composeThemeVariables({});
+const getTokensForTheme = (name: ThemeName): Record<string, string> =>
+  THEME_PRESETS[name]?.tokens ?? getThemePreset(DEFAULT_THEME_NAME).tokens;
 
-const LEGACY_THEME_TOKENS: Record<Exclude<ThemeName, `division-${string}`>, Record<string, string>> = {
-  default: BASE_THEME_TOKENS,
-  emerald: composeThemeVariables({
-    '--primary': '142 76% 40%',
-    '--accent': '142 76% 40%',
-  }),
-  sunset: composeThemeVariables({
-    '--primary': '25 95% 55%',
-    '--accent': '340 82% 52%',
-  }),
-  royal: composeThemeVariables({
-    '--primary': '260 90% 55%',
-    '--accent': '220 90% 60%',
-  }),
-  crimson: composeThemeVariables({
-    '--primary': '0 84% 60%',
-    '--accent': '340 82% 52%',
-  }),
-  forest: composeThemeVariables({
-    '--primary': '125 55% 40%',
-    '--accent': '45 95% 50%',
-  }),
-  ocean: composeThemeVariables({
-    '--primary': '200 85% 50%',
-    '--accent': '170 70% 45%',
-  }),
-  amber: composeThemeVariables({
-    '--primary': '38 92% 55%',
-    '--accent': '14 90% 55%',
-  }),
-  mono: composeThemeVariables({
-    '--primary': '0 0% 85%',
-    '--accent': '0 0% 60%',
-  }),
-  cyber: composeThemeVariables({
-    '--primary': '285 80% 60%',
-    '--accent': '162 85% 45%',
-  }),
+const resolveWallpaperValue = (prefs: ThemePreferences): string => {
+  if (prefs.wallpaperId) {
+    const asset = getWallpaperAssetById(prefs.wallpaperId);
+    if (asset) return asset.dataUrl;
+  }
+  if (prefs.wallpaperDataUrl && prefs.wallpaperDataUrl.trim().length > 0) {
+    return prefs.wallpaperDataUrl;
+  }
+  return getDefaultWallpaperAsset().dataUrl;
 };
 
-function resolveDivisionTheme(name: ThemeName): DivisionThemeId | null {
-  const candidate = `theme-${name}` as DivisionThemeId;
-  return (DIVISION_THEME_IDS as string[]).includes(candidate) ? candidate : null;
-}
-
-function getTokensForTheme(name: ThemeName): Record<string, string> {
-  const divisionThemeId = resolveDivisionTheme(name);
-  if (divisionThemeId) {
-    return DIVISION_THEMES[divisionThemeId]?.tokens ?? BASE_THEME_TOKENS;
-  }
-  return LEGACY_THEME_TOKENS[name as keyof typeof LEGACY_THEME_TOKENS] ?? BASE_THEME_TOKENS;
-}
-
 export function applyThemePreferences(prefs: ThemePreferences): void {
+  const resolved = coerceWallpaper(prefs);
   const root = document.documentElement;
   const body = document.body;
 
-  // mode
-  const mode = prefs.mode === 'system' ? getSystemMode() : prefs.mode;
+  const mode = resolved.mode === 'system' ? getSystemMode() : resolved.mode;
   root.classList.remove('light', 'dark');
   root.classList.add(mode);
 
-  const tokens = getTokensForTheme(prefs.name);
+  const tokens = getTokensForTheme(resolved.name);
   Object.entries(tokens).forEach(([key, value]) => {
     root.style.setProperty(key, value);
   });
 
-  // radius
-  root.style.setProperty('--radius', `${prefs.radius}px`);
+  root.style.setProperty('--radius', `${resolved.radius}px`);
 
-  // high contrast
-  if (prefs.highContrast) {
+  if (resolved.highContrast) {
     root.classList.add('high-contrast');
   } else {
     root.classList.remove('high-contrast');
   }
 
-  // primary hue override (optional)
-  if (prefs.useHueOverride && Number.isFinite(prefs.primaryHue)) {
-    root.style.setProperty('--primary', `${prefs.primaryHue} 100% 50%`);
-    root.style.setProperty('--primary-foreground', `${prefs.primaryHue} 10% 95%`);
+  if (resolved.useHueOverride && Number.isFinite(resolved.primaryHue)) {
+    root.style.setProperty('--primary', `${resolved.primaryHue} 100% 50%`);
+    root.style.setProperty('--primary-foreground', `${resolved.primaryHue} 10% 95%`);
   } else {
-    // Ensure preset theme values are used by removing any prior inline overrides
     root.style.removeProperty('--primary');
     root.style.removeProperty('--primary-foreground');
   }
 
-  // wallpaper
-  if (prefs.wallpaperDataUrl) {
-    const trimmed = prefs.wallpaperDataUrl.trim();
+  const wallpaperValue = resolveWallpaperValue(resolved);
+  if (wallpaperValue) {
+    const trimmed = wallpaperValue.trim();
     const isGradient = trimmed.startsWith('linear-gradient') || trimmed.startsWith('radial-gradient');
     root.style.setProperty('--app-wallpaper', isGradient ? trimmed : `url('${trimmed}')`);
-    root.style.setProperty('--wallpaper-opacity', `${prefs.wallpaperOpacity}`);
-    root.style.setProperty('--wallpaper-blur', `${prefs.wallpaperBlur}px`);
+    root.style.setProperty('--wallpaper-opacity', `${resolved.wallpaperOpacity}`);
+    root.style.setProperty('--wallpaper-blur', `${resolved.wallpaperBlur}px`);
     body.classList.add('has-wallpaper');
   } else {
     root.style.removeProperty('--app-wallpaper');
@@ -184,55 +173,131 @@ export function applyThemePreferences(prefs: ThemePreferences): void {
 
 export function setThemeMode(mode: ThemeMode): void {
   const prefs = loadThemePreferences();
-  prefs.mode = mode;
-  saveThemePreferences(prefs);
-  applyThemePreferences(prefs);
+  const next = coerceWallpaper({ ...prefs, mode });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
 }
 
 export function setThemeName(name: ThemeName): void {
   const prefs = loadThemePreferences();
-  prefs.name = name;
-  // When switching theme presets, disable hue override so the preset is visible
-  prefs.useHueOverride = false;
-  saveThemePreferences(prefs);
-  applyThemePreferences(prefs);
+  const next = coerceWallpaper({ ...prefs, name, useHueOverride: false });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
 }
 
 export function setPrimaryHue(hue: number): void {
   const prefs = loadThemePreferences();
-  prefs.primaryHue = Math.max(0, Math.min(360, Math.round(hue)));
-  // Moving the slider enables the hue override explicitly
-  prefs.useHueOverride = true;
-  saveThemePreferences(prefs);
-  applyThemePreferences(prefs);
+  const next = coerceWallpaper({
+    ...prefs,
+    primaryHue: Math.max(0, Math.min(360, Math.round(hue))),
+    useHueOverride: true,
+  });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setUseHueOverride(enabled: boolean): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, useHueOverride: enabled });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
 }
 
 export function setRadius(px: number): void {
   const prefs = loadThemePreferences();
-  prefs.radius = Math.max(0, Math.min(24, Math.round(px)));
-  saveThemePreferences(prefs);
-  applyThemePreferences(prefs);
+  const next = coerceWallpaper({
+    ...prefs,
+    radius: Math.max(0, Math.min(24, Math.round(px))),
+  });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
 }
 
-export function setWallpaper(dataUrl: string): void {
+export function setWallpaper(selection: ThemeWallpaperSelection): void {
   const prefs = loadThemePreferences();
-  prefs.wallpaperDataUrl = dataUrl;
-  saveThemePreferences(prefs);
-  applyThemePreferences(prefs);
+  let next: ThemePreferences = { ...prefs };
+
+  if (typeof selection === 'string') {
+    const trimmed = selection.trim();
+    if (trimmed.length === 0) {
+      next = {
+        ...next,
+        wallpaperId: null,
+        wallpaperSource: null,
+        wallpaperDataUrl: '',
+        wallpaperName: null,
+        wallpaperDescription: null,
+      };
+    } else {
+      next = {
+        ...next,
+        wallpaperId: null,
+        wallpaperSource: 'custom',
+        wallpaperDataUrl: trimmed,
+        wallpaperName: 'Custom Wallpaper',
+        wallpaperDescription: 'Manual selection',
+      };
+    }
+  } else {
+    const asset = selection.id ? getWallpaperAssetById(selection.id) : null;
+    if (asset) {
+      next = {
+        ...next,
+        wallpaperId: asset.id,
+        wallpaperSource: asset.source,
+        wallpaperDataUrl: asset.dataUrl,
+        wallpaperName: selection.name ?? asset.name,
+        wallpaperDescription: selection.description ?? asset.description,
+      };
+    } else {
+      next = {
+        ...next,
+        wallpaperId: selection.id ?? null,
+        wallpaperSource: selection.source ?? null,
+        wallpaperDataUrl: selection.dataUrl ?? '',
+        wallpaperName: selection.name ?? null,
+        wallpaperDescription: selection.description ?? null,
+      };
+    }
+  }
+
+  next = coerceWallpaper(next);
+  saveThemePreferences(next);
+  applyThemePreferences(next);
 }
 
 export function setWallpaperOpacity(opacity: number): void {
   const prefs = loadThemePreferences();
-  prefs.wallpaperOpacity = Math.max(0, Math.min(1, opacity));
-  saveThemePreferences(prefs);
-  applyThemePreferences(prefs);
+  const next = coerceWallpaper({
+    ...prefs,
+    wallpaperOpacity: Math.max(0, Math.min(1, opacity)),
+  });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
 }
 
 export function setWallpaperBlur(px: number): void {
   const prefs = loadThemePreferences();
-  prefs.wallpaperBlur = Math.max(0, Math.min(30, Math.round(px)));
-  saveThemePreferences(prefs);
-  applyThemePreferences(prefs);
+  const next = coerceWallpaper({
+    ...prefs,
+    wallpaperBlur: Math.max(0, Math.min(30, Math.round(px))),
+  });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHighContrastMode(enabled: boolean): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, highContrast: enabled });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function resetThemePreferences(): ThemePreferences {
+  const defaults = getDefaultPreferences();
+  saveThemePreferences(defaults);
+  applyThemePreferences(defaults);
+  return defaults;
 }
 
 function getSystemMode(): 'light' | 'dark' {
