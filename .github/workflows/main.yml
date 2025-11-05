@@ -2,22 +2,24 @@ name: CI
 
 on:
   push:
-    branches: [ main, master, develop, staging, "release/*", "feature/*" ]
+    branches:
+      - main
+      - develop
   pull_request:
-    branches: [ "**" ]
 
 jobs:
-  build-and-test:
+  quality:
+    name: Lint, Unit & E2E Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
+          node-version: 20
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -25,40 +27,129 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Unit tests
-        run: npm run test:unit
+      - name: Run unit tests
+        run: npm run test:unit -- --run
 
-      - name: Build
-        run: npm run build
-
-      - name: Security audit (npm)
-        run: npm run audit || true
-
-  e2e:
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - name: Install dependencies
-        run: npm ci
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
-      - name: E2E tests
+
+      - name: Run E2E tests
         run: npm run test:e2e
 
-  docker:
+      - name: Build application
+        run: npm run build
+
+  security:
+    name: Dependency & Vulnerability Scan
+    needs: quality
     runs-on: ubuntu-latest
-    needs: build-and-test
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Build image
-        run: docker build -t pps/app:ci .
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: npm audit & Snyk scan
+        run: npm run security:scan
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN || '' }}
+
+  migrations:
+    name: Migration Smoke Test
+    needs: quality
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: pps_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run database migrations against CI database
+        run: npm run migrate:up
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/pps_ci
+
+  docker:
+    name: Docker Build & Push
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to registry
+        if: ${{ secrets.REGISTRY_USERNAME != '' && secrets.REGISTRY_PASSWORD != '' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and (optionally) push image
+        uses: docker/build-push-action@v5
+        with:
+          push: ${{ github.ref == 'refs/heads/main' && secrets.REGISTRY_USERNAME != '' && secrets.REGISTRY_PASSWORD != '' }}
+          tags: ${{ secrets.REGISTRY_IMAGE || 'ghcr.io/owner/pavement-performance-suite:latest' }}
+          context: .
+
+  codeql:
+    name: CodeQL Static Analysis
+    needs: quality
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      matrix:
+        language: [javascript]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
