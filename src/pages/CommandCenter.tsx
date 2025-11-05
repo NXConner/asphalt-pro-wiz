@@ -1,16 +1,16 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
+import { CanvasGrid, ParticleBackground, ProgressRing, StatusBar } from '@/components/hud';
 import {
-  CanvasGrid,
-  ParticleBackground,
-  ProgressRing,
-  StatusBar,
-  TacticalAlert,
-  TacticalCard,
-} from '@/components/hud';
+  DivisionCard,
+  DivisionCardBadge,
+  DivisionCardDivider,
+  DivisionCardHeader,
+  DivisionCardList,
+  DivisionCardMetric,
+} from '@/components/division';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { isEnabled } from '@/lib/flags';
 import { logEvent } from '@/lib/logging';
 import { useCommandCenterData } from '@/modules/analytics/useCommandCenterData';
@@ -141,10 +141,40 @@ export default function CommandCenter() {
   const completionRatio = metrics.totals.completedJobs / totalJobs;
   const lostRatio = metrics.totals.lostJobs / totalJobs;
   const revenueHistory = metrics.revenueByMonth.slice(-6);
+  const alertListItems = metrics.alerts.map((alert) => ({
+    id: alert.id,
+    headline: alert.message,
+    subline: alert.detail,
+    meta: alert.severity.toUpperCase(),
+    tone:
+      alert.severity === 'critical'
+        ? 'critical'
+        : alert.severity === 'warning'
+          ? 'warning'
+          : 'neutral',
+  }));
+  const recentJobItems = metrics.recentJobs.map((job) => ({
+    id: job.id,
+    headline: job.name ?? job.id,
+    subline: `${formatStatusLabel(job.status)} • ${currencyFormatter.format(job.quoteValue)}`,
+    meta: dateTimeFormatter.format(Date.parse(job.updatedAt ?? job.createdAt)),
+    tone: job.status === 'active' ? 'positive' : job.status === 'lost' ? 'critical' : 'neutral',
+  }));
+  const assignmentItems = metrics.upcomingAssignments.map((assignment) => ({
+    id: assignment.id,
+    headline: assignment.jobId,
+    subline: dayFormatter.format(Date.parse(assignment.shiftStart)),
+    meta: dayFormatter.format(Date.parse(assignment.shiftEnd)),
+    tone: 'warning',
+  }));
 
   return (
     <main className="relative isolate min-h-screen overflow-hidden bg-slate-950 text-slate-100">
-      <ParticleBackground preset="command" densityMultiplier={1.2} className="opacity-35 mix-blend-screen" />
+      <ParticleBackground
+        preset="command"
+        densityMultiplier={1.2}
+        className="opacity-35 mix-blend-screen"
+      />
       <CanvasGrid density={120} className="opacity-10" />
 
       <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-12 sm:px-8 lg:px-12">
@@ -162,6 +192,14 @@ export default function CommandCenter() {
         </header>
 
         <section className="grid gap-4 lg:grid-cols-3">
+          <DivisionCard variant="command">
+            <DivisionCardHeader
+              eyebrow="Mission Totals"
+              title="Crew Readiness"
+              subtitle="Live job allocation across active crews"
+              badge={<DivisionCardBadge>{metrics.totals.jobs} Jobs</DivisionCardBadge>}
+            />
+            <div className="grid gap-3 sm:grid-cols-2">
           <TacticalCard
             eyebrow="Mission Totals"
             heading="Crew Readiness"
@@ -171,21 +209,37 @@ export default function CommandCenter() {
               <StatusBar label="Active" value={metrics.totals.activeJobs} max={totalJobs} />
               <StatusBar label="Completed" value={metrics.totals.completedJobs} max={totalJobs} />
             </div>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <MetricStat label="Active Rate" value={percentFormatter.format(activeRatio)} />
-              <MetricStat
+            <DivisionCardDivider />
+            <div className="grid gap-3 sm:grid-cols-3">
+              <DivisionCardMetric
+                label="Active Rate"
+                value={percentFormatter.format(activeRatio)}
+                tone="neutral"
+              />
+              <DivisionCardMetric
                 label="Win Rate"
                 value={percentFormatter.format(completionRatio)}
                 tone="positive"
               />
-              <MetricStat
+              <DivisionCardMetric
                 label="Loss Rate"
                 value={percentFormatter.format(lostRatio)}
-                tone="warning"
+                tone="critical"
               />
             </div>
-          </TacticalCard>
+          </DivisionCard>
 
+          <DivisionCard variant="intel">
+            <DivisionCardHeader
+              eyebrow="Revenue"
+              title="Monthly Signal"
+              subtitle="Six month trailing revenue cadence"
+              badge={
+                <DivisionCardBadge>
+                  {currencyFormatter.format(metrics.totals.totalRevenue)}
+                </DivisionCardBadge>
+              }
+            />
           <TacticalCard
             eyebrow="Revenue"
             heading="Monthly Signal"
@@ -210,8 +264,53 @@ export default function CommandCenter() {
                 )}
               </div>
             </div>
-          </TacticalCard>
+          </DivisionCard>
 
+          <DivisionCard variant="alert">
+            <DivisionCardHeader
+              eyebrow="Risk Feed"
+              title="Operational Alerts"
+              subtitle="Auto surfaced blockers requiring attention"
+              badge={<DivisionCardBadge>{metrics.alerts.length} Notices</DivisionCardBadge>}
+            />
+            {alertListItems.length === 0 ? (
+              <p className="hud-mono text-sm text-slate-200/75">All systems nominal.</p>
+            ) : (
+              <DivisionCardList items={alertListItems} />
+            )}
+          </DivisionCard>
+        </section>
+
+        <section className="grid gap-4 lg:grid-cols-2">
+          <DivisionCard>
+            <DivisionCardHeader
+              eyebrow="Recent Missions"
+              title="Activity Ledger"
+              subtitle="Latest job outcomes across the portfolio"
+            />
+            {recentJobItems.length === 0 ? (
+              <p className="hud-mono text-sm text-slate-200/70">
+                No mission activity recorded yet.
+              </p>
+            ) : (
+              <DivisionCardList items={recentJobItems} />
+            )}
+          </DivisionCard>
+
+          <DivisionCard variant="intel" subdued>
+            <DivisionCardHeader
+              eyebrow="Crew Outlook"
+              title="Upcoming Assignments"
+              subtitle="Next wave of scheduled deployment windows"
+            />
+            {assignmentItems.length === 0 ? (
+              <p className="hud-mono text-sm text-slate-200/70">
+                No assignments scheduled in the next window.
+              </p>
+            ) : (
+              <DivisionCardList items={assignmentItems} />
+            )}
+          </DivisionCard>
           <TacticalCard
             eyebrow="Risk Feed"
             heading="Operational Alerts"
@@ -294,51 +393,42 @@ export default function CommandCenter() {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.45em] text-slate-400">
-            Status Breakdown
-          </h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {metrics.jobStatusBreakdown.map((entry) => (
-              <Card key={entry.status} className="border border-white/10 bg-white/5">
-                <CardContent className="space-y-1 py-4">
-                  <p className="text-sm uppercase tracking-[0.35em] text-slate-300/70">
-                    {formatStatusLabel(entry.status)}
-                  </p>
-                  <p className="text-2xl font-semibold text-slate-50">
-                    {numberFormatter.format(entry.count)}
-                  </p>
-                  <p className="text-xs text-slate-400">{percentFormatter.format(entry.ratio)}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <DivisionCard>
+            <DivisionCardHeader
+              eyebrow="Status Breakdown"
+              title="Pipeline Composition"
+              subtitle="Current portfolio distribution by job state"
+            />
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {metrics.jobStatusBreakdown.map((entry) => (
+                <DivisionCardMetric
+                  key={entry.status}
+                  label={formatStatusLabel(entry.status)}
+                  value={numberFormatter.format(entry.count)}
+                  delta={percentFormatter.format(entry.ratio)}
+                  tone={
+                    entry.status === 'completed'
+                      ? 'positive'
+                      : entry.status === 'lost'
+                        ? 'critical'
+                        : 'neutral'
+                  }
+                />
+              ))}
+            </div>
+          </DivisionCard>
         </section>
 
         <div className="pt-4">
-          <Button asChild variant="secondary" className="bg-white/10 text-slate-50 hover:bg-white/20">
+          <Button
+            asChild
+            variant="secondary"
+            className="bg-white/10 text-slate-50 hover:bg-white/20"
+          >
             <Link to="/">Return to Operations Canvas</Link>
           </Button>
         </div>
       </div>
     </main>
-  );
-}
-
-function MetricStat({
-  label,
-  value,
-  tone = 'default',
-}: {
-  label: string;
-  value: string;
-  tone?: 'default' | 'positive' | 'warning';
-}) {
-  const toneClass =
-    tone === 'positive' ? 'text-emerald-200' : tone === 'warning' ? 'text-rose-200' : 'text-slate-50';
-  return (
-    <div className="space-y-1">
-      <p className="text-xs uppercase tracking-[0.35em] text-slate-300/70">{label}</p>
-      <p className={`font-display text-xl ${toneClass}`}>{value}</p>
-    </div>
   );
 }

@@ -2,6 +2,7 @@ import { Shield } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { ComplianceResources, type ComplianceTopic } from '@/components/ComplianceResources';
+import { TacticalHudOverlay, type TacticalHudOverlayProps } from '@/components/hud';
 import { Button } from '@/components/ui/button';
 import { EngagementHubPanel } from '@/modules/engagement/EngagementHubPanel';
 import { EstimatorStudio } from '@/modules/estimate/EstimatorStudio';
@@ -27,6 +28,119 @@ const Index = () => {
       totalCost: estimator.calculation.costs?.total ?? null,
     }),
     [estimator.job.name, estimator.areas.total, estimator.calculation.costs?.total],
+  );
+
+  const hudFlags = useMemo(() => {
+    const labelMap: Record<string, string> = {
+      imageAreaAnalyzer: 'Image Analyzer',
+      aiAssistant: 'AI Assistant',
+      pwa: 'PWA Mode',
+      i18n: 'Localization',
+      receipts: 'Receipts',
+      scheduler: 'Scheduler',
+      optimizer: 'Optimizer',
+      customerPortal: 'Customer Portal',
+      observability: 'Observability',
+      commandCenter: 'Command Center',
+      ownerMode: 'Owner Mode',
+    };
+    return Object.entries(estimator.featureFlags.values).map(([id, active]) => ({
+      id,
+      label: labelMap[id] ?? id,
+      active,
+    }));
+  }, [estimator.featureFlags.values]);
+
+  const currencyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0,
+      }),
+    [],
+  );
+
+  const hudWatchers = useMemo(() => {
+    const watchers: NonNullable<TacticalHudOverlayProps['watchers']> = [];
+    const segmentCount = estimator.areas.items.length;
+    watchers.push({
+      label: 'Segments',
+      value: segmentCount.toString(),
+      tone: segmentCount > 0 ? 'ok' : 'warn',
+    });
+
+    const crackLength = estimator.cracks.length;
+    const crackTone = crackLength > 400 ? 'critical' : crackLength > 100 ? 'warn' : 'ok';
+    watchers.push({
+      label: 'Crack Footage',
+      value: `${crackLength.toFixed(1)} ft`,
+      tone: crackTone,
+    });
+
+    const premiumSelections = [
+      estimator.premium.edgePushing,
+      estimator.premium.weedKiller,
+      estimator.premium.crackCleaning,
+      estimator.premium.powerWashing,
+      estimator.premium.debrisRemoval,
+    ].filter(Boolean).length;
+    const customSelections = estimator.customServices.items.length;
+    const enhancementCount = premiumSelections + customSelections;
+    watchers.push({
+      label: 'Enhancements',
+      value: enhancementCount.toString(),
+      tone: enhancementCount > 0 ? 'ok' : 'warn',
+    });
+
+    const projectedProfit = estimator.calculation.costs?.profit ?? null;
+    if (projectedProfit !== null) {
+      watchers.push({
+        label: 'Projected Profit',
+        value: currencyFormatter.format(projectedProfit),
+        tone: projectedProfit > 0 ? 'ok' : 'critical',
+      });
+    }
+
+    return watchers;
+  }, [
+    currencyFormatter,
+    estimator.areas.items.length,
+    estimator.calculation.costs?.profit,
+    estimator.cracks.length,
+    estimator.customServices.items.length,
+    estimator.premium.crackCleaning,
+    estimator.premium.debrisRemoval,
+    estimator.premium.edgePushing,
+    estimator.premium.powerWashing,
+    estimator.premium.weedKiller,
+  ]);
+
+  const missionPhase = useMemo(() => {
+    switch (estimator.job.status) {
+      case 'need_estimate':
+        return 'Reconnaissance';
+      case 'estimated':
+        return 'Proposal Ready';
+      case 'scheduled':
+        return 'Deployment Prep';
+      case 'completed':
+        return 'Mission Complete';
+      case 'lost':
+        return 'After Action';
+      default:
+        return 'Operations';
+    }
+  }, [estimator.job.status]);
+
+  const lastUpdatedIso = useMemo(
+    () => new Date().toISOString(),
+    [
+      estimator.job.mapRefreshKey,
+      estimator.calculation.costs?.total,
+      estimator.calculation.costs?.profit,
+      estimator.areas.total,
+    ],
   );
 
   const cycleWallpaper = () => {
@@ -109,6 +223,21 @@ const Index = () => {
               server if updates are missing.
             </span>
           }
+            hudOverlay={
+              <TacticalHudOverlay
+                missionName={estimator.job.name || 'Pavement Mission'}
+                missionStatus={estimator.job.status}
+                missionPhase={missionPhase}
+                totalAreaSqFt={estimator.areas.total}
+                totalCost={estimator.calculation.costs?.total ?? null}
+                travelMiles={estimator.job.distance}
+                coordinates={estimator.job.coords}
+                scheduleWindow={null}
+                lastUpdatedIso={lastUpdatedIso}
+                watchers={hudWatchers}
+                flags={hudFlags}
+              />
+            }
         />
       </main>
       <ComplianceResources
