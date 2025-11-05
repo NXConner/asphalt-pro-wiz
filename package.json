@@ -24,7 +24,7 @@
     "preview": "vite preview",
     "ingest:repos": "tsx scripts/ingest/ingest.ts",
     "migrate:create": "node-pg-migrate -m supabase/migrations create",
-    "migrate:up": "node-pg-migrate -m supabase/migrations -d \"$DATABASE_URL\" up",
+    "migrate:up": "node-pg-migrate -m supabase/migrations up",
     "migrate:down": "node-pg-migrate -m supabase/migrations -d \"$DATABASE_URL\" down",
     "seed": "tsx scripts/seed.ts",
     "openapi:generate": "tsx scripts/openapi/generate.ts",
