@@ -20,17 +20,10 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        heading: ["Orbitron", "Rajdhani", "var(--hud-font-heading)", "sans-serif"],
-        display: ["Orbitron", "Rajdhani", "var(--hud-font-display)", "sans-serif"],
-        body: ["Rajdhani", "var(--hud-font-body)", "sans-serif"],
-        mono: ["Share Tech Mono", "var(--hud-font-mono)", "ui-monospace", "monospace"],
-        hud: ["Rajdhani", "Orbitron", "var(--font-sans)", "sans-serif"],
-        hudMono: ["Share Tech Mono", "ui-monospace", "monospace"],
-      },
-          heading: ["var(--hud-font-heading)", "Rajdhani", "sans-serif"],
-          display: ["var(--hud-font-display)", "Orbitron", "sans-serif"],
-          body: ["var(--hud-font-body)", "Rajdhani", "sans-serif"],
-          mono: ["var(--hud-font-mono)", "Share Tech Mono", "monospace"],
+        heading: ["var(--hud-font-heading)", "Rajdhani", "sans-serif"],
+        display: ["var(--hud-font-display)", "Orbitron", "sans-serif"],
+        body: ["var(--hud-font-body)", "Rajdhani", "sans-serif"],
+        mono: ["var(--hud-font-mono)", "Share Tech Mono", "monospace"],
       },
       fontWeight: {
           "hud-display": "var(--hud-weight-display)",
