@@ -13,6 +13,7 @@ interface OperationsCanvasProps {
   insightTower: ReactNode;
   engagementHub: ReactNode;
   footer?: ReactNode;
+  hudOverlay?: ReactNode;
 }
 
 export function OperationsCanvas({
@@ -23,6 +24,7 @@ export function OperationsCanvas({
   insightTower,
   engagementHub,
   footer,
+  hudOverlay,
 }: OperationsCanvasProps) {
   return (
     <div
@@ -42,6 +44,7 @@ export function OperationsCanvas({
         className="opacity-45 mix-blend-screen"
       />
       <CanvasGrid density={110} className="opacity-[var(--hud-grid-opacity)]" />
+      {hudOverlay}
       <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col gap-10 px-4 pb-12 pt-12 sm:px-8 lg:px-12">
         {/* Hidden h1 for SEO and accessibility */}
         <h1 className="sr-only">Pavement Performance Suite - Asphalt Maintenance Estimating</h1>

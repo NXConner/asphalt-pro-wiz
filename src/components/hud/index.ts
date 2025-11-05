@@ -7,4 +7,5 @@ export * from './TacticalCard';
 export * from './TacticalAlert';
 export * from './ParticleBackground';
 export * from './TacticalLoader';
+export * from './TacticalHudOverlay';
 

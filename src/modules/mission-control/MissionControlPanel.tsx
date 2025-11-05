@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { JobStatus } from '@/lib/idb';
 import type { EstimatorState } from '@/modules/estimate/useEstimatorState';
 import { CanvasPanel } from '@/modules/layout/CanvasPanel';
+import { DivisionMapInterface } from '@/modules/mission-control/division-map/DivisionMapInterface';
 
 const MapComponent = lazy(() => import('@/components/Map'));
 
@@ -84,9 +85,18 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
               <Label className="text-xs uppercase tracking-wide text-slate-200/70">
                 Job Status
               </Label>
-              <Label htmlFor="jobStatus" className="text-xs uppercase tracking-wide text-slate-200/70">Job Status</Label>
+              <Label
+                htmlFor="jobStatus"
+                className="text-xs uppercase tracking-wide text-slate-200/70"
+              >
+                Job Status
+              </Label>
               <Select value={job.status} onValueChange={(value: JobStatus) => job.setStatus(value)}>
-                <SelectTrigger id="jobStatus" className="mt-1 h-10 bg-white/10 text-slate-50" aria-label="Select job status">
+                <SelectTrigger
+                  id="jobStatus"
+                  className="mt-1 h-10 bg-white/10 text-slate-50"
+                  aria-label="Select job status"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -99,7 +109,10 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
               </Select>
             </fieldset>
             <fieldset>
-              <Label htmlFor="competitor" className="text-xs uppercase tracking-wide text-slate-200/70">
+              <Label
+                htmlFor="competitor"
+                className="text-xs uppercase tracking-wide text-slate-200/70"
+              >
                 Competitor Intel
               </Label>
               <Input
@@ -111,7 +124,10 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
               />
             </fieldset>
             <fieldset>
-              <Label htmlFor="refreshButton" className="text-xs uppercase tracking-wide text-slate-200/70">
+              <Label
+                htmlFor="refreshButton"
+                className="text-xs uppercase tracking-wide text-slate-200/70"
+              >
                 Refresh Field Data
               </Label>
               <Button
@@ -166,6 +182,7 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
           />
         </div>
       </Suspense>
+      <DivisionMapInterface />
       <footer className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
         <InfoChip icon={<MapPin className="h-4 w-4" />} label="Site Coordinates">
           {job.coords
