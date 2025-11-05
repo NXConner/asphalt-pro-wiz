@@ -24,6 +24,7 @@ const buttonVariants = cva(
           'relative overflow-hidden border border-orange-400/40 bg-slate-950/70 text-orange-200 font-heading uppercase tracking-[0.35em] shadow-[0_0_24px_rgba(255,145,0,0.25)] transition-all duration-300 hover:border-orange-300/70 hover:shadow-[0_0_38px_rgba(255,145,0,0.35)]',
         tacticalGhost:
           'relative overflow-hidden border border-orange-300/40 bg-transparent text-orange-200 font-heading uppercase tracking-[0.32em] transition-all duration-300 hover:bg-orange-400/10',
+        tacticalPulse:
           'relative overflow-hidden border border-cyan-400/40 bg-slate-950/80 px-6 py-2 text-sm font-semibold uppercase tracking-[0.35em] text-cyan-100 shadow-[0_18px_48px_rgba(14,116,144,0.35)] transition-all duration-300 before:absolute before:inset-0 before:-translate-y-full before:bg-gradient-to-b before:from-cyan-400/25 before:via-transparent before:to-transparent before:transition-transform before:duration-500 hover:border-cyan-300/80 hover:text-cyan-50 hover:shadow-[0_24px_64px_rgba(14,116,144,0.45)] hover:before:translate-y-0',
         hud: 'bg-slate-900/80 text-slate-100 shadow-[0_16px_40px_rgba(8,12,24,0.45)] border border-white/10 backdrop-blur hover:bg-slate-800/80 hover:text-cyan-200 focus-visible:ring-cyan-300/60',
         glass:
@@ -121,8 +122,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             style={{ width: `${clampedProgress}%` }}
           />
         ) : null}
-        {variant === 'tactical' || variant === 'tacticalGhost' ? (
-          <span className="pointer-events-none absolute inset-0 border border-orange-300/30" />
+        {variant === 'tactical' || variant === 'tacticalGhost' || variant === 'tacticalPulse' ? (
+          <span
+            className={cn(
+              'pointer-events-none absolute inset-0 border',
+              variant === 'tacticalPulse' ? 'border-cyan-300/30' : 'border-orange-300/30',
+            )}
+          />
         ) : null}
       </Comp>
     );
