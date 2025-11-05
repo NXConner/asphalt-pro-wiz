@@ -1,5 +1,7 @@
-import { useState } from 'react';
 import { CheckSquare, Square, Trash2, Download, Archive } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -9,7 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { toast } from 'sonner';
 
 interface BatchOperationsProps<T extends { id: string }> {
   items: T[];

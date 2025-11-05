@@ -1,28 +1,42 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
-import { cn } from "@/lib/utils";
+import {
+  CanvasGrid,
+  CornerBracket,
+  ParticleBackground,
+  ScanOverlay,
+} from '@/components/hud';
+import type { ParticlePresetKey } from '@/design';
+import { cn } from '@/lib/utils';
 
-export type CanvasTone = "dusk" | "aurora" | "ember" | "lagoon";
+export type CanvasTone = 'dusk' | 'aurora' | 'ember' | 'lagoon';
 
-const OVERLAY_MAP: Record<CanvasTone, string> = {
-  dusk: "bg-[radial-gradient(circle_at_top,_rgba(249,115,22,0.45)_0%,_transparent_65%)]",
-  aurora: "bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.45)_0%,_transparent_60%)]",
-  ember: "bg-[radial-gradient(circle_at_bottom,_rgba(239,68,68,0.42)_0%,_transparent_60%)]",
-  lagoon: "bg-[radial-gradient(circle_at_center,_rgba(99,102,241,0.45)_0%,_transparent_65%)]",
+const GRADIENT_MAP: Record<CanvasTone, string> = {
+  dusk: 'from-orange-500/25 via-orange-500/10 to-transparent',
+  aurora: 'from-cyan-400/25 via-emerald-400/10 to-transparent',
+  ember: 'from-rose-500/25 via-amber-400/10 to-transparent',
+  lagoon: 'from-indigo-500/22 via-blue-500/10 to-transparent',
 };
 
 const BORDER_ACCENT: Record<CanvasTone, string> = {
-  dusk: "border-orange-400/40",
-  aurora: "border-cyan-300/40",
-  ember: "border-rose-400/40",
-  lagoon: "border-indigo-400/40",
+  dusk: 'border-orange-400/40',
+  aurora: 'border-cyan-300/40',
+  ember: 'border-rose-400/40',
+  lagoon: 'border-indigo-400/40',
 };
 
 const BADGE_COLORS: Record<CanvasTone, string> = {
-  dusk: "bg-orange-500/20 text-orange-200",
-  aurora: "bg-cyan-500/20 text-cyan-100",
-  ember: "bg-rose-500/20 text-rose-100",
-  lagoon: "bg-indigo-500/20 text-indigo-100",
+  dusk: 'bg-orange-500/20 text-orange-200',
+  aurora: 'bg-cyan-500/20 text-cyan-100',
+  ember: 'bg-rose-500/20 text-rose-100',
+  lagoon: 'bg-indigo-500/20 text-indigo-100',
+};
+
+const PARTICLE_MAP: Record<CanvasTone, ParticlePresetKey> = {
+  dusk: 'ember',
+  aurora: 'tech',
+  ember: 'rogue',
+  lagoon: 'command',
 };
 
 interface CanvasPanelProps {
@@ -52,22 +66,36 @@ export function CanvasPanel({
     <section
       id={id}
       className={cn(
-        "relative overflow-hidden rounded-3xl border bg-slate-950/40 text-slate-50 shadow-2xl backdrop-blur-xl",
+        'relative overflow-hidden rounded-[var(--hud-radius-lg)] border bg-slate-950/60 text-slate-50 shadow-[0_28px_120px_rgba(8,12,24,0.55)] backdrop-blur-[var(--hud-panel-blur)] transition-transform duration-300 hover:-translate-y-1',
         BORDER_ACCENT[tone],
         className,
       )}
     >
-      <div className={cn("pointer-events-none absolute inset-0 opacity-80 mix-blend-screen", OVERLAY_MAP[tone])} />
-      <div className="relative z-10 flex flex-col gap-6 p-6 sm:p-8">
-        <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-6">
+      <div
+        className={cn(
+          'pointer-events-none absolute inset-0 bg-gradient-to-br opacity-80 mix-blend-screen',
+          `bg-gradient-to-br ${GRADIENT_MAP[tone]}`,
+        )}
+        aria-hidden
+      />
+      <CanvasGrid className="opacity-[var(--hud-grid-opacity)]" />
+      <ParticleBackground preset={PARTICLE_MAP[tone]} className="opacity-60" />
+      <ScanOverlay className="opacity-60" color="rgba(255,128,0,0.35)" />
+      <CornerBracket size={44} />
+      <div className="relative z-10 flex flex-col gap-6 p-6 sm:p-9">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
           <div className="flex-1 space-y-1">
             {eyebrow ? (
-              <span className="text-xs font-medium uppercase tracking-[0.18em] text-slate-200/70">
+              <span className="font-semibold uppercase tracking-[0.5em] text-[0.65rem] text-slate-200/60">
                 {eyebrow}
               </span>
             ) : null}
-            <h2 className="text-2xl font-semibold sm:text-3xl">{title}</h2>
-            {subtitle ? <p className="text-sm text-slate-200/80 sm:text-base">{subtitle}</p> : null}
+            <h2 className="font-display text-3xl uppercase tracking-[0.18em] text-slate-50 sm:text-[2.35rem]">
+              {title}
+            </h2>
+            {subtitle ? (
+              <p className="font-mono text-sm text-slate-200/75 sm:text-[0.95rem]">{subtitle}</p>
+            ) : null}
           </div>
           <div className="flex items-start gap-3">
             {badge ? (

@@ -1,23 +1,29 @@
+import {
+  DIVISION_THEMES,
+  DIVISION_THEME_IDS,
+  composeThemeVariables,
+  type DivisionThemeId,
+} from '@/design';
 export type ThemeMode = "light" | "dark" | "system";
 export type ThemeName =
-  | "default"
-  | "emerald"
-  | "sunset"
-  | "royal"
-  | "crimson"
-  | "forest"
-  | "ocean"
-  | "amber"
-  | "mono"
-  | "cyber"
-  | "division-agent"
-  | "division-rogue"
-  | "division-darkzone"
-  | "division-tech"
-  | "division-stealth"
-  | "division-combat"
-  | "division-tactical"
-  | "division-hunter";
+  | 'default'
+  | 'emerald'
+  | 'sunset'
+  | 'royal'
+  | 'crimson'
+  | 'forest'
+  | 'ocean'
+  | 'amber'
+  | 'mono'
+  | 'cyber'
+  | 'division-agent'
+  | 'division-rogue'
+  | 'division-darkzone'
+  | 'division-tech'
+  | 'division-stealth'
+  | 'division-combat'
+  | 'division-tactical'
+  | 'division-hunter';
 
 export interface ThemePreferences {
   mode: ThemeMode;
@@ -45,7 +51,7 @@ const STORAGE_KEY = "pps:theme";
 export function getDefaultPreferences(): ThemePreferences {
   return {
     mode: "dark",
-    name: "default",
+      name: 'division-agent',
     primaryHue: 210,
     useHueOverride: false,
     wallpaperDataUrl: "",
@@ -71,69 +77,108 @@ export function saveThemePreferences(prefs: ThemePreferences): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
 }
 
+const BASE_THEME_TOKENS = composeThemeVariables({});
+
+const LEGACY_THEME_TOKENS: Record<Exclude<ThemeName, `division-${string}`>, Record<string, string>> = {
+  default: BASE_THEME_TOKENS,
+  emerald: composeThemeVariables({
+    '--primary': '142 76% 40%',
+    '--accent': '142 76% 40%',
+  }),
+  sunset: composeThemeVariables({
+    '--primary': '25 95% 55%',
+    '--accent': '340 82% 52%',
+  }),
+  royal: composeThemeVariables({
+    '--primary': '260 90% 55%',
+    '--accent': '220 90% 60%',
+  }),
+  crimson: composeThemeVariables({
+    '--primary': '0 84% 60%',
+    '--accent': '340 82% 52%',
+  }),
+  forest: composeThemeVariables({
+    '--primary': '125 55% 40%',
+    '--accent': '45 95% 50%',
+  }),
+  ocean: composeThemeVariables({
+    '--primary': '200 85% 50%',
+    '--accent': '170 70% 45%',
+  }),
+  amber: composeThemeVariables({
+    '--primary': '38 92% 55%',
+    '--accent': '14 90% 55%',
+  }),
+  mono: composeThemeVariables({
+    '--primary': '0 0% 85%',
+    '--accent': '0 0% 60%',
+  }),
+  cyber: composeThemeVariables({
+    '--primary': '285 80% 60%',
+    '--accent': '162 85% 45%',
+  }),
+};
+
+function resolveDivisionTheme(name: ThemeName): DivisionThemeId | null {
+  const candidate = `theme-${name}` as DivisionThemeId;
+  return (DIVISION_THEME_IDS as string[]).includes(candidate) ? candidate : null;
+}
+
+function getTokensForTheme(name: ThemeName): Record<string, string> {
+  const divisionThemeId = resolveDivisionTheme(name);
+  if (divisionThemeId) {
+    return DIVISION_THEMES[divisionThemeId]?.tokens ?? BASE_THEME_TOKENS;
+  }
+  return LEGACY_THEME_TOKENS[name as keyof typeof LEGACY_THEME_TOKENS] ?? BASE_THEME_TOKENS;
+}
+
 export function applyThemePreferences(prefs: ThemePreferences): void {
   const root = document.documentElement;
   const body = document.body;
 
   // mode
-  const mode = prefs.mode === "system" ? getSystemMode() : prefs.mode;
-  root.classList.remove("light", "dark");
+  const mode = prefs.mode === 'system' ? getSystemMode() : prefs.mode;
+  root.classList.remove('light', 'dark');
   root.classList.add(mode);
 
-  // theme name
-  root.classList.remove(
-    "theme-default",
-    "theme-emerald",
-    "theme-sunset",
-    "theme-royal",
-    "theme-crimson",
-    "theme-forest",
-    "theme-ocean",
-    "theme-amber",
-    "theme-mono",
-    "theme-cyber",
-    "theme-division-agent",
-    "theme-division-rogue",
-    "theme-division-darkzone",
-    "theme-division-tech",
-    "theme-division-stealth",
-    "theme-division-combat",
-    "theme-division-tactical",
-    "theme-division-hunter",
-  );
-  root.classList.add(`theme-${prefs.name}`);
+  const tokens = getTokensForTheme(prefs.name);
+  Object.entries(tokens).forEach(([key, value]) => {
+    root.style.setProperty(key, value);
+  });
 
   // radius
-  root.style.setProperty("--radius", `${prefs.radius}px`);
+  root.style.setProperty('--radius', `${prefs.radius}px`);
 
   // high contrast
   if (prefs.highContrast) {
-    root.classList.add("high-contrast");
+    root.classList.add('high-contrast');
   } else {
-    root.classList.remove("high-contrast");
+    root.classList.remove('high-contrast');
   }
 
   // primary hue override (optional)
   if (prefs.useHueOverride && Number.isFinite(prefs.primaryHue)) {
-    root.style.setProperty("--primary", `${prefs.primaryHue} 100% 50%`);
-    root.style.setProperty("--primary-foreground", `${prefs.primaryHue} 10% 95%`);
+    root.style.setProperty('--primary', `${prefs.primaryHue} 100% 50%`);
+    root.style.setProperty('--primary-foreground', `${prefs.primaryHue} 10% 95%`);
   } else {
     // Ensure preset theme values are used by removing any prior inline overrides
-    root.style.removeProperty("--primary");
-    root.style.removeProperty("--primary-foreground");
+    root.style.removeProperty('--primary');
+    root.style.removeProperty('--primary-foreground');
   }
 
   // wallpaper
   if (prefs.wallpaperDataUrl) {
-    root.style.setProperty("--app-wallpaper", `url('${prefs.wallpaperDataUrl}')`);
-    root.style.setProperty("--wallpaper-opacity", `${prefs.wallpaperOpacity}`);
-    root.style.setProperty("--wallpaper-blur", `${prefs.wallpaperBlur}px`);
-    body.classList.add("has-wallpaper");
+    const trimmed = prefs.wallpaperDataUrl.trim();
+    const isGradient = trimmed.startsWith('linear-gradient') || trimmed.startsWith('radial-gradient');
+    root.style.setProperty('--app-wallpaper', isGradient ? trimmed : `url('${trimmed}')`);
+    root.style.setProperty('--wallpaper-opacity', `${prefs.wallpaperOpacity}`);
+    root.style.setProperty('--wallpaper-blur', `${prefs.wallpaperBlur}px`);
+    body.classList.add('has-wallpaper');
   } else {
-    root.style.removeProperty("--app-wallpaper");
-    root.style.removeProperty("--wallpaper-opacity");
-    root.style.removeProperty("--wallpaper-blur");
-    body.classList.remove("has-wallpaper");
+    root.style.removeProperty('--app-wallpaper');
+    root.style.removeProperty('--wallpaper-opacity');
+    root.style.removeProperty('--wallpaper-blur');
+    body.classList.remove('has-wallpaper');
   }
 }
 
@@ -190,8 +235,8 @@ export function setWallpaperBlur(px: number): void {
   applyThemePreferences(prefs);
 }
 
-function getSystemMode(): "light" | "dark" {
-  return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+function getSystemMode(): 'light' | 'dark' {
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light';
 }

@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { toast as sonnerToast } from 'sonner';
 
 import { SkipLink } from '@/components/A11y/SkipLink';
+import { AccessibilityChecker } from '@/components/AccessibilityChecker/AccessibilityChecker';
 import { CommandPalette } from '@/components/CommandPalette/CommandPalette';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ErrorRecovery } from '@/components/ErrorRecovery/ErrorRecovery';
@@ -19,7 +20,6 @@ import { ErrorProvider } from '@/contexts/ErrorContext';
 import { KeyboardProvider } from '@/contexts/KeyboardContext';
 import { PerformanceProvider } from '@/contexts/PerformanceContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
-import { AccessibilityChecker } from '@/components/AccessibilityChecker/AccessibilityChecker';
 import { trackPageView } from '@/lib/analytics';
 import { I18nProvider } from '@/lib/i18n';
 import { initializeMonitoring } from '@/lib/monitoring';

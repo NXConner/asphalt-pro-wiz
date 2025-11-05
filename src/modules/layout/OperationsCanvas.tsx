@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import type { CanvasWallpaper } from './wallpapers';
 
+import { CanvasGrid, ParticleBackground } from '@/components/hud';
 import { cn } from '@/lib/utils';
 
 interface OperationsCanvasProps {
@@ -35,6 +36,12 @@ export function OperationsCanvas({
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='720' height='720' viewBox='0 0 720 720' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd' opacity='0.12'%3E%3Cpath d='M0 720h720V0H0z'/%3E%3Cpath d='M360 0v720M0 360h720' stroke='%23ffffff' stroke-opacity='0.08' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E")`,
         }}
       />
+      <ParticleBackground
+        preset={wallpaper.particlePreset}
+        densityMultiplier={1.15}
+        className="opacity-45 mix-blend-screen"
+      />
+      <CanvasGrid density={110} className="opacity-[var(--hud-grid-opacity)]" />
       <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col gap-10 px-4 pb-12 pt-12 sm:px-8 lg:px-12">
         {/* Hidden h1 for SEO and accessibility */}
         <h1 className="sr-only">Pavement Performance Suite - Asphalt Maintenance Estimating</h1>

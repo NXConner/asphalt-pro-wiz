@@ -18,6 +18,12 @@ export default {
       },
     },
     extend: {
+        fontFamily: {
+          heading: ["var(--hud-font-heading)", "Rajdhani", "sans-serif"],
+          display: ["var(--hud-font-display)", "Orbitron", "sans-serif"],
+          body: ["var(--hud-font-body)", "Rajdhani", "sans-serif"],
+          mono: ["var(--hud-font-mono)", "Share Tech Mono", "monospace"],
+        },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -106,10 +112,33 @@ export default {
             height: "0",
           },
         },
+          "hud-scanline": {
+            "0%": { opacity: "0", transform: "translateY(-30%)" },
+            "20%": { opacity: "0.4" },
+            "50%": { opacity: "0.6" },
+            "100%": { opacity: "0", transform: "translateY(120%)" },
+          },
+          "hud-pulse": {
+            "0%": { opacity: "0.35", transform: "scale3d(0.92,0.92,1)" },
+            "30%": { opacity: "0.7", transform: "scale3d(1.02,1.02,1)" },
+            "60%": { opacity: "0.45", transform: "scale3d(0.98,0.98,1)" },
+            "100%": { opacity: "0.35", transform: "scale3d(0.92,0.92,1)" },
+          },
+          "hud-glitch": {
+            "0%": { clipPath: "inset(10% 0 90% 0)", transform: "translate(-2px,-1px)" },
+            "20%": { clipPath: "inset(30% 0 60% 0)", transform: "translate(2px,1px)" },
+            "40%": { clipPath: "inset(50% 0 30% 0)", transform: "translate(-1px,0)" },
+            "60%": { clipPath: "inset(80% 0 10% 0)", transform: "translate(1px,-1px)" },
+            "80%": { clipPath: "inset(20% 0 70% 0)", transform: "translate(-2px,0)" },
+            "100%": { clipPath: "inset(0 0 0 0)", transform: "translate(0,0)" },
+          },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+          "hud-scanline": "hud-scanline 2.4s cubic-bezier(0.22,1,0.36,1) infinite",
+          "hud-pulse": "hud-pulse 2.6s cubic-bezier(0.34,0,0.69,1) infinite",
+          "hud-glitch": "hud-glitch 0.7s steps(2, jump-start) infinite",
       },
     },
   },

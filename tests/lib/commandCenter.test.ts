@@ -11,18 +11,21 @@ const jobs: JobRecord[] = [
   {
     id: "job-1",
     status: "need_estimate",
+    name: "Mission St. Paul",
     total_area_sqft: 4200,
     created_at: "2024-10-01T12:00:00.000Z",
   },
   {
     id: "job-2",
     status: "completed",
+    name: "Grace Chapel",
     total_area_sqft: 8800,
     created_at: "2024-09-15T15:00:00.000Z",
   },
   {
     id: "job-3",
     status: "lost",
+    name: "City Outreach",
     total_area_sqft: null,
     created_at: "2024-09-20T18:00:00.000Z",
   },
@@ -49,18 +52,23 @@ const estimates: EstimateRecord[] = [
   },
 ];
 
+const futureStart = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+const futureEnd = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString();
+const futureStart2 = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString();
+const futureEnd2 = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString();
+
 const assignments: CrewAssignmentRecord[] = [
   {
     id: "assign-1",
     job_id: "job-1",
-    shift_start: "2024-10-05T12:00:00.000Z",
-    shift_end: "2024-10-05T20:00:00.000Z",
+    shift_start: futureStart,
+    shift_end: futureEnd,
   },
   {
     id: "assign-2",
     job_id: "job-2",
-    shift_start: "2024-09-19T12:00:00.000Z",
-    shift_end: "2024-09-19T20:00:00.000Z",
+    shift_start: futureStart2,
+    shift_end: futureEnd2,
   },
 ];
 
@@ -77,6 +85,15 @@ describe("calculateCommandCenterMetrics", () => {
 
     expect(metrics.efficiency.scheduledJobs).toBe(2);
     expect(metrics.efficiency.averageTurnaroundDays).toBeCloseTo(1.5, 1);
+
+    expect(metrics.jobStatusBreakdown).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ status: "need_estimate", count: 1 }),
+      ]),
+    );
+    expect(metrics.recentJobs.length).toBeGreaterThan(0);
+    expect(metrics.upcomingAssignments.length).toBeGreaterThan(0);
+    expect(metrics.alerts.length).toBeGreaterThanOrEqual(0);
   });
 
   it("groups revenue by month", () => {
@@ -95,9 +112,14 @@ describe("calculateCommandCenterMetrics", () => {
       completedJobs: 0,
       lostJobs: 0,
       totalAreaSqft: 0,
+      totalQuoteValue: 0,
       totalRevenue: 0,
     });
     expect(metrics.efficiency).toEqual({ averageTurnaroundDays: null, scheduledJobs: 0 });
     expect(metrics.revenueByMonth).toEqual([]);
+    expect(metrics.jobStatusBreakdown).toEqual([]);
+    expect(metrics.recentJobs).toEqual([]);
+    expect(metrics.upcomingAssignments).toEqual([]);
+    expect(metrics.alerts.length).toBeGreaterThanOrEqual(1);
   });
 });
