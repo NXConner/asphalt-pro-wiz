@@ -71,11 +71,13 @@ npm run seed
 ## Environment & Secrets
 
 - `.env` keys (see template):
-  - Supabase: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-  - AI proxy: `VITE_GEMINI_PROXY_URL`, `GEMINI_API_KEY`
-  - Observability: `VITE_LOG_BEACON_URL`, `VITE_OBSERVABILITY_EXPORTER_URL`, `OBSERVABILITY_API_KEY`
-  - Mapping & weather: `VITE_GOOGLE_MAPS_API_KEY`, `VITE_OPENWEATHER_API_KEY`, `VITE_MAPBOX_TOKEN`
-  - Versioning: `VITE_APP_VERSION`
+  - Deployment metadata: `APP_ENV`, `VITE_ENVIRONMENT`, `VITE_APP_VERSION`, `VITE_BASE_PATH`, `VITE_BASE_URL`
+  - Supabase: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_PROJECT_REF`, `DATABASE_URL`
+  - AI proxy: `VITE_GEMINI_PROXY_URL`, `VITE_GEMINI_API_KEY`, `GEMINI_API_KEY`, `LOVABLE_API_KEY`
+  - Observability: `VITE_LOG_BEACON_URL`, `VITE_OBSERVABILITY_EXPORTER_URL`, `OBSERVABILITY_API_KEY`, `VITE_SENTRY_DSN`, `VITE_OBSERVABILITY_SAMPLE_RATE`, `VITE_ENABLE_WEB_VITALS`, `VITE_ENABLE_FEATURE_TELEMETRY`
+  - Mapping & weather: `VITE_GOOGLE_MAPS_API_KEY`, `VITE_OPENWEATHER_API_KEY`, `VITE_MAPBOX_TOKEN`, `VITE_AIR_QUALITY_API_KEY`
+  - Optional ingest: `GITHUB_TOKEN`
+  - Feature flags: `VITE_FLAG_*` overrides (`AIASSISTANT`, `SCHEDULER`, etc.)
 - Feature flags (1/0): `VITE_FLAG_COMMANDCENTER`, `VITE_FLAG_SCHEDULER`, `VITE_FLAG_OBSERVABILITY`, etc.
 - Supabase bootstrapping, RLS, and seed workflows: `docs/UNIFIED_SUPABASE_GUIDE.md`.
 - Never commit `.env`; rely on `.env.example` for onboarding.
@@ -109,6 +111,7 @@ Set `VITE_GEMINI_PROXY_URL=https://<project-ref>.functions.supabase.co/gemini-pr
 ```bash
 npm run format             # Prettier + Tailwind plugin
 npm run lint               # ESLint (React, a11y, security)
+npm run typecheck          # TypeScript structural checks
 npm run test:unit -- --run # Vitest
 npm run test:e2e           # Playwright (requires browsers)
 npm run security:scan      # npm audit + Snyk
