@@ -6,10 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
 import { useMissionSchedulerContext } from '@/modules/scheduler';
 
-const DAY_OPTIONS: Array<{ id: 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat'; label: string }> = [
+const DAY_OPTIONS: Array<{
+  id: 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat';
+  label: string;
+}> = [
   { id: 'sun', label: 'Sun' },
   { id: 'mon', label: 'Mon' },
   { id: 'tue', label: 'Tue' },
@@ -26,9 +28,9 @@ export function CrewAssign() {
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
   const [maxHours, setMaxHours] = useState(10);
-  const [availability, setAvailability] = useState<('sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat')[]>(
-    ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'],
-  );
+  const [availability, setAvailability] = useState<
+    ('sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat')[]
+  >(['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']);
 
   const crewList = useMemo(() => crewMembers ?? [], [crewMembers]);
 
@@ -66,7 +68,8 @@ export function CrewAssign() {
           Crew Roster & Availability
         </CardTitle>
         <p className="text-xs text-slate-300/80">
-          Map your two full-time + one part-time roster, track daily availability, and enforce max shift hours.
+          Map your two full-time + one part-time roster, track daily availability, and enforce max
+          shift hours.
         </p>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -89,7 +92,9 @@ export function CrewAssign() {
             />
           </div>
           <div>
-            <Label className="text-xs uppercase tracking-[0.3em] text-slate-200">Max Hours / Day</Label>
+            <Label className="text-xs uppercase tracking-[0.3em] text-slate-200">
+              Max Hours / Day
+            </Label>
             <Input
               type="number"
               min={4}
@@ -99,7 +104,12 @@ export function CrewAssign() {
             />
           </div>
           <div className="flex items-end">
-            <Button onClick={handleAdd} className="w-full" variant="tactical" data-testid="crew-add">
+            <Button
+              onClick={handleAdd}
+              className="w-full"
+              variant="tactical"
+              data-testid="crew-add"
+            >
               Add Crew Member
             </Button>
           </div>
@@ -133,11 +143,18 @@ export function CrewAssign() {
               >
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-50">{member.name}</p>
-                    <p className="text-[11px] uppercase tracking-[0.25em] text-slate-300/80">{member.role}</p>
+                    <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-50">
+                      {member.name}
+                    </p>
+                    <p className="text-[11px] uppercase tracking-[0.25em] text-slate-300/80">
+                      {member.role}
+                    </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Badge variant="outline" className="border-cyan-400/40 bg-cyan-400/10 text-[10px] uppercase tracking-[0.3em] text-cyan-100">
+                    <Badge
+                      variant="outline"
+                      className="border-cyan-400/40 bg-cyan-400/10 text-[10px] uppercase tracking-[0.3em] text-cyan-100"
+                    >
                       {member.maxHoursPerDay} hrs
                     </Badge>
                     <Button variant="ghost" size="sm" onClick={() => removeCrewMember(member.id)}>
@@ -163,9 +180,9 @@ export function CrewAssign() {
                               member.id,
                               checked
                                 ? Array.from(new Set([...(member.availability ?? []), option.id]))
-                                : (member.availability ?? DAY_OPTIONS.map((value) => value.id)).filter(
-                                    (value) => value !== option.id,
-                                  ),
+                                : (
+                                    member.availability ?? DAY_OPTIONS.map((value) => value.id)
+                                  ).filter((value) => value !== option.id),
                             )
                           }
                         />

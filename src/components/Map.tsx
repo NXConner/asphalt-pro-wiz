@@ -1,6 +1,10 @@
 import { useMemo, useState } from 'react';
 
-import { TacticalMap, type TacticalWaypoint, type TacticalZone } from '@/components/map/TacticalMap';
+import {
+  TacticalMap,
+  type TacticalWaypoint,
+  type TacticalZone,
+} from '@/components/map/TacticalMap';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
+import { BUSINESS_COORDS_FALLBACK, SUPPLIER_COORDS_FALLBACK } from '@/lib/locations';
 import {
   loadMapSettings,
   saveMapSettings,
@@ -21,7 +26,6 @@ import {
   importMapSettings,
   type BaseLayerId,
 } from '@/lib/mapSettings';
-import { BUSINESS_COORDS_FALLBACK, SUPPLIER_COORDS_FALLBACK } from '@/lib/locations';
 
 interface MapProps {
   onAddressUpdate: (coords: [number, number], address: string) => void;

@@ -1,16 +1,11 @@
+import { Maximize2, Minimize2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
-import {
-  CanvasGrid,
-  CornerBracket,
-  ParticleBackground,
-  ScanOverlay,
-} from '@/components/hud';
+import { CanvasGrid, CornerBracket, ParticleBackground, ScanOverlay } from '@/components/hud';
 import { Button } from '@/components/ui/button';
 import type { ParticlePresetKey } from '@/design';
 import { cn } from '@/lib/utils';
-import { Maximize2, Minimize2 } from 'lucide-react';
 
 export type CanvasTone = 'dusk' | 'aurora' | 'ember' | 'lagoon';
 
@@ -62,7 +57,7 @@ export function CanvasPanel({
   title,
   subtitle,
   eyebrow,
-  tone = "dusk",
+  tone = 'dusk',
   badge,
   action,
   children,
@@ -82,12 +77,12 @@ export function CanvasPanel({
 
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     if (!collapsible) return false;
-    if (typeof window === "undefined") return defaultCollapsed;
+    if (typeof window === 'undefined') return defaultCollapsed;
     if (!collapseKey) return defaultCollapsed;
     try {
       const stored = window.localStorage.getItem(collapseKey);
-      if (stored === "1") return true;
-      if (stored === "0") return false;
+      if (stored === '1') return true;
+      if (stored === '0') return false;
     } catch {}
     return defaultCollapsed;
   });
@@ -95,7 +90,7 @@ export function CanvasPanel({
   useEffect(() => {
     if (!collapsible || !collapseKey) return;
     try {
-      window.localStorage.setItem(collapseKey, collapsed ? "1" : "0");
+      window.localStorage.setItem(collapseKey, collapsed ? '1' : '0');
     } catch {}
   }, [collapsible, collapseKey, collapsed]);
 
@@ -153,7 +148,9 @@ export function CanvasPanel({
           </div>
           <div className="flex items-start gap-3">
             {badge ? (
-              <span className={cn("rounded-full px-3 py-1 text-xs font-semibold", BADGE_COLORS[tone])}>
+              <span
+                className={cn('rounded-full px-3 py-1 text-xs font-semibold', BADGE_COLORS[tone])}
+              >
                 {badge}
               </span>
             ) : null}

@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import { useMemo, useState } from 'react';
 
-import { useMissionSchedulerContext } from './MissionSchedulerContext';
+import { useMissionSchedulerContext } from './useMissionSchedulerContext';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

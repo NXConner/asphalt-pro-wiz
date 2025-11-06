@@ -1,5 +1,5 @@
 import { Shield } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { ComplianceResources, type ComplianceTopic } from '@/components/ComplianceResources';
 import { TacticalHudOverlay, type TacticalHudOverlayProps } from '@/components/hud';
@@ -133,15 +133,16 @@ const Index = () => {
     }
   }, [estimator.job.status]);
 
-  const lastUpdatedIso = useMemo(
-    () => new Date().toISOString(),
-    [
-      estimator.job.mapRefreshKey,
-      estimator.calculation.costs?.total,
-      estimator.calculation.costs?.profit,
-      estimator.areas.total,
-    ],
-  );
+  const [lastUpdatedIso, setLastUpdatedIso] = useState(() => new Date().toISOString());
+
+  useEffect(() => {
+    setLastUpdatedIso(new Date().toISOString());
+  }, [
+    estimator.job.mapRefreshKey,
+    estimator.calculation.costs?.total,
+    estimator.calculation.costs?.profit,
+    estimator.areas.total,
+  ]);
 
   const cycleWallpaper = () => {
     const next = getNextWallpaper(wallpaperId);
@@ -223,21 +224,21 @@ const Index = () => {
               server if updates are missing.
             </span>
           }
-            hudOverlay={
-              <TacticalHudOverlay
-                missionName={estimator.job.name || 'Pavement Mission'}
-                missionStatus={estimator.job.status}
-                missionPhase={missionPhase}
-                totalAreaSqFt={estimator.areas.total}
-                totalCost={estimator.calculation.costs?.total ?? null}
-                travelMiles={estimator.job.distance}
-                coordinates={estimator.job.coords}
-                scheduleWindow={null}
-                lastUpdatedIso={lastUpdatedIso}
-                watchers={hudWatchers}
-                flags={hudFlags}
-              />
-            }
+          hudOverlay={
+            <TacticalHudOverlay
+              missionName={estimator.job.name || 'Pavement Mission'}
+              missionStatus={estimator.job.status}
+              missionPhase={missionPhase}
+              totalAreaSqFt={estimator.areas.total}
+              totalCost={estimator.calculation.costs?.total ?? null}
+              travelMiles={estimator.job.distance}
+              coordinates={estimator.job.coords}
+              scheduleWindow={null}
+              lastUpdatedIso={lastUpdatedIso}
+              watchers={hudWatchers}
+              flags={hudFlags}
+            />
+          }
         />
       </main>
       <ComplianceResources

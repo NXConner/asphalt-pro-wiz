@@ -2,7 +2,7 @@ import { addHours, addMinutes, startOfHour } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { useMissionSchedulerContext } from './MissionSchedulerContext';
+import { useMissionSchedulerContext } from './useMissionSchedulerContext';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

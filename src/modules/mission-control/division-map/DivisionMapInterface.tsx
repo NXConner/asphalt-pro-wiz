@@ -1,7 +1,9 @@
-import { Loader2 } from 'lucide-react';
 import L from 'leaflet';
+import { Loader2 } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { useDivisionMapData } from './useDivisionMapData';
 
 import {
   DivisionCard,
@@ -12,7 +14,6 @@ import {
 import { TelemetrySignal } from '@/components/telemetry';
 import { Button } from '@/components/ui/button';
 
-import { useDivisionMapData } from './useDivisionMapData';
 const STATUS_COLORS: Record<string, string> = {
   need_estimate: '#fb923c',
   estimated: '#38bdf8',
@@ -30,7 +31,8 @@ function resolveStatusKey(status: string): string {
 }
 
 export function DivisionMapInterface() {
-  const { data, isLoading, isError, refetch, isFetching, isRealtimeConnected } = useDivisionMapData();
+  const { data, isLoading, isError, refetch, isFetching, isRealtimeConnected } =
+    useDivisionMapData();
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markerLayerRef = useRef<L.LayerGroup | null>(null);
@@ -105,7 +107,9 @@ export function DivisionMapInterface() {
         `<strong>${point.address || 'Job #' + point.id.slice(0, 8)}</strong>`,
         `Status: ${point.status}`,
         point.value ? `Quote: $${point.value.toLocaleString()}` : null,
-      ].filter(Boolean).join('<br/>');
+      ]
+        .filter(Boolean)
+        .join('<br/>');
       marker.bindPopup(popupContent);
     });
 

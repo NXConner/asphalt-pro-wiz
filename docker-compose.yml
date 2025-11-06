@@ -6,6 +6,7 @@ x-app-env: &app_env
   VITE_APP_VERSION: ${VITE_APP_VERSION:-local-dev}
   VITE_ENVIRONMENT: ${VITE_ENVIRONMENT:-${APP_ENV:-development}}
   VITE_BASE_PATH: ${VITE_BASE_PATH:-/}
+  VITE_BASE_NAME: ${VITE_BASE_NAME:-/}
   VITE_BASE_URL: ${VITE_BASE_URL:-}
   VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
   VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
@@ -52,6 +53,7 @@ services:
         NODE_VERSION: ${NODE_VERSION:-22-alpine}
         VITE_APP_VERSION: ${VITE_APP_VERSION:-local-dev}
         VITE_BASE_PATH: ${VITE_BASE_PATH:-/}
+        VITE_BASE_NAME: ${VITE_BASE_NAME:-/}
         VITE_ENVIRONMENT: ${APP_ENV:-development}
     image: ${APP_IMAGE:-pavement-performance-suite:web}
     container_name: pavement-web

@@ -26,6 +26,7 @@ AI-assisted operations command center purpose-built for asphalt paving, sealcoat
 - **Estimator Studio** – multi-step cost modelling with AI-assisted scenarios, compliance guardrails, and offline resilience.
 - **Mission Scheduler** – crew-aware timeline with blackout windows for worship services, ADA alerts, and staffing analytics.
 - **Command Center** – live mission telemetry, revenue dashboards, and Supabase-backed data views.
+- **Theme Command Center** – multi-theme gallery with liturgical presets, live wallpaper uploads, and instant HUD previews for every campus context.
 - **Observability & AI** – Gemini proxy via Supabase Edge Functions, log beacons, and structured monitoring hooks.
 - **Mobile Readiness** – Capacitor Android shell plus responsive HUD designed for field teams.
 
@@ -71,7 +72,7 @@ npm run seed
 ## Environment & Secrets
 
 - `.env` keys (see template):
-  - Deployment metadata: `APP_ENV`, `VITE_ENVIRONMENT`, `VITE_APP_VERSION`, `VITE_BASE_PATH`, `VITE_BASE_URL`
+  - Deployment metadata: `APP_ENV`, `VITE_ENVIRONMENT`, `VITE_APP_VERSION`, `VITE_BASE_PATH`, `VITE_BASE_NAME`, `VITE_BASE_URL`
   - Supabase: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_PROJECT_REF`, `DATABASE_URL`
   - AI proxy: `VITE_GEMINI_PROXY_URL`, `VITE_GEMINI_API_KEY`, `GEMINI_API_KEY`, `LOVABLE_API_KEY`
   - Observability: `VITE_LOG_BEACON_URL`, `VITE_OBSERVABILITY_EXPORTER_URL`, `OBSERVABILITY_API_KEY`, `VITE_SENTRY_DSN`, `VITE_OBSERVABILITY_SAMPLE_RATE`, `VITE_ENABLE_WEB_VITALS`, `VITE_ENABLE_FEATURE_TELEMETRY`

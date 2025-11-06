@@ -4,8 +4,8 @@ import { useMemo, useState } from 'react';
 import { AddMissionTaskForm } from './AddMissionTaskForm';
 import { CrewCapacityCard } from './CrewCapacityCard';
 import { MissionAlerts } from './MissionAlerts';
-import { useMissionSchedulerContext } from './MissionSchedulerContext';
 import { MissionTimeline } from './MissionTimeline';
+import { useMissionSchedulerContext } from './useMissionSchedulerContext';
 
 import { BlackoutEditor } from '@/components/Scheduler/BlackoutEditor';
 import { CrewAssign } from '@/components/Scheduler/CrewAssign';

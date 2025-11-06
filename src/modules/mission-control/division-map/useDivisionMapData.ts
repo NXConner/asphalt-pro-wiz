@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { supabase } from '@/integrations/supabase/client';
 import { useRealtime } from '@/hooks/useRealtime';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface DivisionMapPoint {
   id: string;
@@ -32,7 +32,9 @@ async function fetchDivisionMapTelemetry(): Promise<DivisionMapTelemetry> {
   // Query job_telemetry table for operational data
   const { data, error } = await supabase
     .from('job_telemetry')
-    .select('job_id, status, quote_value, area_sqft, location_lat, location_lng, customer_address, created_at, updated_at')
+    .select(
+      'job_id, status, quote_value, area_sqft, location_lat, location_lng, customer_address, created_at, updated_at',
+    )
     .not('location_lat', 'is', null)
     .not('location_lng', 'is', null)
     .order('created_at', { ascending: false })
@@ -58,7 +60,7 @@ async function fetchDivisionMapTelemetry(): Promise<DivisionMapTelemetry> {
   }
 
   // Group by job_id and take the most recent entry for each job
-  const jobMap = new Map<string, typeof data[0]>();
+  const jobMap = new Map<string, (typeof data)[0]>();
   data.forEach((entry) => {
     const existing = jobMap.get(entry.job_id);
     if (!existing || new Date(entry.created_at) > new Date(existing.created_at)) {
@@ -91,7 +93,8 @@ async function fetchDivisionMapTelemetry(): Promise<DivisionMapTelemetry> {
     }
   });
 
-  const center: [number, number] = points.length > 0 ? calculateCenter(points) : [39.8283, -98.5795];
+  const center: [number, number] =
+    points.length > 0 ? calculateCenter(points) : [39.8283, -98.5795];
 
   return {
     points,

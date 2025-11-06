@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion';
 import { memo, type CSSProperties, type ReactNode } from 'react';
 
-import { cn } from '@/lib/utils';
-
 import { CanvasGrid } from './CanvasGrid';
 import { CornerBrackets, type CornerBracketsProps } from './CornerBrackets';
 import { ScanLines, type ScanLinesProps } from './ScanLines';
+
+import { cn } from '@/lib/utils';
 
 export interface TacticalOverlayProps {
   children?: ReactNode;
@@ -72,7 +72,9 @@ const TacticalOverlayComponent = ({
           }}
         />
       )}
-      {showGrid && <CanvasGrid opacity={gridOpacity} density={gridDensity} className="mix-blend-screen" />}
+      {showGrid && (
+        <CanvasGrid opacity={gridOpacity} density={gridDensity} className="mix-blend-screen" />
+      )}
       {showScanLines && (
         <ScanLines
           opacity={0.45}
@@ -89,4 +91,3 @@ const TacticalOverlayComponent = ({
 };
 
 export const TacticalOverlay = memo(TacticalOverlayComponent);
-

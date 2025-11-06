@@ -7,7 +7,6 @@ import { DocumentGenerator } from '@/components/DocumentGenerator';
 import { OwnerSettings } from '@/components/OwnerSettings';
 import { PremiumServices } from '@/components/PremiumServices';
 import { ReceiptsPanel } from '@/components/ReceiptsPanel';
-import { MissionSchedulerPanel, MissionSchedulerProvider } from '@/modules/scheduler';
 import { ThemeCustomizer } from '@/components/ThemeCustomizer';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -16,6 +15,7 @@ import { UploadsPanel } from '@/components/UploadsPanel';
 import type { FeatureFlag } from '@/lib/flags';
 import type { EstimatorState } from '@/modules/estimate/useEstimatorState';
 import { CanvasPanel } from '@/modules/layout/CanvasPanel';
+import { MissionSchedulerPanel, MissionSchedulerProvider } from '@/modules/scheduler';
 
 interface EngagementHubPanelProps {
   estimator: EstimatorState;
@@ -199,18 +199,18 @@ export function EngagementHubPanel({ estimator }: EngagementHubPanelProps) {
         </CanvasPanel>
       ) : null}
 
-        {featureFlags.values.scheduler ? (
-          <MissionSchedulerProvider>
-            <CanvasPanel
-              title="Crew Scheduler"
-              subtitle="Align crews to blackout windows and weather advisories for minimal Sunday disruption."
-              eyebrow="Operations"
-              tone="lagoon"
-            >
-              <MissionSchedulerPanel coords={job.coords} />
-            </CanvasPanel>
-          </MissionSchedulerProvider>
-        ) : null}
+      {featureFlags.values.scheduler ? (
+        <MissionSchedulerProvider>
+          <CanvasPanel
+            title="Crew Scheduler"
+            subtitle="Align crews to blackout windows and weather advisories for minimal Sunday disruption."
+            eyebrow="Operations"
+            tone="lagoon"
+          >
+            <MissionSchedulerPanel coords={job.coords} />
+          </CanvasPanel>
+        </MissionSchedulerProvider>
+      ) : null}
     </div>
   );
 }

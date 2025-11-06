@@ -1,16 +1,17 @@
 import { Palette, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { ThemeDesignTokensPanel } from '@/components/theme/ThemeDesignTokensPanel';
+import { ThemeHueControls } from '@/components/theme/ThemeHueControls';
+import { ThemeMissionPresets } from '@/components/theme/ThemeMissionPresets';
+import { ThemePreview } from '@/components/theme/ThemePreview';
+import { ThemeShowcase } from '@/components/theme/ThemeShowcase';
+import { ThemeWallpaperManager } from '@/components/theme/ThemeWallpaperManager';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTheme } from '@/contexts/ThemeContext';
 import { DESIGN_SYSTEM, groupThemePresets } from '@/lib/designSystem';
 import type { ThemeName } from '@/lib/theme';
-import { ThemeDesignTokensPanel } from '@/components/theme/ThemeDesignTokensPanel';
-import { ThemeHueControls } from '@/components/theme/ThemeHueControls';
-import { ThemeMissionPresets } from '@/components/theme/ThemeMissionPresets';
-import { ThemePreview } from '@/components/theme/ThemePreview';
-import { ThemeWallpaperManager } from '@/components/theme/ThemeWallpaperManager';
 import { useWallpaperLibrary } from '@/modules/layout/wallpaperLibrary';
 import { DEFAULT_WALLPAPER } from '@/modules/layout/wallpapers';
 
@@ -65,7 +66,15 @@ export function ThemeCustomizer() {
   );
 
   const handleWallpaperUpload = useCallback(
-    async ({ file, name, tone }: { file: File; name?: string; tone: Parameters<typeof addWallpaper>[0]['accentTone'] }) => {
+    async ({
+      file,
+      name,
+      tone,
+    }: {
+      file: File;
+      name?: string;
+      tone: Parameters<typeof addWallpaper>[0]['accentTone'];
+    }) => {
       const dataUrl = await toDataUrl(file);
       const asset = addWallpaper({
         name: name ?? file.name,
@@ -110,19 +119,22 @@ export function ThemeCustomizer() {
           <Palette className="h-5 w-5" /> Theme Command Center
         </CardTitle>
         <CardDescription className="text-slate-200/70">
-          Craft mission-ready palettes, wallpapers, and accessibility baselines across the Pavement Performance Suite.
+          Craft mission-ready palettes, wallpapers, and accessibility baselines across the Pavement
+          Performance Suite.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-10">
         <ThemePreview />
 
-          <ThemeMissionPresets
-            groups={themeGroups}
-            activeTheme={preferences.name}
-            mode={preferences.mode}
-            onModeChange={setMode}
-            onSelectPreset={handlePresetSelect}
-          />
+        <ThemeShowcase limitPerGroup={3} />
+
+        <ThemeMissionPresets
+          groups={themeGroups}
+          activeTheme={preferences.name}
+          mode={preferences.mode}
+          onModeChange={setMode}
+          onSelectPreset={handlePresetSelect}
+        />
 
         <div className="grid gap-6 md:grid-cols-2">
           <ThemeHueControls
@@ -168,20 +180,23 @@ export function ThemeCustomizer() {
           />
         </div>
 
-          <ThemeDesignTokensPanel
-            spacing={Object.entries(DESIGN_SYSTEM.spacing)}
-            typography={Object.entries(DESIGN_SYSTEM.typography)}
-            shadows={Object.entries(DESIGN_SYSTEM.shadows)}
-            colors={['--primary', '--accent', '--secondary', '--background', '--foreground'].map((key) => [
-              key,
-              DESIGN_SYSTEM.colors[key as keyof typeof DESIGN_SYSTEM.colors],
-            ])}
-          />
+        <ThemeDesignTokensPanel
+          spacing={Object.entries(DESIGN_SYSTEM.spacing)}
+          typography={Object.entries(DESIGN_SYSTEM.typography)}
+          shadows={Object.entries(DESIGN_SYSTEM.shadows)}
+          colors={['--primary', '--accent', '--secondary', '--background', '--foreground'].map(
+            (key) => [key, DESIGN_SYSTEM.colors[key as keyof typeof DESIGN_SYSTEM.colors]],
+          )}
+        />
 
         <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-900/80 p-4">
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-200/70">Quick Reset</h4>
-            <p className="text-xs text-slate-300/60">Restore the default Division Agent theme, wallpaper, and radii.</p>
+            <h4 className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-200/70">
+              Quick Reset
+            </h4>
+            <p className="text-xs text-slate-300/60">
+              Restore the default Division Agent theme, wallpaper, and radii.
+            </p>
           </div>
           <Button
             variant="outline"
