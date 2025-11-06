@@ -2,10 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Minimal base tokens to restore build. Fonts are loaded via index.html */
 @layer base {
   :root {
     color-scheme: dark;
+    
+    /* Core semantic tokens */
     --background: 220 50% 4%;
     --foreground: 220 22% 92%;
     --card: 222 50% 6%;
@@ -26,16 +27,119 @@
     --input: 215 32% 16%;
     --ring: 206 92% 55%;
     --radius: 1rem;
+    
+    /* Chart colors */
+    --chart-1: 25 100% 55%;
+    --chart-2: 197 86% 48%;
+    --chart-3: 206 92% 55%;
+    --chart-4: 358 86% 54%;
+    --chart-5: 45 93% 58%;
   }
 
   .light {
     color-scheme: light;
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 25 100% 45%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 25 100% 45%;
   }
 
-  * { @apply border-border; }
+  * {
+    @apply border-border;
+  }
 
   body {
     @apply bg-background text-foreground;
     font-family: 'Rajdhani', system-ui, sans-serif;
+    font-feature-settings: "kern" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Orbitron', system-ui, sans-serif;
+    font-weight: 700;
+  }
+
+  code, pre {
+    font-family: 'Share Tech Mono', monospace;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-muted/20;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+}
+
+/* Tactical HUD animations */
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes flicker {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-scanline {
+  animation: scanline 8s linear infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.animate-flicker {
+  animation: flicker 0.15s infinite;
 }
