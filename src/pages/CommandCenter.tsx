@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { isEnabled } from '@/lib/flags';
 import { logEvent } from '@/lib/logging';
 import { useCommandCenterData } from '@/modules/analytics/useCommandCenterData';
+import { MissionActivityPanel } from '@/modules/mission-control/MissionActivityPanel';
 
 const currencyFormatter = new Intl.NumberFormat(undefined, {
   style: 'currency',
@@ -358,6 +359,8 @@ export default function CommandCenter() {
             </div>
           </DivisionCard>
         </section>
+
+        <MissionActivityPanel />
 
         <div className="pt-4">
           <Button

@@ -31,6 +31,8 @@ vi.mock('@/integrations/supabase/client', () => ({
       })),
     })),
   },
+  supabaseConfigurationError: null,
+  isSupabaseConfigured: false,
 }));
 
 const { supabase } = await import('@/integrations/supabase/client');

@@ -9,7 +9,8 @@ export type FeatureFlag =
   | "optimizer"
   | "customerPortal"
   | "observability"
-  | "commandCenter";
+  | "commandCenter"
+  | "tacticalMapV2";
 
 const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   imageAreaAnalyzer: true,
@@ -23,6 +24,7 @@ const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   customerPortal: false,
   observability: true,
   commandCenter: true,
+  tacticalMapV2: true,
 };
 
 const STORAGE_KEY = "pps:flags";

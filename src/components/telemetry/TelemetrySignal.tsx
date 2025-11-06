@@ -70,9 +70,7 @@ export function TelemetrySignal({
     >
       <span className="flex items-center gap-2 font-semibold">
         <span
-          className={cn(
-            'relative inline-flex h-2.5 w-2.5 items-center justify-center',
-          )}
+          className={cn('relative inline-flex h-2.5 w-2.5 items-center justify-center')}
           aria-hidden="true"
         >
           {isConnected ? (
@@ -109,7 +107,7 @@ export function TelemetrySignal({
           disabled={isRefreshing}
         >
           <RefreshCcw className={cn('h-3.5 w-3.5', isRefreshing && 'animate-spin')} />
-          Sync
+          Refresh
         </Button>
       ) : null}
     </div>
