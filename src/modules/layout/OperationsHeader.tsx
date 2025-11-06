@@ -1,5 +1,6 @@
 import {
   Activity,
+  Clock3,
   DollarSign,
   Droplets,
   Gauge,
@@ -17,6 +18,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import type { CanvasWallpaper } from './wallpapers';
 
+import { TelemetrySignal } from '@/components/telemetry';
 import { RealtimeNotifications } from '@/components/RealtimeNotifications';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
@@ -55,6 +57,38 @@ function formatCurrency(value: number | null): string {
     currency: 'USD',
     maximumFractionDigits: value >= 100000 ? 0 : 2,
   }).format(value);
+}
+
+function formatRelativeTimestamp(isoTimestamp?: string | null): string {
+  if (!isoTimestamp) {
+    return 'Awaiting updates';
+  }
+
+  const timestamp = Date.parse(isoTimestamp);
+  if (Number.isNaN(timestamp)) {
+    return 'Awaiting updates';
+  }
+
+  const diffMs = Date.now() - timestamp;
+
+  if (diffMs < 60 * 1000) {
+    return `${Math.max(Math.round(diffMs / 1000), 1)}s ago`;
+  }
+
+  if (diffMs < 60 * 60 * 1000) {
+    return `${Math.round(diffMs / (60 * 1000))}m ago`;
+  }
+
+  if (diffMs < 24 * 60 * 60 * 1000) {
+    return `${Math.round(diffMs / (60 * 60 * 1000))}h ago`;
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(new Date(timestamp));
 }
 
 const STATUS_LABEL_LOOKUP: Record<string, string> = {
@@ -103,7 +137,10 @@ export const OperationsHeader = memo(function OperationsHeader({
     data: jobTelemetryStats,
     isLoading: telemetryLoading,
     isError: telemetryError,
-  } = useJobTelemetryStats();
+    isFetching: telemetryFetching,
+    refetch: refetchTelemetryStats,
+    isRealtimeConnected: telemetryConnected,
+  } = useJobTelemetryStats({ subscribe: true });
 
   const handleAuthAction = async () => {
     if (isAuthenticated) {
@@ -118,7 +155,9 @@ export const OperationsHeader = memo(function OperationsHeader({
   const mappedJobs = jobTelemetryStats?.mappedJobCount ?? 0;
   const distribution = jobTelemetryStats?.statusDistribution ?? [];
   const telemetryQuoteTotal = jobTelemetryStats?.totalQuoteValue ?? 0;
+  const telemetryLastEventAt = jobTelemetryStats?.lastEventAt ?? null;
   const telemetryUnavailable = telemetryError && !telemetryLoading;
+  const telemetryLinkDown = !telemetryConnected && !telemetryLoading;
 
   const activeJobsDisplay = telemetryUnavailable
     ? 'Offline'
@@ -127,9 +166,11 @@ export const OperationsHeader = memo(function OperationsHeader({
       : '–';
   const activeJobsDescription = telemetryUnavailable
     ? 'Reconnect telemetry'
-    : totalTrackedJobs > 0
-      ? `of ${totalTrackedJobs.toLocaleString()} tracked`
-      : 'Telemetry warming up';
+    : telemetryLinkDown
+      ? 'Signal paused'
+      : totalTrackedJobs > 0
+        ? `of ${totalTrackedJobs.toLocaleString()} tracked`
+        : 'Telemetry warming up';
 
   const telemetryQuoteDisplay = telemetryUnavailable
     ? 'Offline'
@@ -138,68 +179,80 @@ export const OperationsHeader = memo(function OperationsHeader({
       : '–';
   const telemetryQuoteDescription = telemetryUnavailable
     ? 'Check Supabase connection'
-    : mappedJobs > 0
-      ? `${mappedJobs.toLocaleString()} mapped jobs`
-      : totalTrackedJobs > 0
-        ? `${totalTrackedJobs.toLocaleString()} total jobs`
-        : 'Awaiting telemetry';
+    : telemetryLinkDown
+      ? `Last signal ${formatRelativeTimestamp(telemetryLastEventAt)}`
+      : mappedJobs > 0
+        ? `${mappedJobs.toLocaleString()} mapped jobs`
+        : totalTrackedJobs > 0
+          ? `${totalTrackedJobs.toLocaleString()} total jobs`
+          : 'Awaiting telemetry';
 
-  return (
-    <header className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-      <div className="flex w-full flex-col gap-6">
-        <div className="space-y-5">
-          <div className="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.5em] text-slate-200/70">
-            <Sparkles className="h-4 w-4 text-orange-400" />
-            <span>Operations Canvas : Tactical Command</span>
-          </div>
-          <div className="flex flex-col gap-3">
-            <h1 className="font-display text-4xl uppercase tracking-[0.28em] text-slate-50 sm:text-5xl">
-              {summary.jobName ? summary.jobName : 'New Pavement Mission'}
-            </h1>
-            <p className="max-w-2xl font-mono text-xs uppercase tracking-[0.45em] text-slate-200/70 sm:text-sm">
-              {wallpaper.description}
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <StatPill icon={<Gauge className="h-4 w-4" />} label="Total Scope" value={formatArea(summary.totalArea)} />
-            <StatPill
-              icon={<Droplets className="h-4 w-4" />}
-              label="Projected Quote"
-              value={formatCurrency(summary.totalCost)}
+    return (
+      <header className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex w-full flex-col gap-6">
+          <div className="space-y-5">
+            <div className="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.5em] text-slate-200/70">
+              <Sparkles className="h-4 w-4 text-orange-400" />
+              <span>Operations Canvas : Tactical Command</span>
+            </div>
+            <div className="flex flex-col gap-3">
+              <h1 className="font-display text-4xl uppercase tracking-[0.28em] text-slate-50 sm:text-5xl">
+                {summary.jobName ? summary.jobName : 'New Pavement Mission'}
+              </h1>
+              <p className="max-w-2xl font-mono text-xs uppercase tracking-[0.45em] text-slate-200/70 sm:text-sm">
+                {wallpaper.description}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <StatPill icon={<Gauge className="h-4 w-4" />} label="Total Scope" value={formatArea(summary.totalArea)} />
+              <StatPill
+                icon={<Droplets className="h-4 w-4" />}
+                label="Projected Quote"
+                value={formatCurrency(summary.totalCost)}
+              />
+              <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-slate-50/80">
+                {wallpaper.name}
+              </span>
+            </div>
+            <TelemetrySignal
+              label="Job Telemetry"
+              isConnected={telemetryConnected}
+              lastEventAt={telemetryLastEventAt}
+              isRefreshing={telemetryFetching}
+              onRefresh={() => void refetchTelemetryStats()}
+              className="max-w-full text-[0.6rem]"
             />
-            <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-slate-50/80">
-              {wallpaper.name}
-            </span>
+          </div>
+
+          <div className="grid gap-3 xl:grid-cols-[repeat(3,minmax(0,1fr))]">
+            <StatPill
+              className="min-w-[220px] flex-1"
+              icon={<Activity className="h-4 w-4 text-emerald-300" />}
+              label="Active Jobs"
+              value={activeJobsDisplay}
+              description={activeJobsDescription}
+              isLoading={telemetryLoading}
+            />
+            <StatPill
+              className="min-w-[220px] flex-1"
+              icon={<DollarSign className="h-4 w-4 text-amber-300" />}
+              label="Total Quote Value"
+              value={telemetryQuoteDisplay}
+              description={telemetryQuoteDescription}
+              isLoading={telemetryLoading}
+            />
+            <StatusDistributionCard
+              className="min-w-[260px] flex-1"
+              distribution={distribution}
+              isLoading={telemetryLoading}
+              hasError={telemetryUnavailable}
+              mappedJobs={mappedJobs}
+              totalJobs={totalTrackedJobs}
+              lastEventAt={telemetryLastEventAt}
+              isRealtimeConnected={telemetryConnected}
+            />
           </div>
         </div>
-
-        <div className="grid gap-3 xl:grid-cols-[repeat(3,minmax(0,1fr))]">
-          <StatPill
-            className="min-w-[220px] flex-1"
-            icon={<Activity className="h-4 w-4 text-emerald-300" />}
-            label="Active Jobs"
-            value={activeJobsDisplay}
-            description={activeJobsDescription}
-            isLoading={telemetryLoading}
-          />
-          <StatPill
-            className="min-w-[220px] flex-1"
-            icon={<DollarSign className="h-4 w-4 text-amber-300" />}
-            label="Total Quote Value"
-            value={telemetryQuoteDisplay}
-            description={telemetryQuoteDescription}
-            isLoading={telemetryLoading}
-          />
-          <StatusDistributionCard
-            className="min-w-[260px] flex-1"
-            distribution={distribution}
-            isLoading={telemetryLoading}
-            hasError={telemetryUnavailable}
-            mappedJobs={mappedJobs}
-            totalJobs={totalTrackedJobs}
-          />
-        </div>
-      </div>
 
       <div className="flex flex-wrap items-center justify-end gap-3">
         {commandCenterEnabled ? (
@@ -310,6 +363,8 @@ interface StatusDistributionCardProps {
   mappedJobs: number;
   isLoading: boolean;
   hasError: boolean;
+  isRealtimeConnected: boolean;
+  lastEventAt?: string | null;
 }
 
 function StatusDistributionCard({
@@ -319,6 +374,8 @@ function StatusDistributionCard({
   mappedJobs,
   isLoading,
   hasError,
+  isRealtimeConnected,
+  lastEventAt = null,
 }: StatusDistributionCardProps) {
   const baseClassName = cn(
     'group relative flex min-h-[132px] flex-col gap-3 overflow-hidden rounded-[var(--hud-radius-md)] border border-white/15 bg-white/5 p-4',
@@ -331,7 +388,7 @@ function StatusDistributionCard({
       <div className={baseClassName}>
         <div className="flex items-center justify-between text-[0.65rem] uppercase tracking-[0.42em] text-slate-200/50">
           <span>Telemetry Status</span>
-          <PieChart className="h-4 w-4 text-slate-200/40" />
+          <Skeleton className="h-3 w-16 bg-white/15" />
         </div>
         <div className="flex flex-col gap-2">
           {STATUS_DISTRIBUTION_SKELETON_ROWS.map((key) => (
@@ -388,14 +445,26 @@ function StatusDistributionCard({
       return orderA - orderB;
     });
 
+  const updatedLabel = formatRelativeTimestamp(lastEventAt);
+  const signalDescriptor = isRealtimeConnected ? updatedLabel : `Stale · ${updatedLabel}`;
+
   return (
     <div className={baseClassName}>
       <div className="flex items-center justify-between">
         <span className="text-[0.65rem] uppercase tracking-[0.42em] text-slate-200/70">Status Distribution</span>
         <span className="flex items-center gap-1 text-[0.6rem] uppercase tracking-[0.32em] text-slate-200/50">
-          <MapPin className="h-3.5 w-3.5" />
-          {mappedJobs.toLocaleString()} mapped
+          <Clock3 className="h-3.5 w-3.5" />
+          {signalDescriptor}
         </span>
+      </div>
+      {!isRealtimeConnected ? (
+        <div className="rounded-xl border border-amber-300/30 bg-amber-500/10 px-3 py-2 text-[0.58rem] uppercase tracking-[0.32em] text-amber-100">
+          Signal paused — showing cached metrics.
+        </div>
+      ) : null}
+      <div className="flex items-center gap-1 text-[0.6rem] uppercase tracking-[0.32em] text-slate-200/50">
+        <MapPin className="h-3.5 w-3.5" />
+        {mappedJobs.toLocaleString()} mapped
       </div>
       <div className="flex flex-col gap-2">
         {sortedDistribution.map((entry) => {

@@ -10,11 +10,15 @@ import {
 
 import { supabase } from '@/integrations/supabase/client';
 import { logError } from '@/lib/logging';
+import { useRealtime } from '@/hooks/useRealtime';
 
 export interface CommandCenterQueryResult {
   status: 'disabled' | 'error' | 'ready' | 'loading';
   metrics: CommandCenterMetrics | null;
   errorMessage?: string;
+  isRealtimeConnected: boolean;
+  refetch: () => Promise<any>;
+  isFetching: boolean;
 }
 
   async function fetchCommandCenterData(): Promise<CommandCenterMetrics> {
@@ -45,8 +49,20 @@ export function useCommandCenterData(): CommandCenterQueryResult {
     staleTime: 1000 * 60 * 5,
   });
 
+  const jobsRealtime = useRealtime({
+    table: 'jobs',
+    invalidateQueries: [['command-center-metrics']],
+  });
+
+  const estimatesRealtime = useRealtime({
+    table: 'estimates',
+    invalidateQueries: [['command-center-metrics']],
+  });
+
+  const isRealtimeConnected = jobsRealtime.isConnected && estimatesRealtime.isConnected;
+
   if (query.isLoading) {
-    return { status: 'loading', metrics: null };
+    return { status: 'loading', metrics: null, isRealtimeConnected, refetch: query.refetch, isFetching: query.isFetching };
   }
 
   if (query.isError) {
@@ -55,12 +71,28 @@ export function useCommandCenterData(): CommandCenterQueryResult {
       status: 'error',
       metrics: null,
       errorMessage: query.error instanceof Error ? query.error.message : 'Unknown error',
+      isRealtimeConnected,
+      refetch: query.refetch,
+      isFetching: query.isFetching,
     };
   }
 
   if (!query.data) {
-    return { status: 'error', metrics: null, errorMessage: 'No metrics available.' };
+    return {
+      status: 'error',
+      metrics: null,
+      errorMessage: 'No metrics available.',
+      isRealtimeConnected,
+      refetch: query.refetch,
+      isFetching: query.isFetching,
+    };
   }
 
-  return { status: 'ready', metrics: query.data };
+  return {
+    status: 'ready',
+    metrics: query.data,
+    isRealtimeConnected,
+    refetch: query.refetch,
+    isFetching: query.isFetching,
+  };
 }
