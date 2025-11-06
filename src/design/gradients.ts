@@ -47,6 +47,38 @@ export const DIVISION_WALLPAPERS: WallpaperDefinition[] = [
       "radial-gradient(circle at 12% 66%, rgba(88,255,161,0.32) 0%, rgba(4,12,16,0.94) 53%), radial-gradient(circle at 88% 22%, rgba(28,184,120,0.28) 0%, rgba(3,10,16,0.95) 62%)",
     particlePreset: 'stealth',
   },
+    {
+      id: 'division-sunrise-service',
+      name: 'Sunrise Service',
+      description: 'Amber sunrise over a fresh sealcoat with subtle lens flares.',
+      gradient:
+        "radial-gradient(circle at 10% 28%, rgba(255,182,72,0.42) 0%, rgba(12,16,28,0.92) 56%), radial-gradient(circle at 88% 70%, rgba(255,112,67,0.32) 0%, rgba(12,14,24,0.95) 60%)",
+      particlePreset: 'ember',
+    },
+    {
+      id: 'division-vespers-halo',
+      name: 'Vespers Halo',
+      description: 'Evening violet haze across sanctuary glass reflections.',
+      gradient:
+        "radial-gradient(circle at 20% 20%, rgba(126,111,255,0.38) 0%, rgba(8,11,26,0.94) 60%), radial-gradient(circle at 80% 80%, rgba(255,198,94,0.28) 0%, rgba(10,12,25,0.95) 62%)",
+      particlePreset: 'command',
+    },
+    {
+      id: 'division-revival-rush',
+      name: 'Revival Rush',
+      description: 'Teal aurora bursts with cobalt streams for youth rallies.',
+      gradient:
+        "radial-gradient(circle at 18% 72%, rgba(72,222,255,0.36) 0%, rgba(6,14,24,0.93) 58%), radial-gradient(circle at 86% 18%, rgba(58,164,255,0.3) 0%, rgba(5,12,20,0.95) 62%)",
+      particlePreset: 'tech',
+    },
+    {
+      id: 'division-celestial-dawn',
+      name: 'Celestial Dawn',
+      description: 'Light sky bloom with chapel spotlights and soft mist.',
+      gradient:
+        "radial-gradient(circle at 12% 18%, rgba(162,213,255,0.42) 0%, rgba(12,20,32,0.9) 56%), radial-gradient(circle at 82% 88%, rgba(255,204,138,0.28) 0%, rgba(14,22,32,0.92) 60%)",
+      particlePreset: 'command',
+    },
 ];
 
 export const DEFAULT_WALLPAPER_ID = DIVISION_WALLPAPERS[0]?.id ?? 'division-twilight-ops';

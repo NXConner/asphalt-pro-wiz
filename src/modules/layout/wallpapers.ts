@@ -12,6 +12,10 @@ const WALLPAPER_TONES: Record<string, CanvasTone> = {
   'division-dark-zone': 'ember',
   'division-cathedral-briefing': 'lagoon',
   'division-stealth-insertion': 'aurora',
+  'division-sunrise-service': 'ember',
+  'division-vespers-halo': 'dusk',
+  'division-revival-rush': 'aurora',
+  'division-celestial-dawn': 'lagoon',
 };
 
 export const CANVAS_WALLPAPERS: CanvasWallpaper[] = DIVISION_WALLPAPERS.map((wallpaper) => ({

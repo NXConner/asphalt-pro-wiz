@@ -8,9 +8,15 @@ interface ThemeSwatchProps {
   preset: ThemePresetMeta;
   active?: boolean;
   onSelect?: () => void;
+  className?: string;
 }
 
-export const ThemeSwatch = memo(function ThemeSwatch({ preset, active = false, onSelect }: ThemeSwatchProps) {
+export const ThemeSwatch = memo(function ThemeSwatch({
+  preset,
+  active = false,
+  onSelect,
+  className,
+}: ThemeSwatchProps) {
   const style = useMemo(() => toCSSProperties(preset.tokens), [preset.tokens]);
 
   return (
@@ -22,6 +28,7 @@ export const ThemeSwatch = memo(function ThemeSwatch({ preset, active = false, o
         active
           ? 'border-orange-400/70 shadow-[0_20px_60px_rgba(255,128,0,0.35)]'
           : 'border-white/10 hover:-translate-y-1 hover:border-orange-300/50 hover:shadow-[0_18px_45px_rgba(255,128,0,0.25)]',
+        className,
       )}
       style={style}
     >
