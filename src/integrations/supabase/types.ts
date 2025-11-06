@@ -994,6 +994,45 @@ export type Database = {
           },
         ]
       }
+      crew_telemetry: {
+        Row: {
+          created_at: string
+          crew_id: string
+          event_type: string
+          id: string
+          location_lat: number | null
+          location_lng: number | null
+          metadata: Json | null
+          status: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          crew_id: string
+          event_type: string
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          metadata?: Json | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          crew_id?: string
+          event_type?: string
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          metadata?: Json | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       custom_spatial_data: {
         Row: {
           description: string | null
@@ -2266,6 +2305,51 @@ export type Database = {
         }
         Relationships: []
       }
+      equipment_telemetry: {
+        Row: {
+          created_at: string
+          equipment_id: string
+          event_type: string
+          fuel_level: number | null
+          hours_used: number | null
+          id: string
+          location_lat: number | null
+          location_lng: number | null
+          metadata: Json | null
+          status: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          equipment_id: string
+          event_type: string
+          fuel_level?: number | null
+          hours_used?: number | null
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          metadata?: Json | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          equipment_id?: string
+          event_type?: string
+          fuel_level?: number | null
+          hours_used?: number | null
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          metadata?: Json | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       estimate_line_items: {
         Row: {
           cost_item_id: string | null
@@ -3226,6 +3310,54 @@ export type Database = {
           total_price?: number | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      job_telemetry: {
+        Row: {
+          area_sqft: number | null
+          created_at: string
+          customer_address: string | null
+          event_type: string
+          id: string
+          job_id: string
+          location_lat: number | null
+          location_lng: number | null
+          metadata: Json | null
+          quote_value: number | null
+          status: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          area_sqft?: number | null
+          created_at?: string
+          customer_address?: string | null
+          event_type: string
+          id?: string
+          job_id: string
+          location_lat?: number | null
+          location_lng?: number | null
+          metadata?: Json | null
+          quote_value?: number | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          area_sqft?: number | null
+          created_at?: string
+          customer_address?: string | null
+          event_type?: string
+          id?: string
+          job_id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          metadata?: Json | null
+          quote_value?: number | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -5473,6 +5605,39 @@ export type Database = {
           recordcount?: number | null
           status?: string | null
           table?: string | null
+        }
+        Relationships: []
+      }
+      system_telemetry: {
+        Row: {
+          created_at: string
+          event_category: string | null
+          event_type: string
+          id: string
+          message: string | null
+          metadata: Json | null
+          severity: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_category?: string | null
+          event_type: string
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          severity?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_category?: string | null
+          event_type?: string
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          severity?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
