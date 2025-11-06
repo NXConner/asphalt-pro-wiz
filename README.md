@@ -26,6 +26,7 @@ AI-assisted operations command center purpose-built for asphalt paving, sealcoat
 - **Estimator Studio** – multi-step cost modelling with AI-assisted scenarios, compliance guardrails, and offline resilience.
 - **Mission Scheduler** – crew-aware timeline with blackout windows for worship services, ADA alerts, and staffing analytics.
 - **Command Center** – live mission telemetry, revenue dashboards, and Supabase-backed data views.
+- **Theme Command Center** – multi-theme gallery with liturgical presets, live wallpaper uploads, and instant HUD previews for every campus context.
 - **Observability & AI** – Gemini proxy via Supabase Edge Functions, log beacons, and structured monitoring hooks.
 - **Mobile Readiness** – Capacitor Android shell plus responsive HUD designed for field teams.
 
