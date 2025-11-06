@@ -79,7 +79,7 @@ npm run seed
   - Mapping & weather: `VITE_GOOGLE_MAPS_API_KEY`, `VITE_OPENWEATHER_API_KEY`, `VITE_MAPBOX_TOKEN`, `VITE_AIR_QUALITY_API_KEY`
   - Optional ingest: `GITHUB_TOKEN`
   - Feature flags: `VITE_FLAG_*` overrides (`AIASSISTANT`, `SCHEDULER`, etc.)
-- Feature flags (1/0): `VITE_FLAG_COMMANDCENTER`, `VITE_FLAG_SCHEDULER`, `VITE_FLAG_OBSERVABILITY`, etc.
+- Feature flags (1/0): `VITE_FLAG_COMMANDCENTER`, `VITE_FLAG_SCHEDULER`, `VITE_FLAG_OBSERVABILITY`, `VITE_FLAG_TACTICALMAPV2`, etc.
 - Supabase bootstrapping, RLS, and seed workflows: `docs/UNIFIED_SUPABASE_GUIDE.md`.
 - Never commit `.env`; rely on `.env.example` for onboarding.
 - Secrets automation templates live in `config/secrets/` (`doppler.yaml.example`, `vault.env.template`, `aws-secrets-manager.json.example`) to streamline Doppler, Vault, or AWS Secrets Manager integration.

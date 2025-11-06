@@ -27,6 +27,7 @@
   - Library tests (`tests/lib/`)
   - Database RLS tests (`tests/db/`)
   - Component tests
+  - Tactical map enhancements (`tests/components/TacticalMap.test.tsx`) validating feature flag gating, structured logging, and hazard overlays
 
 #### E2E Tests
 - **Authentication Flow** (`e2e/auth-flow.spec.ts`)
