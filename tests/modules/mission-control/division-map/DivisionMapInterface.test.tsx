@@ -86,7 +86,7 @@ describe('DivisionMapInterface', () => {
     const user = userEvent.setup();
     render(<DivisionMapInterface />);
 
-    const [refreshButton] = screen.getAllByRole('button', { name: /refresh/i });
+    const [refreshButton] = screen.getAllByRole('button', { name: /sync/i });
     await user.click(refreshButton);
     expect(refetch).toHaveBeenCalled();
   });
