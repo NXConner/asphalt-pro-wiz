@@ -7,8 +7,6 @@ test-results
 bun.lockb
 android
 docs
-tests
-e2e
 supabase/.temp
 deleted files
 .git

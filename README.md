@@ -177,6 +177,8 @@ docker compose --env-file .env up --build
 docker compose down -v
 ```
 
+> **Quality gate:** The Docker image build stage runs `npm run lint`, `npm run typecheck`, and `npm run test:unit -- --run` before bundling. Container builds will fail fast if these checks do not pass.
+
 ### Android
 
 ```bash
