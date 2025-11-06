@@ -28,6 +28,8 @@ x-app-env: &app_env
   VITE_MAPBOX_TOKEN: ${VITE_MAPBOX_TOKEN:-}
   VITE_AIR_QUALITY_API_KEY: ${VITE_AIR_QUALITY_API_KEY:-}
   GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+  OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://observability:4317}
+  OTEL_EXPORTER_OTLP_PROTOCOL: ${OTEL_EXPORTER_OTLP_PROTOCOL:-grpc}
   VITE_FLAG_AIASSISTANT: ${VITE_FLAG_AIASSISTANT:-1}
   VITE_FLAG_IMAGEAREAANALYZER: ${VITE_FLAG_IMAGEAREAANALYZER:-1}
   VITE_FLAG_RECEIPTS: ${VITE_FLAG_RECEIPTS:-1}
@@ -65,6 +67,8 @@ services:
         condition: service_healthy
       migrator:
         condition: service_completed_successfully
+      observability:
+        condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost"]
       interval: 30s
@@ -95,6 +99,29 @@ services:
     networks:
       - pavement
 
+  seeder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: tooling
+      args:
+        NODE_VERSION: ${NODE_VERSION:-22-alpine}
+    image: ${TOOLING_IMAGE:-pavement-performance-suite-tooling:latest}
+    container_name: pavement-seeder
+    command: ["npm", "run", "seed"]
+    environment:
+      <<: *app_env
+    env_file:
+      - .env
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+    restart: "no"
+    networks:
+      - pavement
+    profiles:
+      - setup
+
   db:
     image: ${DB_IMAGE:-pgvector/pgvector:pg16}
     container_name: pavement-db
@@ -111,6 +138,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+    networks:
+      - pavement
+
+  observability:
+    image: ${OTEL_IMAGE:-otel/opentelemetry-collector-contrib:0.103.0}
+    container_name: pavement-observability
+    command: ["--config=/etc/otel-collector.yaml"]
+    volumes:
+      - ./config/observability/otel-collector.yaml:/etc/otel-collector.yaml:ro
+    ports:
+      - "${OTEL_COLLECTOR_GRPC_PORT:-4317}:4317"
+      - "${OTEL_COLLECTOR_HTTP_PORT:-4318}:4318"
     restart: unless-stopped
     networks:
       - pavement

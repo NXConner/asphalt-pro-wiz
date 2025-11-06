@@ -2,40 +2,39 @@
 
 ARG NODE_VERSION=22-alpine
 
-FROM node:${NODE_VERSION} AS deps
+FROM node:${NODE_VERSION} AS base
 WORKDIR /app
+ENV CI=1 \
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+    npm_config_loglevel=notice
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,id=pavement-npm-cache,target=/root/.npm \
   npm ci --include=dev && npm cache clean --force
 
-FROM node:${NODE_VERSION} AS tooling
-WORKDIR /app
+FROM base AS sources
 ENV NODE_ENV=development
-COPY --from=deps /app/node_modules ./node_modules
-COPY package.json package-lock.json ./
 COPY tsconfig*.json ./
-COPY vitest.config.ts vite.config.ts ./
+COPY vitest.config.ts vite.config.ts playwright.config.ts ./
 COPY src ./src
 COPY public ./public
 COPY scripts ./scripts
 COPY supabase ./supabase
+COPY tests ./tests
 
-FROM node:${NODE_VERSION} AS build
+FROM sources AS quality
+RUN npm run lint \
+  && npm run typecheck \
+  && npm run test:unit -- --run
+
+FROM sources AS build
 ARG VITE_APP_VERSION=local-dev
 ARG VITE_BASE_PATH=/
 ARG VITE_ENVIRONMENT=production
 ENV NODE_ENV=production \
     VITE_APP_VERSION=${VITE_APP_VERSION} \
     VITE_BASE_PATH=${VITE_BASE_PATH} \
-    VITE_ENVIRONMENT=${VITE_ENVIRONMENT} \
-    CI=1
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-RUN npm run lint \
-  && npm run typecheck \
-  && npm run test:unit -- --run \
-  && npm run build -- --base ${VITE_BASE_PATH} \
+    VITE_ENVIRONMENT=${VITE_ENVIRONMENT}
+RUN npm run build -- --base ${VITE_BASE_PATH} \
   && npm prune --omit=dev
 
 FROM nginx:1.27-alpine AS runtime
