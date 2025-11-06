@@ -2,32 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 
 import type { Database } from './types';
 
-type EnvRecord = Record<string, string | undefined>;
-
-const metaEnv = (import.meta as unknown as { env?: EnvRecord })?.env ?? {};
-const nodeEnv = typeof process !== 'undefined' ? (process.env as EnvRecord) : {};
-
-const SUPABASE_URL =
-  metaEnv.VITE_SUPABASE_URL?.trim() || nodeEnv.VITE_SUPABASE_URL?.trim() || '';
-
-const SUPABASE_PUBLISHABLE_KEY =
-  metaEnv.VITE_SUPABASE_PUBLISHABLE_KEY?.trim() ||
-  metaEnv.VITE_SUPABASE_ANON_KEY?.trim() ||
-  nodeEnv.VITE_SUPABASE_PUBLISHABLE_KEY?.trim() ||
-  nodeEnv.VITE_SUPABASE_ANON_KEY?.trim() ||
-  '';
-
-if (!SUPABASE_URL) {
-  throw new Error(
-    'Supabase configuration missing: set VITE_SUPABASE_URL in your environment to initialize the client.',
-  );
-}
-
-if (!SUPABASE_PUBLISHABLE_KEY) {
-  throw new Error(
-    'Supabase configuration missing: set VITE_SUPABASE_PUBLISHABLE_KEY (or VITE_SUPABASE_ANON_KEY) to initialize the client.',
-  );
-}
+const SUPABASE_URL = 'https://vodglzbgqsafghlihivy.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvZGdsemJncXNhZmdobGloaXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzNDcwMDQsImV4cCI6MjA2NDkyMzAwNH0.uLAZ_zY3zY-QmDDXwkAuspCUW9NpotsTV5fVCiHf5mM';
 
 const authStorage =
   typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
