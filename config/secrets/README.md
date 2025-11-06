@@ -6,7 +6,7 @@ This folder documents how to connect the Pavement Performance Suite to a product
 
 1. Create a Doppler project (e.g., `pavement-performance-suite`).
 2. Populate project secrets matching the keys in `.env.example` (`VITE_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, etc.).
-3. Use the sample Doppler configuration below to map Doppler secrets into the runtime environment:
+3. Copy `config/secrets/doppler.yaml.example` to `config/secrets/doppler.yaml` and update the project/config names. The manifest maps Doppler secrets into the runtime environment:
 
    ```yaml
    # config/secrets/doppler.yaml
@@ -40,18 +40,18 @@ This folder documents how to connect the Pavement Performance Suite to a product
    }
    ```
 
-3. Use the sample script below to render a `.env` file before starting the app:
+3. Copy `vault.env.template` to `vault.env`, fill in your Vault address/token, then source it to render a `.env.runtime` file via the included script:
 
    ```bash
-   vault kv get -format=json kv/pavement-performance-suite \
-     | jq -r '.data.data | to_entries | map("\(.key)=\(.value)") | .[]' > .env
+    vault kv get -format=json kv/pavement-performance-suite \
+      | jq -r '.data.data | to_entries | map("\(.key)=\(.value)") | .[]' > .env.runtime
    ```
 
-4. Run the application or tests with the generated `.env`.
+4. Run the application or tests with the generated `.env.runtime`.
 
 ## AWS Secrets Manager
 
-1. Store secrets in a JSON secret, for example `pavement/performance-suite/prod`:
+1. Store secrets in a JSON secret, for example `pavement/performance-suite/prod` (see `aws-secrets-manager.json.example` for a full payload):
 
    ```json
    {

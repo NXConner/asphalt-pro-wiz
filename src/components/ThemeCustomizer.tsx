@@ -4,8 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTheme } from '@/contexts/ThemeContext';
-import { DESIGN_SYSTEM, listThemePresets } from '@/lib/designSystem';
-import type { ThemePresetMeta } from '@/lib/designSystem';
+import { DESIGN_SYSTEM, groupThemePresets } from '@/lib/designSystem';
+import type { ThemeName } from '@/lib/theme';
 import { ThemeDesignTokensPanel } from '@/components/theme/ThemeDesignTokensPanel';
 import { ThemeHueControls } from '@/components/theme/ThemeHueControls';
 import { ThemeMissionPresets } from '@/components/theme/ThemeMissionPresets';
@@ -30,8 +30,7 @@ export function ThemeCustomizer() {
   } = useTheme();
   const { builtin, custom, addWallpaper, removeWallpaper, getById } = useWallpaperLibrary();
 
-  const divisionThemes = useMemo(() => listThemePresets('division'), []);
-  const legacyThemes = useMemo(() => listThemePresets('legacy'), []);
+  const themeGroups = useMemo(() => groupThemePresets(), []);
 
   const [localHue, setLocalHue] = useState(preferences.primaryHue);
   const [localRadius, setLocalRadius] = useState(preferences.radius);
@@ -50,8 +49,8 @@ export function ThemeCustomizer() {
   }, [preferences]);
 
   const handlePresetSelect = useCallback(
-    (preset: ThemePresetMeta) => {
-      setTheme(preset.id);
+    (presetId: ThemeName) => {
+      setTheme(presetId);
     },
     [setTheme],
   );
@@ -117,14 +116,13 @@ export function ThemeCustomizer() {
       <CardContent className="space-y-10">
         <ThemePreview />
 
-        <ThemeMissionPresets
-          divisionPresets={divisionThemes}
-          legacyPresets={legacyThemes}
-          activeTheme={preferences.name}
-          mode={preferences.mode}
-          onModeChange={setMode}
-          onSelectPreset={handlePresetSelect}
-        />
+          <ThemeMissionPresets
+            groups={themeGroups}
+            activeTheme={preferences.name}
+            mode={preferences.mode}
+            onModeChange={setMode}
+            onSelectPreset={handlePresetSelect}
+          />
 
         <div className="grid gap-6 md:grid-cols-2">
           <ThemeHueControls
@@ -170,11 +168,15 @@ export function ThemeCustomizer() {
           />
         </div>
 
-        <ThemeDesignTokensPanel
-          spacing={Object.entries(DESIGN_SYSTEM.spacing)}
-          typography={Object.entries(DESIGN_SYSTEM.typography)}
-          shadows={Object.entries(DESIGN_SYSTEM.shadows)}
-        />
+          <ThemeDesignTokensPanel
+            spacing={Object.entries(DESIGN_SYSTEM.spacing)}
+            typography={Object.entries(DESIGN_SYSTEM.typography)}
+            shadows={Object.entries(DESIGN_SYSTEM.shadows)}
+            colors={['--primary', '--accent', '--secondary', '--background', '--foreground'].map((key) => [
+              key,
+              DESIGN_SYSTEM.colors[key as keyof typeof DESIGN_SYSTEM.colors],
+            ])}
+          />
 
         <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-900/80 p-4">
           <div>

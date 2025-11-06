@@ -81,6 +81,7 @@ npm run seed
 - Feature flags (1/0): `VITE_FLAG_COMMANDCENTER`, `VITE_FLAG_SCHEDULER`, `VITE_FLAG_OBSERVABILITY`, etc.
 - Supabase bootstrapping, RLS, and seed workflows: `docs/UNIFIED_SUPABASE_GUIDE.md`.
 - Never commit `.env`; rely on `.env.example` for onboarding.
+- Secrets automation templates live in `config/secrets/` (`doppler.yaml.example`, `vault.env.template`, `aws-secrets-manager.json.example`) to streamline Doppler, Vault, or AWS Secrets Manager integration.
 
 ---
 
@@ -115,6 +116,7 @@ npm run typecheck          # TypeScript structural checks
 npm run test:unit -- --run # Vitest
 npm run test:e2e           # Playwright (requires browsers)
 npm run security:scan      # npm audit + Snyk
+npm run security:report    # JSON audit report saved to security-report.json
 
 # Load packs (detailed below)
 BASE_URL=http://localhost:5173 npx k6 run scripts/load/k6-estimate.js
