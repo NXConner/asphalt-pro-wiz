@@ -1,7 +1,7 @@
 ## Phase 1 – Comprehensive Analysis & Strategic Roadmap
 
 ### Project Summary
-- **Product Identity**: Pavement Performance Suite – an AI-assisted command center tailored for asphalt paving, sealcoating, and line-striping projects with a strategic focus on Virginia church campuses and small-crew operations.
+- **Product Identity**: Pavement Performance Suite – an AI-assisted command center tailored for asphalt paving, sealcoating, and line-striping projects with a strategic focus on Virginia and North Carolina church campuses and small-crew operations.
 - **Primary Objectives**:
   - Streamline estimation, scheduling, compliance, and client engagement workflows.
   - Deliver tactical situational awareness via mission-control dashboards, map overlays, and HUD-inspired UI.
@@ -39,7 +39,7 @@
 13. **Performance Optimization Pass** (`OP`): Audit bundle size, leverage code splitting for heavy mission panels, implement React Query cache policies, and optimize map rendering.
 14. **Offline & Mobile Refinements** (`MF`/`OP`): Expand IndexedDB caching, add progressive sync strategies, and ensure Capacitor-specific UI adjustments and permission flows.
 15. **Accessibility & Internationalization Enhancements** (`RF`/`DOC`): Ensure Division-themed components retain WCAG AA, add i18n coverage for new text, and deliver manual a11y testing scripts.
-16. **Security & Compliance Automation** (`SEC`/`DOC`): Integrate dependency scanning (npm audit/snyk), CodeQL workflows, and document Virginia contractor compliance (record-keeping, invoicing).
+16. **Security & Compliance Automation** (`SEC`/`DOC`): Integrate dependency scanning (npm audit/snyk), CodeQL workflows, and document Virginia and North Carolina contractor compliance (record-keeping, invoicing).
 17. **Testing Expansion** (`RF`/`OP`): Raise coverage across unit/integration/e2e suites, include accessibility snapshots, mission-critical end-to-end flows, and load tests for new overlays.
 18. **DevEx Tooling & Docs Refresh** (`DOC`/`RF`): Update onboarding docs, README quickstart, architecture diagrams, and ensure developer scripts align with new features.
 19. **Deployment & Rollback Pipeline** (`SEC`/`DOC`): Finalize CI/CD workflows, container optimizations, stage rollout strategies, and include rollback/disaster recovery documentation.
