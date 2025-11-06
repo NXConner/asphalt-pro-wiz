@@ -33,32 +33,36 @@ export default tseslint.config(
       security: pluginSecurity,
       import: importPlugin,
     },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-      ...(jsxA11y.configs?.recommended?.rules ?? {}),
-      "security/detect-object-injection": "off",
-      "security/detect-non-literal-fs-filename": "off",
-      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-      "@typescript-eslint/no-unused-vars": "off",
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-require-imports": "off",
-      "no-empty": ["error", { allowEmptyCatch: true }],
-      "import/order": [
-        "warn",
-        {
-          "newlines-between": "always",
-          alphabetize: { order: "asc", caseInsensitive: true },
-          pathGroupsExcludedImportTypes: ["builtin"],
-          pathGroups: [
-            {
-              pattern: "@/**",
-              group: "internal",
-              position: "before",
-            },
-          ],
-        },
-      ],
-    },
+      rules: {
+        ...reactHooks.configs.recommended.rules,
+        ...(jsxA11y.configs?.recommended?.rules ?? {}),
+        ...(jsxA11y.configs?.strict?.rules ?? {}),
+        "security/detect-object-injection": "off",
+        "security/detect-non-literal-fs-filename": "off",
+        "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-require-imports": "off",
+        "no-empty": ["error", { allowEmptyCatch: true }],
+        "jsx-a11y/no-autofocus": ["error", { ignoreNonDOM: true }],
+        "jsx-a11y/no-static-element-interactions": "warn",
+        "jsx-a11y/media-has-caption": "warn",
+        "import/order": [
+          "warn",
+          {
+            "newlines-between": "always",
+            alphabetize: { order: "asc", caseInsensitive: true },
+            pathGroupsExcludedImportTypes: ["builtin"],
+            pathGroups: [
+              {
+                pattern: "@/**",
+                group: "internal",
+                position: "before",
+              },
+            ],
+          },
+        ],
+      },
   },
   {
     files: ["src/components/ui/**/*.{ts,tsx}"],

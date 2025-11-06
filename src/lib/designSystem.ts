@@ -12,6 +12,12 @@ import {
 
 export type Hsl = `${number} ${number}% ${number}%`;
 
+type StripPrefix<TValue extends string, Prefix extends string> = TValue extends `${Prefix}${infer Rest}`
+  ? Rest
+  : TValue;
+
+type DivisionThemeName = StripPrefix<DivisionThemeId, 'theme-'>;
+
 const LEGACY_THEME_IDS = [
   'default',
   'emerald',
@@ -25,13 +31,30 @@ const LEGACY_THEME_IDS = [
   'cyber',
 ] as const;
 
-const DIVISION_THEME_NAMES = DIVISION_THEME_IDS.map((id) => id.replace(/^theme-/, ''));
+const LITURGICAL_THEME_IDS = ['advent-vigil', 'lent-refocus', 'easter-radiance', 'pentecost-flare'] as const;
 
-export const THEME_NAMES = [...LEGACY_THEME_IDS, ...DIVISION_THEME_NAMES] as const;
+const CAMPUS_THEME_IDS = ['chapel-stonework', 'family-life', 'youth-center', 'parking-strategy'] as const;
 
-export type ThemeNameFromTokens = (typeof THEME_NAMES)[number];
+const SEASONAL_THEME_IDS = ['summer-outreach', 'autumn-renewal', 'winter-brilliance', 'storm-response'] as const;
 
-export type ThemeCategory = 'legacy' | 'division';
+const DIVISION_THEME_NAMES = DIVISION_THEME_IDS.map((id) => id.replace(/^theme-/, '')) as DivisionThemeName[];
+
+export const THEME_NAMES: ThemeNameFromTokens[] = [
+  ...LEGACY_THEME_IDS,
+  ...DIVISION_THEME_NAMES,
+  ...LITURGICAL_THEME_IDS,
+  ...CAMPUS_THEME_IDS,
+  ...SEASONAL_THEME_IDS,
+];
+
+export type ThemeNameFromTokens =
+  | (typeof LEGACY_THEME_IDS)[number]
+  | DivisionThemeName
+  | (typeof LITURGICAL_THEME_IDS)[number]
+  | (typeof CAMPUS_THEME_IDS)[number]
+  | (typeof SEASONAL_THEME_IDS)[number];
+
+export type ThemeCategory = 'legacy' | 'division' | 'liturgical' | 'campus' | 'seasonal';
 
 export interface ThemePresetMeta {
   id: ThemeNameFromTokens;
@@ -44,13 +67,23 @@ export interface ThemePresetMeta {
   recommendedWallpaperId?: string;
 }
 
-const legacyTheme = (
-  id: (typeof LEGACY_THEME_IDS)[number],
-  label: string,
-  description: string,
-  overrides: Partial<Record<string, string>>,
+interface CreatePresetInput {
+  id: ThemeNameFromTokens;
+  label: string;
+  description: string;
+  category: ThemeCategory;
+  overrides: Partial<Record<string, string>>;
+  recommendedWallpaperId?: string;
+}
+
+const createPreset = ({
+  id,
+  label,
+  description,
+  category,
+  overrides,
   recommendedWallpaperId = DEFAULT_WALLPAPER_ID,
-): ThemePresetMeta => {
+}: CreatePresetInput): ThemePresetMeta => {
   const tokens = composeThemeVariables(overrides);
   const primary = tokens['--primary'] ?? '25 100% 55%';
   const accentHue = Number.parseInt(primary.split(' ')[0] ?? '25', 10);
@@ -58,12 +91,76 @@ const legacyTheme = (
     id,
     label,
     description,
-    category: 'legacy',
+    category,
     accentHue,
     tokens,
     recommendedWallpaperId,
   };
 };
+
+const legacyTheme = (
+  id: (typeof LEGACY_THEME_IDS)[number],
+  label: string,
+  description: string,
+  overrides: Partial<Record<string, string>>,
+  recommendedWallpaperId = DEFAULT_WALLPAPER_ID,
+) =>
+  createPreset({
+    id,
+    label,
+    description,
+    category: 'legacy',
+    overrides,
+    recommendedWallpaperId,
+  });
+
+const liturgicalTheme = (
+  id: (typeof LITURGICAL_THEME_IDS)[number],
+  label: string,
+  description: string,
+  overrides: Partial<Record<string, string>>,
+  recommendedWallpaperId: string,
+) =>
+  createPreset({
+    id,
+    label,
+    description,
+    category: 'liturgical',
+    overrides,
+    recommendedWallpaperId,
+  });
+
+const campusTheme = (
+  id: (typeof CAMPUS_THEME_IDS)[number],
+  label: string,
+  description: string,
+  overrides: Partial<Record<string, string>>,
+  recommendedWallpaperId: string,
+) =>
+  createPreset({
+    id,
+    label,
+    description,
+    category: 'campus',
+    overrides,
+    recommendedWallpaperId,
+  });
+
+const seasonalTheme = (
+  id: (typeof SEASONAL_THEME_IDS)[number],
+  label: string,
+  description: string,
+  overrides: Partial<Record<string, string>>,
+  recommendedWallpaperId: string,
+) =>
+  createPreset({
+    id,
+    label,
+    description,
+    category: 'seasonal',
+    overrides,
+    recommendedWallpaperId,
+  });
 
 const LEGACY_THEME_PRESETS: ThemePresetMeta[] = [
   legacyTheme('default', 'Baseline Command', 'Balanced SHD palette for mission control surfaces.', {}),
@@ -122,9 +219,191 @@ const toDivisionPreset = (theme: DivisionThemeDefinition): ThemePresetMeta => {
 
 const DIVISION_THEME_PRESETS: ThemePresetMeta[] = Object.values(DIVISION_THEMES).map(toDivisionPreset);
 
+const LITURGICAL_THEME_PRESETS: ThemePresetMeta[] = [
+  liturgicalTheme(
+    'advent-vigil',
+    'Advent Vigil',
+    'Candlelight violets with brass highlights for Advent services.',
+    {
+      '--primary': '276 78% 58%',
+      '--accent': '45 92% 64%',
+      '--background': '250 58% 7%',
+      '--card': '250 52% 12%',
+      '--foreground': '44 72% 92%',
+      '--ring': '45 92% 64%',
+      '--hud-grid-opacity': '0.2',
+    },
+    'division-advent-lights',
+  ),
+  liturgicalTheme(
+    'lent-refocus',
+    'Lent Refocus',
+    'Muted plum gradients supporting reflective planning.',
+    {
+      '--primary': '286 52% 52%',
+      '--accent': '325 68% 55%',
+      '--background': '280 44% 8%',
+      '--muted': '280 32% 16%',
+      '--foreground': '42 34% 92%',
+      '--ring': '325 68% 55%',
+      '--hud-grid-opacity': '0.24',
+    },
+    'division-lent-embers',
+  ),
+  liturgicalTheme(
+    'easter-radiance',
+    'Easter Radiance',
+    'Brilliant gold and teal bloom for resurrection celebrations.',
+    {
+      '--primary': '48 100% 65%',
+      '--accent': '154 70% 52%',
+      '--background': '212 52% 12%',
+      '--card': '210 46% 18%',
+      '--foreground': '210 40% 98%',
+      '--ring': '154 70% 58%',
+    },
+    'division-easter-bloom',
+  ),
+  liturgicalTheme(
+    'pentecost-flare',
+    'Pentecost Flare',
+    'Fiery oranges with wind-swept amber for Pentecost missions.',
+    {
+      '--primary': '12 96% 58%',
+      '--accent': '38 100% 58%',
+      '--background': '225 60% 8%',
+      '--card': '225 54% 12%',
+      '--foreground': '28 68% 94%',
+      '--ring': '12 96% 62%',
+    },
+    'division-pentecost-flare',
+  ),
+];
+
+const CAMPUS_THEME_PRESETS: ThemePresetMeta[] = [
+  campusTheme(
+    'chapel-stonework',
+    'Chapel Stonework',
+    'Warm sandstone with teal accents for historic sanctuaries.',
+    {
+      '--primary': '28 65% 52%',
+      '--accent': '182 42% 52%',
+      '--background': '220 24% 10%',
+      '--card': '220 20% 16%',
+      '--foreground': '42 32% 94%',
+      '--ring': '28 65% 56%',
+    },
+    'division-campus-heritage',
+  ),
+  campusTheme(
+    'family-life',
+    'Family Life Center',
+    'Inviting corals and soft amber suited for community halls.',
+    {
+      '--primary': '12 78% 60%',
+      '--accent': '48 92% 60%',
+      '--background': '216 30% 12%',
+      '--card': '214 24% 18%',
+      '--foreground': '35 38% 95%',
+      '--ring': '12 78% 62%',
+    },
+    'division-community-hub',
+  ),
+  campusTheme(
+    'youth-center',
+    'Youth Center Ramp',
+    'Electric cyan and magenta energy for student nights.',
+    {
+      '--primary': '194 92% 58%',
+      '--accent': '312 84% 60%',
+      '--background': '222 52% 9%',
+      '--card': '222 48% 14%',
+      '--foreground': '210 24% 96%',
+      '--ring': '312 84% 60%',
+    },
+    'division-youth-dynamo',
+  ),
+  campusTheme(
+    'parking-strategy',
+    'Parking Strategy',
+    'High-contrast amber and cobalt for lot layout operations.',
+    {
+      '--primary': '42 96% 58%',
+      '--accent': '207 92% 54%',
+      '--background': '225 60% 9%',
+      '--card': '224 54% 14%',
+      '--foreground': '42 32% 94%',
+      '--ring': '207 92% 58%',
+    },
+    'division-parking-grid',
+  ),
+];
+
+const SEASONAL_THEME_PRESETS: ThemePresetMeta[] = [
+  seasonalTheme(
+    'summer-outreach',
+    'Summer Outreach',
+    'Citrus gradients for VBS and outreach blitz operations.',
+    {
+      '--primary': '38 100% 62%',
+      '--accent': '164 82% 52%',
+      '--background': '212 52% 12%',
+      '--card': '212 48% 18%',
+      '--foreground': '38 38% 96%',
+      '--ring': '164 82% 56%',
+    },
+    'division-summer-outreach',
+  ),
+  seasonalTheme(
+    'autumn-renewal',
+    'Autumn Renewal',
+    'Harvest ambers and forest greens for fall resurfacing.',
+    {
+      '--primary': '30 90% 50%',
+      '--accent': '145 52% 44%',
+      '--background': '216 36% 10%',
+      '--card': '214 32% 16%',
+      '--foreground': '30 42% 92%',
+      '--ring': '30 90% 54%',
+    },
+    'division-autumn-harvest',
+  ),
+  seasonalTheme(
+    'winter-brilliance',
+    'Winter Brilliance',
+    'Icy blues with frosted whites for cold-weather missions.',
+    {
+      '--primary': '204 88% 68%',
+      '--accent': '228 76% 70%',
+      '--background': '222 40% 12%',
+      '--card': '222 30% 18%',
+      '--foreground': '210 38% 98%',
+      '--ring': '204 88% 68%',
+    },
+    'division-winter-brilliance',
+  ),
+  seasonalTheme(
+    'storm-response',
+    'Storm Response',
+    'Emergency cyan and amber for rapid repair deployments.',
+    {
+      '--primary': '196 100% 56%',
+      '--accent': '32 100% 56%',
+      '--background': '215 66% 6%',
+      '--card': '215 58% 12%',
+      '--foreground': '204 28% 94%',
+      '--ring': '196 100% 60%',
+    },
+    'division-storm-response',
+  ),
+];
+
 export const THEME_CATALOG: ThemePresetMeta[] = [
   ...LEGACY_THEME_PRESETS,
   ...DIVISION_THEME_PRESETS,
+  ...LITURGICAL_THEME_PRESETS,
+  ...CAMPUS_THEME_PRESETS,
+  ...SEASONAL_THEME_PRESETS,
 ];
 
 export const THEME_PRESETS: Record<ThemeNameFromTokens, ThemePresetMeta> = THEME_CATALOG.reduce(
@@ -278,3 +557,49 @@ export const getThemePreset = (id: ThemeNameFromTokens): ThemePresetMeta =>
 
 export const listThemePresets = (category?: ThemeCategory): ThemePresetMeta[] =>
   category ? THEME_CATALOG.filter((preset) => preset.category === category) : THEME_CATALOG.slice();
+
+const THEME_CATEGORY_METADATA: Record<ThemeCategory, { label: string; description: string; order: number }> = {
+  division: {
+    label: 'Division Protocol',
+    description: 'Immersive SHD-grade palettes with tactical contrast and mission-ready readability.',
+    order: 0,
+  },
+  legacy: {
+    label: 'Legacy Palettes',
+    description: 'Classic contractor-friendly colorways crews already know and love.',
+    order: 1,
+  },
+  liturgical: {
+    label: 'Liturgical Seasons',
+    description: 'Sacred-season palettes tuned for Advent, Lent, Easter, and Pentecost programming.',
+    order: 2,
+  },
+  campus: {
+    label: 'Campus Contexts',
+    description: 'Layouts tailored to sanctuary heritage, family life centers, youth spaces, and parking ops.',
+    order: 3,
+  },
+  seasonal: {
+    label: 'Seasonal Operations',
+    description: 'Weather-aware themes aligned with outreach pushes, harvest prep, winterization, and storm response.',
+    order: 4,
+  },
+};
+
+export interface ThemePresetGroup {
+  category: ThemeCategory;
+  label: string;
+  description: string;
+  presets: ThemePresetMeta[];
+}
+
+export const groupThemePresets = (): ThemePresetGroup[] =>
+  (Object.keys(THEME_CATEGORY_METADATA) as ThemeCategory[])
+    .sort((a, b) => THEME_CATEGORY_METADATA[a].order - THEME_CATEGORY_METADATA[b].order)
+    .map((category) => ({
+      category,
+      label: THEME_CATEGORY_METADATA[category].label,
+      description: THEME_CATEGORY_METADATA[category].description,
+      presets: listThemePresets(category),
+    }))
+    .filter((group) => group.presets.length > 0);
