@@ -1,10 +1,16 @@
-import { useRef, useState } from 'react';
 import { MonitorCog, RefreshCw, Trash2, UploadCloud } from 'lucide-react';
+import { useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import type { CanvasTone } from '@/modules/layout/CanvasPanel';
 import type { WallpaperAsset } from '@/modules/layout/wallpaperLibrary';
@@ -95,7 +101,10 @@ export function ThemeWallpaperManager({
       </div>
 
       <div className="space-y-3">
-        <Label htmlFor="theme-wallpaper-upload" className="text-xs uppercase tracking-[0.3em] text-slate-300/60">
+        <Label
+          htmlFor="theme-wallpaper-upload"
+          className="text-xs uppercase tracking-[0.3em] text-slate-300/60"
+        >
           Upload custom wallpaper
         </Label>
         <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
@@ -154,14 +163,22 @@ export function ThemeWallpaperManager({
                     key={asset.id}
                     className={cn(
                       'flex items-center justify-between gap-3 rounded-lg border p-3 text-xs shadow-sm',
-                      active ? 'border-orange-400/50 bg-orange-400/10' : 'border-white/10 bg-slate-900/60',
+                      active
+                        ? 'border-orange-400/50 bg-orange-400/10'
+                        : 'border-white/10 bg-slate-900/60',
                     )}
                   >
-                    <button type="button" onClick={() => onSelect(asset)} className="flex-1 text-left">
+                    <button
+                      type="button"
+                      onClick={() => onSelect(asset)}
+                      className="flex-1 text-left"
+                    >
                       <span className="block font-semibold uppercase tracking-[0.3em] text-slate-100/80">
                         {asset.name}
                       </span>
-                      <span className="block text-[0.65rem] text-slate-300/60">{asset.description}</span>
+                      <span className="block text-[0.65rem] text-slate-300/60">
+                        {asset.description}
+                      </span>
                     </button>
                     <Button
                       type="button"
@@ -220,4 +237,3 @@ export function ThemeWallpaperManager({
     </div>
   );
 }
-

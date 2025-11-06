@@ -1,11 +1,11 @@
 import { ShieldAlert } from 'lucide-react';
 
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   isSupabaseConfigured,
   supabaseConfigurationError,
   SUPABASE_CONFIGURATION_MESSAGE,
 } from '@/integrations/supabase/client';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export function SupabaseConfigBanner() {
   if (isSupabaseConfigured) {
@@ -28,9 +28,9 @@ export function SupabaseConfigBanner() {
         <div className="mt-2 space-y-2 text-left text-sm">
           <p>{message}</p>
           <p>
-            Copy <code>.env.example</code> to <code>.env</code>, provide the Supabase URL and browser key
-            tied to your Virginia and North Carolina deployments, then refresh the running dev server
-            so the new environment variables load.
+            Copy <code>.env.example</code> to <code>.env</code>, provide the Supabase URL and
+            browser key tied to your Virginia and North Carolina deployments, then refresh the
+            running dev server so the new environment variables load.
           </p>
           <p className="font-medium">
             Required keys:&nbsp;

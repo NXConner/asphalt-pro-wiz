@@ -1,8 +1,12 @@
-import { useCallback, useMemo, useState } from 'react';
 import { nanoid } from 'nanoid';
+import { useCallback, useMemo, useState } from 'react';
 
-import { CANVAS_WALLPAPERS, DEFAULT_WALLPAPER, type CanvasWallpaper } from '@/modules/layout/wallpapers';
 import type { CanvasTone } from '@/modules/layout/CanvasPanel';
+import {
+  CANVAS_WALLPAPERS,
+  DEFAULT_WALLPAPER,
+  type CanvasWallpaper,
+} from '@/modules/layout/wallpapers';
 
 export type WallpaperSource = 'builtin' | 'custom';
 
@@ -158,4 +162,3 @@ export const useWallpaperLibrary = (): WallpaperLibraryHook => {
     getById: getWallpaperAssetById,
   };
 };
-

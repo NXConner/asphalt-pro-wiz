@@ -18,16 +18,16 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import type { CanvasWallpaper } from './wallpapers';
 
-import { TelemetrySignal } from '@/components/telemetry';
 import { RealtimeNotifications } from '@/components/RealtimeNotifications';
+import { TelemetrySignal } from '@/components/telemetry';
 import { ThemeCommandCenter } from '@/components/ThemeCommandCenter';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserPresence } from '@/components/UserPresence';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { useIsAdmin } from '@/hooks/useUserRole';
 import { useJobTelemetryStats } from '@/hooks/useTelemetry';
+import { useIsAdmin } from '@/hooks/useUserRole';
 import { isEnabled } from '@/lib/flags';
 import { cn } from '@/lib/utils';
 
@@ -110,7 +110,14 @@ const STATUS_COLOR_LOOKUP: Record<string, string> = {
   on_hold: '#facc15',
 };
 
-const STATUS_ORDER: readonly string[] = ['in_progress', 'scheduled', 'pending', 'completed', 'on_hold', 'cancelled'] as const;
+const STATUS_ORDER: readonly string[] = [
+  'in_progress',
+  'scheduled',
+  'pending',
+  'completed',
+  'on_hold',
+  'cancelled',
+] as const;
 const STATUS_DISTRIBUTION_SKELETON_ROWS = [0, 1, 2, 3] as const;
 
 function prettifyStatus(value: string): string {
@@ -188,72 +195,76 @@ export const OperationsHeader = memo(function OperationsHeader({
           ? `${totalTrackedJobs.toLocaleString()} total jobs`
           : 'Awaiting telemetry';
 
-    return (
-      <header className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex w-full flex-col gap-6">
-          <div className="space-y-5">
-            <div className="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.5em] text-slate-200/70">
-              <Sparkles className="h-4 w-4 text-orange-400" />
-              <span>Operations Canvas : Tactical Command</span>
-            </div>
-            <div className="flex flex-col gap-3">
-              <h1 className="font-display text-4xl uppercase tracking-[0.28em] text-slate-50 sm:text-5xl">
-                {summary.jobName ? summary.jobName : 'New Pavement Mission'}
-              </h1>
-              <p className="max-w-2xl font-mono text-xs uppercase tracking-[0.45em] text-slate-200/70 sm:text-sm">
-                {wallpaper.description}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <StatPill icon={<Gauge className="h-4 w-4" />} label="Total Scope" value={formatArea(summary.totalArea)} />
-              <StatPill
-                icon={<Droplets className="h-4 w-4" />}
-                label="Projected Quote"
-                value={formatCurrency(summary.totalCost)}
-              />
-              <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-slate-50/80">
-                {wallpaper.name}
-              </span>
-            </div>
-            <TelemetrySignal
-              label="Job Telemetry"
-              isConnected={telemetryConnected}
-              lastEventAt={telemetryLastEventAt}
-              isRefreshing={telemetryFetching}
-              onRefresh={() => void refetchTelemetryStats()}
-              className="max-w-full text-[0.6rem]"
-            />
+  return (
+    <header className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex w-full flex-col gap-6">
+        <div className="space-y-5">
+          <div className="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.5em] text-slate-200/70">
+            <Sparkles className="h-4 w-4 text-orange-400" />
+            <span>Operations Canvas : Tactical Command</span>
           </div>
-
-          <div className="grid gap-3 xl:grid-cols-[repeat(3,minmax(0,1fr))]">
+          <div className="flex flex-col gap-3">
+            <h1 className="font-display text-4xl uppercase tracking-[0.28em] text-slate-50 sm:text-5xl">
+              {summary.jobName ? summary.jobName : 'New Pavement Mission'}
+            </h1>
+            <p className="max-w-2xl font-mono text-xs uppercase tracking-[0.45em] text-slate-200/70 sm:text-sm">
+              {wallpaper.description}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
             <StatPill
-              className="min-w-[220px] flex-1"
-              icon={<Activity className="h-4 w-4 text-emerald-300" />}
-              label="Active Jobs"
-              value={activeJobsDisplay}
-              description={activeJobsDescription}
-              isLoading={telemetryLoading}
+              icon={<Gauge className="h-4 w-4" />}
+              label="Total Scope"
+              value={formatArea(summary.totalArea)}
             />
             <StatPill
-              className="min-w-[220px] flex-1"
-              icon={<DollarSign className="h-4 w-4 text-amber-300" />}
-              label="Total Quote Value"
-              value={telemetryQuoteDisplay}
-              description={telemetryQuoteDescription}
-              isLoading={telemetryLoading}
+              icon={<Droplets className="h-4 w-4" />}
+              label="Projected Quote"
+              value={formatCurrency(summary.totalCost)}
             />
-            <StatusDistributionCard
-              className="min-w-[260px] flex-1"
-              distribution={distribution}
-              isLoading={telemetryLoading}
-              hasError={telemetryUnavailable}
-              mappedJobs={mappedJobs}
-              totalJobs={totalTrackedJobs}
-              lastEventAt={telemetryLastEventAt}
-              isRealtimeConnected={telemetryConnected}
-            />
+            <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-slate-50/80">
+              {wallpaper.name}
+            </span>
           </div>
+          <TelemetrySignal
+            label="Job Telemetry"
+            isConnected={telemetryConnected}
+            lastEventAt={telemetryLastEventAt}
+            isRefreshing={telemetryFetching}
+            onRefresh={() => void refetchTelemetryStats()}
+            className="max-w-full text-[0.6rem]"
+          />
         </div>
+
+        <div className="grid gap-3 xl:grid-cols-[repeat(3,minmax(0,1fr))]">
+          <StatPill
+            className="min-w-[220px] flex-1"
+            icon={<Activity className="h-4 w-4 text-emerald-300" />}
+            label="Active Jobs"
+            value={activeJobsDisplay}
+            description={activeJobsDescription}
+            isLoading={telemetryLoading}
+          />
+          <StatPill
+            className="min-w-[220px] flex-1"
+            icon={<DollarSign className="h-4 w-4 text-amber-300" />}
+            label="Total Quote Value"
+            value={telemetryQuoteDisplay}
+            description={telemetryQuoteDescription}
+            isLoading={telemetryLoading}
+          />
+          <StatusDistributionCard
+            className="min-w-[260px] flex-1"
+            distribution={distribution}
+            isLoading={telemetryLoading}
+            hasError={telemetryUnavailable}
+            mappedJobs={mappedJobs}
+            totalJobs={totalTrackedJobs}
+            lastEventAt={telemetryLastEventAt}
+            isRealtimeConnected={telemetryConnected}
+          />
+        </div>
+      </div>
 
       <div className="flex flex-wrap items-center justify-end gap-3">
         {commandCenterEnabled ? (
@@ -292,27 +303,27 @@ export const OperationsHeader = memo(function OperationsHeader({
           <SwitchCamera className="mr-2 h-4 w-4" />
           Cycle Atmosphere
         </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            size="lg"
-            className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
-            onClick={handleAuthAction}
-            title={isAuthenticated ? user?.email || undefined : 'Sign in'}
-          >
-            {isAuthenticated ? (
-              <>
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign Out
-              </>
-            ) : (
-              <>
-                <LogIn className="mr-2 h-4 w-4" />
-                Sign In
-              </>
-            )}
-          </Button>
-          <ThemeCommandCenter />
+        <Button
+          type="button"
+          variant="secondary"
+          size="lg"
+          className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
+          onClick={handleAuthAction}
+          title={isAuthenticated ? user?.email || undefined : 'Sign in'}
+        >
+          {isAuthenticated ? (
+            <>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </>
+          ) : (
+            <>
+              <LogIn className="mr-2 h-4 w-4" />
+              Sign In
+            </>
+          )}
+        </Button>
+        <ThemeCommandCenter />
         <UserPresence />
         <RealtimeNotifications />
         <ThemeToggle />
@@ -330,7 +341,14 @@ interface StatPillProps {
   className?: string;
 }
 
-function StatPill({ icon, label, value, description, isLoading = false, className }: StatPillProps) {
+function StatPill({
+  icon,
+  label,
+  value,
+  description,
+  isLoading = false,
+  className,
+}: StatPillProps) {
   return (
     <span
       className={cn(
@@ -339,19 +357,26 @@ function StatPill({ icon, label, value, description, isLoading = false, classNam
         className,
       )}
     >
-      <span className="absolute inset-0 bg-[linear-gradient(130deg,rgba(255,255,255,0.12)_10%,transparent_60%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" aria-hidden />
+      <span
+        className="absolute inset-0 bg-[linear-gradient(130deg,rgba(255,255,255,0.12)_10%,transparent_60%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        aria-hidden
+      />
       <span className="relative flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-slate-100">
         {icon}
       </span>
       <span className="relative flex flex-col leading-tight">
-        <span className="text-[0.65rem] uppercase tracking-[0.42em] text-slate-200/70">{label}</span>
+        <span className="text-[0.65rem] uppercase tracking-[0.42em] text-slate-200/70">
+          {label}
+        </span>
         {isLoading ? (
           <Skeleton className="mt-1 h-4 w-16 bg-white/20" />
         ) : (
           <span className="font-mono text-sm text-slate-50">{value}</span>
         )}
         {description ? (
-          <span className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-slate-200/60">{description}</span>
+          <span className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-slate-200/60">
+            {description}
+          </span>
         ) : null}
       </span>
     </span>
@@ -453,7 +478,9 @@ function StatusDistributionCard({
   return (
     <div className={baseClassName}>
       <div className="flex items-center justify-between">
-        <span className="text-[0.65rem] uppercase tracking-[0.42em] text-slate-200/70">Status Distribution</span>
+        <span className="text-[0.65rem] uppercase tracking-[0.42em] text-slate-200/70">
+          Status Distribution
+        </span>
         <span className="flex items-center gap-1 text-[0.6rem] uppercase tracking-[0.32em] text-slate-200/50">
           <Clock3 className="h-3.5 w-3.5" />
           {signalDescriptor}
@@ -490,11 +517,19 @@ function StatusDistributionCard({
                 <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
                   <div
                     className="absolute inset-y-0 left-0 rounded-full"
-                    style={{ width: `${widthPercentage}%`, backgroundColor: color, boxShadow: `0 0 12px ${color}55` }}
+                    style={{
+                      width: `${widthPercentage}%`,
+                      backgroundColor: color,
+                      boxShadow: `0 0 12px ${color}55`,
+                    }}
                   />
                 </div>
-                <span className="font-mono text-sm text-slate-50">{entry.count.toLocaleString()}</span>
-                <span className="font-mono text-xs text-slate-200/70">{entry.percentage.toFixed(0)}%</span>
+                <span className="font-mono text-sm text-slate-50">
+                  {entry.count.toLocaleString()}
+                </span>
+                <span className="font-mono text-xs text-slate-200/70">
+                  {entry.percentage.toFixed(0)}%
+                </span>
               </div>
             </div>
           );

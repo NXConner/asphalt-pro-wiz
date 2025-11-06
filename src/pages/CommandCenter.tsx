@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
-import { CanvasGrid, ParticleBackground, ProgressRing, StatusBar } from '@/components/hud';
 import {
   DivisionCard,
   DivisionCardBadge,
@@ -10,6 +9,7 @@ import {
   DivisionCardList,
   DivisionCardMetric,
 } from '@/components/division';
+import { CanvasGrid, ParticleBackground, ProgressRing, StatusBar } from '@/components/hud';
 import { TelemetrySignal } from '@/components/telemetry';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,7 +49,8 @@ const formatStatusLabel = (status: string) =>
 
 export default function CommandCenter() {
   const flagEnabled = isEnabled('commandCenter');
-  const { status, metrics, errorMessage, isRealtimeConnected, refetch, isFetching } = useCommandCenterData();
+  const { status, metrics, errorMessage, isRealtimeConnected, refetch, isFetching } =
+    useCommandCenterData();
   const latestMetricsIso = useMemo(() => {
     if (!metrics) {
       return null;
@@ -178,7 +179,12 @@ export default function CommandCenter() {
     headline: job.name ?? job.id,
     subline: `${formatStatusLabel(job.status)} • ${currencyFormatter.format(job.quoteValue)}`,
     meta: dateTimeFormatter.format(Date.parse(job.updatedAt ?? job.createdAt)),
-    tone: job.status === 'active' ? ('positive' as const) : job.status === 'lost' ? ('critical' as const) : ('neutral' as const),
+    tone:
+      job.status === 'active'
+        ? ('positive' as const)
+        : job.status === 'lost'
+          ? ('critical' as const)
+          : ('neutral' as const),
   }));
   const assignmentItems = metrics.upcomingAssignments.map((assignment) => ({
     id: assignment.id,
@@ -197,27 +203,27 @@ export default function CommandCenter() {
       />
       <CanvasGrid density={120} className="opacity-10" />
 
-        <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-12 sm:px-8 lg:px-12">
-          <header className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.45em] text-slate-300/70">
-              Executive Command Center
-            </p>
-            <h1 className="font-display text-4xl uppercase tracking-[0.22em] text-slate-50">
-              Operations Pulse
-            </h1>
-            <p className="max-w-3xl text-sm text-slate-200/75">
-              Mission telemetry surfaced directly from Supabase. Use this dashboard to triage risk,
-              align crews, and spotlight revenue opportunities across church campuses.
-            </p>
-            <TelemetrySignal
-              label="Command Center"
-              isConnected={isRealtimeConnected}
-              lastEventAt={latestMetricsIso}
-              isRefreshing={isFetching}
-              onRefresh={() => void refetch()}
-              className="max-w-sm text-[0.6rem]"
-            />
-          </header>
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-12 sm:px-8 lg:px-12">
+        <header className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.45em] text-slate-300/70">
+            Executive Command Center
+          </p>
+          <h1 className="font-display text-4xl uppercase tracking-[0.22em] text-slate-50">
+            Operations Pulse
+          </h1>
+          <p className="max-w-3xl text-sm text-slate-200/75">
+            Mission telemetry surfaced directly from Supabase. Use this dashboard to triage risk,
+            align crews, and spotlight revenue opportunities across church campuses.
+          </p>
+          <TelemetrySignal
+            label="Command Center"
+            isConnected={isRealtimeConnected}
+            lastEventAt={latestMetricsIso}
+            isRefreshing={isFetching}
+            onRefresh={() => void refetch()}
+            className="max-w-sm text-[0.6rem]"
+          />
+        </header>
 
         <section className="grid gap-4 lg:grid-cols-3">
           <DivisionCard variant="command">

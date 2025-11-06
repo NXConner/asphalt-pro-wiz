@@ -1,9 +1,15 @@
 import { Layers3, Sparkles } from 'lucide-react';
 
-import { ThemeSwatch } from '@/components/ui/theme-swatch';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ThemeSwatch } from '@/components/ui/theme-swatch';
 import type { ThemePresetGroup } from '@/lib/designSystem';
 import type { ThemeMode, ThemeName } from '@/lib/theme';
 import { cn } from '@/lib/utils';
@@ -48,10 +54,7 @@ export function ThemeMissionPresets({
             Visual Mode
           </Label>
           <Select value={mode} onValueChange={(value: ThemeMode) => onModeChange(value)}>
-            <SelectTrigger
-              id="theme-mode-select"
-              className="w-36 border-white/20 bg-slate-900/70"
-            >
+            <SelectTrigger id="theme-mode-select" className="w-36 border-white/20 bg-slate-900/70">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -65,16 +68,16 @@ export function ThemeMissionPresets({
         </div>
       </header>
 
-        <div className="grid gap-4 xl:grid-cols-2">
-          {groups.map((group) => (
-            <ThemeGroup
-              key={group.category}
-              group={group}
-              activeTheme={activeTheme}
-              onSelect={onSelectPreset}
-            />
-          ))}
-        </div>
+      <div className="grid gap-4 xl:grid-cols-2">
+        {groups.map((group) => (
+          <ThemeGroup
+            key={group.category}
+            group={group}
+            activeTheme={activeTheme}
+            onSelect={onSelectPreset}
+          />
+        ))}
+      </div>
     </section>
   );
 }
@@ -91,7 +94,10 @@ function ThemeGroup({ group, activeTheme, onSelect }: ThemeGroupProps) {
     <div className="space-y-3 rounded-xl border border-white/10 bg-slate-950/70 p-4">
       <div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="border-white/10 bg-white/5 text-[0.55rem] uppercase tracking-[0.3em] text-slate-200/70">
+          <Badge
+            variant="outline"
+            className="border-white/10 bg-white/5 text-[0.55rem] uppercase tracking-[0.3em] text-slate-200/70"
+          >
             <Layers3 className="mr-1 h-3 w-3" aria-hidden />
             {category.toUpperCase()}
           </Badge>
@@ -109,7 +115,8 @@ function ThemeGroup({ group, activeTheme, onSelect }: ThemeGroupProps) {
             active={preset.id === activeTheme}
             onSelect={() => onSelect(preset.id)}
             className={cn('border-white/10 bg-slate-900/50', {
-              'border-orange-400/70 shadow-[0_18px_40px_rgba(255,128,0,0.35)]': preset.id === activeTheme,
+              'border-orange-400/70 shadow-[0_18px_40px_rgba(255,128,0,0.35)]':
+                preset.id === activeTheme,
             })}
           />
         ))}
@@ -117,4 +124,3 @@ function ThemeGroup({ group, activeTheme, onSelect }: ThemeGroupProps) {
     </div>
   );
 }
-
