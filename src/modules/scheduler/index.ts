@@ -1,2 +1,3 @@
 export { MissionSchedulerPanel } from './MissionSchedulerPanel';
-export { MissionSchedulerProvider, useMissionSchedulerContext } from './MissionSchedulerContext';
+export { MissionSchedulerProvider } from './MissionSchedulerContext';
+export { useMissionSchedulerContext } from './useMissionSchedulerContext';

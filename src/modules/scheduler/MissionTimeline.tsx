@@ -13,7 +13,7 @@ import { useMemo } from 'react';
 import type { Layout } from 'react-grid-layout';
 import GridLayout, { WidthProvider } from 'react-grid-layout';
 
-import { useMissionSchedulerContext } from './MissionSchedulerContext';
+import { useMissionSchedulerContext } from './useMissionSchedulerContext';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

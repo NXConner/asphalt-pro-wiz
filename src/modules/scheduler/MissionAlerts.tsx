@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 
-import { useMissionSchedulerContext } from './MissionSchedulerContext';
+import { useMissionSchedulerContext } from './useMissionSchedulerContext';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

@@ -94,25 +94,6 @@ export function CustomizableCard({
     onStyleChange?.({ ...style, [key]: value });
   };
 
-  const computeBackground = () => {
-    const type = style.backgroundType || 'solid';
-    if (type === 'gradient') {
-      const from = style.gradientFrom || 'hsl(var(--card))';
-      const to = style.gradientTo || 'hsl(var(--secondary) / 0.4)';
-      const angle = style.gradientAngle ?? 135;
-      return { backgroundImage: `linear-gradient(${angle}deg, ${from}, ${to})` } as CSSProperties;
-    }
-    if (type === 'image' && style.backgroundImage) {
-      return {
-        backgroundImage: `url('${style.backgroundImage}')`,
-        backgroundSize: style.backgroundSize || 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      } as CSSProperties;
-    }
-    return { backgroundColor: style.backgroundColor || 'hsl(var(--card))' } as CSSProperties;
-  };
-
   const boxShadow = (() => {
     const level = style.shadowLevel ?? 0;
     switch (level) {
@@ -147,18 +128,32 @@ export function CustomizableCard({
   })();
 
   const accentColor = style.accentColor ?? 'rgba(255,145,0,0.82)';
-  const computedBackground = useMemo(
-    () => computeBackground(),
-    [
-      style.backgroundType,
-      style.backgroundColor,
-      style.gradientAngle,
-      style.gradientFrom,
-      style.gradientTo,
-      style.backgroundImage,
-      style.backgroundSize,
-    ],
-  );
+  const computedBackground = useMemo(() => {
+    const type = style.backgroundType || 'solid';
+    if (type === 'gradient') {
+      const from = style.gradientFrom || 'hsl(var(--card))';
+      const to = style.gradientTo || 'hsl(var(--secondary) / 0.4)';
+      const angle = style.gradientAngle ?? 135;
+      return { backgroundImage: `linear-gradient(${angle}deg, ${from}, ${to})` } as CSSProperties;
+    }
+    if (type === 'image' && style.backgroundImage) {
+      return {
+        backgroundImage: `url('${style.backgroundImage}')`,
+        backgroundSize: style.backgroundSize || 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      } as CSSProperties;
+    }
+    return { backgroundColor: style.backgroundColor || 'hsl(var(--card))' } as CSSProperties;
+  }, [
+    style.backgroundType,
+    style.gradientFrom,
+    style.gradientTo,
+    style.gradientAngle,
+    style.backgroundImage,
+    style.backgroundSize,
+    style.backgroundColor,
+  ]);
   const backgroundTint =
     'backgroundColor' in computedBackground && computedBackground.backgroundColor
       ? computedBackground.backgroundColor
