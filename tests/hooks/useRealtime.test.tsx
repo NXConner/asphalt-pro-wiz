@@ -5,17 +5,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { useRealtime } from '@/hooks/useRealtime';
 
-const mockChannel = {
-  on: vi.fn().mockReturnThis(),
-  subscribe: vi.fn(),
-  unsubscribe: vi.fn(),
-};
-
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    channel: vi.fn(() => mockChannel),
-  },
-}));
+vi.mock('@/integrations/supabase/client', async () => {
+  const { createSupabaseModuleMock } = await import('../utils/supabaseMock');
+  return createSupabaseModuleMock();
+});
 
 const { supabase } = await import('@/integrations/supabase/client');
 
@@ -34,7 +27,8 @@ describe('useRealtime', () => {
     renderHook(() => useRealtime({ table: 'test_table' }), { wrapper });
 
     expect(supabase.channel).toHaveBeenCalledWith('test_table_realtime');
-    expect(mockChannel.subscribe).toHaveBeenCalled();
+    const channelInstance = supabase.channel.mock.results.at(-1)?.value;
+    expect(channelInstance?.subscribe).toHaveBeenCalled();
   });
 
   it('should unsubscribe on unmount', () => {
@@ -42,7 +36,8 @@ describe('useRealtime', () => {
 
     unmount();
 
-    expect(mockChannel.unsubscribe).toHaveBeenCalled();
+    const channelInstance = supabase.channel.mock.results.at(-1)?.value;
+    expect(channelInstance?.unsubscribe).toHaveBeenCalled();
   });
 
   it('should handle custom filters', () => {
@@ -55,12 +50,14 @@ describe('useRealtime', () => {
       { wrapper },
     );
 
-    expect(mockChannel.on).toHaveBeenCalledWith(
+    const channelInstance = supabase.channel.mock.results.at(-1)?.value;
+
+    expect(channelInstance?.on).toHaveBeenCalledWith(
       'postgres_changes',
       expect.objectContaining({
         filter: 'user_id=eq.123',
       }),
       expect.any(Function),
     );
-});
+  });
 });

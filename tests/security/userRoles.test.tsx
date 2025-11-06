@@ -14,24 +14,10 @@ const mockUser = {
   created_at: new Date().toISOString(),
 };
 
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    auth: {
-      getSession: vi.fn(),
-      onAuthStateChange: vi.fn(() => ({
-        data: { subscription: { unsubscribe: vi.fn() } },
-      })),
-    },
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          data: [],
-          error: null,
-        })),
-      })),
-    })),
-  },
-}));
+vi.mock('@/integrations/supabase/client', async () => {
+  const { createSupabaseModuleMock } = await import('../utils/supabaseMock');
+  return createSupabaseModuleMock();
+});
 
 const { supabase } = await import('@/integrations/supabase/client');
 

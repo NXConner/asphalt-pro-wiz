@@ -16,16 +16,10 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    auth: {
-      getSession: vi.fn(),
-      onAuthStateChange: vi.fn(() => ({
-        data: { subscription: { unsubscribe: vi.fn() } },
-      })),
-    },
-  },
-}));
+vi.mock('@/integrations/supabase/client', async () => {
+  const { createSupabaseModuleMock } = await import('../utils/supabaseMock');
+  return createSupabaseModuleMock();
+});
 
 const { supabase } = await import('@/integrations/supabase/client');
 
