@@ -1,5 +1,6 @@
 #!/usr/bin/env tsx
 import "dotenv/config";
+import { createHash } from "crypto";
 import { Pool } from "pg";
 import type { PoolClient } from "pg";
 
@@ -156,6 +157,10 @@ async function ensureTelemetry(
       );
     }
   }
+}
+
+function hashToken(seed: string): string {
+  return createHash("sha256").update(seed).digest("hex");
 }
 
 async function main() {
@@ -396,6 +401,135 @@ async function main() {
           ] satisfies QueryOptions,
         );
       }
+
+        await client.query(
+          `INSERT INTO public.mission_milestones (job_id, sequence, title, description, status, target_start, target_finish, created_by)
+           VALUES
+             ($1, 1, 'Site Recon', 'Capture drone imagery and confirm square footage.', 'in_progress', now() + interval '12 hour', now() + interval '2 day', $2),
+             ($1, 2, 'Scope Sign-Off', 'Finalize proposal packet with trustees.', 'planned', now() + interval '3 day', now() + interval '5 day', $2)
+           ON CONFLICT (job_id, sequence)
+           DO UPDATE SET
+             title = EXCLUDED.title,
+             description = EXCLUDED.description,
+             status = EXCLUDED.status,
+             target_start = EXCLUDED.target_start,
+             target_finish = EXCLUDED.target_finish,
+             updated_at = now();`,
+          [stMarkJobId, adminUserId] satisfies QueryOptions,
+        );
+
+        await client.query(
+          `INSERT INTO public.mission_checklists (job_id, category, item, is_required, metadata, created_by)
+           VALUES
+             ($1, 'Regulatory', 'Upload ADA stall layout to compliance artifacts', true, $2::jsonb, $3),
+             ($1, 'Pre-Flight', 'Confirm worship blackout windows in scheduler', true, $4::jsonb, $3)
+           ON CONFLICT (job_id, item)
+           DO UPDATE SET
+             category = EXCLUDED.category,
+             is_required = EXCLUDED.is_required,
+             metadata = mission_checklists.metadata || EXCLUDED.metadata,
+             updated_at = now();`,
+          [
+            stMarkJobId,
+            JSON.stringify({ seedSource: "seed-script", docType: "ada" }),
+            adminUserId,
+            JSON.stringify({ seedSource: "seed-script", dependency: "crew_blackouts" }),
+          ] satisfies QueryOptions,
+        );
+
+        const portalSeedToken = hashToken("st-mark-portal-session");
+        const portalSession = await client.query<{ id: string }>(
+          `INSERT INTO public.customer_portal_sessions (job_id, contact_email, contact_name, token_hash, status, expires_at, feature_flags, created_by)
+           VALUES ($1, $2, $3, $4, 'active', now() + interval '14 day', $5::jsonb, $6)
+           ON CONFLICT (job_id, contact_email)
+           DO UPDATE SET status = EXCLUDED.status,
+                         token_hash = EXCLUDED.token_hash,
+                         expires_at = EXCLUDED.expires_at,
+                         feature_flags = EXCLUDED.feature_flags,
+                         updated_at = now()
+           RETURNING id;`,
+          [
+            stMarkJobId,
+            "trustees@stmark.org",
+            "Trustees Board",
+            portalSeedToken,
+            JSON.stringify({ receipts: true, approvals: true }),
+            adminUserId,
+          ] satisfies QueryOptions,
+        );
+
+        const portalSessionId = portalSession.rows[0]?.id;
+        if (portalSessionId) {
+          await client.query(
+            `INSERT INTO public.customer_portal_events (session_id, job_id, event_type, actor_ip, actor_user_agent, metadata, occurred_at, created_at)
+             SELECT $1, $2, 'invited', $3::inet, $4, $5::jsonb, now(), now()
+             WHERE NOT EXISTS (
+               SELECT 1 FROM public.customer_portal_events
+               WHERE session_id = $1 AND event_type = 'invited'
+             );`,
+            [
+              portalSessionId,
+              stMarkJobId,
+              "0.0.0.0",
+              "seed-script/1.0",
+              JSON.stringify({ seedSource: "seed-script" }),
+            ] satisfies QueryOptions,
+          );
+        }
+
+        await client.query(
+          `INSERT INTO public.compliance_artifacts (job_id, artifact_type, storage_path, checksum, metadata, uploaded_by, verified)
+           VALUES ($1, 'ada_layout', '/compliance/st-mark/ada-layout.pdf', $2, $3::jsonb, $4, true)
+           ON CONFLICT (job_id, storage_path)
+           DO UPDATE SET checksum = EXCLUDED.checksum,
+                         metadata = compliance_artifacts.metadata || EXCLUDED.metadata,
+                         verified = EXCLUDED.verified,
+                         updated_at = now();`,
+          [
+            stMarkJobId,
+            hashToken("st-mark-ada-layout"),
+            JSON.stringify({ seedSource: "seed-script", version: 1 }),
+            adminUserId,
+          ] satisfies QueryOptions,
+        );
+
+        const { rows: artifactRows } = await client.query<{ id: string }>(
+          `SELECT id FROM public.compliance_artifacts WHERE job_id = $1 AND storage_path = $2 LIMIT 1;`,
+          [stMarkJobId, "/compliance/st-mark/ada-layout.pdf"] satisfies QueryOptions,
+        );
+
+        const complianceArtifactId = artifactRows[0]?.id;
+        if (complianceArtifactId) {
+          await client.query(
+            `INSERT INTO public.compliance_reviews (id, job_id, reviewer_id, outcome, notes, submitted_at, artifacts, metadata, created_by)
+             SELECT gen_random_uuid(), $1, $2, 'approved', 'ADA stall layout verified by trustees.', now(), ARRAY[$3]::uuid[], $4::jsonb, $2
+             WHERE NOT EXISTS (
+               SELECT 1 FROM public.compliance_reviews
+               WHERE job_id = $1 AND outcome = 'approved'
+             );`,
+            [
+              stMarkJobId,
+              adminUserId,
+              complianceArtifactId,
+              JSON.stringify({ seedSource: "seed-script" }),
+            ] satisfies QueryOptions,
+          );
+        }
+
+        await client.query(
+          `INSERT INTO public.weather_snapshots (job_id, provider, recorded_at, forecast, observed, metadata)
+           SELECT $1, 'openweather', now(), $2::jsonb, $3::jsonb, $4::jsonb
+           WHERE NOT EXISTS (
+             SELECT 1 FROM public.weather_snapshots
+             WHERE job_id = $1 AND provider = 'openweather'
+           );`,
+          [
+            stMarkJobId,
+            JSON.stringify({ precipitationChance: 0.15, windMph: 6 }),
+            JSON.stringify({ temperatureF: 74, humidity: 0.58 }),
+            JSON.stringify({ seedSource: "seed-script" }),
+          ] satisfies QueryOptions,
+        );
     }
 
     await client.query(
@@ -404,6 +538,57 @@ async function main() {
        ON CONFLICT DO NOTHING;`,
       [orgId, adminUserId] satisfies QueryOptions,
     );
+
+      const knowledgeDoc = await client.query<{ id: string }>(
+        `INSERT INTO public.knowledge_documents (org_id, title, source, document_type, tags, content, metadata, created_by)
+         VALUES ($1, $2, 'seed-script', 'compliance', ARRAY['ada','striping','church']::text[], $3, $4::jsonb, $5)
+         ON CONFLICT (org_id, title)
+         DO UPDATE SET content = EXCLUDED.content,
+                       metadata = knowledge_documents.metadata || EXCLUDED.metadata,
+                       updated_at = now()
+         RETURNING id;`,
+        [
+          orgId,
+          "ADA Accessible Layout Checklist",
+          "Ensure the following before sealcoat: maintain van-access aisle width, repaint international symbols, confirm accessible route slope under 1:12, add tactile signage at each entry.",
+          JSON.stringify({ seedSource: "seed-script", category: "ada" }),
+          adminUserId,
+        ] satisfies QueryOptions,
+      );
+
+      const knowledgeDocId = knowledgeDoc.rows[0]?.id;
+      if (knowledgeDocId) {
+        await client.query(
+          `INSERT INTO public.knowledge_chunks (org_id, document_id, chunk_index, content, token_count, metadata)
+           VALUES ($1, $2, 0, $3, 96, $4::jsonb)
+           ON CONFLICT (document_id, chunk_index)
+           DO UPDATE SET content = EXCLUDED.content,
+                         token_count = EXCLUDED.token_count,
+                         metadata = knowledge_chunks.metadata || EXCLUDED.metadata;`,
+          [
+            orgId,
+            knowledgeDocId,
+            "Checklist: 1) Confirm van space 132 inches wide with 60 inch aisle. 2) Repaint crosshatch using thermoplastic or approved paint. 3) Ensure accessible route is debris free and slope compliant. 4) Capture photos for audit trail.",
+            JSON.stringify({ seedSource: "seed-script" }),
+          ] satisfies QueryOptions,
+        );
+      }
+
+      await client.query(
+        `INSERT INTO public.observability_sessions (org_id, session_key, user_id, device, network, metadata, created_by)
+         VALUES ($1, 'seed-observability-session', $2, $3::jsonb, $4::jsonb, $5::jsonb, $2)
+         ON CONFLICT (session_key)
+         DO UPDATE SET metadata = observability_sessions.metadata || EXCLUDED.metadata,
+                       ended_at = now(),
+                       updated_at = now();`,
+        [
+          orgId,
+          adminUserId,
+          JSON.stringify({ platform: "seed", os: "linux", appVersion: "dev-local" }),
+          JSON.stringify({ type: "wifi", quality: "excellent" }),
+          JSON.stringify({ seedSource: "seed-script" }),
+        ] satisfies QueryOptions,
+      );
 
     await client.query("COMMIT");
     // eslint-disable-next-line no-console
