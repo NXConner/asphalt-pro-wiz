@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
 
+import { useMissionActivity } from './useMissionActivity';
+
 import { TacticalCard } from '@/components/hud/TacticalCard';
 import { TacticalMap } from '@/components/map/TacticalMap';
 import { Button } from '@/components/ui/button';
 import { isEnabled } from '@/lib/flags';
 import { logEvent } from '@/lib/logging';
-
-import { useMissionActivity } from './useMissionActivity';
 
 const STATUS_COLORS: Record<string, string> = {
   completed: 'text-emerald-300',
@@ -144,7 +144,7 @@ export function MissionActivityPanel() {
             className="text-xs uppercase tracking-[0.35em] text-slate-300/70"
             onClick={() => logEvent('mission_activity_refresh_map')}
           >
-            Sync
+            Refresh Map
           </Button>
         </div>
 
@@ -184,4 +184,3 @@ export function MissionActivityPanel() {
     </section>
   );
 }
-

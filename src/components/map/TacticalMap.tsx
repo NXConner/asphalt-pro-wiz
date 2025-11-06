@@ -123,13 +123,23 @@ export const TacticalMap = memo(
               position={{ lat: marker.coordinates[0], lng: marker.coordinates[1] }}
               mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
             >
-                <div
-                  className={cn(
-                    'flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1',
-                    enhancementsEnabled ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none',
-                  )}
-                  onClick={() => handleWaypointSelect(marker)}
-                >
+              <button
+                type="button"
+                className={cn(
+                  'flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 rounded bg-transparent p-0',
+                  enhancementsEnabled
+                    ? 'pointer-events-auto cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+                    : 'pointer-events-none',
+                )}
+                onClick={() => handleWaypointSelect(marker)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    handleWaypointSelect(marker);
+                  }
+                }}
+                tabIndex={enhancementsEnabled ? 0 : -1}
+              >
                 <div
                   className="h-3 w-3 rounded-full shadow-[0_0_16px_rgba(255,145,0,0.6)]"
                   style={{
@@ -141,43 +151,43 @@ export const TacticalMap = memo(
                     {marker.label}
                   </span>
                 ) : null}
-              </div>
+              </button>
             </OverlayView>
           ))}
 
-        {enhancementsEnabled
-          ? hazards.map((hazard) => (
-              <OverlayView
-                key={hazard.id}
-                position={{ lat: hazard.coordinates[0], lng: hazard.coordinates[1] }}
-                mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
-              >
-                <div className="pointer-events-none flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1">
-                  <span
-                    className="relative block rounded-full"
-                    style={{
-                      width: 18,
-                      height: 18,
-                      background: `${hazardAccent[hazard.severity]}55`,
-                      boxShadow: `0 0 32px ${hazardAccent[hazard.severity]}88`,
-                    }}
-                  >
+          {enhancementsEnabled
+            ? hazards.map((hazard) => (
+                <OverlayView
+                  key={hazard.id}
+                  position={{ lat: hazard.coordinates[0], lng: hazard.coordinates[1] }}
+                  mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+                >
+                  <div className="pointer-events-none flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1">
                     <span
-                      className="absolute inset-0 animate-ping rounded-full"
+                      className="relative block rounded-full"
                       style={{
+                        width: 18,
+                        height: 18,
                         background: `${hazardAccent[hazard.severity]}55`,
+                        boxShadow: `0 0 32px ${hazardAccent[hazard.severity]}88`,
                       }}
-                    />
-                  </span>
-                  {hazard.label ? (
-                    <span className="rounded bg-slate-900/85 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.3em] text-white">
-                      {hazard.label}
+                    >
+                      <span
+                        className="absolute inset-0 animate-ping rounded-full"
+                        style={{
+                          background: `${hazardAccent[hazard.severity]}55`,
+                        }}
+                      />
                     </span>
-                  ) : null}
-                </div>
-              </OverlayView>
-            ))
-          : null}
+                    {hazard.label ? (
+                      <span className="rounded bg-slate-900/85 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.3em] text-white">
+                        {hazard.label}
+                      </span>
+                    ) : null}
+                  </div>
+                </OverlayView>
+              ))
+            : null}
         </GoogleMap>
 
         {enhancementsEnabled ? (
@@ -216,4 +226,3 @@ export const TacticalMap = memo(
 );
 
 TacticalMap.displayName = 'TacticalMap';
-

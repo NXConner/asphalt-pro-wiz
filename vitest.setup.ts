@@ -1,12 +1,12 @@
-import "@testing-library/jest-dom/vitest";
-import { vi } from "vitest";
+import '@testing-library/jest-dom/vitest';
+import { vi } from 'vitest';
 
 const createMockChannel = () => {
   const unsubscribe = vi.fn();
   const channel = {
     on: vi.fn().mockReturnThis(),
     subscribe: vi.fn().mockImplementation((callback?: (status: string) => void) => {
-      callback?.("SUBSCRIBED");
+      callback?.('SUBSCRIBED');
       return Promise.resolve({ data: { subscription: { unsubscribe } } });
     }),
     unsubscribe,
@@ -20,7 +20,7 @@ const createSupabaseAuthMock = () => {
     getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
     getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
     onAuthStateChange: vi.fn().mockImplementation((callback) => {
-      callback?.("INITIAL_SESSION", null);
+      callback?.('INITIAL_SESSION', null);
       return { data: { subscription: authSubscription } };
     }),
     signInWithPassword: vi.fn().mockResolvedValue({ data: {}, error: null }),
@@ -29,7 +29,7 @@ const createSupabaseAuthMock = () => {
   };
 };
 
-vi.mock("@/integrations/supabase/client", () => {
+vi.mock('@/integrations/supabase/client', () => {
   const auth = createSupabaseAuthMock();
   return {
     supabase: {
@@ -43,10 +43,12 @@ vi.mock("@/integrations/supabase/client", () => {
         then: vi.fn(),
       })),
     },
+    supabaseConfigurationError: null,
+    isSupabaseConfigured: false,
   };
 });
 
-vi.mock("@/lib/logging", () => {
+vi.mock('@/lib/logging', () => {
   const logEvent = vi.fn();
   return {
     logEvent,

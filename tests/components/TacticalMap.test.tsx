@@ -1,13 +1,19 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { TacticalMap, type TacticalHazard, type TacticalWaypoint } from '@/components/map/TacticalMap';
+import {
+  TacticalMap,
+  type TacticalHazard,
+  type TacticalWaypoint,
+} from '@/components/map/TacticalMap';
 import * as flags from '@/lib/flags';
 import * as logging from '@/lib/logging';
 
 vi.mock('@react-google-maps/api', () => ({
-  OverlayView: ({ children }: { children: ReactNode }) => <div data-testid="overlay">{children}</div>,
+  OverlayView: ({ children }: { children: ReactNode }) => (
+    <div data-testid="overlay">{children}</div>
+  ),
   Polygon: () => <div data-testid="polygon" />,
 }));
 
@@ -104,4 +110,3 @@ describe('TacticalMap', () => {
     );
   });
 });
-

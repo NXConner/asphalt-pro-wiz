@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
-import { useJobTelemetryStats, type JobTelemetryStats } from '@/hooks/useTelemetry';
 import type { TacticalHazard, TacticalWaypoint } from '@/components/map/TacticalMap';
+import { useJobTelemetryStats, type JobTelemetryStats } from '@/hooks/useTelemetry';
 
 export interface MissionTimelineEntry {
   id: string;
@@ -54,7 +54,10 @@ export function deriveMissionActivity(stats: JobTelemetryStats | null): {
     quote: Number(job.quote_value ?? 0),
     updatedAt: job.updated_at ?? job.created_at,
     location:
-      job.location_lat !== null && job.location_lat !== undefined && job.location_lng !== null && job.location_lng !== undefined
+      job.location_lat !== null &&
+      job.location_lat !== undefined &&
+      job.location_lng !== null &&
+      job.location_lng !== undefined
         ? {
             lat: Number(job.location_lat),
             lng: Number(job.location_lng),
@@ -105,4 +108,3 @@ export function useMissionActivity(): MissionActivityState {
     isRealtimeConnected: query.isRealtimeConnected,
   };
 }
-
