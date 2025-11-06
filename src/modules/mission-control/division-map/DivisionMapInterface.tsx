@@ -1,4 +1,4 @@
-import { Loader2, RefreshCcw } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -9,6 +9,7 @@ import {
   DivisionCardHeader,
   DivisionCardMetric,
 } from '@/components/division';
+import { TelemetrySignal } from '@/components/telemetry';
 import { Button } from '@/components/ui/button';
 
 import { useDivisionMapData } from './useDivisionMapData';
@@ -29,7 +30,7 @@ function resolveStatusKey(status: string): string {
 }
 
 export function DivisionMapInterface() {
-  const { data, isLoading, isError, refetch } = useDivisionMapData();
+  const { data, isLoading, isError, refetch, isFetching, isRealtimeConnected } = useDivisionMapData();
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markerLayerRef = useRef<L.LayerGroup | null>(null);
@@ -38,6 +39,25 @@ export function DivisionMapInterface() {
     () => (data ? Object.keys(data.statusCounts).map(resolveStatusKey) : []),
     [data],
   );
+
+  const latestTelemetryIso = useMemo(() => {
+    if (!data?.points?.length) {
+      return null;
+    }
+
+    return data.points.reduce<string | null>((latest, point) => {
+      const candidate = point.updatedAt ?? point.createdAt ?? null;
+      if (!candidate) {
+        return latest;
+      }
+
+      if (!latest) {
+        return candidate;
+      }
+
+      return Date.parse(candidate) > Date.parse(latest) ? candidate : latest;
+    }, null);
+  }, [data?.points]);
 
   const [activeStatuses, setActiveStatuses] = useState<string[]>([]);
 
@@ -102,6 +122,7 @@ export function DivisionMapInterface() {
   const summaryMetrics = data
     ? { jobs: data.points.length, quote: data.totalQuoteValue, area: 0 }
     : null;
+
   return (
     <DivisionCard variant="intel">
       <DivisionCardHeader
@@ -109,16 +130,14 @@ export function DivisionMapInterface() {
         title="Mission Footprint"
         subtitle="Geo distribution of active, scheduled, and completed jobs"
         actions={
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="pointer-events-auto gap-2"
-            onClick={() => refetch()}
-            disabled={isLoading}
-          >
-            <RefreshCcw className="h-4 w-4" /> Refresh
-          </Button>
+          <TelemetrySignal
+            label="Map Telemetry"
+            isConnected={isRealtimeConnected}
+            lastEventAt={latestTelemetryIso}
+            isRefreshing={isFetching}
+            onRefresh={() => void refetch()}
+            className="pointer-events-auto max-w-full text-[0.55rem]"
+          />
         }
       />
 

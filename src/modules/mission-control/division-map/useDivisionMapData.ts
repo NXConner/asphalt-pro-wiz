@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { supabase } from '@/integrations/supabase/client';
+import { useRealtime } from '@/hooks/useRealtime';
 
 export interface DivisionMapPoint {
   id: string;
@@ -101,9 +102,19 @@ async function fetchDivisionMapTelemetry(): Promise<DivisionMapTelemetry> {
 }
 
 export function useDivisionMapData() {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['division-map-telemetry'],
     queryFn: fetchDivisionMapTelemetry,
     staleTime: 1000 * 60 * 5,
   });
+
+  const { isConnected } = useRealtime({
+    table: 'job_telemetry',
+    invalidateQueries: [['division-map-telemetry']],
+  });
+
+  return {
+    ...query,
+    isRealtimeConnected: isConnected,
+  };
 }

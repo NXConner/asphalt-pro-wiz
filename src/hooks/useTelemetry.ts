@@ -1,7 +1,34 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { supabase } from '@/integrations/supabase/client';
+
+const JOB_TELEMETRY_STATS_QUERY_KEY = ['job-telemetry-stats'] as const;
+
+const ONE_DAY_IN_MS = 1000 * 60 * 60 * 24;
+
+function safeNumber(value: number | string | null | undefined): number {
+  if (value === null || value === undefined) {
+    return 0;
+  }
+
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function resolveTimestamp(value?: string | null): number | null {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? null : parsed;
+}
 
 // ============================================
 // CREW TELEMETRY HOOKS
@@ -114,6 +141,7 @@ export interface JobTelemetryStats {
   recentJobs: JobTelemetryAggregateRow[];
   jobsByLocation: JobTelemetryAggregateRow[];
   mappedJobCount: number;
+  lastEventAt: string | null;
 }
 
 export function useJobTelemetry(jobId?: string) {
@@ -136,9 +164,21 @@ export function useJobTelemetry(jobId?: string) {
   });
 }
 
-export function useJobTelemetryStats() {
-  return useQuery({
-    queryKey: ['job-telemetry-stats'],
+interface JobTelemetryStatsOptions {
+  subscribe?: boolean;
+  staleTime?: number;
+}
+
+export function useJobTelemetryStats(options: JobTelemetryStatsOptions = {}) {
+  const { subscribe = true, staleTime } = options;
+  const queryClient = useQueryClient();
+  const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
+
+  const query = useQuery({
+    queryKey: JOB_TELEMETRY_STATS_QUERY_KEY,
+    staleTime: staleTime ?? 1000 * 15,
+    gcTime: ONE_DAY_IN_MS,
+    refetchOnWindowFocus: false,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('job_telemetry')
@@ -149,47 +189,69 @@ export function useJobTelemetryStats() {
       if (error) throw error;
 
       const stats: JobTelemetryStats = {
-        totalJobs: data.length,
+        totalJobs: 0,
         activeJobs: 0,
         statusCounts: {},
         statusDistribution: [],
         totalQuoteValue: 0,
         totalAreaSqft: 0,
-        recentJobs: data.slice(0, 10) as JobTelemetryAggregateRow[],
+        recentJobs: [],
         jobsByLocation: [],
         mappedJobCount: 0,
+        lastEventAt: null,
       };
 
-      if (data.length === 0) {
+      if (!data || data.length === 0) {
         return stats;
       }
 
-      const mappedJobIds = new Set<string>();
+      const jobMap = new Map<string, JobTelemetryAggregateRow>();
 
-      data.forEach((jobRow) => {
+      for (const jobRow of data) {
         const job = jobRow as JobTelemetryAggregateRow;
-        if (job.status) {
-          stats.statusCounts[job.status] = (stats.statusCounts[job.status] || 0) + 1;
+        const key = job.job_id ?? `__${job.created_at}`;
+        const candidateTimestamp = resolveTimestamp(job.updated_at ?? job.created_at);
+
+        if (!jobMap.has(key)) {
+          jobMap.set(key, job);
+          continue;
         }
 
-        if (job.quote_value !== null && job.quote_value !== undefined) {
-          stats.totalQuoteValue += Number(job.quote_value);
+        const existing = jobMap.get(key)!;
+        const existingTimestamp = resolveTimestamp(existing.updated_at ?? existing.created_at) ?? 0;
+
+        if (candidateTimestamp === null || candidateTimestamp >= existingTimestamp) {
+          jobMap.set(key, job);
+        }
+      }
+
+      const uniqueJobs = Array.from(jobMap.values());
+      let mostRecentTimestamp = 0;
+
+      for (const job of uniqueJobs) {
+        const statusKey = (job.status ?? 'unknown').toLowerCase();
+        stats.statusCounts[statusKey] = (stats.statusCounts[statusKey] ?? 0) + 1;
+
+        stats.totalQuoteValue += safeNumber(job.quote_value);
+        stats.totalAreaSqft += safeNumber(job.area_sqft);
+
+        const timestamp = resolveTimestamp(job.updated_at ?? job.created_at);
+        if (timestamp && timestamp > mostRecentTimestamp) {
+          mostRecentTimestamp = timestamp;
         }
 
-        if (job.area_sqft !== null && job.area_sqft !== undefined) {
-          stats.totalAreaSqft += Number(job.area_sqft);
-        }
-
-        const hasCoordinates = job.location_lat !== null && job.location_lng !== null;
-        if (hasCoordinates) {
+        if (
+          job.location_lat !== null &&
+          job.location_lat !== undefined &&
+          job.location_lng !== null &&
+          job.location_lng !== undefined
+        ) {
           stats.jobsByLocation.push(job);
-          if (job.job_id) {
-            mappedJobIds.add(job.job_id);
-          }
         }
-      });
+      }
 
-      stats.mappedJobCount = mappedJobIds.size;
+      stats.mappedJobCount = stats.jobsByLocation.length;
+      stats.totalJobs = uniqueJobs.length;
       stats.activeJobs = ACTIVE_JOB_TELEMETRY_STATUSES.reduce(
         (count, status) => count + (stats.statusCounts[status] || 0),
         0,
@@ -203,9 +265,68 @@ export function useJobTelemetryStats() {
         }))
         .sort((a, b) => b.count - a.count);
 
+      const recentSorted = [...uniqueJobs].sort((a, b) => {
+        const aTime = resolveTimestamp(a.updated_at ?? a.created_at) ?? 0;
+        const bTime = resolveTimestamp(b.updated_at ?? b.created_at) ?? 0;
+        return bTime - aTime;
+      });
+
+      stats.recentJobs = recentSorted.slice(0, 10);
+      stats.jobsByLocation = recentSorted.filter(
+        (job) => job.location_lat !== null && job.location_lat !== undefined && job.location_lng !== null && job.location_lng !== undefined,
+      );
+      stats.mappedJobCount = stats.jobsByLocation.length;
+      stats.lastEventAt = mostRecentTimestamp ? new Date(mostRecentTimestamp).toISOString() : null;
+
       return stats;
     },
   });
+
+  useEffect(() => {
+    if (!subscribe) {
+      setIsRealtimeConnected(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    const channel = supabase
+      .channel('job_telemetry_stats_live')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'job_telemetry',
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: JOB_TELEMETRY_STATS_QUERY_KEY });
+        },
+      )
+      .subscribe((status) => {
+        if (!isMounted) {
+          return;
+        }
+
+        if (status === 'SUBSCRIBED') {
+          setIsRealtimeConnected(true);
+        }
+
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          setIsRealtimeConnected(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+      channel.unsubscribe();
+    };
+  }, [queryClient, subscribe]);
+
+  return {
+    ...query,
+    isRealtimeConnected,
+  };
 }
 
 export function useInsertJobTelemetry() {
