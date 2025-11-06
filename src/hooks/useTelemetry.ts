@@ -82,6 +82,40 @@ export interface JobTelemetryEvent {
   metadata?: Record<string, any>;
 }
 
+type JobTelemetryStatus = NonNullable<JobTelemetryEvent['status']>;
+
+const ACTIVE_JOB_TELEMETRY_STATUSES: readonly JobTelemetryStatus[] = ['scheduled', 'in_progress'] as const;
+
+export interface JobTelemetryDistributionEntry {
+  status: JobTelemetryStatus | string;
+  count: number;
+  percentage: number;
+}
+
+interface JobTelemetryAggregateRow {
+  job_id: string | null;
+  status: JobTelemetryStatus | null;
+  quote_value: number | string | null;
+  area_sqft: number | string | null;
+  location_lat: number | string | null;
+  location_lng: number | string | null;
+  customer_address: string | null;
+  created_at: string;
+  updated_at: string | null;
+}
+
+export interface JobTelemetryStats {
+  totalJobs: number;
+  activeJobs: number;
+  statusCounts: Record<string, number>;
+  statusDistribution: JobTelemetryDistributionEntry[];
+  totalQuoteValue: number;
+  totalAreaSqft: number;
+  recentJobs: JobTelemetryAggregateRow[];
+  jobsByLocation: JobTelemetryAggregateRow[];
+  mappedJobCount: number;
+}
+
 export function useJobTelemetry(jobId?: string) {
   return useQuery({
     queryKey: ['job-telemetry', jobId],
@@ -108,33 +142,66 @@ export function useJobTelemetryStats() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('job_telemetry')
-        .select('status, quote_value, area_sqft, location_lat, location_lng, customer_address, created_at')
+        .select('job_id, status, quote_value, area_sqft, location_lat, location_lng, customer_address, created_at, updated_at')
         .order('created_at', { ascending: false })
         .limit(500);
 
       if (error) throw error;
 
-      // Calculate statistics
-      const stats = {
+      const stats: JobTelemetryStats = {
         totalJobs: data.length,
-        statusCounts: {} as Record<string, number>,
+        activeJobs: 0,
+        statusCounts: {},
+        statusDistribution: [],
         totalQuoteValue: 0,
         totalAreaSqft: 0,
-        recentJobs: data.slice(0, 10),
-        jobsByLocation: data.filter(j => j.location_lat && j.location_lng),
+        recentJobs: data.slice(0, 10) as JobTelemetryAggregateRow[],
+        jobsByLocation: [],
+        mappedJobCount: 0,
       };
 
-      data.forEach((job) => {
+      if (data.length === 0) {
+        return stats;
+      }
+
+      const mappedJobIds = new Set<string>();
+
+      data.forEach((jobRow) => {
+        const job = jobRow as JobTelemetryAggregateRow;
         if (job.status) {
           stats.statusCounts[job.status] = (stats.statusCounts[job.status] || 0) + 1;
         }
-        if (job.quote_value) {
+
+        if (job.quote_value !== null && job.quote_value !== undefined) {
           stats.totalQuoteValue += Number(job.quote_value);
         }
-        if (job.area_sqft) {
+
+        if (job.area_sqft !== null && job.area_sqft !== undefined) {
           stats.totalAreaSqft += Number(job.area_sqft);
         }
+
+        const hasCoordinates = job.location_lat !== null && job.location_lng !== null;
+        if (hasCoordinates) {
+          stats.jobsByLocation.push(job);
+          if (job.job_id) {
+            mappedJobIds.add(job.job_id);
+          }
+        }
       });
+
+      stats.mappedJobCount = mappedJobIds.size;
+      stats.activeJobs = ACTIVE_JOB_TELEMETRY_STATUSES.reduce(
+        (count, status) => count + (stats.statusCounts[status] || 0),
+        0,
+      );
+
+      stats.statusDistribution = Object.entries(stats.statusCounts)
+        .map(([status, count]) => ({
+          status,
+          count,
+          percentage: stats.totalJobs > 0 ? (count / stats.totalJobs) * 100 : 0,
+        }))
+        .sort((a, b) => b.count - a.count);
 
       return stats;
     },
