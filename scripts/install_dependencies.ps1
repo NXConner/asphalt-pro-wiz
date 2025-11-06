@@ -55,4 +55,11 @@ if (-not $SkipPlaywright) {
   Write-Host "Skipping Playwright browser installation." -ForegroundColor Yellow
 }
 
+if (Get-Command supabase -ErrorAction SilentlyContinue) {
+  $supabaseVersion = supabase --version 2>$null
+  Write-Host "Supabase CLI detected: $supabaseVersion" -ForegroundColor Cyan
+} else {
+  Write-Warning "Supabase CLI not found. Install via 'npm install -g supabase' or follow docs/UNIFIED_SUPABASE_GUIDE.md"
+}
+
 Write-Host "Dependency installation complete." -ForegroundColor Green

@@ -75,4 +75,10 @@ else
   echo "Skipping Playwright browser installation."
 fi
 
+if command -v supabase >/dev/null 2>&1; then
+  echo "Supabase CLI detected: $(supabase --version 2>/dev/null | head -n1)"
+else
+  echo "Supabase CLI not found. Install via 'npm install -g supabase' or follow docs/UNIFIED_SUPABASE_GUIDE.md"
+fi
+
 echo "Dependencies installed and developer tooling prepared."
