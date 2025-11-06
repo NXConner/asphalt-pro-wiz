@@ -8,6 +8,8 @@ interface AuthContextValue {
   session: Session | null;
   loading: boolean;
   isAuthenticated: boolean;
+  isConfigured: boolean;
+  configurationError: Error | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;

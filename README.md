@@ -1,6 +1,6 @@
 # Pavement Performance Suite
 
-AI-assisted operations command center purpose-built for asphalt paving, sealcoating, and line-striping crews supporting Virginia church campuses. The suite covers estimation, mission scheduling, compliance automation, and observability from a single Division-inspired HUD.
+AI-assisted operations command center purpose-built for asphalt paving, sealcoating, and line-striping crews supporting Virginia and North Carolina church campuses. The suite covers estimation, mission scheduling, compliance automation, and observability from a single Division-inspired HUD.
 
 ---
 

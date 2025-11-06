@@ -14,6 +14,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
+import { SupabaseConfigBanner } from '@/components/SupabaseConfigBanner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ErrorProvider } from '@/contexts/ErrorContext';
@@ -105,92 +106,93 @@ const App = () => {
     }
   })();
 
-  return (
-    <ErrorBoundary>
-      <ErrorRecovery>
-        <PerformanceProvider>
-          <ThemeProvider>
-            <AuthProvider>
-              <ErrorProvider>
-                <KeyboardProvider>
-                  <I18nProvider>
-                    <QueryClientProvider client={queryClient}>
-                      <TooltipProvider>
-                        <SkipLink />
-                        <MobileOptimizations />
-                        <Toaster />
-                        <Sonner />
-                        <BrowserRouter basename={baseName}>
-                          <CommandPalette />
-                          {process.env.NODE_ENV === 'development' && <AccessibilityChecker />}
-                          <RouteTracker />
-                          <OfflineIndicator />
-                          <Suspense
-                            fallback={
-                              <div className="p-6">
-                                <Skeleton className="mb-4 h-6 w-1/3" />
-                                <Skeleton className="h-96 w-full" />
-                              </div>
-                            }
-                          >
-                            <Routes>
-                              <Route path="/auth" element={<Auth />} />
-                              <Route
-                                path="/"
-                                element={
-                                  <ProtectedRoute>
-                                    <Index />
-                                  </ProtectedRoute>
-                                }
-                              />
-                              <Route
-                                path="/command-center"
-                                element={
-                                  <ProtectedRoute>
-                                    <CommandCenter />
-                                  </ProtectedRoute>
-                                }
-                              />
-                              <Route
-                                path="/admin"
-                                element={
-                                  <ProtectedRoute>
-                                    <AdminPanel />
-                                  </ProtectedRoute>
-                                }
-                              />
-                              <Route
-                                path="/service/:serviceId"
-                                element={
-                                  <ProtectedRoute>
-                                    <PremiumServiceDetails />
-                                  </ProtectedRoute>
-                                }
-                              />
-                              <Route
-                                path="/portal"
-                                element={
-                                  <ProtectedRoute>
-                                    <Portal />
-                                  </ProtectedRoute>
-                                }
-                              />
-                              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                              <Route path="*" element={<NotFound />} />
-                            </Routes>
-                          </Suspense>
-                        </BrowserRouter>
-                      </TooltipProvider>
-                    </QueryClientProvider>
-                  </I18nProvider>
-                </KeyboardProvider>
-              </ErrorProvider>
-            </AuthProvider>
-          </ThemeProvider>
-        </PerformanceProvider>
-      </ErrorRecovery>
-    </ErrorBoundary>
-  );
+    return (
+      <ErrorBoundary>
+        <ErrorRecovery>
+          <PerformanceProvider>
+            <ThemeProvider>
+              <AuthProvider>
+                <ErrorProvider>
+                  <KeyboardProvider>
+                    <I18nProvider>
+                      <QueryClientProvider client={queryClient}>
+                        <TooltipProvider>
+                          <SkipLink />
+                          <SupabaseConfigBanner />
+                          <MobileOptimizations />
+                          <Toaster />
+                          <Sonner />
+                          <BrowserRouter basename={baseName}>
+                            <CommandPalette />
+                            {process.env.NODE_ENV === 'development' && <AccessibilityChecker />}
+                            <RouteTracker />
+                            <OfflineIndicator />
+                            <Suspense
+                              fallback={
+                                <div className="p-6">
+                                  <Skeleton className="mb-4 h-6 w-1/3" />
+                                  <Skeleton className="h-96 w-full" />
+                                </div>
+                              }
+                            >
+                              <Routes>
+                                <Route path="/auth" element={<Auth />} />
+                                <Route
+                                  path="/"
+                                  element={
+                                    <ProtectedRoute>
+                                      <Index />
+                                    </ProtectedRoute>
+                                  }
+                                />
+                                <Route
+                                  path="/command-center"
+                                  element={
+                                    <ProtectedRoute>
+                                      <CommandCenter />
+                                    </ProtectedRoute>
+                                  }
+                                />
+                                <Route
+                                  path="/admin"
+                                  element={
+                                    <ProtectedRoute>
+                                      <AdminPanel />
+                                    </ProtectedRoute>
+                                  }
+                                />
+                                <Route
+                                  path="/service/:serviceId"
+                                  element={
+                                    <ProtectedRoute>
+                                      <PremiumServiceDetails />
+                                    </ProtectedRoute>
+                                  }
+                                />
+                                <Route
+                                  path="/portal"
+                                  element={
+                                    <ProtectedRoute>
+                                      <Portal />
+                                    </ProtectedRoute>
+                                  }
+                                />
+                                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                                <Route path="*" element={<NotFound />} />
+                              </Routes>
+                            </Suspense>
+                          </BrowserRouter>
+                        </TooltipProvider>
+                      </QueryClientProvider>
+                    </I18nProvider>
+                  </KeyboardProvider>
+                </ErrorProvider>
+              </AuthProvider>
+            </ThemeProvider>
+          </PerformanceProvider>
+        </ErrorRecovery>
+      </ErrorBoundary>
+    );
 };
 
 export default App;

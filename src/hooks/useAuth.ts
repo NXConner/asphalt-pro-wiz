@@ -1,8 +1,13 @@
 import type { User, Session } from '@supabase/supabase-js';
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { supabase } from '@/integrations/supabase/client';
+import {
+  supabase,
+  isSupabaseConfigured,
+  supabaseConfigurationError,
+  SupabaseConfigurationError,
+} from '@/integrations/supabase/client';
 
 interface AuthState {
   user: User | null;
@@ -17,7 +22,17 @@ export function useAuth() {
     loading: true,
   });
 
+  const configurationError = useMemo(
+    () => supabaseConfigurationError ?? (isSupabaseConfigured ? null : new SupabaseConfigurationError()),
+    [],
+  );
+
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setState((prev) => ({ ...prev, loading: false }));
+      return;
+    }
+
     const listenerResult = supabase.auth?.onAuthStateChange?.((_event, session) => {
       setState({
         user: session?.user ?? null,
@@ -47,7 +62,16 @@ export function useAuth() {
     };
   }, []);
 
+  const ensureConfigured = () => {
+    if (!isSupabaseConfigured) {
+      const error = configurationError ?? new SupabaseConfigurationError();
+      toast.error(error.message);
+      throw error;
+    }
+  };
+
   const signIn = async (email: string, password: string) => {
+    ensureConfigured();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       toast.error(error.message);
@@ -57,6 +81,7 @@ export function useAuth() {
   };
 
   const signUp = async (email: string, password: string) => {
+    ensureConfigured();
     const redirectUrl = `${window.location.origin}/`;
     const { error } = await supabase.auth.signUp({
       email,
@@ -73,6 +98,7 @@ export function useAuth() {
   };
 
   const signOut = async () => {
+    ensureConfigured();
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast.error(error.message);
@@ -87,5 +113,7 @@ export function useAuth() {
     signUp,
     signOut,
     isAuthenticated: !!state.user,
+    isConfigured: isSupabaseConfigured,
+    configurationError,
   };
 }
