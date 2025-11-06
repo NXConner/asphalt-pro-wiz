@@ -47,6 +47,25 @@ This executes every migration inside `supabase/migrations/`, including `17000000
 
 All tables are created with RLS enabled. Re-running the migration is safe.
 
+#### 4.1) Creating New Migrations
+
+- Scaffold a new migration with a descriptive name:
+
+  ```
+  npm run migrate:create add_job_review_indexes
+  ```
+
+  This generates a timestamped file under `supabase/migrations`. Populate the `exports.up`/`exports.down` functions using the helper utilities from `node-pg-migrate`.
+
+- Always enable RLS on new tables and add policies mirroring the organization-aware pattern used in `1700000016000_pavement_core.js`.
+- Keep migrations idempotent: guard raw SQL with `IF NOT EXISTS` checks, and prefer `INSERT ... ON CONFLICT` when seeding reference data.
+- Validate before committing:
+  - `npm run migrate:up`
+  - `npm run migrate:down`
+  - `npm run migrate:up`
+
+  This ensures both directions remain reversible.
+
 ### 5) Seeding
 
 1. Create the admin user in Supabase Auth using the `ADMIN_EMAIL` from `.env` (defaults to `n8ter8@gmail.com`).

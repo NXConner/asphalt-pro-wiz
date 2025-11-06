@@ -3,38 +3,43 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    color-scheme: dark;
-    
-    /* Core semantic tokens */
-    --background: 220 50% 4%;
-    --foreground: 220 22% 92%;
-    --card: 222 50% 6%;
-    --card-foreground: 222 18% 92%;
-    --popover: 222 50% 7%;
-    --popover-foreground: 222 22% 92%;
-    --primary: 25 100% 55%;
-    --primary-foreground: 16 88% 95%;
-    --secondary: 197 86% 48%;
-    --secondary-foreground: 210 100% 96%;
-    --muted: 226 42% 10%;
-    --muted-foreground: 226 20% 70%;
-    --accent: 206 92% 55%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 358 86% 54%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 213 32% 22%;
-    --input: 215 32% 16%;
-    --ring: 206 92% 55%;
-    --radius: 1rem;
-    
-    /* Chart colors */
-    --chart-1: 25 100% 55%;
-    --chart-2: 197 86% 48%;
-    --chart-3: 206 92% 55%;
-    --chart-4: 358 86% 54%;
-    --chart-5: 45 93% 58%;
-  }
+    :root {
+      color-scheme: dark;
+
+      /* Core semantic tokens */
+      --background: 220 50% 4%;
+      --foreground: 220 22% 92%;
+      --card: 222 50% 6%;
+      --card-foreground: 222 18% 92%;
+      --popover: 222 50% 7%;
+      --popover-foreground: 222 22% 92%;
+      --primary: 25 100% 55%;
+      --primary-foreground: 16 88% 95%;
+      --secondary: 197 86% 48%;
+      --secondary-foreground: 210 100% 96%;
+      --muted: 226 42% 10%;
+      --muted-foreground: 226 20% 70%;
+      --accent: 206 92% 55%;
+      --accent-foreground: 0 0% 100%;
+      --destructive: 358 86% 54%;
+      --destructive-foreground: 0 0% 98%;
+      --border: 213 32% 22%;
+      --input: 215 32% 16%;
+      --ring: 206 92% 55%;
+      --radius: 1rem;
+      --app-wallpaper:
+        radial-gradient(circle at 20% 18%, rgba(255, 128, 0, 0.35) 0%, rgba(9, 13, 25, 0.92) 60%),
+        radial-gradient(circle at 82% 0%, rgba(92, 215, 255, 0.25) 0%, rgba(6, 11, 23, 0.94) 62%);
+      --wallpaper-opacity: 0.25;
+      --wallpaper-blur: 0px;
+
+      /* Chart colors */
+      --chart-1: 25 100% 55%;
+      --chart-2: 197 86% 48%;
+      --chart-3: 206 92% 55%;
+      --chart-4: 358 86% 54%;
+      --chart-5: 45 93% 58%;
+    }
 
   .light {
     color-scheme: light;
@@ -59,17 +64,36 @@
     --ring: 25 100% 45%;
   }
 
-  * {
-    @apply border-border;
-  }
+    * {
+      @apply border-border;
+    }
 
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'Rajdhani', system-ui, sans-serif;
-    font-feature-settings: "kern" 1;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+    body {
+      @apply bg-background text-foreground;
+      font-family: 'Rajdhani', system-ui, sans-serif;
+      font-feature-settings: "kern" 1;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      background: var(--app-wallpaper);
+      opacity: 0;
+      filter: blur(var(--wallpaper-blur));
+      transition: opacity 240ms ease, filter 240ms ease, background 360ms ease;
+      transform: translateZ(0);
+    }
+
+    body.has-wallpaper::before {
+      opacity: var(--wallpaper-opacity);
+    }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Orbitron', system-ui, sans-serif;
