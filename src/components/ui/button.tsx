@@ -77,7 +77,24 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref,
   ) => {
-    const Comp = asChild ? Slot : 'button';
+    if (asChild) {
+      return (
+        <Slot
+          className={cn(
+            buttonVariants({ variant, size, className }),
+            loading && 'pointer-events-none opacity-90',
+          )}
+          ref={ref as any}
+          aria-busy={loading ? true : undefined}
+          data-variant={variant}
+          {...props}
+        >
+          {children}
+        </Slot>
+      );
+    }
+
+    // Internal rendering branch (regular <button>)
     const clampedProgress =
       typeof progress === 'number' ? Math.max(0, Math.min(100, progress)) : undefined;
     const iconElement = icon ? (
@@ -96,7 +113,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ) : null;
 
     return (
-      <Comp
+      <button
         className={cn(
           buttonVariants({ variant, size, className }),
           loading && 'pointer-events-none opacity-90',
@@ -130,7 +147,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             )}
           />
         ) : null}
-      </Comp>
+      </button>
     );
   },
 );
