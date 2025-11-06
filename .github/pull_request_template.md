@@ -16,6 +16,7 @@
 - [ ] Integration or contract tests (if applicable)
 - [ ] E2E tests (`npm run test:e2e`)
 - [ ] Lint & formatting (`npm run lint` / `npm run format:check`)
+- [ ] Type safety (`npm run typecheck`)
 - [ ] Accessibility checks (axe, keyboard traversal)
 
 ## Observability & Security

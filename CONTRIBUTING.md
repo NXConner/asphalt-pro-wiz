@@ -8,6 +8,14 @@ We welcome contributions that move Pavement Performance Suite toward production-
 - Sync environment variables (`cp .env.example .env`) and populate real secrets locally.
 - Install dependencies via `scripts/install_dependencies.sh` (PowerShell variant available).
 
+## 1.1 Branching Strategy
+
+- `main` is the deployable trunk; every commit must be production-ready behind feature flags when necessary.
+- Feature work: `feature/<initiative>/<scope>` (e.g. `feature/premium-marketplace/minimize-toggle`). Keep branches short-lived and rebase on `main` before opening a PR.
+- Hotfixes: `hotfix/<scope>` cut from `main`, merged back into `main` after verification.
+- Release tags are cut from `main` post-merge; avoid long-lived release branches. If staging stabilization is required, use `release/<version>` with a clear exit plan.
+- Always gate unfinished functionality with feature flags to keep `main` releasable.
+
 ## 2. Development Workflow
 
 1. Keep commits small, focused, and formatted with [Conventional Commits](https://www.conventionalcommits.org/).
@@ -27,6 +35,7 @@ We welcome contributions that move Pavement Performance Suite toward production-
    ```bash
    npm run format
    npm run lint
+   npm run typecheck
    ```
 
 ## 3. Pre-Commit Hooks
@@ -35,6 +44,7 @@ Husky enforces:
 
 - `lint-staged` (scoped formatting)
 - `npm run lint`
+- `npm run typecheck`
 - `npm run test:unit -- --run`
 
 Run `SKIP_HUSKY=1 git commit ...` only in exceptional situations (e.g. CI).

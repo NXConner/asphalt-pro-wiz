@@ -14,8 +14,9 @@
 # Clone repository
 git clone [repository-url]
 
-# Install dependencies
-npm install
+# Install dependencies & developer tooling
+scripts/install_dependencies.sh
+# PowerShell users: scripts/install_dependencies.ps1
 
 # Copy environment variables
 cp .env.example .env
@@ -46,7 +47,7 @@ npm run preview
 npm run test
 
 # Run tests with coverage
-npm run test:coverage
+npm run coverage
 
 # Run E2E tests
 npm run test:e2e
@@ -65,14 +66,14 @@ npm run lint
 npm run format
 
 # Type check
-npm run type-check
+npm run typecheck
 ```
 
 ### Git Hooks
 
 This project uses Husky for git hooks:
 
-- **pre-commit**: Runs linting and formatting on staged files
+- **pre-commit**: Runs lint-staged, `npm run lint`, `npm run typecheck`, and `npm run test:unit -- --run`
 - **commit-msg**: Validates commit message format (Conventional Commits)
 
 ## Code Standards

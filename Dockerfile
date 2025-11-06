@@ -25,13 +25,18 @@ ARG VITE_APP_VERSION=local-dev
 ARG VITE_BASE_PATH=/
 ARG VITE_ENVIRONMENT=production
 ENV NODE_ENV=production \
-  VITE_APP_VERSION=${VITE_APP_VERSION} \
-  VITE_BASE_PATH=${VITE_BASE_PATH} \
-  VITE_ENVIRONMENT=${VITE_ENVIRONMENT}
+    VITE_APP_VERSION=${VITE_APP_VERSION} \
+    VITE_BASE_PATH=${VITE_BASE_PATH} \
+    VITE_ENVIRONMENT=${VITE_ENVIRONMENT} \
+    CI=1
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build -- --base ${VITE_BASE_PATH} && npm prune --omit=dev
+RUN npm run lint \
+  && npm run typecheck \
+  && npm run test:unit -- --run \
+  && npm run build -- --base ${VITE_BASE_PATH} \
+  && npm prune --omit=dev
 
 FROM nginx:1.27-alpine AS runtime
 ARG VITE_APP_VERSION=local-dev

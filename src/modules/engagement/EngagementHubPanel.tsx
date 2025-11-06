@@ -72,10 +72,14 @@ export function EngagementHubPanel({ estimator }: EngagementHubPanelProps) {
   return (
     <div className="space-y-6">
       <CanvasPanel
+        id="premium-services-marketplace"
         title="Premium Services Marketplace"
         subtitle="Upsell enhancements tuned for church campuses — margin-positive, mission-aligned."
         eyebrow="Revenue"
         tone="ember"
+        collapsible
+        defaultCollapsed
+        collapseId="premium-services-marketplace"
       >
         <PremiumServices
           edgePushing={premium.edgePushing}
