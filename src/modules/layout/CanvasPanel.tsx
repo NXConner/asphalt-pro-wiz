@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import {
@@ -6,8 +7,10 @@ import {
   ParticleBackground,
   ScanOverlay,
 } from '@/components/hud';
+import { Button } from '@/components/ui/button';
 import type { ParticlePresetKey } from '@/design';
 import { cn } from '@/lib/utils';
+import { Maximize2, Minimize2 } from 'lucide-react';
 
 export type CanvasTone = 'dusk' | 'aurora' | 'ember' | 'lagoon';
 
@@ -49,6 +52,10 @@ interface CanvasPanelProps {
   children: ReactNode;
   className?: string;
   id?: string;
+  collapsible?: boolean;
+  defaultCollapsed?: boolean;
+  collapseId?: string;
+  onCollapseChange?: (collapsed: boolean) => void;
 }
 
 export function CanvasPanel({
@@ -61,7 +68,54 @@ export function CanvasPanel({
   children,
   className,
   id,
+  collapsible = false,
+  defaultCollapsed = false,
+  collapseId,
+  onCollapseChange,
 }: CanvasPanelProps) {
+  const collapseKey = useMemo(() => {
+    if (!collapsible) return null;
+    if (collapseId) return `pps:panel:${collapseId}`;
+    if (id) return `pps:panel:${id}`;
+    return null;
+  }, [collapsible, collapseId, id]);
+
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    if (!collapsible) return false;
+    if (typeof window === "undefined") return defaultCollapsed;
+    if (!collapseKey) return defaultCollapsed;
+    try {
+      const stored = window.localStorage.getItem(collapseKey);
+      if (stored === "1") return true;
+      if (stored === "0") return false;
+    } catch {}
+    return defaultCollapsed;
+  });
+
+  useEffect(() => {
+    if (!collapsible || !collapseKey) return;
+    try {
+      window.localStorage.setItem(collapseKey, collapsed ? "1" : "0");
+    } catch {}
+  }, [collapsible, collapseKey, collapsed]);
+
+  useEffect(() => {
+    if (!collapsible) return;
+    onCollapseChange?.(collapsed);
+  }, [collapsible, collapsed, onCollapseChange]);
+
+  const bodyId = useMemo(() => {
+    if (!collapsible) return undefined;
+    if (collapseId) return `${collapseId}-panel-body`;
+    if (id) return `${id}-panel-body`;
+    return undefined;
+  }, [collapsible, collapseId, id]);
+
+  const toggleCollapse = () => {
+    if (!collapsible) return;
+    setCollapsed((prev) => !prev);
+  };
+
   return (
     <section
       id={id}
@@ -104,10 +158,35 @@ export function CanvasPanel({
               </span>
             ) : null}
             {action}
+            {collapsible ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={toggleCollapse}
+                aria-expanded={!collapsed}
+                aria-controls={bodyId}
+                className="bg-white/10 text-slate-100 hover:bg-white/20"
+              >
+                {collapsed ? (
+                  <Maximize2 className="h-4 w-4" aria-hidden />
+                ) : (
+                  <Minimize2 className="h-4 w-4" aria-hidden />
+                )}
+                <span className="sr-only">
+                  {collapsed ? `Expand ${title}` : `Collapse ${title}`}
+                </span>
+              </Button>
+            ) : null}
           </div>
         </header>
-        <div className="space-y-6 text-sm leading-relaxed text-slate-100/90 sm:text-base">
-          {children}
+        <div
+          id={bodyId}
+          hidden={collapsible && collapsed}
+          aria-hidden={collapsible && collapsed}
+          className="space-y-6 text-sm leading-relaxed text-slate-100/90 sm:text-base"
+        >
+          {collapsible && collapsed ? null : children}
         </div>
       </div>
     </section>
