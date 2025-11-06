@@ -91,30 +91,81 @@ const resolveBaseFromLocation = (): string | undefined => {
   return path.endsWith('/') && path !== '/' ? path.slice(0, -1) : path || '/';
 };
 
+const detectLovableBasePath = (): string | undefined => {
+  if (typeof window === 'undefined') return undefined;
+
+  const doc = typeof document !== 'undefined' ? document : undefined;
+  const metaCandidates = ['lovable:base-path', 'lovable-base-path', 'lovable:path'];
+  const metaMatch = metaCandidates
+    .map((name) => doc?.querySelector?.(`meta[name="${name}"]`)?.getAttribute?.('content'))
+    .find((value) => typeof value === 'string' && value.trim().length > 0);
+
+  const normalizedMeta = normalizeBaseCandidate(metaMatch);
+  if (normalizedMeta && normalizedMeta !== '/') {
+    return normalizedMeta;
+  }
+
+  const win = window as typeof window &
+    Partial<Record<string, unknown>> & {
+      __LOVABLE__?: { basePath?: string; paths?: { base?: string }; context?: { basePath?: string } };
+      lovable?: { basePath?: string };
+    };
+
+  const globalCandidates: Array<string | null | undefined> = [
+    win?.__LOVABLE_BASE_PATH as string | undefined,
+    win?.__LOVABLE_APP_BASE_PATH as string | undefined,
+    win?.LOVABLE_BASE_PATH as string | undefined,
+    win?.__APP_BASE_PATH__ as string | undefined,
+    win?.APP_BASE_PATH as string | undefined,
+    win?.__LOVABLE__?.basePath,
+    win?.__LOVABLE__?.paths?.base,
+    win?.__LOVABLE__?.context?.basePath,
+    win?.lovable?.basePath,
+  ];
+
+  for (const candidate of globalCandidates) {
+    const normalized = normalizeBaseCandidate(candidate);
+    if (normalized && normalized !== '/') {
+      return normalized;
+    }
+  }
+
+  return undefined;
+};
+
 const deriveBaseName = (): string => {
   const envAny = (import.meta as any)?.env ?? {};
+  const locationDerivedRaw = resolveBaseFromLocation();
+  const locationDerived = normalizeBaseCandidate(locationDerivedRaw);
+  const skipRootWhenNested = locationDerived && locationDerived !== '/' ? '/' : undefined;
+
   const envCandidates = [
+    envAny.VITE_LOVABLE_BASE_PATH as string | undefined,
+    envAny.LOVABLE_BASE_PATH as string | undefined,
     envAny.VITE_BASE_NAME as string | undefined,
     envAny.VITE_BASE_PATH as string | undefined,
     envAny.VITE_BASE_URL as string | undefined,
     envAny.BASE_URL as string | undefined,
   ];
+  const doc = typeof document !== 'undefined' ? document : undefined;
+  const candidates: Array<string | null | undefined> = [
+    detectLovableBasePath(),
+    ...envCandidates,
+    doc?.querySelector?.('base')?.getAttribute?.('href'),
+    doc?.baseURI,
+  ];
 
-  for (const candidate of envCandidates) {
+  for (const candidate of candidates) {
     const normalized = normalizeBaseCandidate(candidate);
-    if (normalized) return normalized;
+    if (!normalized) continue;
+    if (skipRootWhenNested && normalized === skipRootWhenNested) continue;
+    return normalized;
   }
 
-  if (typeof document !== 'undefined') {
-    const baseTagHref = document.querySelector?.('base')?.getAttribute?.('href');
-    const normalizedBaseTag = normalizeBaseCandidate(baseTagHref);
-    if (normalizedBaseTag) return normalizedBaseTag;
-
-    const normalizedDocBase = normalizeBaseCandidate(document.baseURI);
-    if (normalizedDocBase) return normalizedDocBase;
+  if (locationDerived && locationDerived !== '/') {
+    return locationDerived;
   }
 
-  const locationDerived = resolveBaseFromLocation();
   return locationDerived ?? '/';
 };
 
