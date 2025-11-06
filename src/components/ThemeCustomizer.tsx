@@ -1,6 +1,7 @@
 import { Palette, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { ThemeAccessibilityPanel } from '@/components/theme/ThemeAccessibilityPanel';
 import { ThemeDesignTokensPanel } from '@/components/theme/ThemeDesignTokensPanel';
 import { ThemeHueControls } from '@/components/theme/ThemeHueControls';
 import { ThemeMissionPresets } from '@/components/theme/ThemeMissionPresets';
@@ -188,6 +189,8 @@ export function ThemeCustomizer() {
             (key) => [key, DESIGN_SYSTEM.colors[key as keyof typeof DESIGN_SYSTEM.colors]],
           )}
         />
+
+        <ThemeAccessibilityPanel />
 
         <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-900/80 p-4">
           <div>
