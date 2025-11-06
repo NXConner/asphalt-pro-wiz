@@ -74,20 +74,23 @@ export function DivisionMapInterface() {
 
     filteredPoints.forEach((point) => {
       const tone = STATUS_COLORS[resolveStatusKey(point.status)] ?? '#38bdf8';
-      const marker = L.circleMarker(point.coordinates, {
+      const marker = L.circleMarker([point.lat, point.lng], {
         radius: 7,
         color: tone,
         weight: 2,
         fillColor: tone,
         fillOpacity: 0.75,
       }).addTo(markerLayerRef.current!);
-      marker.bindPopup(
-        `<strong>${point.name}</strong><br/>Status: ${point.status}<br/>Quote: $${point.quoteValue.toLocaleString()}<br/>Area: ${point.totalAreaSqFt.toLocaleString()} sq ft`,
-      );
+      const popupContent = [
+        `<strong>${point.address || 'Job #' + point.id.slice(0, 8)}</strong>`,
+        `Status: ${point.status}`,
+        point.value ? `Quote: $${point.value.toLocaleString()}` : null,
+      ].filter(Boolean).join('<br/>');
+      marker.bindPopup(popupContent);
     });
 
     if (filteredPoints.length) {
-      const bounds = L.latLngBounds(filteredPoints.map((point) => point.coordinates));
+      const bounds = L.latLngBounds(filteredPoints.map((point) => [point.lat, point.lng]));
       mapRef.current.fitBounds(bounds.pad(0.2));
     }
   }, [data, activeStatuses]);
@@ -97,7 +100,7 @@ export function DivisionMapInterface() {
       prev.includes(status) ? prev.filter((value) => value !== status) : [...prev, status],
     );
   const summaryMetrics = data
-    ? { jobs: data.points.length, quote: data.totalQuoteValue, area: data.totalAreaSqFt }
+    ? { jobs: data.points.length, quote: data.totalQuoteValue, area: 0 }
     : null;
   return (
     <DivisionCard variant="intel">
