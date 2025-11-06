@@ -21,7 +21,10 @@ COPY scripts ./scripts
 COPY supabase ./supabase
 COPY tests ./tests
 
-FROM sources AS quality
+FROM sources AS tooling
+ENV NODE_ENV=development
+
+FROM tooling AS quality
 RUN npm run lint \
   && npm run typecheck \
   && npm run test:unit -- --run
@@ -29,10 +32,12 @@ RUN npm run lint \
 FROM sources AS build
 ARG VITE_APP_VERSION=local-dev
 ARG VITE_BASE_PATH=/
+ARG VITE_BASE_NAME=/
 ARG VITE_ENVIRONMENT=production
 ENV NODE_ENV=production \
     VITE_APP_VERSION=${VITE_APP_VERSION} \
     VITE_BASE_PATH=${VITE_BASE_PATH} \
+    VITE_BASE_NAME=${VITE_BASE_NAME} \
     VITE_ENVIRONMENT=${VITE_ENVIRONMENT}
 RUN npm run build -- --base ${VITE_BASE_PATH} \
   && npm prune --omit=dev
