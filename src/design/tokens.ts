@@ -8,7 +8,11 @@ export type DivisionThemeId =
   | 'theme-division-stealth'
   | 'theme-division-combat'
   | 'theme-division-tactical'
-  | 'theme-division-hunter';
+  | 'theme-division-hunter'
+  | 'theme-division-sunrise'
+  | 'theme-division-evensong'
+  | 'theme-division-revival'
+  | 'theme-division-celestial';
 
 export interface DivisionThemeDefinition {
   id: DivisionThemeId;

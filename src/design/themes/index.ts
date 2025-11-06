@@ -99,6 +99,54 @@ export const DIVISION_THEMES: ThemeRegistry = {
       '--ring': '152 86% 54%',
     }),
   },
+    'theme-division-sunrise': {
+      id: 'theme-division-sunrise',
+      name: 'Sunrise Service',
+      description: 'Golden hour warmth for early-morning campus walkthroughs.',
+      tokens: withPrimary('32 96% 58%', '12 88% 62%', {
+        '--background': '215 62% 6%',
+        '--card': '214 56% 10%',
+        '--foreground': '38 28% 94%',
+        '--hud-grid-opacity': '0.18',
+        '--ring': '32 96% 64%',
+      }),
+    },
+    'theme-division-evensong': {
+      id: 'theme-division-evensong',
+      name: 'Evensong Twilight',
+      description: 'Indigo-lavender gradients with brass accents for evening briefings.',
+      tokens: withPrimary('266 82% 64%', '38 96% 60%', {
+        '--background': '232 64% 5%',
+        '--card': '232 58% 10%',
+        '--foreground': '230 24% 94%',
+        '--hud-grid-opacity': '0.24',
+        '--ring': '266 82% 60%',
+      }),
+    },
+    'theme-division-revival': {
+      id: 'theme-division-revival',
+      name: 'Revival Energy',
+      description: 'Teal and cobalt uplift for youth night rally planning.',
+      tokens: withPrimary('168 82% 54%', '210 92% 60%', {
+        '--background': '204 68% 6%',
+        '--card': '204 60% 10%',
+        '--foreground': '195 24% 94%',
+        '--hud-grid-opacity': '0.2',
+        '--ring': '210 92% 62%',
+      }),
+    },
+    'theme-division-celestial': {
+      id: 'theme-division-celestial',
+      name: 'Celestial Chapel',
+      description: 'Soft sky gradients with luminous whites for worship center dashboards.',
+      tokens: withPrimary('198 88% 72%', '26 92% 72%', {
+        '--background': '210 58% 12%',
+        '--card': '210 34% 18%',
+        '--foreground': '210 18% 98%',
+        '--hud-grid-opacity': '0.12',
+        '--ring': '198 88% 68%',
+      }),
+    },
 };
 
 export const DIVISION_THEME_IDS = Object.keys(DIVISION_THEMES) as DivisionThemeId[];

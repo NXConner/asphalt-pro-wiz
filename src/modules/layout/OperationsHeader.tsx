@@ -20,6 +20,7 @@ import type { CanvasWallpaper } from './wallpapers';
 
 import { TelemetrySignal } from '@/components/telemetry';
 import { RealtimeNotifications } from '@/components/RealtimeNotifications';
+import { ThemeCommandCenter } from '@/components/ThemeCommandCenter';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -291,26 +292,27 @@ export const OperationsHeader = memo(function OperationsHeader({
           <SwitchCamera className="mr-2 h-4 w-4" />
           Cycle Atmosphere
         </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          size="lg"
-          className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
-          onClick={handleAuthAction}
-          title={isAuthenticated ? user?.email || undefined : 'Sign in'}
-        >
-          {isAuthenticated ? (
-            <>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </>
-          ) : (
-            <>
-              <LogIn className="mr-2 h-4 w-4" />
-              Sign In
-            </>
-          )}
-        </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
+            onClick={handleAuthAction}
+            title={isAuthenticated ? user?.email || undefined : 'Sign in'}
+          >
+            {isAuthenticated ? (
+              <>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </>
+            ) : (
+              <>
+                <LogIn className="mr-2 h-4 w-4" />
+                Sign In
+              </>
+            )}
+          </Button>
+          <ThemeCommandCenter />
         <UserPresence />
         <RealtimeNotifications />
         <ThemeToggle />
