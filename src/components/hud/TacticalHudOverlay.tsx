@@ -100,15 +100,15 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
   return (
     <div
       className={cn(
-        'pointer-events-none absolute inset-0 z-20 flex flex-col justify-between px-4 pt-4 pb-10 sm:px-6 lg:px-10',
-        'text-slate-100/80 backdrop-blur-[2px]',
+        'pointer-events-none fixed inset-0 z-[5] flex flex-col justify-between px-4 pt-4 pb-10 sm:px-6 lg:px-10',
+        'text-slate-100/80',
         className,
       )}
     >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,28rem)]">
         <motion.section
           {...motionPreset}
-          className="relative isolate flex flex-col gap-5 rounded-3xl border border-white/10 bg-slate-950/35 px-5 py-4 shadow-[0_24px_120px_rgba(4,8,20,0.38)] backdrop-blur"
+          className="pointer-events-auto relative isolate flex flex-col gap-5 rounded-3xl border border-white/10 bg-slate-950/60 px-5 py-4 shadow-[0_8px_32px_rgba(4,8,20,0.25)] backdrop-blur-md"
         >
           <div className="hud-grid-divider absolute inset-y-3 left-0 w-[1px] opacity-30" />
           <div className="flex items-center justify-between gap-4">
@@ -161,7 +161,7 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
         <motion.section
           {...motionPreset}
           transition={{ ...motionPreset.transition, delay: 0.18 }}
-          className="relative flex flex-col gap-4 rounded-3xl border border-white/10 bg-slate-950/25 px-5 py-4 shadow-[0_24px_120px_rgba(4,8,20,0.35)] backdrop-blur"
+          className="pointer-events-auto relative flex flex-col gap-4 rounded-3xl border border-white/10 bg-slate-950/60 px-5 py-4 shadow-[0_8px_32px_rgba(4,8,20,0.25)] backdrop-blur-md"
         >
           <header className="flex items-center justify-between">
             <p className="hud-eyebrow">Mission Telemetry</p>

@@ -171,7 +171,7 @@ const Index = () => {
           estimatorStudio={<EstimatorStudio estimator={estimator} />}
           insightTower={<InsightTowerPanel estimator={estimator} />}
           engagementHub={
-            <div className="space-y-6">
+            <div className="space-y-5">
               <EngagementHubPanel estimator={estimator} />
               <CanvasPanel
                 title="Regulatory Toolkit"

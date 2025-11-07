@@ -115,21 +115,21 @@ export function CanvasPanel({
     <section
       id={id}
       className={cn(
-        'relative overflow-hidden rounded-[var(--hud-radius-lg)] border bg-slate-950/60 text-slate-50 shadow-[0_28px_120px_rgba(8,12,24,0.55)] backdrop-blur-[var(--hud-panel-blur)] transition-transform duration-300 hover:-translate-y-1',
+        'relative overflow-hidden rounded-[var(--hud-radius-lg)] border bg-slate-950/70 text-slate-50 shadow-[0_8px_32px_rgba(8,12,24,0.35)] backdrop-blur-sm transition-all duration-200',
         BORDER_ACCENT[tone],
         className,
       )}
     >
       <div
         className={cn(
-          'pointer-events-none absolute inset-0 bg-gradient-to-br opacity-80 mix-blend-screen',
+          'pointer-events-none absolute inset-0 bg-gradient-to-br opacity-50 mix-blend-screen',
           `bg-gradient-to-br ${GRADIENT_MAP[tone]}`,
         )}
         aria-hidden
       />
-      <CanvasGrid className="opacity-[var(--hud-grid-opacity)]" />
-      <ParticleBackground preset={PARTICLE_MAP[tone]} className="opacity-60" />
-      <ScanOverlay className="opacity-60" color="rgba(255,128,0,0.35)" />
+      <CanvasGrid className="opacity-[0.15]" />
+      <ParticleBackground preset={PARTICLE_MAP[tone]} className="opacity-30" />
+      <ScanOverlay className="opacity-30" color="rgba(255,128,0,0.25)" />
       <CornerBracket size={44} />
       <div className="relative z-10 flex flex-col gap-6 p-6 sm:p-9">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
