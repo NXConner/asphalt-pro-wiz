@@ -210,6 +210,7 @@ export type Database = {
         Row: {
           alert_type: string
           created_at: string | null
+          created_by: string | null
           employee_id: string | null
           id: string
           is_read: boolean | null
@@ -221,6 +222,7 @@ export type Database = {
         Insert: {
           alert_type: string
           created_at?: string | null
+          created_by?: string | null
           employee_id?: string | null
           id?: string
           is_read?: boolean | null
@@ -232,6 +234,7 @@ export type Database = {
         Update: {
           alert_type?: string
           created_at?: string | null
+          created_by?: string | null
           employee_id?: string | null
           id?: string
           is_read?: boolean | null
