@@ -488,6 +488,7 @@ export function useEstimatorState(): EstimatorState {
       customerPortal: isEnabled('customerPortal'),
       observability: isEnabled('observability'),
       commandCenter: isEnabled('commandCenter'),
+      tacticalMapV2: isEnabled('tacticalMapV2'),
       ownerMode,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps

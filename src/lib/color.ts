@@ -147,7 +147,10 @@ const CONTRAST_TARGETS: Array<{
 
 export const summarizeThemeAccessibility = (tokens: DesignTokens): ThemeAccessibilitySummary => {
   const items = CONTRAST_TARGETS.map(({ id, label, foreground, background }) => {
-    const { ratio, level, largeTextPass } = assessContrast(tokens[foreground], tokens[background]);
+    const { ratio, level, largeTextPass } = assessContrast(
+      String(tokens[foreground]),
+      String(tokens[background])
+    );
     return { id, label, ratio, level, largeTextPass };
   });
 

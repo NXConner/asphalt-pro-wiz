@@ -1,5 +1,4 @@
 import { useContext } from 'react';
-import { useContext } from 'react';
 
 import type { MissionSchedulerHook } from '@/hooks/useMissionScheduler';
 import { MissionSchedulerContext } from '@/modules/scheduler/MissionSchedulerContext.constants';

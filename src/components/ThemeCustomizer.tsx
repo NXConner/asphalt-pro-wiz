@@ -59,8 +59,14 @@ export function ThemeCustomizer() {
 
   const handleWallpaperSelect = useCallback(
     (asset: Parameters<typeof setWallpaper>[0]) => {
-      if (!asset || !('id' in asset)) return;
-      setActiveWallpaperId(asset.id ?? null);
+      if (!asset) return;
+      if (typeof asset === 'string') {
+        setWallpaper(asset);
+        return;
+      }
+      if ('id' in asset) {
+        setActiveWallpaperId(asset.id ?? null);
+      }
       setWallpaper(asset);
     },
     [setWallpaper],

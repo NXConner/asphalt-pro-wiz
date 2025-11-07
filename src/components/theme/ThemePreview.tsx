@@ -15,7 +15,7 @@ export function ThemePreview() {
           <Badge variant="secondary" className="bg-white/10 text-xs uppercase tracking-[0.3em] text-slate-100">
             Chapel Ops
           </Badge>
-          <Switch checked aria-label="Demo toggle" readOnly className="pointer-events-none" />
+          <Switch checked aria-label="Demo toggle" className="pointer-events-none" />
         </div>
         <CardTitle className="flex items-center gap-2 text-lg font-semibold uppercase tracking-[0.35em]">
           <Sparkles className="h-4 w-4" /> Preview Mission
