@@ -1,6 +1,6 @@
 # Secrets Manager Templates
 
-This folder documents how to connect the Pavement Performance Suite to a production-grade secrets manager. The application expects configuration values to be surfaced as environment variables, mirroring the keys in `.env.example`.
+This folder documents how to connect the Pavement Performance Suite to a production-grade secrets manager. The application expects configuration values to be surfaced as environment variables, mirroring the keys in `.env.example`. Include the HUD sync secrets introduced in Phase 2 (`HUD_CONFIG_EXPORT_SIGNING_KEY`, `HUD_CONFIG_EXPORT_ENCRYPTION_KEY`, `HUD_CONFIG_EXPORT_BUCKET`) whenever you provision environments.
 
 ## Doppler
 
@@ -30,15 +30,17 @@ This folder documents how to connect the Pavement Performance Suite to a product
 1. Enable the KV secrets engine and create a policy that grants read access to a `pavement-performance-suite` path.
 2. Store secrets under `kv/data/pavement-performance-suite`, for example:
 
-   ```json
-   {
-     "data": {
-       "VITE_SUPABASE_URL": "https://...",
-       "SUPABASE_SERVICE_ROLE_KEY": "...",
-       "VITE_GEMINI_PROXY_URL": "https://..."
-     }
-   }
-   ```
+    ```json
+    {
+      "data": {
+        "VITE_SUPABASE_URL": "https://...",
+        "SUPABASE_SERVICE_ROLE_KEY": "...",
+        "VITE_GEMINI_PROXY_URL": "https://...",
+        "HUD_CONFIG_EXPORT_SIGNING_KEY": "...",
+        "HUD_CONFIG_EXPORT_ENCRYPTION_KEY": "..."
+      }
+    }
+    ```
 
 3. Copy `vault.env.template` to `vault.env`, fill in your Vault address/token, then source it to render a `.env.runtime` file via the included script:
 
@@ -53,13 +55,14 @@ This folder documents how to connect the Pavement Performance Suite to a product
 
 1. Store secrets in a JSON secret, for example `pavement/performance-suite/prod` (see `aws-secrets-manager.json.example` for a full payload):
 
-   ```json
-   {
-     "VITE_SUPABASE_URL": "https://...",
-     "SUPABASE_SERVICE_ROLE_KEY": "...",
-     "DATABASE_URL": "postgres://..."
-   }
-   ```
+    ```json
+    {
+      "VITE_SUPABASE_URL": "https://...",
+      "SUPABASE_SERVICE_ROLE_KEY": "...",
+      "DATABASE_URL": "postgres://...",
+      "HUD_CONFIG_EXPORT_BUCKET": "s3://..."
+    }
+    ```
 
 2. Fetch and export the values at runtime:
 
