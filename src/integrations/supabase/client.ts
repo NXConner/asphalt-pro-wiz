@@ -9,17 +9,20 @@ const runtimeEnv =
   (typeof import.meta !== 'undefined' && (import.meta as any)?.env) ||
   (typeof process !== 'undefined' ? process.env : {});
 
+const DEFAULT_SUPABASE_URL = 'https://vodglzbgqsafghlihivy.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvZGdsemJncXNhZmdobGloaXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzNDcwMDQsImV4cCI6MjA2NDkyMzAwNH0.uLAZ_zY3zY-QmDDXwkAuspCUW9NpotsTV5fVCiHf5mM';
+
 const SUPABASE_URL =
   (runtimeEnv?.VITE_SUPABASE_URL as string | undefined) ||
   (runtimeEnv?.SUPABASE_URL as string | undefined) ||
-  '';
+  DEFAULT_SUPABASE_URL;
 
 const SUPABASE_BROWSER_KEY =
   (runtimeEnv?.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
   (runtimeEnv?.VITE_SUPABASE_ANON_KEY as string | undefined) ||
   (runtimeEnv?.SUPABASE_ANON_KEY as string | undefined) ||
-  '';
-
+  DEFAULT_SUPABASE_ANON_KEY;
 const demoModeEnabled = isDemoModeEnabled();
 
 export const SUPABASE_CONFIGURATION_MESSAGE =
