@@ -43,6 +43,41 @@ export interface UserOrgMembershipRow {
   joined_at: string;
 }
 
+export interface MissionCrewMemberRow {
+  id: string;
+  org_id: string;
+  name: string;
+  role: string | null;
+  color: string | null;
+  max_hours_per_day: number;
+  availability: string[];
+  metadata: Json;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MissionTaskRow {
+  id: string;
+  org_id: string;
+  job_id: string | null;
+  job_name: string | null;
+  site: string | null;
+  start_at: string;
+  end_at: string;
+  crew_required: number;
+  crew_assigned_ids: string[];
+  status: 'planned' | 'scheduled' | 'in_progress' | 'completed' | 'blocked';
+  priority: 'critical' | 'standard' | 'low';
+  accessibility_impact: 'entrance' | 'parking' | 'mobility' | 'auditorium' | 'walkway' | 'none';
+  notes: string | null;
+  color: string | null;
+  metadata: Json;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface JobRow {
   id: string;
   org_id: string;
@@ -129,6 +164,49 @@ type PublicTables = {
     Row: UserOrgMembershipRow;
     Insert: { user_id: string; org_id: string; role: RoleName; joined_at?: string };
     Update: Partial<UserOrgMembershipRow>;
+    Relationships: [];
+  };
+  mission_crew_members: {
+    Row: MissionCrewMemberRow;
+    Insert: {
+      id?: string;
+      org_id: string;
+      name: string;
+      role?: string | null;
+      color?: string | null;
+      max_hours_per_day?: number;
+      availability?: string[];
+      metadata?: Json;
+      created_by?: string | null;
+      created_at?: string;
+      updated_at?: string;
+    };
+    Update: Partial<MissionCrewMemberRow>;
+    Relationships: [];
+  };
+  mission_tasks: {
+    Row: MissionTaskRow;
+    Insert: {
+      id?: string;
+      org_id: string;
+      job_id?: string | null;
+      job_name?: string | null;
+      site?: string | null;
+      start_at: string;
+      end_at: string;
+      crew_required?: number;
+      crew_assigned_ids?: string[];
+      status?: MissionTaskRow['status'];
+      priority?: MissionTaskRow['priority'];
+      accessibility_impact?: MissionTaskRow['accessibility_impact'];
+      notes?: string | null;
+      color?: string | null;
+      metadata?: Json;
+      created_by?: string | null;
+      created_at?: string;
+      updated_at?: string;
+    };
+    Update: Partial<MissionTaskRow>;
     Relationships: [];
   };
   jobs: {
@@ -220,6 +298,9 @@ export type Database = {
     Enums: {
       role_name: RoleName;
       job_status: JobStatus;
+      mission_task_status: MissionTaskRow['status'];
+      mission_task_priority: MissionTaskRow['priority'];
+      mission_accessibility_impact: MissionTaskRow['accessibility_impact'];
     };
   };
 };

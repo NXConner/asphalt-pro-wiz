@@ -96,6 +96,8 @@ npm run seed
 3. Intake form queues missions with crew requirements, ADA impacts, and blackout-aware scheduling.
 4. Drag cards on the timeline to reschedule; conflicts and ADA warnings surface in real time.
 5. Structured logs emit via the log-beacon function when observability is enabled.
+6. Supabase persistence keeps missions, crew availability, and blackout windows in sync (`mission_tasks`, `mission_crew_members`, `crew_blackouts`).
+7. Import worship calendars (`.ics`) from the Mission Sync Center to auto-generate blackout buffers around services.
 
 ### AI Proxy & Log Beacon (Supabase Edge)
 

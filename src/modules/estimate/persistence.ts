@@ -5,12 +5,12 @@ import type {
   JobRow,
   JobStatus,
   Tables,
-  UserOrgMembershipRow,
 } from '@/integrations/supabase/types';
 import { isSupabaseConfigured, supabase } from '@/integrations/supabase/client';
 import { logError, logEvent } from '@/lib/logging';
 import type { CostBreakdown, Costs, ProjectInputs } from '@/lib/calculations';
 import type { Json } from '@/integrations/supabase/types';
+import { getCurrentUserId, resolveOrgId } from '@/lib/supabaseOrg';
 
 type EstimateInsert = Tables['estimates']['Insert'];
 type EstimateLineItemInsert = Tables['estimate_line_items']['Insert'];
@@ -288,32 +288,6 @@ export async function saveEstimateDocument(payload: DocumentPayload): Promise<st
     logError(error, { source: 'estimate.document', title: payload.title });
     throw error;
   }
-}
-
-async function getCurrentUserId(): Promise<string | null> {
-  const { data, error } = await supabase.auth.getUser();
-  if (error) throw error;
-  return data.user?.id ?? null;
-}
-
-async function resolveOrgId(): Promise<string | null> {
-  try {
-    const { data, error } = await supabase.rpc('current_user_default_org');
-    if (!error && data) {
-      return data as string;
-    }
-  } catch (error) {
-    logError(error, { source: 'estimate.resolveOrg.rpc' });
-  }
-
-  const { data: memberships, error } = await supabase
-    .from('user_org_memberships')
-    .select<'user_org_memberships', Pick<UserOrgMembershipRow, 'org_id'>>('org_id')
-    .order('joined_at', { ascending: true })
-    .limit(1);
-
-  if (error) throw error;
-  return memberships?.[0]?.org_id ?? null;
 }
 
 async function findJobId(orgId: string, name: string, address: string) {
