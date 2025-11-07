@@ -91,6 +91,15 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
   const containerRef = useRef<HTMLDivElement>(null);
   const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
   
+  // Alert system
+  const triggerAlert = useCallback((message: string, type: 'info' | 'warning' | 'error' = 'info') => {
+    const id = Math.random().toString(36).substr(2, 9);
+    setAlerts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setAlerts(prev => prev.filter(a => a.id !== id));
+    }, 5000);
+  }, []);
+  
   useEffect(() => {
     const handleResize = () => {
       if (preferences.hudLayoutPreset !== 'custom' && !isMobile) {
@@ -104,13 +113,25 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
       }
     };
     
+    const handleProfileShortcut = (e: CustomEvent<number>) => {
+      const profileIndex = e.detail;
+      const profile = preferences.hudProfiles[profileIndex];
+      if (profile) {
+        const { loadHudProfile } = require('@/lib/theme');
+        loadHudProfile(profile.name);
+        triggerAlert(`Loaded profile: ${profile.name}`, 'info');
+      }
+    };
+    
     window.addEventListener('resize', handleResize);
     window.addEventListener('setHudLayout', handleLayoutShortcut as EventListener);
+    window.addEventListener('loadHudProfile', handleProfileShortcut as EventListener);
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('setHudLayout', handleLayoutShortcut as EventListener);
+      window.removeEventListener('loadHudProfile', handleProfileShortcut as EventListener);
     };
-  }, [preferences.hudLayoutPreset, isMobile, setHudLayoutPreset]);
+  }, [preferences.hudLayoutPreset, preferences.hudProfiles, isMobile, setHudLayoutPreset, triggerAlert]);
   
   const formattedCost = typeof totalCost === 'number' ? currencyFormatter.format(totalCost) : '—';
   const formattedArea = totalAreaSqFt > 0 ? `${numberFormatter.format(totalAreaSqFt)} sq ft` : 'Awaiting draw';
@@ -186,15 +207,6 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [preferences.hudProximityEffect, preferences.hudProximityDistance, isMobile]);
 
-  // Alert system
-  const triggerAlert = useCallback((message: string, type: 'info' | 'warning' | 'error' = 'info') => {
-    const id = Math.random().toString(36).substr(2, 9);
-    setAlerts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setAlerts(prev => prev.filter(a => a.id !== id));
-    }, 5000);
-  }, []);
-
   // Quick shortcuts
   const handleQuickAction = useCallback((action: string) => {
     switch (action) {
@@ -267,7 +279,27 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
       dragConstraints={{ top: 0, left: 0, right: window.innerWidth - 400, bottom: window.innerHeight - 200 }}
       onDragEnd={(_, info) => {
         if (!isMobile && !preferences.hudPinned) {
-          setHudPosition({ x: info.point.x, y: info.point.y });
+          let newX = info.point.x;
+          let newY = info.point.y;
+          
+          // Grid snapping
+          if (preferences.hudGridSnap) {
+            const gridSize = preferences.hudGridSize;
+            newX = Math.round(newX / gridSize) * gridSize;
+            newY = Math.round(newY / gridSize) * gridSize;
+          }
+          
+          // Collision detection
+          if (preferences.hudCollisionDetection) {
+            const hudWidth = preferences.hudMiniMode ? 280 : preferences.hudSize.width;
+            const hudHeight = preferences.hudMiniMode ? 200 : preferences.hudSize.height;
+            
+            // Keep within viewport bounds
+            newX = Math.max(0, Math.min(newX, window.innerWidth - hudWidth));
+            newY = Math.max(0, Math.min(newY, window.innerHeight - hudHeight));
+          }
+          
+          setHudPosition({ x: newX, y: newY });
         }
       }}
       onMouseEnter={() => {

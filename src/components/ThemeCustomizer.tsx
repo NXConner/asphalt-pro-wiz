@@ -52,6 +52,9 @@ export function ThemeCustomizer() {
     saveHudProfile,
     loadHudProfile,
     deleteHudProfile,
+    setHudGridSnap,
+    setHudGridSize,
+    setHudCollisionDetection,
     reset,
   } = useTheme();
   const { builtin, custom, addWallpaper, removeWallpaper, getById } = useWallpaperLibrary();
@@ -241,6 +244,12 @@ export function ThemeCustomizer() {
               onSaveProfile={saveHudProfile}
               onLoadProfile={loadHudProfile}
               onDeleteProfile={deleteHudProfile}
+              hudGridSnap={preferences.hudGridSnap}
+              setHudGridSnap={setHudGridSnap}
+              hudGridSize={preferences.hudGridSize}
+              setHudGridSize={setHudGridSize}
+              hudCollisionDetection={preferences.hudCollisionDetection}
+              setHudCollisionDetection={setHudCollisionDetection}
             />
           <ThemeWallpaperManager
             builtin={builtin}

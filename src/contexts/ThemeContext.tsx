@@ -36,6 +36,9 @@ import {
   saveHudProfile as persistSaveHudProfile,
   loadHudProfile as persistLoadHudProfile,
   deleteHudProfile as persistDeleteHudProfile,
+  setHudGridSnap as persistHudGridSnap,
+  setHudGridSize as persistHudGridSize,
+  setHudCollisionDetection as persistHudCollisionDetection,
   resetThemePreferences,
   type ThemePreferences,
   type ThemeMode,
@@ -85,6 +88,9 @@ interface ThemeContextValue {
   saveHudProfile: (name: string) => void;
   loadHudProfile: (name: string) => void;
   deleteHudProfile: (name: string) => void;
+  setHudGridSnap: (enabled: boolean) => void;
+  setHudGridSize: (size: number) => void;
+  setHudCollisionDetection: (enabled: boolean) => void;
   reset: () => void;
 }
 
@@ -253,6 +259,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     },
     deleteHudProfile: (name) => {
       persistDeleteHudProfile(name);
+      syncPreferences();
+    },
+    setHudGridSnap: (enabled) => {
+      persistHudGridSnap(enabled);
+      syncPreferences();
+    },
+    setHudGridSize: (size) => {
+      persistHudGridSize(size);
+      syncPreferences();
+    },
+    setHudCollisionDetection: (enabled) => {
+      persistHudCollisionDetection(enabled);
       syncPreferences();
     },
     reset: () => {

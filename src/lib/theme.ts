@@ -89,6 +89,9 @@ export interface ThemePreferences {
   hudAlertAnimation: HudAlertAnimation;
   hudQuickShortcuts: boolean;
   hudProfiles: HudConfigurationProfile[];
+  hudGridSnap: boolean;
+  hudGridSize: number;
+  hudCollisionDetection: boolean;
 }
 
 export type ThemeWallpaperSelection =
@@ -140,6 +143,9 @@ const createDefaults = (): ThemePreferences => {
     hudAlertAnimation: 'pulse',
     hudQuickShortcuts: true,
     hudProfiles: [],
+    hudGridSnap: true,
+    hudGridSize: 20,
+    hudCollisionDetection: true,
   };
 };
 
@@ -675,6 +681,30 @@ export function deleteHudProfile(name: string): void {
   const hudProfiles = prefs.hudProfiles.filter(p => p.name !== name);
   const next = coerceWallpaper({ ...prefs, hudProfiles });
   saveThemePreferences(next);
+}
+
+export function setHudGridSnap(enabled: boolean): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, hudGridSnap: enabled });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudGridSize(size: number): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({
+    ...prefs,
+    hudGridSize: Math.max(10, Math.min(50, size)),
+  });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudCollisionDetection(enabled: boolean): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, hudCollisionDetection: enabled });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
 }
 
 export function resetThemePreferences(): ThemePreferences {

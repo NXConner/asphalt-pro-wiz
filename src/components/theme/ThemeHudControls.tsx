@@ -53,6 +53,12 @@ interface ThemeHudControlsProps {
   onSaveProfile: (name: string) => void;
   onLoadProfile: (name: string) => void;
   onDeleteProfile: (name: string) => void;
+  hudGridSnap: boolean;
+  setHudGridSnap: (enabled: boolean) => void;
+  hudGridSize: number;
+  setHudGridSize: (size: number) => void;
+  hudCollisionDetection: boolean;
+  setHudCollisionDetection: (enabled: boolean) => void;
 }
 
 export function ThemeHudControls({
@@ -98,6 +104,12 @@ export function ThemeHudControls({
   onSaveProfile,
   onLoadProfile,
   onDeleteProfile,
+  hudGridSnap,
+  setHudGridSnap,
+  hudGridSize,
+  setHudGridSize,
+  hudCollisionDetection,
+  setHudCollisionDetection,
 }: ThemeHudControlsProps) {
   const [localOpacity, setLocalOpacity] = useState(hudOpacity);
   const [localBlur, setLocalBlur] = useState(hudBlur);
@@ -566,6 +578,59 @@ export function ThemeHudControls({
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* Grid & Collision */}
+            <div className="space-y-3 pt-3 border-t border-border/30">
+              <div className="flex items-center gap-3">
+                <Layers className="h-4 w-4 text-primary" />
+                <Label className="text-sm font-medium text-foreground/90">Grid & Collision</Label>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-border/40 bg-card/30 p-3">
+                <div className="space-y-0.5">
+                  <Label htmlFor="hud-grid-snap" className="text-sm font-medium text-foreground/90">
+                    Grid Snapping
+                  </Label>
+                  <p className="text-xs text-muted-foreground">Snap to grid when dragging</p>
+                </div>
+                <Switch
+                  id="hud-grid-snap"
+                  checked={hudGridSnap}
+                  onCheckedChange={setHudGridSnap}
+                />
+              </div>
+              
+              {hudGridSnap && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="hud-grid-size" className="text-sm font-medium text-foreground/90">
+                      Grid Size: {hudGridSize}px
+                    </Label>
+                  </div>
+                  <Slider
+                    id="hud-grid-size"
+                    value={[hudGridSize]}
+                    onValueChange={([value]) => setHudGridSize(value)}
+                    min={10}
+                    max={50}
+                    step={5}
+                  />
+                </div>
+              )}
+              
+              <div className="flex items-center justify-between rounded-lg border border-border/40 bg-card/30 p-3">
+                <div className="space-y-0.5">
+                  <Label htmlFor="hud-collision" className="text-sm font-medium text-foreground/90">
+                    Collision Detection
+                  </Label>
+                  <p className="text-xs text-muted-foreground">Prevent off-screen positioning</p>
+                </div>
+                <Switch
+                  id="hud-collision"
+                  checked={hudCollisionDetection}
+                  onCheckedChange={setHudCollisionDetection}
+                />
+              </div>
             </div>
           </>
         )}
