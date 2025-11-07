@@ -1,39 +1,66 @@
+# Pavement Performance Suite Docker context exclusions.
+
+# Dependencies
 node_modules
+bun.lockb
+
+# Build outputs
 dist
 build
 coverage
 reports
 test-results
 playwright-report
-tmp
-temp
-.cache
+
+# Environment & secrets
+.env
+.env.*
+.envrc
+
+# Tooling & IDE state
+.git
+.gitmodules
+.gitignore
+.husky
+.github
+.vscode
+.idea
 .history
 .cursor
 .cursorrules
-.git
-.gitignore
-.gitmodules
-.husky
-.github
-.idea
-.vscode
-deleted files
-**/__pycache__
-*.log
-npm-debug.log
-yarn-error.log
-pnpm-debug.log
-.env
-.env.*.local
-.envrc
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Temporary caches
+tmp
+temp
+.cache
+
+# Archived items
+deleted files/
+
+# Supabase local data
+supabase/.temp
+supabase/.branches
+
+# Android build artifacts
+android/.gradle
+android/app/build
+
+# Docker overrides
 Dockerfile.dev
 Dockerfile.local
 docker-compose.override.yml
 docker-compose.local.yml
+
+# Logs
+*.log
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Script outputs
 scripts/load/output
 docs/swagger.json
-android/.gradle
-android/app/build
-supabase/.temp
-bun.lockb

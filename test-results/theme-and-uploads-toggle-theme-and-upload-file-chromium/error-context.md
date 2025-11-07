@@ -1,0 +1,1810 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - link "Skip to main content" [ref=e3] [cursor=pointer]:
+    - /url: "#main-content"
+  - alert [ref=e4]:
+    - heading "Supabase configuration required" [level=5] [ref=e5]:
+      - img [ref=e6]
+      - text: Supabase configuration required
+    - generic [ref=e9]:
+      - paragraph [ref=e10]: "Supabase environment not configured: set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY (or VITE_SUPABASE_ANON_KEY) before starting the app."
+      - paragraph [ref=e11]:
+        - text: Copy
+        - code [ref=e12]: .env.example
+        - text: to
+        - code [ref=e13]: .env
+        - text: ", provide the Supabase URL and browser key tied to your Virginia and North Carolina deployments, then refresh the running dev server so the new environment variables load."
+      - paragraph [ref=e14]:
+        - text: "Required keys:"
+        - code [ref=e15]: VITE_SUPABASE_URL
+        - text: ","
+        - code [ref=e16]: VITE_SUPABASE_PUBLISHABLE_KEY
+        - text: (or
+        - code [ref=e17]: VITE_SUPABASE_ANON_KEY
+        - text: ).
+  - region "Notifications (F8)":
+    - list
+  - region "Notifications alt+T"
+  - generic [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - heading "Accessibility Checker" [level=2] [ref=e21]:
+          - img [ref=e22]
+          - text: Accessibility Checker
+        - button "×" [ref=e25] [cursor=pointer]:
+          - generic [ref=e27]: ×
+      - paragraph [ref=e28]: Development tool - scans for a11y issues
+    - generic [ref=e29]:
+      - button "Scan Page" [ref=e30] [cursor=pointer]:
+        - generic [ref=e32]: Scan Page
+      - generic [ref=e33]:
+        - img [ref=e34]
+        - paragraph [ref=e37]: No issues found. Click "Scan Page" to check.
+  - main [ref=e38]:
+    - heading "Pavement Performance Suite" [level=1] [ref=e39]
+    - generic [ref=e40]:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - paragraph: Current Mission
+                - heading "Pavement Mission" [level=2]
+              - generic:
+                - generic: STATUS
+                - generic: NEED_ESTIMATE
+                - generic: Reconnaissance
+            - generic:
+              - article:
+                - text: Mission Budget
+                - paragraph: —
+              - article:
+                - text: Surface Footprint
+                - paragraph: Awaiting draw
+              - article:
+                - text: Travel Logistics
+                - paragraph: Pending capture
+            - generic:
+              - article:
+                - generic:
+                  - text: Site Coordinates
+                  - paragraph: No lock
+                - generic:
+                  - img
+              - article:
+                - generic:
+                  - text: Schedule Window
+                  - paragraph: Not scheduled
+                - generic:
+                  - img
+          - generic:
+            - generic:
+              - paragraph: Mission Telemetry
+              - generic: Updated Nov 7, 10:37 AM
+            - list:
+              - listitem: Image Analyzer
+              - listitem: AI Assistant
+              - listitem: PWA Mode
+              - listitem: Localization
+              - listitem: Receipts
+              - listitem: Scheduler
+              - listitem: Optimizer
+              - listitem: Customer Portal
+              - listitem: Observability
+              - listitem: Command Center
+              - listitem: tacticalMapV2
+              - listitem: Owner Mode
+            - generic:
+              - generic:
+                - generic: Segments
+                - generic: "0"
+              - generic:
+                - generic: Crack Footage
+                - generic: 0.0 ft
+              - generic:
+                - generic: Enhancements
+                - generic: "0"
+        - generic:
+          - generic:
+            - text: Command Mode
+            - paragraph: Reconnaissance
+          - generic:
+            - text: Live Flags
+            - paragraph: "8"
+            - paragraph: 12 total
+          - generic:
+            - text: Area Captured
+            - paragraph: Awaiting draw
+          - generic:
+            - text: RT Distance
+            - paragraph: Pending capture
+      - generic [ref=e42]:
+        - heading "Pavement Performance Suite - Asphalt Maintenance Estimating" [level=1] [ref=e43]
+        - generic [ref=e44]:
+          - generic [ref=e45]:
+            - generic [ref=e46]:
+              - generic [ref=e47]:
+                - img [ref=e48]
+                - generic [ref=e50]: "Operations Canvas : Tactical Command"
+              - generic [ref=e51]:
+                - heading "New Pavement Mission" [level=1] [ref=e52]
+                - paragraph [ref=e53]: Warm dusk glow across a tactical grid inspired by post-operation debriefs.
+              - generic [ref=e54]:
+                - generic [ref=e55]:
+                  - img [ref=e58]
+                  - generic [ref=e61]:
+                    - generic [ref=e62]: Total Scope
+                    - generic [ref=e63]: –
+                - generic [ref=e64]:
+                  - img [ref=e67]
+                  - generic [ref=e70]:
+                    - generic [ref=e71]: Projected Quote
+                    - generic [ref=e72]: –
+                - generic [ref=e73]: Twilight Ops
+              - generic [ref=e74]:
+                - generic [ref=e75]:
+                  - generic [ref=e78]: Job Telemetry
+                  - generic [ref=e79]: Offline
+                - generic [ref=e80]: Reconnect required
+                - button "Sync telemetry" [ref=e81] [cursor=pointer]:
+                  - generic [ref=e83]:
+                    - img
+                    - text: Sync
+            - generic [ref=e84]:
+              - generic [ref=e85]:
+                - img [ref=e88]
+                - generic [ref=e90]:
+                  - generic [ref=e91]: Active Jobs
+                  - generic [ref=e92]: –
+                  - generic [ref=e93]: Signal paused
+              - generic [ref=e94]:
+                - img [ref=e97]
+                - generic [ref=e99]:
+                  - generic [ref=e100]: Total Quote Value
+                  - generic [ref=e101]: –
+                  - generic [ref=e102]: Last signal Awaiting updates
+              - generic [ref=e103]:
+                - generic [ref=e104]:
+                  - img [ref=e105]
+                  - generic [ref=e108]: Status Distribution
+                - paragraph [ref=e109]: Awaiting telemetry events. Create or update jobs to populate the command map.
+          - generic [ref=e110]:
+            - link "Open Command Center" [ref=e111] [cursor=pointer]:
+              - /url: /command-center
+              - img
+              - text: Open Command Center
+            - button "Cycle Atmosphere" [ref=e112] [cursor=pointer]:
+              - generic [ref=e114]:
+                - img
+                - text: Cycle Atmosphere
+            - button "Sign Out" [ref=e115] [cursor=pointer]:
+              - generic [ref=e117]:
+                - img
+                - text: Sign Out
+            - button "Theme Lab" [ref=e118] [cursor=pointer]:
+              - generic [ref=e120]:
+                - img
+                - text: Theme Lab
+            - button [ref=e121] [cursor=pointer]:
+              - generic [ref=e123]:
+                - img
+            - button "Toggle theme" [active] [ref=e124] [cursor=pointer]:
+              - generic [ref=e126]:
+                - img
+                - img
+                - generic [ref=e127]: Toggle theme
+        - main [ref=e128]:
+          - generic [ref=e129]:
+            - generic [ref=e131]:
+              - generic [ref=e132]:
+                - generic [ref=e133]:
+                  - text: Field Intel
+                  - heading "Mission Control" [level=2] [ref=e134]
+                  - paragraph [ref=e135]: Map intelligence, travel logistics, and status telemetry for your next sealcoat mission.
+                - generic [ref=e137]: Awaiting location
+              - generic [ref=e138]:
+                - generic [ref=e139]:
+                  - generic [ref=e140]:
+                    - generic [ref=e141]:
+                      - group [ref=e142]:
+                        - text: Job Name
+                        - textbox "Job Name" [ref=e143]:
+                          - /placeholder: St. Mark Sanctuary
+                      - group [ref=e144]:
+                        - text: Site Address (optional manual override)
+                        - textbox "Site Address (optional manual override)" [ref=e145]:
+                          - /placeholder: Search or type address
+                    - generic [ref=e146]:
+                      - group [ref=e147]:
+                        - text: Job StatusJob Status
+                        - combobox "Select job status" [ref=e148] [cursor=pointer]:
+                          - generic: Needs Estimate
+                          - img [ref=e149]
+                      - group [ref=e151]:
+                        - text: Competitor Intel
+                        - textbox "Competitor Intel" [ref=e152]:
+                          - /placeholder: Optional
+                      - group [ref=e153]:
+                        - text: Refresh Field Data
+                        - button "Sync to latest field data" [disabled]:
+                          - generic:
+                            - generic: Sync To Latest
+                  - complementary [ref=e154]:
+                    - generic [ref=e155]:
+                      - img [ref=e157]
+                      - generic [ref=e161]:
+                        - paragraph [ref=e162]: Business Home Base
+                        - paragraph [ref=e163]: 337 Ayers Orchard Rd, Stuart, VA
+                        - paragraph [ref=e164]: 36.739, -80.269
+                    - generic [ref=e165]:
+                      - img [ref=e167]
+                      - generic [ref=e174]:
+                        - paragraph [ref=e175]: Supplier Round Trip
+                        - paragraph [ref=e176]: 59.6 mi
+                        - paragraph [ref=e177]: 703 West Decatur St, Madison, NC
+                    - generic [ref=e178]:
+                      - img [ref=e180]
+                      - generic [ref=e186]:
+                        - paragraph [ref=e187]: Mapped Area
+                        - paragraph [ref=e188]: Awaiting capture
+                        - paragraph [ref=e189]: 0 segments tracked
+                - generic [ref=e191]:
+                  - generic [ref=e193]:
+                    - generic [ref=e194]:
+                      - text: Base Layer
+                      - combobox [ref=e195] [cursor=pointer]:
+                        - generic: Google Hybrid
+                        - img [ref=e196]
+                    - generic [ref=e198]:
+                      - generic [ref=e199]:
+                        - generic [ref=e200]: Radar
+                        - switch [checked] [ref=e201] [cursor=pointer]
+                      - generic [ref=e202]:
+                        - generic [ref=e203]: Animate
+                        - switch [checked] [ref=e204] [cursor=pointer]
+                      - generic [ref=e205]:
+                        - text: Radar Opacity
+                        - slider [ref=e210]
+                      - generic [ref=e211]:
+                        - text: Animation Speed (ms/frame)
+                        - slider [ref=e216]
+                    - generic [ref=e217]:
+                      - text: Google Maps API Key
+                      - textbox "Enter API key" [ref=e218]
+                      - text: OpenWeather API Key (optional)
+                      - textbox "For richer weather" [ref=e219]
+                  - generic [ref=e221]:
+                    - generic [ref=e222]:
+                      - generic [ref=e223]:
+                        - generic [ref=e224]:
+                          - generic [ref=e225]: Labels
+                          - switch [checked] [ref=e226] [cursor=pointer]
+                        - generic [ref=e227]:
+                          - text: Opacity
+                          - slider [ref=e232]
+                      - generic [ref=e233]:
+                        - generic [ref=e234]:
+                          - generic [ref=e235]: Roads (OSM overlay)
+                          - switch [ref=e236] [cursor=pointer]
+                        - generic [ref=e237]:
+                          - text: Opacity
+                          - slider [ref=e242]
+                      - generic [ref=e244]:
+                        - generic [ref=e245]: Doppler Radar
+                        - switch [checked] [ref=e246] [cursor=pointer]
+                    - generic [ref=e247]:
+                      - generic [ref=e248]:
+                        - text: Overlay Name
+                        - textbox "e.g., Patrick County Parcels" [ref=e249]
+                      - generic [ref=e250]:
+                        - text: Type
+                        - combobox [ref=e251] [cursor=pointer]:
+                          - generic: Tile (XYZ / WMTS)
+                          - img [ref=e252]
+                      - generic [ref=e254]:
+                        - text: URL Template
+                        - 'textbox "https://host/tiles/{z}/{x}/{y}.png or WMS endpoint" [ref=e255]'
+                      - generic [ref=e256]:
+                        - text: WMS Layers
+                        - textbox "e.g., Parcels" [ref=e257]
+                      - generic [ref=e258]:
+                        - text: Attribution
+                        - textbox "Data © County GIS" [ref=e259]
+                      - button "Add Overlay" [ref=e261] [cursor=pointer]
+                      - generic [ref=e262]:
+                        - button "Export Settings" [ref=e263] [cursor=pointer]:
+                          - generic [ref=e265]: Export Settings
+                        - button "Import Settings" [ref=e266] [cursor=pointer]:
+                          - generic [ref=e268]: Import Settings
+                  - generic [ref=e270]: Enter Google Maps API key in Map Settings to enable Google provider.
+                - generic [ref=e272]:
+                  - generic [ref=e273]:
+                    - generic [ref=e274]:
+                      - paragraph [ref=e275]: Division Map
+                      - heading "Mission Footprint" [level=3] [ref=e276]
+                      - paragraph [ref=e277]: Geo distribution of active, scheduled, and completed jobs
+                    - generic [ref=e279]:
+                      - generic [ref=e280]:
+                        - generic [ref=e283]: Map Telemetry
+                        - generic [ref=e284]: Offline
+                      - generic [ref=e285]: Reconnect required
+                      - button "Sync telemetry" [ref=e286] [cursor=pointer]:
+                        - generic [ref=e288]:
+                          - img
+                          - text: Sync
+                  - generic [ref=e290]:
+                    - generic [ref=e291]: Unable to load map telemetry.
+                    - generic "Division mission map" [ref=e292]
+                - generic [ref=e295]:
+                  - generic [ref=e296]:
+                    - img [ref=e298]
+                    - generic [ref=e301]:
+                      - generic [ref=e302]: Site Coordinates
+                      - generic [ref=e303]: Not captured yet
+                  - generic [ref=e304]:
+                    - img [ref=e306]
+                    - generic [ref=e313]:
+                      - generic [ref=e314]: Round Trip Distance
+                      - generic [ref=e315]: Pending address
+                  - generic [ref=e316]:
+                    - img [ref=e318]
+                    - generic [ref=e324]:
+                      - generic [ref=e325]: Segments
+                      - generic [ref=e326]: 0 recorded | 0.0 sq ft
+            - generic [ref=e328]:
+              - generic [ref=e329]:
+                - generic [ref=e330]:
+                  - text: Scope + Pricing
+                  - heading "Estimator Studio" [level=2] [ref=e331]
+                  - paragraph [ref=e332]: Progressive wizard tailored to church campuses, from square footage capture to proposal-ready numbers.
+                - generic [ref=e335]: Step 1 of 4
+              - generic [ref=e337]:
+                - tablist [ref=e338]:
+                  - tab "Scope" [selected] [ref=e339] [cursor=pointer]:
+                    - img [ref=e341]
+                    - text: Scope
+                  - tab "Materials" [ref=e344] [cursor=pointer]:
+                    - img [ref=e346]
+                    - text: Materials
+                  - tab "Striping" [ref=e348] [cursor=pointer]:
+                    - img [ref=e350]
+                    - text: Striping
+                  - tab "Review" [ref=e355] [cursor=pointer]:
+                    - img [ref=e357]
+                    - text: Review
+                - tabpanel "Scope" [ref=e360]:
+                  - generic [ref=e361]:
+                    - paragraph [ref=e362]: Choose the service pillars for this opportunity and capture square footage using quick-add shapes, map drawings, or imagery.
+                    - generic [ref=e363]:
+                      - generic [ref=e364]:
+                        - heading "Service Categories" [level=2] [ref=e365]
+                        - paragraph [ref=e366]: Select which services to include in this estimate
+                      - generic [ref=e367]:
+                        - generic [ref=e368]:
+                          - checkbox "Cleaning & Crack Repair" [checked] [ref=e369] [cursor=pointer]:
+                            - generic:
+                              - img
+                          - generic [ref=e370] [cursor=pointer]: Cleaning & Crack Repair
+                        - generic [ref=e371]:
+                          - checkbox "Sealcoating" [checked] [ref=e372] [cursor=pointer]:
+                            - generic:
+                              - img
+                          - generic [ref=e373] [cursor=pointer]: Sealcoating
+                        - generic [ref=e374]:
+                          - checkbox "Line Striping" [checked] [ref=e375] [cursor=pointer]:
+                            - generic:
+                              - img
+                          - generic [ref=e376] [cursor=pointer]: Line Striping
+                  - generic [ref=e377]:
+                    - generic [ref=e378]:
+                      - generic [ref=e379]:
+                        - heading "Area Capture" [level=2] [ref=e380]
+                        - paragraph [ref=e381]: 0 segments • 0.0 sq ft
+                      - generic [ref=e382]:
+                        - combobox "Select shape type" [ref=e383] [cursor=pointer]:
+                          - generic: Rectangle
+                          - img [ref=e384]
+                        - button "Add new area shape" [ref=e386] [cursor=pointer]:
+                          - generic [ref=e388]: Add Shape
+                    - generic [ref=e389]:
+                      - generic [ref=e390]:
+                        - generic [ref=e391]:
+                          - text: Quick Manual Area (sq ft)
+                          - spinbutton "Enter area in square feet" [ref=e392]
+                        - button "Add area segment" [ref=e393] [cursor=pointer]:
+                          - generic [ref=e395]: Add Segment
+                      - generic [ref=e396]: No segments yet. Use the quick add controls above or trace directly on the Mission Control map.
+                    - generic [ref=e398]:
+                      - generic [ref=e399]:
+                        - heading "Image Area Analyzer" [level=2] [ref=e400]
+                        - paragraph [ref=e401]: Upload a site photo, calibrate with a known distance, then click to draw over the paved area.
+                      - generic [ref=e402]:
+                        - generic [ref=e403]:
+                          - generic [ref=e404]:
+                            - text: Upload Image
+                            - button "Upload Image" [ref=e405]
+                          - generic [ref=e406]:
+                            - text: Calibration Distance (feet)
+                            - spinbutton "Calibration distance in feet" [ref=e407]: "10"
+                          - generic [ref=e408]:
+                            - button "Calibrate" [disabled]:
+                              - generic:
+                                - generic: Calibrate
+                            - button "Undo Point" [disabled]:
+                              - generic:
+                                - generic: Undo Point
+                            - button "Reset" [disabled]:
+                              - generic:
+                                - generic: Reset
+                          - generic [ref=e409]:
+                            - button "Add Area" [disabled]:
+                              - generic:
+                                - generic: Add Area
+                            - button "Analyze with AI" [disabled]:
+                              - generic:
+                                - generic: Analyze with AI
+                        - generic [ref=e410]:
+                          - generic [ref=e411]:
+                            - generic [ref=e412]: Calibration
+                            - generic [ref=e413]: "Pixels per foot: —"
+                            - generic [ref=e414]: "Calibration (px): —"
+                          - generic [ref=e415]:
+                            - generic [ref=e416]: Polygon
+                            - generic [ref=e417]: "Vertices: 0"
+                            - generic [ref=e418]: "Area: —"
+                          - generic [ref=e419]:
+                            - generic [ref=e420]: AI Notes
+                            - generic [ref=e421]: —
+                  - generic [ref=e422]:
+                    - generic [ref=e423]: 0 segments logged
+                    - button "Continue to Materials" [ref=e424] [cursor=pointer]:
+                      - generic [ref=e426]: Continue to Materials
+          - generic [ref=e427]:
+            - generic [ref=e428]:
+              - generic [ref=e430]:
+                - generic [ref=e431]:
+                  - generic [ref=e432]:
+                    - text: Executive Tower
+                    - heading "Cost Intelligence" [level=2] [ref=e433]
+                    - paragraph [ref=e434]: Internal breakdown for leadership huddles and margin protection.
+                  - generic [ref=e435]:
+                    - button "Export PDF" [disabled]:
+                      - generic:
+                        - generic:
+                          - img
+                          - text: Export PDF
+                - generic [ref=e437]:
+                  - generic [ref=e439]:
+                    - heading "Awaiting Estimate" [level=3] [ref=e440]
+                    - paragraph [ref=e441]: 0.0 sq ft · 0 lines · 2 coats
+                  - paragraph [ref=e442]: Run an estimate from the Review step to view your live cost model, including overhead and margin recommendations.
+              - generic [ref=e444]:
+                - generic [ref=e446]:
+                  - text: Conditions
+                  - heading "Field Readiness" [level=2] [ref=e447]
+                  - paragraph [ref=e448]: Weather, crew pacing, and atmospheric checks for the scheduled window.
+                - generic [ref=e450]:
+                  - generic [ref=e451]:
+                    - heading "Weather & Recommendations" [level=2] [ref=e453]
+                    - generic [ref=e455]:
+                      - generic [ref=e456]:
+                        - generic [ref=e457]: 38°F
+                        - generic [ref=e458]: Wind 2 mph · Humidity 61% · Precip 0%
+                      - generic [ref=e459]: "Next 6h precip chance: 0% · 0% · 0% · 0% · 0% · 0%"
+                      - generic [ref=e460]:
+                        - generic [ref=e461]:
+                          - generic [ref=e462]: 11/7/2025
+                          - generic [ref=e463]: 61° / 37°
+                          - generic [ref=e464]: Precip 0mm
+                        - generic [ref=e465]:
+                          - generic [ref=e466]: 11/8/2025
+                          - generic [ref=e467]: 65° / 51°
+                          - generic [ref=e468]: Precip 8mm
+                        - generic [ref=e469]:
+                          - generic [ref=e470]: 11/9/2025
+                          - generic [ref=e471]: 71° / 42°
+                          - generic [ref=e472]: Precip 0mm
+                        - generic [ref=e473]:
+                          - generic [ref=e474]: 11/10/2025
+                          - generic [ref=e475]: 41° / 28°
+                          - generic [ref=e476]: Precip 0mm
+                      - generic [ref=e477]:
+                        - generic [ref=e478]: Crew Guidance
+                        - list [ref=e479]:
+                          - listitem [ref=e480]: "Sealcoating: Caution, low temps may slow curing."
+                          - listitem [ref=e481]: "Crack Repair: Favorable if substrate is dry."
+                          - listitem [ref=e482]: "Line Striping: Low temperatures may affect adhesion; use fast-dry additive."
+                  - generic [ref=e483]:
+                    - heading "Observability Pulse" [level=3] [ref=e484]:
+                      - img [ref=e485]
+                      - text: Observability Pulse
+                    - list [ref=e487]:
+                      - listitem [ref=e488]:
+                        - generic [ref=e490]: Structured logging ready for crew events and anomaly alerts.
+                      - listitem [ref=e491]:
+                        - generic [ref=e493]: Automatic capture of weather risk thresholds for Supabase telemetry.
+                      - listitem [ref=e494]:
+                        - generic [ref=e496]: Audit trail tags each estimate with job key and estimator persona.
+            - generic [ref=e497]:
+              - generic [ref=e498]:
+                - generic [ref=e501]:
+                  - generic [ref=e502]:
+                    - text: Revenue
+                    - heading "Premium Services Marketplace" [level=2] [ref=e503]
+                    - paragraph [ref=e504]: Upsell enhancements tuned for church campuses — margin-positive, mission-aligned.
+                  - button "Expand Premium Services Marketplace" [ref=e506] [cursor=pointer]:
+                    - generic [ref=e508]:
+                      - img
+                      - generic [ref=e509]: Expand Premium Services Marketplace
+                - generic [ref=e511]:
+                  - generic [ref=e513]:
+                    - text: Docs & Media
+                    - heading "Client Deliverables" [level=2] [ref=e514]
+                    - paragraph [ref=e515]: Generate branded documents, attach receipts, and share field photos with the customer.
+                  - generic [ref=e517]:
+                    - paragraph [ref=e518]: Generate an estimate to unlock the branded invoice preview for this mission.
+                    - generic [ref=e519]:
+                      - generic [ref=e520]:
+                        - generic [ref=e521]:
+                          - heading "Document Generator" [level=2] [ref=e522]
+                          - paragraph [ref=e523]: Create client-facing documents and internal records; export in multiple formats.
+                        - generic [ref=e524]:
+                          - generic [ref=e525]:
+                            - generic [ref=e526]:
+                              - text: Document Type
+                              - combobox "Document Type" [ref=e527]:
+                                - option "Contract" [selected]
+                                - option "Progress Report"
+                                - option "Coating Notes"
+                                - option "Line Striping Plan"
+                                - option "Completion Certificate"
+                                - option "Before/After Comparison"
+                            - generic [ref=e528]:
+                              - text: Client Name
+                              - textbox "Client Name" [ref=e529]
+                            - generic [ref=e530]:
+                              - text: Schedule
+                              - textbox "Schedule" [ref=e531]:
+                                - /placeholder: e.g., 2025-05-10 morning
+                          - generic [ref=e532]:
+                            - text: Details / Notes
+                            - textbox "Details / Notes" [ref=e533]:
+                              - /placeholder: Include before/after notes, repair progress, coat details, striping layout, final completion, comparisons...
+                          - generic [ref=e534]:
+                            - text: Pricing Summary (optional)
+                            - textbox "Pricing Summary (optional)" [ref=e535]:
+                              - /placeholder: High-level summary for client (internal breakdown stays private)
+                          - generic [ref=e536]:
+                            - button "Export PDF (Print)" [ref=e537] [cursor=pointer]:
+                              - generic [ref=e539]: Export PDF (Print)
+                            - button "Export Word (.doc)" [ref=e540] [cursor=pointer]:
+                              - generic [ref=e542]: Export Word (.doc)
+                            - button "Export HTML" [ref=e543] [cursor=pointer]:
+                              - generic [ref=e545]: Export HTML
+                            - button "Export Markdown" [ref=e546] [cursor=pointer]:
+                              - generic [ref=e548]: Export Markdown
+                            - button "Export CSV (Excel compatible)" [ref=e549] [cursor=pointer]:
+                              - generic [ref=e551]: Export CSV (Excel compatible)
+                            - button "Save to Records" [ref=e552] [cursor=pointer]:
+                              - generic [ref=e554]: Save to Records
+                      - generic [ref=e555]:
+                        - generic [ref=e556]:
+                          - heading "Job Files & Documents" [level=2] [ref=e557]
+                          - paragraph [ref=e558]: Upload images and files, and create/edit internal documents.
+                        - generic [ref=e559]:
+                          - generic [ref=e560]:
+                            - text: Upload Files (images, pdf, docx, xlsx, etc.)
+                            - generic [ref=e561]:
+                              - button "Upload Files (images, pdf, docx, xlsx, etc.)" [ref=e562]
+                              - img [ref=e563]
+                          - generic [ref=e566]:
+                            - text: Create Internal Document (for records)
+                            - generic [ref=e567]:
+                              - textbox "Document Title" [ref=e568]:
+                                - /placeholder: Title (e.g., Contract, Progress Report)
+                              - textbox "Document Notes" [ref=e569]:
+                                - /placeholder: Notes / Content (quick text)
+                            - button "Save Document" [ref=e570] [cursor=pointer]:
+                              - generic [ref=e572]: Save Document
+                    - generic [ref=e573]:
+                      - generic [ref=e574]:
+                        - heading "Receipts & Expenses" [level=2] [ref=e575]
+                        - paragraph [ref=e576]: Upload images/PDFs (SealMaster, fuel, payroll, materials, etc.). Auto-extract totals with AI.
+                      - generic [ref=e577]:
+                        - generic [ref=e578]:
+                          - generic [ref=e579]:
+                            - generic [ref=e580]:
+                              - img [ref=e581]
+                              - text: Filters
+                            - generic [ref=e583]:
+                              - textbox "Vendor filter" [ref=e584]:
+                                - /placeholder: Vendor contains...
+                              - combobox [ref=e585] [cursor=pointer]:
+                                - generic: All
+                                - img [ref=e586]
+                          - generic [ref=e588]:
+                            - text: Start Date
+                            - textbox "Start Date" [ref=e589]
+                          - generic [ref=e590]:
+                            - text: End Date
+                            - textbox "End Date" [ref=e591]
+                          - generic [ref=e592]:
+                            - button "Clear" [ref=e593] [cursor=pointer]:
+                              - generic [ref=e595]:
+                                - img
+                                - text: Clear
+                            - button "Refresh" [ref=e596] [cursor=pointer]:
+                              - generic [ref=e598]:
+                                - img
+                                - text: Refresh
+                            - button "Export CSV" [ref=e599] [cursor=pointer]:
+                              - generic [ref=e601]:
+                                - img
+                                - text: Export CSV
+                        - generic [ref=e603]:
+                          - text: Upload Receipts
+                          - generic [ref=e604]:
+                            - button "Upload Receipts" [ref=e605]
+                            - img [ref=e606]
+                          - generic [ref=e609]:
+                            - checkbox "Auto-extract on upload" [checked] [ref=e610]
+                            - generic [ref=e611]: Auto-extract on upload
+                        - generic [ref=e613]:
+                          - text: "Filtered total:"
+                          - strong [ref=e614]: $0.00
+                        - generic [ref=e615]: No receipts yet. Upload images or PDFs to begin tracking expenses.
+                - generic [ref=e617]:
+                  - generic [ref=e619]:
+                    - text: Configuration
+                    - heading "Operations Control Center" [level=2] [ref=e620]
+                    - paragraph [ref=e621]: Tune business defaults, theming, and experimental feature toggles for the team.
+                  - generic [ref=e623]:
+                    - generic [ref=e624]:
+                      - generic [ref=e625]:
+                        - generic [ref=e626]:
+                          - heading "Business Settings" [level=2] [ref=e627]
+                          - paragraph [ref=e628]: Configure your labor rates, employees, and markup percentages
+                        - generic [ref=e629]:
+                          - generic [ref=e630]:
+                            - generic [ref=e631]:
+                              - text: Number of Employees
+                              - spinbutton "Number of Employees" [ref=e632]: "3"
+                            - generic [ref=e633]:
+                              - text: Hourly Wage ($/hr)
+                              - spinbutton "Hourly Wage ($/hr)" [ref=e634]: "25"
+                          - generic [ref=e635]:
+                            - generic [ref=e636]:
+                              - text: Overhead (%)
+                              - spinbutton "Overhead (%)" [ref=e637]: "25"
+                            - generic [ref=e638]:
+                              - text: Profit Margin (%)
+                              - spinbutton "Profit Margin (%)" [ref=e639]: "25"
+                          - generic [ref=e640]:
+                            - heading "Material Costs ($)" [level=3] [ref=e641]
+                            - generic [ref=e642]:
+                              - generic [ref=e643]:
+                                - text: Sealer (per gal)
+                                - spinbutton "Sealer (per gal)" [ref=e644]: "3.65"
+                              - generic [ref=e645]:
+                                - text: Sand (per bag)
+                                - spinbutton "Sand (per bag)" [ref=e646]: "10"
+                              - generic [ref=e647]:
+                                - text: Fast-Dry Additive (per bucket)
+                                - spinbutton "Fast-Dry Additive (per bucket)" [ref=e648]: "140"
+                              - generic [ref=e649]:
+                                - text: Primer (per bucket)
+                                - spinbutton "Primer (per bucket)" [ref=e650]: "50"
+                              - generic [ref=e651]:
+                                - text: Crack Filler (per box)
+                                - spinbutton "Crack Filler (per box)" [ref=e652]: "44.95"
+                          - generic [ref=e653]:
+                            - heading "Travel & Fuel" [level=3] [ref=e654]
+                            - generic [ref=e655]:
+                              - generic [ref=e656]:
+                                - text: Gas Price ($/gal)
+                                - spinbutton "Gas Price ($/gal)" [ref=e657]: "2.901"
+                              - generic [ref=e658]:
+                                - text: Chevy MPG
+                                - spinbutton "Chevy MPG" [ref=e659]: "8"
+                              - generic [ref=e660]:
+                                - text: Dodge MPG
+                                - spinbutton "Dodge MPG" [ref=e661]: "15"
+                              - generic [ref=e662]:
+                                - text: Propane (per tank)
+                                - spinbutton "Propane (per tank)" [ref=e663]: "10"
+                          - generic [ref=e664]:
+                            - heading "Sealcoat Coverage & Productivity" [level=3] [ref=e665]
+                            - generic [ref=e666]:
+                              - generic [ref=e667]:
+                                - text: Coat 1 gal/sq ft
+                                - spinbutton "Coat 1 gal/sq ft" [ref=e668]: "0.0144"
+                              - generic [ref=e669]:
+                                - text: Coat 2 gal/sq ft
+                                - spinbutton "Coat 2 gal/sq ft" [ref=e670]: "0.0111"
+                              - generic [ref=e671]:
+                                - text: Coat 3 gal/sq ft
+                                - spinbutton "Coat 3 gal/sq ft" [ref=e672]: "0.0111"
+                              - generic [ref=e673]:
+                                - text: Sand Ratio (lb/100gal)
+                                - spinbutton "Sand Ratio (lb/100gal)" [ref=e674]: "2"
+                              - generic [ref=e675]:
+                                - text: Crack Sealing Speed (ft/hr)
+                                - spinbutton "Crack Sealing Speed (ft/hr)" [ref=e676]: "300"
+                              - generic [ref=e677]:
+                                - text: Sealcoating Speed 1 (sq ft/hr)
+                                - spinbutton "Sealcoating Speed 1 (sq ft/hr)" [ref=e678]: "5000"
+                              - generic [ref=e679]:
+                                - text: Sealcoating Speed 2/3 (sq ft/hr)
+                                - spinbutton "Sealcoating Speed 2/3 (sq ft/hr)" [ref=e680]: "12000"
+                          - generic [ref=e681]:
+                            - heading "Striping Rates ($)" [level=3] [ref=e682]
+                            - generic [ref=e683]:
+                              - generic [ref=e684]:
+                                - text: Line
+                                - spinbutton "Line" [ref=e685]: "4.5"
+                              - generic [ref=e686]:
+                                - text: Handicap
+                                - spinbutton "Handicap" [ref=e687]: "25"
+                              - generic [ref=e688]:
+                                - text: Arrow Large
+                                - spinbutton "Arrow Large" [ref=e689]: "20"
+                              - generic [ref=e690]:
+                                - text: Arrow Small
+                                - spinbutton "Arrow Small" [ref=e691]: "15"
+                              - generic [ref=e692]:
+                                - text: Lettering
+                                - spinbutton "Lettering" [ref=e693]: "5"
+                              - generic [ref=e694]:
+                                - text: Curb (per ft)
+                                - spinbutton "Curb (per ft)" [ref=e695]: "2"
+                          - generic [ref=e696]:
+                            - heading "Premium Services ($)" [level=3] [ref=e697]
+                            - generic [ref=e698]:
+                              - generic [ref=e699]:
+                                - text: Edge Pushing
+                                - spinbutton "Edge Pushing" [ref=e700]: "150"
+                              - generic [ref=e701]:
+                                - text: Weed Killer
+                                - spinbutton "Weed Killer" [ref=e702]: "75"
+                              - generic [ref=e703]:
+                                - text: Crack Cleaning
+                                - spinbutton "Crack Cleaning" [ref=e704]: "100"
+                              - generic [ref=e705]:
+                                - text: Power Washing
+                                - spinbutton "Power Washing" [ref=e706]: "200"
+                              - generic [ref=e707]:
+                                - text: Debris Removal
+                                - spinbutton "Debris Removal" [ref=e708]: "125"
+                          - generic [ref=e709]:
+                            - button "Save Defaults" [ref=e710] [cursor=pointer]:
+                              - generic [ref=e712]: Save Defaults
+                            - button "Reset to Defaults" [ref=e713] [cursor=pointer]:
+                              - generic [ref=e715]: Reset to Defaults
+                      - generic [ref=e716]:
+                        - generic [ref=e717]:
+                          - heading "Theme Command Center" [level=2] [ref=e718]:
+                            - img
+                            - text: Theme Command Center
+                          - paragraph [ref=e724]: Craft mission-ready palettes, wallpapers, and accessibility baselines across the Pavement Performance Suite.
+                        - generic [ref=e725]:
+                          - generic [ref=e726]:
+                            - generic [ref=e727]:
+                              - generic [ref=e728]:
+                                - generic [ref=e729]: Chapel Ops
+                                - switch "Demo toggle" [checked]
+                              - heading "Preview Mission" [level=2] [ref=e730]:
+                                - img
+                                - text: Preview Mission
+                              - paragraph [ref=e732]: Demonstrates how typography, badges, and telemetry surfaces respond to the active palette.
+                            - generic [ref=e733]:
+                              - generic [ref=e734]:
+                                - generic [ref=e735]:
+                                  - generic:
+                                    - img
+                                    - generic [ref=e737]: Segments
+                                  - paragraph: "12"
+                                  - paragraph: ADA ready
+                                - generic [ref=e738]:
+                                  - generic:
+                                    - img
+                                    - generic [ref=e740]: Mission Window
+                                  - paragraph: Jun 14 – 16
+                                  - paragraph: Fri night prep
+                                - generic [ref=e741]:
+                                  - generic:
+                                    - img
+                                    - generic [ref=e744]: Campus
+                                  - paragraph: Riverbend Chapel
+                                  - paragraph: Henrico, VA
+                              - generic [ref=e745]:
+                                - generic [ref=e746]:
+                                  - heading "Progress Pulse" [level=4] [ref=e747]
+                                  - generic [ref=e748]:
+                                    - generic [ref=e749]:
+                                      - generic [ref=e750]:
+                                        - generic [ref=e751]: Scope Authoring
+                                        - generic [ref=e752]: 78%
+                                      - progressbar [ref=e753]
+                                    - generic [ref=e755]:
+                                      - generic [ref=e756]:
+                                        - generic [ref=e757]: Crew Assignments
+                                        - generic [ref=e758]: 52%
+                                      - progressbar [ref=e759]
+                                    - generic [ref=e761]:
+                                      - generic [ref=e762]:
+                                        - generic [ref=e763]: Client Approvals
+                                        - generic [ref=e764]: 32%
+                                      - progressbar [ref=e765]
+                                - generic [ref=e767]:
+                                  - heading "Rapid Actions" [level=4] [ref=e768]
+                                  - generic [ref=e769]:
+                                    - button "Generate Field Brief" [ref=e770] [cursor=pointer]:
+                                      - generic [ref=e772]:
+                                        - img
+                                        - text: Generate Field Brief
+                                    - button "Run Cost Optimizer" [ref=e773] [cursor=pointer]:
+                                      - generic [ref=e775]:
+                                        - img
+                                        - text: Run Cost Optimizer
+                          - region "Live Theme Gallery" [ref=e776]:
+                            - generic [ref=e777]:
+                              - generic [ref=e778]:
+                                - heading "Live Theme Gallery" [level=2] [ref=e779]:
+                                  - img [ref=e780]
+                                  - text: Live Theme Gallery
+                                - paragraph [ref=e782]: Explore curated Division, liturgical, and campus palettes. Apply instantly to preview mission dashboards with real data.
+                              - generic [ref=e783]:
+                                - img [ref=e784]
+                                - text: 5 theme families
+                            - generic [ref=e793]:
+                              - generic [ref=e795]:
+                                - generic [ref=e796]:
+                                  - heading "Division Protocol" [level=3] [ref=e797]
+                                  - paragraph [ref=e798]: Immersive SHD-grade palettes with tactical contrast and mission-ready readability.
+                                - list:
+                                  - listitem [ref=e799]:
+                                    - article [ref=e800]:
+                                      - generic [ref=e801]:
+                                        - generic [ref=e802]:
+                                          - paragraph [ref=e803]: Division Agent
+                                          - paragraph [ref=e804]: Signature SHD orange ambience with holographic tech blues.
+                                        - generic [ref=e805]: Active
+                                      - generic [ref=e806]:
+                                        - generic [ref=e809]:
+                                          - text: Primary
+                                          - code [ref=e810]: 25 100% 55%
+                                        - generic [ref=e813]:
+                                          - text: Accent
+                                          - code [ref=e814]: 197 88% 56%
+                                      - generic [ref=e815]:
+                                        - generic [ref=e816]:
+                                          - generic [ref=e817]: Hue 025°
+                                          - generic [ref=e818]: Wallpaper twilight-ops
+                                        - button "Reapply" [ref=e820] [cursor=pointer]:
+                                          - generic [ref=e822]: Reapply
+                                  - listitem [ref=e823]:
+                                    - article [ref=e824]:
+                                      - generic [ref=e825]:
+                                        - generic [ref=e826]:
+                                          - paragraph [ref=e827]: Rogue Agent
+                                          - paragraph [ref=e828]: Crimson rogue signature with hostile pulses and deep noir background.
+                                        - generic [ref=e829]: Preview
+                                      - generic [ref=e830]:
+                                        - generic [ref=e833]:
+                                          - text: Primary
+                                          - code [ref=e834]: 355 86% 54%
+                                        - generic [ref=e837]:
+                                          - text: Accent
+                                          - code [ref=e838]: 12 88% 58%
+                                      - generic [ref=e839]:
+                                        - generic [ref=e840]:
+                                          - generic [ref=e841]: Hue 355°
+                                          - generic [ref=e842]: Wallpaper twilight-ops
+                                        - button "Apply Theme" [ref=e844] [cursor=pointer]:
+                                          - generic [ref=e846]: Apply Theme
+                                  - listitem [ref=e847]:
+                                    - article [ref=e848]:
+                                      - generic [ref=e849]:
+                                        - generic [ref=e850]:
+                                          - paragraph [ref=e851]: Dark Zone
+                                          - paragraph [ref=e852]: High tension alert palette with emergency red gradients.
+                                        - generic [ref=e853]: Preview
+                                      - generic [ref=e854]:
+                                        - generic [ref=e857]:
+                                          - text: Primary
+                                          - code [ref=e858]: 2 90% 58%
+                                        - generic [ref=e861]:
+                                          - text: Accent
+                                          - code [ref=e862]: 33 92% 56%
+                                      - generic [ref=e863]:
+                                        - generic [ref=e864]:
+                                          - generic [ref=e865]: Hue 002°
+                                          - generic [ref=e866]: Wallpaper twilight-ops
+                                        - button "Apply Theme" [ref=e868] [cursor=pointer]:
+                                          - generic [ref=e870]: Apply Theme
+                              - generic [ref=e872]:
+                                - generic [ref=e873]:
+                                  - heading "Legacy Palettes" [level=3] [ref=e874]
+                                  - paragraph [ref=e875]: Classic contractor-friendly colorways crews already know and love.
+                                - list:
+                                  - listitem [ref=e876]:
+                                    - article [ref=e877]:
+                                      - generic [ref=e878]:
+                                        - generic [ref=e879]:
+                                          - paragraph [ref=e880]: Baseline Command
+                                          - paragraph [ref=e881]: Balanced SHD palette for mission control surfaces.
+                                        - generic [ref=e882]: Preview
+                                      - generic [ref=e883]:
+                                        - generic [ref=e886]:
+                                          - text: Primary
+                                          - code [ref=e887]: 25 100% 55%
+                                        - generic [ref=e890]:
+                                          - text: Accent
+                                          - code [ref=e891]: 206 92% 55%
+                                      - generic [ref=e892]:
+                                        - generic [ref=e893]:
+                                          - generic [ref=e894]: Hue 025°
+                                          - generic [ref=e895]: Wallpaper twilight-ops
+                                        - button "Apply Theme" [ref=e897] [cursor=pointer]:
+                                          - generic [ref=e899]: Apply Theme
+                                  - listitem [ref=e900]:
+                                    - article [ref=e901]:
+                                      - generic [ref=e902]:
+                                        - generic [ref=e903]:
+                                          - paragraph [ref=e904]: Emerald Field
+                                          - paragraph [ref=e905]: Cool contractor green for outdoor-focused briefs.
+                                        - generic [ref=e906]: Preview
+                                      - generic [ref=e907]:
+                                        - generic [ref=e910]:
+                                          - text: Primary
+                                          - code [ref=e911]: 142 76% 40%
+                                        - generic [ref=e914]:
+                                          - text: Accent
+                                          - code [ref=e915]: 142 76% 40%
+                                      - generic [ref=e916]:
+                                        - generic [ref=e917]:
+                                          - generic [ref=e918]: Hue 142°
+                                          - generic [ref=e919]: Wallpaper twilight-ops
+                                        - button "Apply Theme" [ref=e921] [cursor=pointer]:
+                                          - generic [ref=e923]: Apply Theme
+                                  - listitem [ref=e924]:
+                                    - article [ref=e925]:
+                                      - generic [ref=e926]:
+                                        - generic [ref=e927]:
+                                          - paragraph [ref=e928]: Sunset Ops
+                                          - paragraph [ref=e929]: Warm orange-to-crimson gradient for end-of-day reviews.
+                                        - generic [ref=e930]: Preview
+                                      - generic [ref=e931]:
+                                        - generic [ref=e934]:
+                                          - text: Primary
+                                          - code [ref=e935]: 25 95% 55%
+                                        - generic [ref=e938]:
+                                          - text: Accent
+                                          - code [ref=e939]: 340 82% 52%
+                                      - generic [ref=e940]:
+                                        - generic [ref=e941]:
+                                          - generic [ref=e942]: Hue 025°
+                                          - generic [ref=e943]: Wallpaper twilight-ops
+                                        - button "Apply Theme" [ref=e945] [cursor=pointer]:
+                                          - generic [ref=e947]: Apply Theme
+                              - generic [ref=e949]:
+                                - generic [ref=e950]:
+                                  - heading "Liturgical Seasons" [level=3] [ref=e951]
+                                  - paragraph [ref=e952]: Sacred-season palettes tuned for Advent, Lent, Easter, and Pentecost programming.
+                                - list:
+                                  - listitem [ref=e953]:
+                                    - article [ref=e954]:
+                                      - generic [ref=e955]:
+                                        - generic [ref=e956]:
+                                          - paragraph [ref=e957]: Advent Vigil
+                                          - paragraph [ref=e958]: Candlelight violets with brass highlights for Advent services.
+                                        - generic [ref=e959]: Preview
+                                      - generic [ref=e960]:
+                                        - generic [ref=e963]:
+                                          - text: Primary
+                                          - code [ref=e964]: 276 78% 58%
+                                        - generic [ref=e967]:
+                                          - text: Accent
+                                          - code [ref=e968]: 45 92% 64%
+                                      - generic [ref=e969]:
+                                        - generic [ref=e970]:
+                                          - generic [ref=e971]: Hue 276°
+                                          - generic [ref=e972]: Wallpaper advent-lights
+                                        - button "Apply Theme" [ref=e974] [cursor=pointer]:
+                                          - generic [ref=e976]: Apply Theme
+                                  - listitem [ref=e977]:
+                                    - article [ref=e978]:
+                                      - generic [ref=e979]:
+                                        - generic [ref=e980]:
+                                          - paragraph [ref=e981]: Lent Refocus
+                                          - paragraph [ref=e982]: Muted plum gradients supporting reflective planning.
+                                        - generic [ref=e983]: Preview
+                                      - generic [ref=e984]:
+                                        - generic [ref=e987]:
+                                          - text: Primary
+                                          - code [ref=e988]: 286 52% 52%
+                                        - generic [ref=e991]:
+                                          - text: Accent
+                                          - code [ref=e992]: 325 68% 55%
+                                      - generic [ref=e993]:
+                                        - generic [ref=e994]:
+                                          - generic [ref=e995]: Hue 286°
+                                          - generic [ref=e996]: Wallpaper lent-embers
+                                        - button "Apply Theme" [ref=e998] [cursor=pointer]:
+                                          - generic [ref=e1000]: Apply Theme
+                                  - listitem [ref=e1001]:
+                                    - article [ref=e1002]:
+                                      - generic [ref=e1003]:
+                                        - generic [ref=e1004]:
+                                          - paragraph [ref=e1005]: Easter Radiance
+                                          - paragraph [ref=e1006]: Brilliant gold and teal bloom for resurrection celebrations.
+                                        - generic [ref=e1007]: Preview
+                                      - generic [ref=e1008]:
+                                        - generic [ref=e1011]:
+                                          - text: Primary
+                                          - code [ref=e1012]: 48 100% 65%
+                                        - generic [ref=e1015]:
+                                          - text: Accent
+                                          - code [ref=e1016]: 154 70% 52%
+                                      - generic [ref=e1017]:
+                                        - generic [ref=e1018]:
+                                          - generic [ref=e1019]: Hue 048°
+                                          - generic [ref=e1020]: Wallpaper easter-bloom
+                                        - button "Apply Theme" [ref=e1022] [cursor=pointer]:
+                                          - generic [ref=e1024]: Apply Theme
+                              - generic [ref=e1026]:
+                                - generic [ref=e1027]:
+                                  - heading "Campus Contexts" [level=3] [ref=e1028]
+                                  - paragraph [ref=e1029]: Layouts tailored to sanctuary heritage, family life centers, youth spaces, and parking ops.
+                                - list:
+                                  - listitem [ref=e1030]:
+                                    - article [ref=e1031]:
+                                      - generic [ref=e1032]:
+                                        - generic [ref=e1033]:
+                                          - paragraph [ref=e1034]: Chapel Stonework
+                                          - paragraph [ref=e1035]: Warm sandstone with teal accents for historic sanctuaries.
+                                        - generic [ref=e1036]: Preview
+                                      - generic [ref=e1037]:
+                                        - generic [ref=e1040]:
+                                          - text: Primary
+                                          - code [ref=e1041]: 28 65% 52%
+                                        - generic [ref=e1044]:
+                                          - text: Accent
+                                          - code [ref=e1045]: 182 42% 52%
+                                      - generic [ref=e1046]:
+                                        - generic [ref=e1047]:
+                                          - generic [ref=e1048]: Hue 028°
+                                          - generic [ref=e1049]: Wallpaper campus-heritage
+                                        - button "Apply Theme" [ref=e1051] [cursor=pointer]:
+                                          - generic [ref=e1053]: Apply Theme
+                                  - listitem [ref=e1054]:
+                                    - article [ref=e1055]:
+                                      - generic [ref=e1056]:
+                                        - generic [ref=e1057]:
+                                          - paragraph [ref=e1058]: Family Life Center
+                                          - paragraph [ref=e1059]: Inviting corals and soft amber suited for community halls.
+                                        - generic [ref=e1060]: Preview
+                                      - generic [ref=e1061]:
+                                        - generic [ref=e1064]:
+                                          - text: Primary
+                                          - code [ref=e1065]: 12 78% 60%
+                                        - generic [ref=e1068]:
+                                          - text: Accent
+                                          - code [ref=e1069]: 48 92% 60%
+                                      - generic [ref=e1070]:
+                                        - generic [ref=e1071]:
+                                          - generic [ref=e1072]: Hue 012°
+                                          - generic [ref=e1073]: Wallpaper community-hub
+                                        - button "Apply Theme" [ref=e1075] [cursor=pointer]:
+                                          - generic [ref=e1077]: Apply Theme
+                                  - listitem [ref=e1078]:
+                                    - article [ref=e1079]:
+                                      - generic [ref=e1080]:
+                                        - generic [ref=e1081]:
+                                          - paragraph [ref=e1082]: Youth Center Ramp
+                                          - paragraph [ref=e1083]: Electric cyan and magenta energy for student nights.
+                                        - generic [ref=e1084]: Preview
+                                      - generic [ref=e1085]:
+                                        - generic [ref=e1088]:
+                                          - text: Primary
+                                          - code [ref=e1089]: 194 92% 58%
+                                        - generic [ref=e1092]:
+                                          - text: Accent
+                                          - code [ref=e1093]: 312 84% 60%
+                                      - generic [ref=e1094]:
+                                        - generic [ref=e1095]:
+                                          - generic [ref=e1096]: Hue 194°
+                                          - generic [ref=e1097]: Wallpaper youth-dynamo
+                                        - button "Apply Theme" [ref=e1099] [cursor=pointer]:
+                                          - generic [ref=e1101]: Apply Theme
+                              - generic [ref=e1103]:
+                                - generic [ref=e1104]:
+                                  - heading "Seasonal Operations" [level=3] [ref=e1105]
+                                  - paragraph [ref=e1106]: Weather-aware themes aligned with outreach pushes, harvest prep, winterization, and storm response.
+                                - list:
+                                  - listitem [ref=e1107]:
+                                    - article [ref=e1108]:
+                                      - generic [ref=e1109]:
+                                        - generic [ref=e1110]:
+                                          - paragraph [ref=e1111]: Summer Outreach
+                                          - paragraph [ref=e1112]: Citrus gradients for VBS and outreach blitz operations.
+                                        - generic [ref=e1113]: Preview
+                                      - generic [ref=e1114]:
+                                        - generic [ref=e1117]:
+                                          - text: Primary
+                                          - code [ref=e1118]: 38 100% 62%
+                                        - generic [ref=e1121]:
+                                          - text: Accent
+                                          - code [ref=e1122]: 164 82% 52%
+                                      - generic [ref=e1123]:
+                                        - generic [ref=e1124]:
+                                          - generic [ref=e1125]: Hue 038°
+                                          - generic [ref=e1126]: Wallpaper summer-outreach
+                                        - button "Apply Theme" [ref=e1128] [cursor=pointer]:
+                                          - generic [ref=e1130]: Apply Theme
+                                  - listitem [ref=e1131]:
+                                    - article [ref=e1132]:
+                                      - generic [ref=e1133]:
+                                        - generic [ref=e1134]:
+                                          - paragraph [ref=e1135]: Autumn Renewal
+                                          - paragraph [ref=e1136]: Harvest ambers and forest greens for fall resurfacing.
+                                        - generic [ref=e1137]: Preview
+                                      - generic [ref=e1138]:
+                                        - generic [ref=e1141]:
+                                          - text: Primary
+                                          - code [ref=e1142]: 30 90% 50%
+                                        - generic [ref=e1145]:
+                                          - text: Accent
+                                          - code [ref=e1146]: 145 52% 44%
+                                      - generic [ref=e1147]:
+                                        - generic [ref=e1148]:
+                                          - generic [ref=e1149]: Hue 030°
+                                          - generic [ref=e1150]: Wallpaper autumn-harvest
+                                        - button "Apply Theme" [ref=e1152] [cursor=pointer]:
+                                          - generic [ref=e1154]: Apply Theme
+                                  - listitem [ref=e1155]:
+                                    - article [ref=e1156]:
+                                      - generic [ref=e1157]:
+                                        - generic [ref=e1158]:
+                                          - paragraph [ref=e1159]: Winter Brilliance
+                                          - paragraph [ref=e1160]: Icy blues with frosted whites for cold-weather missions.
+                                        - generic [ref=e1161]: Preview
+                                      - generic [ref=e1162]:
+                                        - generic [ref=e1165]:
+                                          - text: Primary
+                                          - code [ref=e1166]: 204 88% 68%
+                                        - generic [ref=e1169]:
+                                          - text: Accent
+                                          - code [ref=e1170]: 228 76% 70%
+                                      - generic [ref=e1171]:
+                                        - generic [ref=e1172]:
+                                          - generic [ref=e1173]: Hue 204°
+                                          - generic [ref=e1174]: Wallpaper winter-brilliance
+                                        - button "Apply Theme" [ref=e1176] [cursor=pointer]:
+                                          - generic [ref=e1178]: Apply Theme
+                          - generic [ref=e1179]:
+                            - generic [ref=e1180]:
+                              - generic [ref=e1181]:
+                                - heading "Mission Themes" [level=3] [ref=e1182]:
+                                  - img [ref=e1183]
+                                  - text: Mission Themes
+                                - paragraph [ref=e1185]: Pick a preset or blend your own palette for crew briefings and campus walk-throughs.
+                              - generic [ref=e1186]:
+                                - generic [ref=e1187]: Visual Mode
+                                - combobox "Visual Mode" [ref=e1188] [cursor=pointer]:
+                                  - generic: Dark
+                                  - img [ref=e1189]
+                            - generic [ref=e1191]:
+                              - generic [ref=e1192]:
+                                - generic [ref=e1193]:
+                                  - generic [ref=e1194]:
+                                    - generic [ref=e1195]:
+                                      - img [ref=e1196]
+                                      - text: DIVISION
+                                    - heading "Division Protocol" [level=4] [ref=e1200]
+                                  - paragraph [ref=e1201]: Immersive SHD-grade palettes with tactical contrast and mission-ready readability.
+                                - generic [ref=e1202]:
+                                  - button "Division Agent Signature SHD orange ambience with holographic tech blues." [ref=e1203] [cursor=pointer]:
+                                    - generic [ref=e1207]:
+                                      - generic:
+                                        - generic: Division Agent
+                                        - generic: Signature SHD orange ambience with holographic tech blues.
+                                  - button "Rogue Agent Crimson rogue signature with hostile pulses and deep noir background." [ref=e1208] [cursor=pointer]:
+                                    - generic [ref=e1211]:
+                                      - generic:
+                                        - generic: Rogue Agent
+                                        - generic: Crimson rogue signature with hostile pulses and deep noir background.
+                                  - button "Dark Zone High tension alert palette with emergency red gradients." [ref=e1212] [cursor=pointer]:
+                                    - generic [ref=e1215]:
+                                      - generic:
+                                        - generic: Dark Zone
+                                        - generic: High tension alert palette with emergency red gradients.
+                                  - button "Tech Specialist Cyan teal matrix aesthetic with glowing interfaces." [ref=e1216] [cursor=pointer]:
+                                    - generic [ref=e1219]:
+                                      - generic:
+                                        - generic: Tech Specialist
+                                        - generic: Cyan teal matrix aesthetic with glowing interfaces.
+                                  - button "Stealth Operations Night vision lime offsets with covert green primaries." [ref=e1220] [cursor=pointer]:
+                                    - generic [ref=e1223]:
+                                      - generic:
+                                        - generic: Stealth Operations
+                                        - generic: Night vision lime offsets with covert green primaries.
+                                  - button "Combat Mode Alert orange-red gradients for high intensity firefights." [ref=e1224] [cursor=pointer]:
+                                    - generic [ref=e1227]:
+                                      - generic:
+                                        - generic: Combat Mode
+                                        - generic: Alert orange-red gradients for high intensity firefights.
+                                  - button "Tactical Command Strategic blue primary with SHD accents for command briefings." [ref=e1228] [cursor=pointer]:
+                                    - generic [ref=e1231]:
+                                      - generic:
+                                        - generic: Tactical Command
+                                        - generic: Strategic blue primary with SHD accents for command briefings.
+                                  - button "Hunter Protocol Elite violet primary with pulse green enemy accents." [ref=e1232] [cursor=pointer]:
+                                    - generic [ref=e1235]:
+                                      - generic:
+                                        - generic: Hunter Protocol
+                                        - generic: Elite violet primary with pulse green enemy accents.
+                                  - button "Sunrise Service Golden hour warmth for early-morning campus walkthroughs." [ref=e1236] [cursor=pointer]:
+                                    - generic [ref=e1239]:
+                                      - generic:
+                                        - generic: Sunrise Service
+                                        - generic: Golden hour warmth for early-morning campus walkthroughs.
+                                  - button "Evensong Twilight Indigo-lavender gradients with brass accents for evening briefings." [ref=e1240] [cursor=pointer]:
+                                    - generic [ref=e1243]:
+                                      - generic:
+                                        - generic: Evensong Twilight
+                                        - generic: Indigo-lavender gradients with brass accents for evening briefings.
+                                  - button "Revival Energy Teal and cobalt uplift for youth night rally planning." [ref=e1244] [cursor=pointer]:
+                                    - generic [ref=e1247]:
+                                      - generic:
+                                        - generic: Revival Energy
+                                        - generic: Teal and cobalt uplift for youth night rally planning.
+                                  - button "Celestial Chapel Soft sky gradients with luminous whites for worship center dashboards." [ref=e1248] [cursor=pointer]:
+                                    - generic [ref=e1251]:
+                                      - generic:
+                                        - generic: Celestial Chapel
+                                        - generic: Soft sky gradients with luminous whites for worship center dashboards.
+                              - generic [ref=e1252]:
+                                - generic [ref=e1253]:
+                                  - generic [ref=e1254]:
+                                    - generic [ref=e1255]:
+                                      - img [ref=e1256]
+                                      - text: LEGACY
+                                    - heading "Legacy Palettes" [level=4] [ref=e1260]
+                                  - paragraph [ref=e1261]: Classic contractor-friendly colorways crews already know and love.
+                                - generic [ref=e1262]:
+                                  - button "Baseline Command Balanced SHD palette for mission control surfaces." [ref=e1263] [cursor=pointer]:
+                                    - generic [ref=e1266]:
+                                      - generic:
+                                        - generic: Baseline Command
+                                        - generic: Balanced SHD palette for mission control surfaces.
+                                  - button "Emerald Field Cool contractor green for outdoor-focused briefs." [ref=e1267] [cursor=pointer]:
+                                    - generic [ref=e1270]:
+                                      - generic:
+                                        - generic: Emerald Field
+                                        - generic: Cool contractor green for outdoor-focused briefs.
+                                  - button "Sunset Ops Warm orange-to-crimson gradient for end-of-day reviews." [ref=e1271] [cursor=pointer]:
+                                    - generic [ref=e1274]:
+                                      - generic:
+                                        - generic: Sunset Ops
+                                        - generic: Warm orange-to-crimson gradient for end-of-day reviews.
+                                  - button "Royal Command Executive purple and blue accents for board presentations." [ref=e1275] [cursor=pointer]:
+                                    - generic [ref=e1278]:
+                                      - generic:
+                                        - generic: Royal Command
+                                        - generic: Executive purple and blue accents for board presentations.
+                                  - button "Crimson Alert High urgency palette for emergency patching deployments." [ref=e1279] [cursor=pointer]:
+                                    - generic [ref=e1282]:
+                                      - generic:
+                                        - generic: Crimson Alert
+                                        - generic: High urgency palette for emergency patching deployments.
+                                  - button "Forest Patrol Temperate greens tuned for suburban church campuses." [ref=e1283] [cursor=pointer]:
+                                    - generic [ref=e1286]:
+                                      - generic:
+                                        - generic: Forest Patrol
+                                        - generic: Temperate greens tuned for suburban church campuses.
+                                  - button "Ocean Recon Blue-green blend for coastal or waterfront engagements." [ref=e1287] [cursor=pointer]:
+                                    - generic [ref=e1290]:
+                                      - generic:
+                                        - generic: Ocean Recon
+                                        - generic: Blue-green blend for coastal or waterfront engagements.
+                                  - button "Amber Beacon Safety-first amber glow for hazard communication." [ref=e1291] [cursor=pointer]:
+                                    - generic [ref=e1294]:
+                                      - generic:
+                                        - generic: Amber Beacon
+                                        - generic: Safety-first amber glow for hazard communication.
+                                  - button "Monochrome Ops Minimal grayscale for focus-mode dashboards." [ref=e1295] [cursor=pointer]:
+                                    - generic [ref=e1298]:
+                                      - generic:
+                                        - generic: Monochrome Ops
+                                        - generic: Minimal grayscale for focus-mode dashboards.
+                                  - button "Cyber Pulse Neon violet and aqua for futuristic mission briefs." [ref=e1299] [cursor=pointer]:
+                                    - generic [ref=e1302]:
+                                      - generic:
+                                        - generic: Cyber Pulse
+                                        - generic: Neon violet and aqua for futuristic mission briefs.
+                              - generic [ref=e1303]:
+                                - generic [ref=e1304]:
+                                  - generic [ref=e1305]:
+                                    - generic [ref=e1306]:
+                                      - img [ref=e1307]
+                                      - text: LITURGICAL
+                                    - heading "Liturgical Seasons" [level=4] [ref=e1311]
+                                  - paragraph [ref=e1312]: Sacred-season palettes tuned for Advent, Lent, Easter, and Pentecost programming.
+                                - generic [ref=e1313]:
+                                  - button "Advent Vigil Candlelight violets with brass highlights for Advent services." [ref=e1314] [cursor=pointer]:
+                                    - generic [ref=e1317]:
+                                      - generic:
+                                        - generic: Advent Vigil
+                                        - generic: Candlelight violets with brass highlights for Advent services.
+                                  - button "Lent Refocus Muted plum gradients supporting reflective planning." [ref=e1318] [cursor=pointer]:
+                                    - generic [ref=e1321]:
+                                      - generic:
+                                        - generic: Lent Refocus
+                                        - generic: Muted plum gradients supporting reflective planning.
+                                  - button "Easter Radiance Brilliant gold and teal bloom for resurrection celebrations." [ref=e1322] [cursor=pointer]:
+                                    - generic [ref=e1325]:
+                                      - generic:
+                                        - generic: Easter Radiance
+                                        - generic: Brilliant gold and teal bloom for resurrection celebrations.
+                                  - button "Pentecost Flare Fiery oranges with wind-swept amber for Pentecost missions." [ref=e1326] [cursor=pointer]:
+                                    - generic [ref=e1329]:
+                                      - generic:
+                                        - generic: Pentecost Flare
+                                        - generic: Fiery oranges with wind-swept amber for Pentecost missions.
+                              - generic [ref=e1330]:
+                                - generic [ref=e1331]:
+                                  - generic [ref=e1332]:
+                                    - generic [ref=e1333]:
+                                      - img [ref=e1334]
+                                      - text: CAMPUS
+                                    - heading "Campus Contexts" [level=4] [ref=e1338]
+                                  - paragraph [ref=e1339]: Layouts tailored to sanctuary heritage, family life centers, youth spaces, and parking ops.
+                                - generic [ref=e1340]:
+                                  - button "Chapel Stonework Warm sandstone with teal accents for historic sanctuaries." [ref=e1341] [cursor=pointer]:
+                                    - generic [ref=e1344]:
+                                      - generic:
+                                        - generic: Chapel Stonework
+                                        - generic: Warm sandstone with teal accents for historic sanctuaries.
+                                  - button "Family Life Center Inviting corals and soft amber suited for community halls." [ref=e1345] [cursor=pointer]:
+                                    - generic [ref=e1348]:
+                                      - generic:
+                                        - generic: Family Life Center
+                                        - generic: Inviting corals and soft amber suited for community halls.
+                                  - button "Youth Center Ramp Electric cyan and magenta energy for student nights." [ref=e1349] [cursor=pointer]:
+                                    - generic [ref=e1352]:
+                                      - generic:
+                                        - generic: Youth Center Ramp
+                                        - generic: Electric cyan and magenta energy for student nights.
+                                  - button "Parking Strategy High-contrast amber and cobalt for lot layout operations." [ref=e1353] [cursor=pointer]:
+                                    - generic [ref=e1356]:
+                                      - generic:
+                                        - generic: Parking Strategy
+                                        - generic: High-contrast amber and cobalt for lot layout operations.
+                              - generic [ref=e1357]:
+                                - generic [ref=e1358]:
+                                  - generic [ref=e1359]:
+                                    - generic [ref=e1360]:
+                                      - img [ref=e1361]
+                                      - text: SEASONAL
+                                    - heading "Seasonal Operations" [level=4] [ref=e1365]
+                                  - paragraph [ref=e1366]: Weather-aware themes aligned with outreach pushes, harvest prep, winterization, and storm response.
+                                - generic [ref=e1367]:
+                                  - button "Summer Outreach Citrus gradients for VBS and outreach blitz operations." [ref=e1368] [cursor=pointer]:
+                                    - generic [ref=e1371]:
+                                      - generic:
+                                        - generic: Summer Outreach
+                                        - generic: Citrus gradients for VBS and outreach blitz operations.
+                                  - button "Autumn Renewal Harvest ambers and forest greens for fall resurfacing." [ref=e1372] [cursor=pointer]:
+                                    - generic [ref=e1375]:
+                                      - generic:
+                                        - generic: Autumn Renewal
+                                        - generic: Harvest ambers and forest greens for fall resurfacing.
+                                  - button "Winter Brilliance Icy blues with frosted whites for cold-weather missions." [ref=e1376] [cursor=pointer]:
+                                    - generic [ref=e1379]:
+                                      - generic:
+                                        - generic: Winter Brilliance
+                                        - generic: Icy blues with frosted whites for cold-weather missions.
+                                  - button "Storm Response Emergency cyan and amber for rapid repair deployments." [ref=e1380] [cursor=pointer]:
+                                    - generic [ref=e1383]:
+                                      - generic:
+                                        - generic: Storm Response
+                                        - generic: Emergency cyan and amber for rapid repair deployments.
+                          - generic [ref=e1384]:
+                            - generic [ref=e1385]:
+                              - generic [ref=e1386]:
+                                - generic [ref=e1387]:
+                                  - img [ref=e1388]
+                                  - text: Hue Override
+                                - switch "Toggle hue override" [ref=e1392] [cursor=pointer]
+                              - generic [ref=e1393]:
+                                - generic [ref=e1394]:
+                                  - generic [ref=e1395]: Primary Hue
+                                  - generic [ref=e1396]: 210°
+                                - slider "Primary Hue 210°" [disabled] [ref=e1397] [cursor=pointer]: "210"
+                                - paragraph [ref=e1398]: Enable hue override to align the Division palette with your church branding.
+                              - generic [ref=e1399]:
+                                - generic [ref=e1400]:
+                                  - generic [ref=e1401]: Corner Radius
+                                  - generic [ref=e1402]: 8px
+                                - slider "Corner Radius 8px" [ref=e1403] [cursor=pointer]: "8"
+                              - generic [ref=e1404]:
+                                - generic [ref=e1405]:
+                                  - img [ref=e1406]
+                                  - text: High Contrast
+                                - switch "Toggle high contrast theme" [ref=e1409] [cursor=pointer]
+                            - generic [ref=e1410]:
+                              - generic [ref=e1411]:
+                                - img
+                                - text: Wallpaper Atmospheres
+                              - generic [ref=e1422]:
+                                - button "Twilight Ops Warm dusk glow across a tactical grid inspired by post-operation debriefs." [ref=e1423] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Twilight Ops
+                                    - generic: Warm dusk glow across a tactical grid inspired by post-operation debriefs.
+                                - button "Sanctuary Grid Teal aurora bands reflecting sanctuary lighting over holo grids." [ref=e1426] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Sanctuary Grid
+                                    - generic: Teal aurora bands reflecting sanctuary lighting over holo grids.
+                                - button "Dark Zone Breach Emergency crimson lattice with subtle smog layers for DZ incursions." [ref=e1428] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Dark Zone Breach
+                                    - generic: Emergency crimson lattice with subtle smog layers for DZ incursions.
+                                - button "Cathedral Briefing Deep indigo conference glow for executive mission briefings." [ref=e1430] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Cathedral Briefing
+                                    - generic: Deep indigo conference glow for executive mission briefings.
+                                - button "Stealth Insertion Night vision gradient with lime pulses for covert approach planning." [ref=e1432] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Stealth Insertion
+                                    - generic: Night vision gradient with lime pulses for covert approach planning.
+                                - button "Sunrise Service Amber sunrise over a fresh sealcoat with subtle lens flares." [ref=e1434] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Sunrise Service
+                                    - generic: Amber sunrise over a fresh sealcoat with subtle lens flares.
+                                - button "Vespers Halo Evening violet haze across sanctuary glass reflections." [ref=e1436] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Vespers Halo
+                                    - generic: Evening violet haze across sanctuary glass reflections.
+                                - button "Revival Rush Teal aurora bursts with cobalt streams for youth rallies." [ref=e1438] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Revival Rush
+                                    - generic: Teal aurora bursts with cobalt streams for youth rallies.
+                                - button "Celestial Dawn Light sky bloom with chapel spotlights and soft mist." [ref=e1440] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Celestial Dawn
+                                    - generic: Light sky bloom with chapel spotlights and soft mist.
+                                - button "Advent Lights Violet sanctuary glow with candlelit gold bloom for Advent gatherings." [ref=e1442] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Advent Lights
+                                    - generic: Violet sanctuary glow with candlelit gold bloom for Advent gatherings.
+                                - button "Lent Embers Muted plums and charcoal embers supporting reflective planning sessions." [ref=e1444] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Lent Embers
+                                    - generic: Muted plums and charcoal embers supporting reflective planning sessions.
+                                - button "Easter Bloom Resurrection gold and aqua bloom cascading through the HUD." [ref=e1446] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Easter Bloom
+                                    - generic: Resurrection gold and aqua bloom cascading through the HUD.
+                                - button "Pentecost Flare Fiery orange ribbons with amber sparks for Pentecost deployments." [ref=e1448] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Pentecost Flare
+                                    - generic: Fiery orange ribbons with amber sparks for Pentecost deployments.
+                                - button "Campus Heritage Warm sandstone gradients with teal reflections for historic chapels." [ref=e1450] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Campus Heritage
+                                    - generic: Warm sandstone gradients with teal reflections for historic chapels.
+                                - button "Community Hub Coral and amber ribbons for family life and fellowship halls." [ref=e1452] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Community Hub
+                                    - generic: Coral and amber ribbons for family life and fellowship halls.
+                                - button "Youth Dynamo Electric cyan and magenta pulses powering student rallies." [ref=e1454] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Youth Dynamo
+                                    - generic: Electric cyan and magenta pulses powering student rallies.
+                                - button "Parking Grid High-visibility amber and cobalt overlay for lot logistics." [ref=e1456] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Parking Grid
+                                    - generic: High-visibility amber and cobalt overlay for lot logistics.
+                                - button "Summer Outreach Citrus light bursts and teal mists for VBS mission weeks." [ref=e1458] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Summer Outreach
+                                    - generic: Citrus light bursts and teal mists for VBS mission weeks.
+                                - button "Autumn Harvest Harvest ambers and evergreen haze for fall resurfacing projects." [ref=e1460] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Autumn Harvest
+                                    - generic: Harvest ambers and evergreen haze for fall resurfacing projects.
+                                - button "Winter Brilliance Icy blue radiance with frosted overlays for cold-weather mobilization." [ref=e1462] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Winter Brilliance
+                                    - generic: Icy blue radiance with frosted overlays for cold-weather mobilization.
+                                - button "Storm Response Emergency cyan and amber alerts primed for rapid response dashboards." [ref=e1464] [cursor=pointer]:
+                                  - generic:
+                                    - generic: Storm Response
+                                    - generic: Emergency cyan and amber alerts primed for rapid response dashboards.
+                              - generic [ref=e1466]:
+                                - text: Upload custom wallpaper
+                                - generic [ref=e1467]:
+                                  - textbox "Call sign (optional)" [ref=e1468]
+                                  - combobox [ref=e1469] [cursor=pointer]:
+                                    - generic: dusk
+                                    - img [ref=e1470]
+                                  - button "Reset wallpaper upload form" [ref=e1472] [cursor=pointer]:
+                                    - generic [ref=e1474]:
+                                      - img
+                                - generic [ref=e1475]:
+                                  - button "Upload custom wallpaper" [ref=e1476]
+                                  - img
+                                - generic [ref=e1479]:
+                                  - generic [ref=e1480]:
+                                    - generic [ref=e1481]: Opacity
+                                    - generic [ref=e1482]: 25%
+                                  - slider "Opacity 25%" [ref=e1483] [cursor=pointer]: "0.25"
+                                  - generic [ref=e1484]:
+                                    - generic [ref=e1485]: Atmosphere Blur
+                                    - generic [ref=e1486]: 0px
+                                  - slider "Atmosphere Blur 0px" [ref=e1487] [cursor=pointer]: "0"
+                          - generic [ref=e1488]:
+                            - generic [ref=e1489]:
+                              - img
+                              - text: Design System Snapshot
+                            - generic [ref=e1491]:
+                              - generic [ref=e1492]:
+                                - heading "Core Colors" [level=5]
+                                - list:
+                                  - listitem:
+                                    - generic [ref=e1493]: primary
+                                    - generic [ref=e1494]: hsl(25 100% 55%)
+                                  - listitem:
+                                    - generic [ref=e1496]: accent
+                                    - generic [ref=e1497]: hsl(206 92% 55%)
+                                  - listitem:
+                                    - generic [ref=e1499]: secondary
+                                    - generic [ref=e1500]: hsl(197 86% 48%)
+                                  - listitem:
+                                    - generic [ref=e1502]: background
+                                    - generic [ref=e1503]: hsl(220 50% 4%)
+                                  - listitem:
+                                    - generic [ref=e1505]: foreground
+                                    - generic [ref=e1506]: hsl(220 22% 92%)
+                              - generic [ref=e1508]:
+                                - heading "Spacing" [level=5]
+                                - list:
+                                  - listitem:
+                                    - generic [ref=e1509]: 3xs
+                                    - generic [ref=e1510]: 2px
+                                  - listitem:
+                                    - generic [ref=e1511]: 2xs
+                                    - generic [ref=e1512]: 4px
+                                  - listitem:
+                                    - generic [ref=e1513]: xs
+                                    - generic [ref=e1514]: 8px
+                                  - listitem:
+                                    - generic [ref=e1515]: sm
+                                    - generic [ref=e1516]: 12px
+                                  - listitem:
+                                    - generic [ref=e1517]: md
+                                    - generic [ref=e1518]: 16px
+                                  - listitem:
+                                    - generic [ref=e1519]: lg
+                                    - generic [ref=e1520]: 24px
+                                  - listitem:
+                                    - generic [ref=e1521]: xl
+                                    - generic [ref=e1522]: 32px
+                                  - listitem:
+                                    - generic [ref=e1523]: 2xl
+                                    - generic [ref=e1524]: 48px
+                                  - listitem:
+                                    - generic [ref=e1525]: 3xl
+                                    - generic [ref=e1526]: 64px
+                              - generic [ref=e1527]:
+                                - heading "Typography" [level=5]
+                                - list:
+                                  - listitem:
+                                    - generic [ref=e1528]: display-xxl
+                                    - generic [ref=e1529]: clamp(3.75rem, 2.6vw + 2.1rem, 5.85rem)
+                                  - listitem:
+                                    - generic [ref=e1530]: display-xl
+                                    - generic [ref=e1531]: clamp(3.25rem, 2.3vw + 1.85rem, 4.75rem)
+                                  - listitem:
+                                    - generic [ref=e1532]: display-lg
+                                    - generic [ref=e1533]: clamp(2.75rem, 2vw + 1.6rem, 3.9rem)
+                                  - listitem:
+                                    - generic [ref=e1534]: title-lg
+                                    - generic [ref=e1535]: clamp(2.35rem, 1.6vw + 1.35rem, 3.2rem)
+                                  - listitem:
+                                    - generic [ref=e1536]: title-md
+                                    - generic [ref=e1537]: clamp(2rem, 1.2vw + 1.2rem, 2.7rem)
+                                  - listitem:
+                                    - generic [ref=e1538]: heading-lg
+                                    - generic [ref=e1539]: clamp(1.75rem, 1vw + 1.05rem, 2.3rem)
+                              - generic [ref=e1540]:
+                                - heading "Shadows" [level=5]
+                                - list:
+                                  - listitem:
+                                    - generic [ref=e1541]: "--shadow-sm"
+                                    - generic [ref=e1542]: 0 4px 16px rgba(15, 23, 42, 0.25)
+                                  - listitem:
+                                    - generic [ref=e1543]: "--shadow-md"
+                                    - generic [ref=e1544]: 0 12px 32px rgba(8, 12, 24, 0.35)
+                                  - listitem:
+                                    - generic [ref=e1545]: "--shadow-lg"
+                                    - generic [ref=e1546]: 0 22px 64px rgba(5, 8, 18, 0.45)
+                                  - listitem:
+                                    - generic [ref=e1547]: "--shadow-xl"
+                                    - generic [ref=e1548]: 0 30px 120px rgba(11, 17, 35, 0.55)
+                          - generic [ref=e1549]:
+                            - generic [ref=e1550]:
+                              - heading "Accessibility Readiness" [level=2] [ref=e1551]:
+                                - img
+                                - text: Accessibility Readiness
+                              - paragraph [ref=e1554]: WCAG 2.1 contrast checks for primary surfaces, typography, and interactive elements. Use this heatmap to validate that custom palettes remain mission-ready for every campus user.
+                              - generic [ref=e1555]:
+                                - generic [ref=e1556]:
+                                  - img [ref=e1557]
+                                  - text: Contrast tuning required
+                                - generic [ref=e1559]: "Softest Surface: Accent Alerts"
+                                - generic [ref=e1560]: "Strongest Surface: Body Copy"
+                            - generic [ref=e1562]:
+                              - article [ref=e1563]:
+                                - generic [ref=e1564]:
+                                  - generic [ref=e1565]:
+                                    - paragraph [ref=e1566]: Primary Buttons
+                                    - paragraph [ref=e1567]: "2.30 : 1"
+                                  - generic [ref=e1568]:
+                                    - img [ref=e1569]
+                                    - text: FAIL
+                                - paragraph [ref=e1571]: Increase contrast or enable high-contrast mode to meet AA requirements.
+                                - paragraph [ref=e1572]: Large text also fails AAA; consider alternate pairing.
+                              - article [ref=e1574]:
+                                - generic [ref=e1575]:
+                                  - generic [ref=e1576]:
+                                    - paragraph [ref=e1577]: Secondary Surfaces
+                                    - paragraph [ref=e1578]: "2.46 : 1"
+                                  - generic [ref=e1579]:
+                                    - img [ref=e1580]
+                                    - text: FAIL
+                                - paragraph [ref=e1582]: Increase contrast or enable high-contrast mode to meet AA requirements.
+                                - paragraph [ref=e1583]: Large text also fails AAA; consider alternate pairing.
+                              - article [ref=e1585]:
+                                - generic [ref=e1586]:
+                                  - generic [ref=e1587]:
+                                    - paragraph [ref=e1588]: Accent Alerts
+                                    - paragraph [ref=e1589]: "2.23 : 1"
+                                  - generic [ref=e1590]:
+                                    - img [ref=e1591]
+                                    - text: FAIL
+                                - paragraph [ref=e1593]: Increase contrast or enable high-contrast mode to meet AA requirements.
+                                - paragraph [ref=e1594]: Large text also fails AAA; consider alternate pairing.
+                              - article [ref=e1596]:
+                                - generic [ref=e1597]:
+                                  - generic [ref=e1598]:
+                                    - paragraph [ref=e1599]: Card Body Text
+                                    - paragraph [ref=e1600]: "15.70 : 1"
+                                  - generic [ref=e1601]:
+                                    - img [ref=e1602]
+                                    - text: AAA
+                                - paragraph [ref=e1605]: AAA contrast achieved; excellent for mission-critical telemetry and accessibility.
+                              - article [ref=e1606]:
+                                - generic [ref=e1607]:
+                                  - generic [ref=e1608]:
+                                    - paragraph [ref=e1609]: Body Copy
+                                    - paragraph [ref=e1610]: "16.34 : 1"
+                                  - generic [ref=e1611]:
+                                    - img [ref=e1612]
+                                    - text: AAA
+                                - paragraph [ref=e1615]: AAA contrast achieved; excellent for mission-critical telemetry and accessibility.
+                              - article [ref=e1616]:
+                                - generic [ref=e1617]:
+                                  - generic [ref=e1618]:
+                                    - paragraph [ref=e1619]: Muted Badges
+                                    - paragraph [ref=e1620]: "7.93 : 1"
+                                  - generic [ref=e1621]:
+                                    - img [ref=e1622]
+                                    - text: AAA
+                                - paragraph [ref=e1625]: AAA contrast achieved; excellent for mission-critical telemetry and accessibility.
+                          - generic [ref=e1626]:
+                            - generic [ref=e1627]:
+                              - heading "Quick Reset" [level=4] [ref=e1628]
+                              - paragraph [ref=e1629]: Restore the default Division Agent theme, wallpaper, and radii.
+                            - button "Reset Theme" [ref=e1630] [cursor=pointer]:
+                              - generic [ref=e1632]:
+                                - img
+                                - text: Reset Theme
+                    - generic [ref=e1633]:
+                      - heading "Feature Flags" [level=3] [ref=e1634]
+                      - generic [ref=e1635]:
+                        - generic [ref=e1636]:
+                          - switch "AI Copilot" [checked] [ref=e1637] [cursor=pointer]
+                          - generic [ref=e1638]:
+                            - generic [ref=e1639]: AI Copilot
+                            - generic [ref=e1640]: Conversational support for quotes, risk alerts, and executive summaries.
+                        - generic [ref=e1641]:
+                          - switch "Image Area Analyzer" [checked] [ref=e1642] [cursor=pointer]
+                          - generic [ref=e1643]:
+                            - generic [ref=e1644]: Image Area Analyzer
+                            - generic [ref=e1645]: Upload blueprint or drone imagery to auto-detect lot boundaries.
+                        - generic [ref=e1646]:
+                          - switch "Receipts Ledger" [checked] [ref=e1647] [cursor=pointer]
+                          - generic [ref=e1648]:
+                            - generic [ref=e1649]: Receipts Ledger
+                            - generic [ref=e1650]: Attach and categorize expenses for each job with indexed search.
+                        - generic [ref=e1651]:
+                          - switch "Scheduler" [ref=e1652] [cursor=pointer]
+                          - generic [ref=e1653]:
+                            - generic [ref=e1654]: Scheduler
+                            - generic [ref=e1655]: Crew blackout calendar, assignments, and weather-sensitive planning.
+                        - generic [ref=e1656]:
+                          - switch "Layout Optimizer" [ref=e1657] [cursor=pointer]
+                          - generic [ref=e1658]:
+                            - generic [ref=e1659]: Layout Optimizer
+                            - generic [ref=e1660]: AI-powered layout suggestions to max parking count and flow.
+                        - generic [ref=e1661]:
+                          - switch "Customer Portal" [ref=e1662] [cursor=pointer]
+                          - generic [ref=e1663]:
+                            - generic [ref=e1664]: Customer Portal
+                            - generic [ref=e1665]: Share proposals, invoices, and progress visuals with church admins.
+                        - generic [ref=e1666]:
+                          - switch "Observability" [checked] [ref=e1667] [cursor=pointer]
+                          - generic [ref=e1668]:
+                            - generic [ref=e1669]: Observability
+                            - generic [ref=e1670]: Client-side telemetry + Supabase logging for reliability reporting.
+                        - generic [ref=e1671]:
+                          - switch "Offline PWA" [checked] [ref=e1672] [cursor=pointer]
+                          - generic [ref=e1673]:
+                            - generic [ref=e1674]: Offline PWA
+                            - generic [ref=e1675]: Enable installable experience for on-site crews with caching.
+                        - generic [ref=e1676]:
+                          - switch "Internationalization" [checked] [ref=e1677] [cursor=pointer]
+                          - generic [ref=e1678]:
+                            - generic [ref=e1679]: Internationalization
+                            - generic [ref=e1680]: Expose translation tooling for multi-lingual faith communities.
+                        - generic [ref=e1681]:
+                          - switch "Executive Command Center" [checked] [ref=e1682] [cursor=pointer]
+                          - generic [ref=e1683]:
+                            - generic [ref=e1684]: Executive Command Center
+                            - generic [ref=e1685]: Unlock the analytics dashboard for revenue, utilization, and scheduling insights.
+                    - generic [ref=e1686]:
+                      - switch "Owner Mode" [ref=e1687] [cursor=pointer]
+                      - generic [ref=e1688]:
+                        - text: Owner Mode
+                        - paragraph [ref=e1689]: Unlock owner-only controls like material blends, margin guardrails, and observability sampling.
+                - generic [ref=e1691]:
+                  - generic [ref=e1693]:
+                    - text: Intelligence
+                    - heading "AI Copilot" [level=2] [ref=e1694]
+                    - paragraph [ref=e1695]: Ask mission-critical questions, summarize proposals, or draft client communication.
+                  - generic [ref=e1697]:
+                    - generic [ref=e1698]:
+                      - heading "AI Assistant (Gemini)" [level=2] [ref=e1699]
+                      - paragraph [ref=e1700]: Ask domain questions or upload site images for analysis.
+                    - generic [ref=e1701]:
+                      - generic [ref=e1702]:
+                        - textbox "Ask about materials, coverage, crack repair, scheduling, etc." [ref=e1703]
+                        - button "Ask" [disabled]:
+                          - generic:
+                            - generic: Ask
+                      - generic [ref=e1704]:
+                        - text: Image Analysis
+                        - button "Image Analysis" [ref=e1705]
+              - generic [ref=e1707]:
+                - generic [ref=e1708]:
+                  - generic [ref=e1709]:
+                    - text: Compliance
+                    - heading "Regulatory Toolkit" [level=2] [ref=e1710]
+                    - paragraph [ref=e1711]: Jump into ADA, VDOT, and NC DOT resources before finalizing proposals.
+                  - button "Open Library" [ref=e1713] [cursor=pointer]:
+                    - generic [ref=e1715]:
+                      - img
+                      - text: Open Library
+                - generic [ref=e1717]:
+                  - button "ADA & Striping" [ref=e1718] [cursor=pointer]:
+                    - generic [ref=e1720]: ADA & Striping
+                  - button "Sealcoat Specs" [ref=e1721] [cursor=pointer]:
+                    - generic [ref=e1723]: Sealcoat Specs
+                  - button "Crack Filling SOP" [ref=e1724] [cursor=pointer]:
+                    - generic [ref=e1726]: Crack Filling SOP
+        - generic [ref=e1727]: Mission control tailored for small crews serving church campuses. Refresh your dev server if updates are missing.
+```

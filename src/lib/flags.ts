@@ -1,16 +1,16 @@
 export type FeatureFlag =
-  | "imageAreaAnalyzer"
-  | "aiAssistant"
-  | "pwa"
-  | "i18n"
-  | "receipts"
-  | "ownerMode"
-  | "scheduler"
-  | "optimizer"
-  | "customerPortal"
-  | "observability"
-  | "commandCenter"
-  | "tacticalMapV2";
+  | 'imageAreaAnalyzer'
+  | 'aiAssistant'
+  | 'pwa'
+  | 'i18n'
+  | 'receipts'
+  | 'ownerMode'
+  | 'scheduler'
+  | 'optimizer'
+  | 'customerPortal'
+  | 'observability'
+  | 'commandCenter'
+  | 'tacticalMapV2';
 
 const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   imageAreaAnalyzer: true,
@@ -27,7 +27,7 @@ const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
   tacticalMapV2: true,
 };
 
-const STORAGE_KEY = "pps:flags";
+const STORAGE_KEY = 'pps:flags';
 
 export function getFlags(): Record<FeatureFlag, boolean> {
   try {
@@ -47,11 +47,23 @@ export function setFlag(flag: FeatureFlag, enabled: boolean): void {
 }
 
 export function isEnabled(flag: FeatureFlag): boolean {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<Record<FeatureFlag, boolean>>;
+      if (flag in parsed) {
+        return Boolean(parsed[flag]);
+      }
+    }
+  } catch {
+    // ignore storage parsing issues
+  }
+
   const envOverride = (import.meta as unknown as { env?: Record<string, string> })?.env?.[
     `VITE_FLAG_${flag.toUpperCase()}`
   ];
-  if (typeof envOverride === "string") {
-    return envOverride === "1" || envOverride.toLowerCase() === "true";
+  if (typeof envOverride === 'string') {
+    return envOverride === '1' || envOverride.toLowerCase() === 'true';
   }
-  return getFlags()[flag];
+  return DEFAULT_FLAGS[flag];
 }

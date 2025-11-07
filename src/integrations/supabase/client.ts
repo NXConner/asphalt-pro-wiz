@@ -2,6 +2,9 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from './types';
 
+import { isDemoModeEnabled } from '@/lib/runtimeEnv';
+
+
 const runtimeEnv =
   (typeof import.meta !== 'undefined' && (import.meta as any)?.env) ||
   (typeof process !== 'undefined' ? process.env : {});
@@ -17,6 +20,8 @@ const SUPABASE_BROWSER_KEY =
   (runtimeEnv?.SUPABASE_ANON_KEY as string | undefined) ||
   '';
 
+const demoModeEnabled = isDemoModeEnabled();
+
 export const SUPABASE_CONFIGURATION_MESSAGE =
   'Supabase environment not configured: set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY (or VITE_SUPABASE_ANON_KEY) before starting the app.';
 
@@ -29,22 +34,85 @@ export class SupabaseConfigurationError extends Error {
 
 export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_BROWSER_KEY);
 
-export const supabaseConfigurationError = isSupabaseConfigured
-  ? null
-  : new SupabaseConfigurationError();
+export const supabaseConfigurationError =
+  isSupabaseConfigured || demoModeEnabled ? null : new SupabaseConfigurationError();
+
+const createDemoClient = (): SupabaseClient<Database> => {
+  const createQueryBuilder = () => {
+    const builder: any = {
+      select: () => builder,
+      insert: () => builder,
+      upsert: () => builder,
+      update: () => builder,
+      delete: () => builder,
+      eq: () => builder,
+      neq: () => builder,
+      in: () => builder,
+      overlap: () => builder,
+      order: () => builder,
+      limit: () => builder,
+      returns: () => builder,
+      maybeSingle: () => Promise.resolve({ data: null, error: null }),
+      single: () => Promise.resolve({ data: null, error: null }),
+      then: (resolve: (value: { data: unknown; error: null }) => void) => {
+        resolve({ data: [], error: null });
+      },
+    };
+    return builder;
+  };
+
+  return {
+    auth: {
+      getSession: async () => ({ data: { session: null }, error: null }),
+      onAuthStateChange: (_callback) => ({
+        data: { subscription: { unsubscribe: () => {} } },
+      }),
+      signInWithPassword: async () => ({ data: { session: null }, error: null }),
+      signUp: async () => ({ data: { user: null }, error: null }),
+      signOut: async () => ({ error: null }),
+    },
+    from: () => createQueryBuilder(),
+    channel: () => {
+      const channel: any = {
+        on: () => channel,
+        subscribe: () => channel,
+        unsubscribe: () => {},
+      };
+      return channel;
+    },
+    rpc: () => ({
+      then: (resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }),
+    }),
+    functions: {
+      invoke: async () => ({ data: null, error: null }),
+    },
+    storage: {
+      from: () => ({
+        upload: async () => ({ data: { path: '' }, error: null }),
+        remove: async () => ({ data: null, error: null }),
+        getPublicUrl: () => ({ data: { publicUrl: '' } }),
+      }),
+    },
+     
+  } as unknown as SupabaseClient<Database>;
+};
 
 const createStubProxy = (): SupabaseClient<Database> => {
   const error = supabaseConfigurationError ?? new SupabaseConfigurationError();
 
   const buildThrower = () =>
-    new Proxy(() => {
-      throw error;
-    }, {
-      get: () => buildThrower(),
-      apply: () => {
+    new Proxy(
+      () => {
         throw error;
       },
-    });
+      {
+        get: () => buildThrower(),
+        apply: () => {
+          throw error;
+        },
+      },
+    );
 
   return new Proxy({} as SupabaseClient<Database>, {
     get: (_target, property) => {
@@ -69,8 +137,10 @@ export const supabase = isSupabaseConfigured
         autoRefreshToken: true,
       },
     })
-  : createStubProxy();
+  : demoModeEnabled
+    ? createDemoClient()
+    : createStubProxy();
 
-if (!isSupabaseConfigured) {
+if (!isSupabaseConfigured && !demoModeEnabled) {
   console.error(SUPABASE_CONFIGURATION_MESSAGE);
 }

@@ -105,9 +105,10 @@ export function TelemetrySignal({
           className="ml-auto h-8 gap-2 px-3 text-[0.58rem] tracking-[0.36em] text-slate-100 hover:bg-white/10"
           onClick={onRefresh}
           disabled={isRefreshing}
+          aria-label="Sync telemetry"
         >
           <RefreshCcw className={cn('h-3.5 w-3.5', isRefreshing && 'animate-spin')} />
-          Refresh
+          Sync
         </Button>
       ) : null}
     </div>
