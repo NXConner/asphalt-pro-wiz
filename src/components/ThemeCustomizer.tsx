@@ -40,6 +40,11 @@ export function ThemeCustomizer() {
     saveCustomLayout,
     loadCustomLayout,
     deleteCustomLayout,
+    setHudTransitionPreset,
+    setHudMiniMode,
+    setHudAutoHide,
+    setHudAutoHideDelay,
+    setHudThemeVariant,
     reset,
   } = useTheme();
   const { builtin, custom, addWallpaper, removeWallpaper, getById } = useWallpaperLibrary();
@@ -207,6 +212,16 @@ export function ThemeCustomizer() {
             onSaveLayout={saveCustomLayout}
             onLoadLayout={loadCustomLayout}
             onDeleteLayout={deleteCustomLayout}
+            hudTransitionPreset={preferences.hudTransitionPreset}
+            setHudTransitionPreset={setHudTransitionPreset}
+            hudMiniMode={preferences.hudMiniMode}
+            setHudMiniMode={setHudMiniMode}
+            hudAutoHide={preferences.hudAutoHide}
+            setHudAutoHide={setHudAutoHide}
+            hudAutoHideDelay={preferences.hudAutoHideDelay}
+            setHudAutoHideDelay={setHudAutoHideDelay}
+            hudThemeVariant={preferences.hudThemeVariant}
+            setHudThemeVariant={setHudThemeVariant}
           />
           <ThemeWallpaperManager
             builtin={builtin}

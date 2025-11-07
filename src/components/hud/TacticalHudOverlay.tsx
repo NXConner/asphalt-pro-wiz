@@ -84,7 +84,9 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
   const { preferences, setHudPosition, setHudPinned, setHudSize, setHudLayoutPreset } = useTheme();
   const isMobile = useIsMobile();
   const [isExpanded, setIsExpanded] = useState(!isMobile);
+  const [isVisible, setIsVisible] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
+  const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   useEffect(() => {
     const handleResize = () => {
@@ -127,25 +129,83 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
 
   const missionGlyph = missionStatus.toUpperCase();
 
+  // Auto-hide logic
+  const resetHideTimer = useCallback(() => {
+    if (hideTimerRef.current) {
+      clearTimeout(hideTimerRef.current);
+    }
+    if (preferences.hudAutoHide && !isMobile) {
+      setIsVisible(true);
+      hideTimerRef.current = setTimeout(() => {
+        setIsVisible(false);
+      }, preferences.hudAutoHideDelay);
+    }
+  }, [preferences.hudAutoHide, preferences.hudAutoHideDelay, isMobile]);
+
+  useEffect(() => {
+    if (preferences.hudAutoHide && !isMobile) {
+      resetHideTimer();
+      return () => {
+        if (hideTimerRef.current) {
+          clearTimeout(hideTimerRef.current);
+        }
+      };
+    } else {
+      setIsVisible(true);
+    }
+  }, [preferences.hudAutoHide, preferences.hudAutoHideDelay, isMobile, resetHideTimer]);
+
+  // Transition presets
+  const transitionConfig = {
+    smooth: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
+    instant: { duration: 0, ease: 'linear' as const },
+    bouncy: { duration: 0.5, ease: [0.68, -0.55, 0.265, 1.55] },
+    slow: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+  }[preferences.hudTransitionPreset];
+
+  // Theme variant styles
+  const themeVariantStyles = {
+    default: {
+      backdropFilter: `blur(${preferences.hudBlur}px)`,
+      backgroundColor: `hsl(var(--card) / ${preferences.hudOpacity})`,
+      border: 'border-border/50',
+    },
+    minimal: {
+      backdropFilter: 'blur(8px)',
+      backgroundColor: 'hsl(var(--background) / 0.8)',
+      border: 'border-border/30',
+    },
+    tactical: {
+      backdropFilter: `blur(${preferences.hudBlur}px)`,
+      backgroundColor: 'hsl(var(--card) / 0.95)',
+      border: 'border-primary/40',
+    },
+    glass: {
+      backdropFilter: 'blur(20px)',
+      backgroundColor: 'hsl(var(--card) / 0.3)',
+      border: 'border-border/20',
+    },
+    solid: {
+      backdropFilter: 'none',
+      backgroundColor: 'hsl(var(--card))',
+      border: 'border-border',
+    },
+  }[preferences.hudThemeVariant];
+
   return (
     <motion.div
       ref={containerRef}
       initial={{ opacity: 0, x: isMobile ? 0 : 20, y: isMobile ? 20 : 0 }}
       animate={{ 
-        opacity: 1, 
+        opacity: isVisible ? 1 : 0.2,
         x: preferences.hudPosition?.x ?? 0, 
         y: preferences.hudPosition?.y ?? 0,
-        width: isMobile ? '100%' : preferences.hudSize.width,
-        height: isMobile ? (isExpanded ? '85vh' : 80) : preferences.hudSize.height,
+        width: isMobile ? '100%' : (preferences.hudMiniMode ? '280px' : `${preferences.hudSize.width}px`),
+        height: isMobile ? (isExpanded ? '85vh' : 80) : (preferences.hudMiniMode ? 'auto' : `${preferences.hudSize.height}px`),
+        scale: isVisible ? 1 : 0.95,
       }}
       exit={{ opacity: 0, x: isMobile ? 0 : 20, y: isMobile ? 20 : 0 }}
-      transition={{ 
-        ...motionPreset,
-        width: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
-        height: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
-        x: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
-        y: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
-      }}
+      transition={transitionConfig as any}
       drag={!isMobile && !preferences.hudPinned}
       dragMomentum={false}
       dragElastic={0.1}
@@ -155,16 +215,27 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
           setHudPosition({ x: info.point.x, y: info.point.y });
         }
       }}
+      onMouseEnter={() => {
+        if (preferences.hudAutoHide && !isMobile) {
+          resetHideTimer();
+        }
+      }}
+      onMouseLeave={() => {
+        if (preferences.hudAutoHide && !isMobile) {
+          resetHideTimer();
+        }
+      }}
       className={cn(
-        'pointer-events-auto fixed z-[60] flex flex-col overflow-hidden shadow-2xl backdrop-blur-md',
+        'pointer-events-auto fixed z-[60] flex flex-col overflow-hidden shadow-2xl',
         isMobile
-          ? 'bottom-0 left-0 right-0 rounded-t-3xl border-t border-x border-border/50'
-          : 'rounded-2xl border border-border/50',
+          ? 'bottom-0 left-0 right-0 rounded-t-3xl border-t border-x'
+          : 'rounded-2xl border',
+        themeVariantStyles.border,
         className,
       )}
       style={{
-        backdropFilter: `blur(${preferences.hudBlur}px)`,
-        backgroundColor: `hsl(var(--card) / ${preferences.hudOpacity})`,
+        backdropFilter: themeVariantStyles.backdropFilter,
+        backgroundColor: themeVariantStyles.backgroundColor,
         transition: preferences.hudAnimationsEnabled ? 'backdrop-filter 0.3s ease, background-color 0.3s ease' : 'none',
       }}
     >
@@ -232,8 +303,36 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
       {/* Body - collapsible on mobile */}
       {(!isMobile || isExpanded) && (
         <div className="flex-1 space-y-3 overflow-y-auto p-4">
-          {/* Mission Details */}
-          <CollapsibleHudSection title="Mission Details" defaultOpen={true}>
+          {/* Mini Mode - Compact View */}
+          {preferences.hudMiniMode ? (
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-muted-foreground">Budget</span>
+                  <p className="font-semibold text-foreground">{formattedCost}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Area</span>
+                  <p className="font-semibold text-foreground">{formattedArea}</p>
+                </div>
+              </div>
+              {environment && (
+                <div className="flex items-center justify-between rounded-lg border border-border/40 bg-muted/20 px-2 py-1 text-xs">
+                  {typeof environment.tempF === 'number' && (
+                    <span className="text-foreground/85">{environment.tempF.toFixed(0)}°F</span>
+                  )}
+                  {environment.riskLevel && (
+                    <span className={cn('uppercase text-[0.65rem]', riskTone[environment.riskLevel])}>
+                      {environment.riskLevel}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              {/* Mission Details */}
+              <CollapsibleHudSection title="Mission Details" defaultOpen={true}>
             <div className="grid gap-3">
               <OverlayMetric label="Mission Budget" value={formattedCost} accent="accent" />
               <OverlayMetric label="Surface Footprint" value={formattedArea} accent="secondary" />
@@ -327,6 +426,8 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
                 ))}
               </ul>
             </CollapsibleHudSection>
+          )}
+            </>
           )}
         </div>
       )}

@@ -21,6 +21,10 @@ export interface HudSize {
   height: number;
 }
 
+export type HudTransitionPreset = 'smooth' | 'instant' | 'bouncy' | 'slow';
+
+export type HudThemeVariant = 'default' | 'minimal' | 'tactical' | 'glass' | 'solid';
+
 export interface SavedHudLayout {
   name: string;
   position: HudPosition;
@@ -53,6 +57,11 @@ export interface ThemePreferences {
   hudSize: HudSize;
   hudPinned: boolean;
   savedLayouts: SavedHudLayout[];
+  hudTransitionPreset: HudTransitionPreset;
+  hudMiniMode: boolean;
+  hudAutoHide: boolean;
+  hudAutoHideDelay: number;
+  hudThemeVariant: HudThemeVariant;
 }
 
 export type ThemeWallpaperSelection =
@@ -94,6 +103,11 @@ const createDefaults = (): ThemePreferences => {
     hudSize: { width: 384, height: 600 },
     hudPinned: false,
     savedLayouts: [],
+    hudTransitionPreset: 'smooth',
+    hudMiniMode: false,
+    hudAutoHide: false,
+    hudAutoHideDelay: 3000,
+    hudThemeVariant: 'default',
   };
 };
 
@@ -498,6 +512,44 @@ export function deleteCustomLayout(name: string): void {
   const savedLayouts = prefs.savedLayouts.filter(l => l.name !== name);
   const next = coerceWallpaper({ ...prefs, savedLayouts });
   saveThemePreferences(next);
+}
+
+export function setHudTransitionPreset(preset: HudTransitionPreset): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, hudTransitionPreset: preset });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudMiniMode(enabled: boolean): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, hudMiniMode: enabled });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudAutoHide(enabled: boolean): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, hudAutoHide: enabled });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudAutoHideDelay(delay: number): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({
+    ...prefs,
+    hudAutoHideDelay: Math.max(1000, Math.min(10000, delay)),
+  });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudThemeVariant(variant: HudThemeVariant): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, hudThemeVariant: variant });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
 }
 
 export function resetThemePreferences(): ThemePreferences {

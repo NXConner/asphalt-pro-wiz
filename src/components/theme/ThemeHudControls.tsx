@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
-import type { HudPresetMode, HudLayoutPreset, SavedHudLayout, HudSize } from '@/lib/theme';
+import type { HudPresetMode, HudLayoutPreset, SavedHudLayout, HudSize, HudTransitionPreset, HudThemeVariant } from '@/lib/theme';
 import { useToast } from '@/hooks/use-toast';
 import { Kbd } from '@/components/common/Kbd';
 
@@ -31,6 +31,16 @@ interface ThemeHudControlsProps {
   onSaveLayout: (name: string) => void;
   onLoadLayout: (name: string) => void;
   onDeleteLayout: (name: string) => void;
+  hudTransitionPreset: HudTransitionPreset;
+  setHudTransitionPreset: (preset: HudTransitionPreset) => void;
+  hudMiniMode: boolean;
+  setHudMiniMode: (enabled: boolean) => void;
+  hudAutoHide: boolean;
+  setHudAutoHide: (enabled: boolean) => void;
+  hudAutoHideDelay: number;
+  setHudAutoHideDelay: (delay: number) => void;
+  hudThemeVariant: HudThemeVariant;
+  setHudThemeVariant: (variant: HudThemeVariant) => void;
 }
 
 export function ThemeHudControls({
@@ -54,6 +64,16 @@ export function ThemeHudControls({
   onSaveLayout,
   onLoadLayout,
   onDeleteLayout,
+  hudTransitionPreset,
+  setHudTransitionPreset,
+  hudMiniMode,
+  setHudMiniMode,
+  hudAutoHide,
+  setHudAutoHide,
+  hudAutoHideDelay,
+  setHudAutoHideDelay,
+  hudThemeVariant,
+  setHudThemeVariant,
 }: ThemeHudControlsProps) {
   const [localOpacity, setLocalOpacity] = useState(hudOpacity);
   const [localBlur, setLocalBlur] = useState(hudBlur);
@@ -317,6 +337,81 @@ export function ThemeHudControls({
                 </div>
               </div>
             )}
+
+            <div className="space-y-3 pt-3 border-t border-border/30">
+              <Label className="text-sm font-medium text-foreground/90">Transition Preset</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {(['smooth', 'instant', 'bouncy', 'slow'] as const).map((preset) => (
+                  <Button
+                    key={preset}
+                    type="button"
+                    variant={hudTransitionPreset === preset ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setHudTransitionPreset(preset)}
+                    className="capitalize"
+                  >
+                    {preset}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-3 border-t border-border/30">
+              <Label className="text-sm font-medium text-foreground/90">Theme Variant</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {(['default', 'minimal', 'tactical', 'glass', 'solid'] as const).map((variant) => (
+                  <Button
+                    key={variant}
+                    type="button"
+                    variant={hudThemeVariant === variant ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setHudThemeVariant(variant)}
+                    className="capitalize"
+                  >
+                    {variant}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-border/40 bg-card/30 p-3">
+              <Label htmlFor="hud-mini-mode" className="text-sm font-medium text-foreground/90">
+                Mini Mode
+              </Label>
+              <Switch
+                id="hud-mini-mode"
+                checked={hudMiniMode}
+                onCheckedChange={setHudMiniMode}
+              />
+            </div>
+
+            <div className="space-y-3 pt-3 border-t border-border/30">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="hud-auto-hide" className="text-sm font-medium text-foreground/90">
+                  Auto-Hide
+                </Label>
+                <Switch
+                  id="hud-auto-hide"
+                  checked={hudAutoHide}
+                  onCheckedChange={setHudAutoHide}
+                />
+              </div>
+              {hudAutoHide && (
+                <div className="space-y-2">
+                  <Label htmlFor="hud-auto-hide-delay" className="text-sm font-medium text-muted-foreground">
+                    Delay: {hudAutoHideDelay}ms
+                  </Label>
+                  <Slider
+                    id="hud-auto-hide-delay"
+                    min={1000}
+                    max={10000}
+                    step={500}
+                    value={[hudAutoHideDelay]}
+                    onValueChange={([value]) => setHudAutoHideDelay(value)}
+                  />
+                </div>
+              )}
+            </div>
           </>
         )}
       </div>

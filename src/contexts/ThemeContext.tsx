@@ -24,6 +24,11 @@ import {
   saveCustomLayout as persistSaveCustomLayout,
   loadCustomLayout as persistLoadCustomLayout,
   deleteCustomLayout as persistDeleteCustomLayout,
+  setHudTransitionPreset as persistHudTransitionPreset,
+  setHudMiniMode as persistHudMiniMode,
+  setHudAutoHide as persistHudAutoHide,
+  setHudAutoHideDelay as persistHudAutoHideDelay,
+  setHudThemeVariant as persistHudThemeVariant,
   resetThemePreferences,
   type ThemePreferences,
   type ThemeMode,
@@ -33,6 +38,8 @@ import {
   type HudLayoutPreset,
   type HudPosition,
   type HudSize,
+  type HudTransitionPreset,
+  type HudThemeVariant,
 } from '@/lib/theme';
 
 interface ThemeContextValue {
@@ -58,6 +65,11 @@ interface ThemeContextValue {
   saveCustomLayout: (name: string) => void;
   loadCustomLayout: (name: string) => void;
   deleteCustomLayout: (name: string) => void;
+  setHudTransitionPreset: (preset: HudTransitionPreset) => void;
+  setHudMiniMode: (enabled: boolean) => void;
+  setHudAutoHide: (enabled: boolean) => void;
+  setHudAutoHideDelay: (delay: number) => void;
+  setHudThemeVariant: (variant: HudThemeVariant) => void;
   reset: () => void;
 }
 
@@ -178,6 +190,26 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     },
     deleteCustomLayout: (name) => {
       persistDeleteCustomLayout(name);
+      syncPreferences();
+    },
+    setHudTransitionPreset: (preset) => {
+      persistHudTransitionPreset(preset);
+      syncPreferences();
+    },
+    setHudMiniMode: (enabled) => {
+      persistHudMiniMode(enabled);
+      syncPreferences();
+    },
+    setHudAutoHide: (enabled) => {
+      persistHudAutoHide(enabled);
+      syncPreferences();
+    },
+    setHudAutoHideDelay: (delay) => {
+      persistHudAutoHideDelay(delay);
+      syncPreferences();
+    },
+    setHudThemeVariant: (variant) => {
+      persistHudThemeVariant(variant);
       syncPreferences();
     },
     reset: () => {
