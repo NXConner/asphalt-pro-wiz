@@ -19,6 +19,7 @@ import {
   setHudAnimationsEnabled as persistHudAnimationsEnabled,
   setHudLayoutPreset as persistHudLayoutPreset,
   setHudPosition as persistHudPosition,
+  setHudSize as persistHudSize,
   setHudPinned as persistHudPinned,
   saveCustomLayout as persistSaveCustomLayout,
   loadCustomLayout as persistLoadCustomLayout,
@@ -31,6 +32,7 @@ import {
   type HudPresetMode,
   type HudLayoutPreset,
   type HudPosition,
+  type HudSize,
 } from '@/lib/theme';
 
 interface ThemeContextValue {
@@ -51,6 +53,7 @@ interface ThemeContextValue {
   setHudAnimationsEnabled: (enabled: boolean) => void;
   setHudLayoutPreset: (preset: HudLayoutPreset) => void;
   setHudPosition: (position: HudPosition) => void;
+  setHudSize: (size: HudSize) => void;
   setHudPinned: (pinned: boolean) => void;
   saveCustomLayout: (name: string) => void;
   loadCustomLayout: (name: string) => void;
@@ -155,6 +158,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     },
     setHudPosition: (position) => {
       persistHudPosition(position);
+      syncPreferences();
+    },
+    setHudSize: (size) => {
+      persistHudSize(size);
       syncPreferences();
     },
     setHudPinned: (pinned) => {

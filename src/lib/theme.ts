@@ -16,9 +16,15 @@ export interface HudPosition {
   y: number;
 }
 
+export interface HudSize {
+  width: number;
+  height: number;
+}
+
 export interface SavedHudLayout {
   name: string;
   position: HudPosition;
+  size: HudSize;
   isPinned: boolean;
   timestamp: number;
 }
@@ -44,6 +50,7 @@ export interface ThemePreferences {
   hudAnimationsEnabled: boolean;
   hudLayoutPreset: HudLayoutPreset;
   hudPosition: HudPosition | null;
+  hudSize: HudSize;
   hudPinned: boolean;
   savedLayouts: SavedHudLayout[];
 }
@@ -84,6 +91,7 @@ const createDefaults = (): ThemePreferences => {
     hudAnimationsEnabled: true,
     hudLayoutPreset: 'top-right',
     hudPosition: null,
+    hudSize: { width: 384, height: 600 },
     hudPinned: false,
     savedLayouts: [],
   };
@@ -439,6 +447,19 @@ export function setHudPinned(pinned: boolean): void {
   applyThemePreferences(next);
 }
 
+export function setHudSize(size: HudSize): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({
+    ...prefs,
+    hudSize: {
+      width: Math.max(300, Math.min(800, size.width)),
+      height: Math.max(400, Math.min(1000, size.height)),
+    },
+  });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
 export function saveCustomLayout(name: string): void {
   const prefs = loadThemePreferences();
   if (!prefs.hudPosition) return;
@@ -446,6 +467,7 @@ export function saveCustomLayout(name: string): void {
   const newLayout: SavedHudLayout = {
     name,
     position: prefs.hudPosition,
+    size: prefs.hudSize,
     isPinned: prefs.hudPinned,
     timestamp: Date.now(),
   };
@@ -463,6 +485,7 @@ export function loadCustomLayout(name: string): void {
   const next = coerceWallpaper({
     ...prefs,
     hudPosition: layout.position,
+    hudSize: layout.size || { width: 384, height: 600 },
     hudPinned: layout.isPinned,
     hudLayoutPreset: 'custom',
   });

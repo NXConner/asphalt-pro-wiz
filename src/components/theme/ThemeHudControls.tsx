@@ -6,8 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
-import type { HudPresetMode, HudLayoutPreset, SavedHudLayout } from '@/lib/theme';
+import type { HudPresetMode, HudLayoutPreset, SavedHudLayout, HudSize } from '@/lib/theme';
 import { useToast } from '@/hooks/use-toast';
+import { Kbd } from '@/components/common/Kbd';
 
 interface ThemeHudControlsProps {
   hudOpacity: number;
@@ -16,6 +17,7 @@ interface ThemeHudControlsProps {
   hudPreset: HudPresetMode;
   hudAnimationsEnabled: boolean;
   hudLayoutPreset: HudLayoutPreset;
+  hudSize: HudSize;
   hudPinned: boolean;
   savedLayouts: SavedHudLayout[];
   onHudOpacityChange: (value: number) => void;
@@ -24,6 +26,7 @@ interface ThemeHudControlsProps {
   onHudPresetChange: (preset: HudPresetMode) => void;
   onHudAnimationsEnabledChange: (enabled: boolean) => void;
   onHudLayoutPresetChange: (preset: HudLayoutPreset) => void;
+  onHudSizeChange: (size: HudSize) => void;
   onHudPinnedChange: (pinned: boolean) => void;
   onSaveLayout: (name: string) => void;
   onLoadLayout: (name: string) => void;
@@ -37,6 +40,7 @@ export function ThemeHudControls({
   hudPreset,
   hudAnimationsEnabled,
   hudLayoutPreset,
+  hudSize,
   hudPinned,
   savedLayouts,
   onHudOpacityChange,
@@ -45,6 +49,7 @@ export function ThemeHudControls({
   onHudPresetChange,
   onHudAnimationsEnabledChange,
   onHudLayoutPresetChange,
+  onHudSizeChange,
   onHudPinnedChange,
   onSaveLayout,
   onLoadLayout,
@@ -52,6 +57,8 @@ export function ThemeHudControls({
 }: ThemeHudControlsProps) {
   const [localOpacity, setLocalOpacity] = useState(hudOpacity);
   const [localBlur, setLocalBlur] = useState(hudBlur);
+  const [localWidth, setLocalWidth] = useState(hudSize.width);
+  const [localHeight, setLocalHeight] = useState(hudSize.height);
   const [layoutName, setLayoutName] = useState('');
   const { toast } = useToast();
 
@@ -117,7 +124,7 @@ export function ThemeHudControls({
                 ))}
               </div>
               <p className="text-xs text-muted-foreground">
-                Quick presets for HUD appearance. Keyboard shortcut: <kbd className="rounded bg-muted px-1.5 py-0.5 text-xs">Ctrl+H</kbd> to toggle.
+                Quick presets for HUD appearance. Keyboard: <Kbd>Ctrl+H</Kbd> to toggle.
               </p>
             </div>
 
@@ -182,7 +189,7 @@ export function ThemeHudControls({
             <div className="space-y-3 pt-3 border-t border-border/30">
               <Label className="text-sm font-medium text-foreground/90">Layout Position</Label>
               <div className="grid grid-cols-2 gap-2">
-                {layoutPresets.map((preset) => (
+                {layoutPresets.map((preset, idx) => (
                   <Button
                     key={preset.mode}
                     type="button"
@@ -193,6 +200,51 @@ export function ThemeHudControls({
                     {preset.label}
                   </Button>
                 ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Shortcuts: <Kbd>Ctrl+1</Kbd> <Kbd>Ctrl+2</Kbd> <Kbd>Ctrl+3</Kbd> <Kbd>Ctrl+4</Kbd>
+              </p>
+            </div>
+
+            <div className="space-y-3 pt-3 border-t border-border/30">
+              <Label className="text-sm font-medium text-foreground/90">Panel Size</Label>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="hud-width" className="text-sm text-muted-foreground">
+                    Width
+                  </Label>
+                  <span className="font-mono text-xs text-muted-foreground">{localWidth}px</span>
+                </div>
+                <Slider
+                  id="hud-width"
+                  min={300}
+                  max={800}
+                  step={20}
+                  value={[localWidth]}
+                  onValueChange={([value]) => {
+                    setLocalWidth(value);
+                    onHudSizeChange({ width: value, height: localHeight });
+                  }}
+                  className="w-full"
+                />
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="hud-height" className="text-sm text-muted-foreground">
+                    Height
+                  </Label>
+                  <span className="font-mono text-xs text-muted-foreground">{localHeight}px</span>
+                </div>
+                <Slider
+                  id="hud-height"
+                  min={400}
+                  max={1000}
+                  step={20}
+                  value={[localHeight]}
+                  onValueChange={([value]) => {
+                    setLocalHeight(value);
+                    onHudSizeChange({ width: localWidth, height: value });
+                  }}
+                  className="w-full"
+                />
               </div>
             </div>
 

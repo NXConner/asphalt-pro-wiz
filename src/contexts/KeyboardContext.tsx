@@ -58,6 +58,42 @@ const globalShortcuts: ShortcutConfig[] = [
     },
     description: 'Close modals',
   },
+  {
+    key: '1',
+    ctrl: true,
+    callback: () => {
+      const event = new CustomEvent('setHudLayout', { detail: 'top-right' });
+      window.dispatchEvent(event);
+    },
+    description: 'HUD Layout: Top Right',
+  },
+  {
+    key: '2',
+    ctrl: true,
+    callback: () => {
+      const event = new CustomEvent('setHudLayout', { detail: 'bottom-right' });
+      window.dispatchEvent(event);
+    },
+    description: 'HUD Layout: Bottom Right',
+  },
+  {
+    key: '3',
+    ctrl: true,
+    callback: () => {
+      const event = new CustomEvent('setHudLayout', { detail: 'bottom-left' });
+      window.dispatchEvent(event);
+    },
+    description: 'HUD Layout: Bottom Left',
+  },
+  {
+    key: '4',
+    ctrl: true,
+    callback: () => {
+      const event = new CustomEvent('setHudLayout', { detail: 'center' });
+      window.dispatchEvent(event);
+    },
+    description: 'HUD Layout: Center',
+  },
 ];
 
 export function KeyboardProvider({ children }: { children: ReactNode }) {

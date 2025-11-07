@@ -35,6 +35,7 @@ export function ThemeCustomizer() {
     setHudPreset,
     setHudAnimationsEnabled,
     setHudLayoutPreset,
+    setHudSize,
     setHudPinned,
     saveCustomLayout,
     loadCustomLayout,
@@ -192,6 +193,7 @@ export function ThemeCustomizer() {
             hudPreset={preferences.hudPreset}
             hudAnimationsEnabled={preferences.hudAnimationsEnabled}
             hudLayoutPreset={preferences.hudLayoutPreset}
+            hudSize={preferences.hudSize}
             hudPinned={preferences.hudPinned}
             savedLayouts={preferences.savedLayouts}
             onHudOpacityChange={handleHudOpacityChange}
@@ -200,6 +202,7 @@ export function ThemeCustomizer() {
             onHudPresetChange={setHudPreset}
             onHudAnimationsEnabledChange={setHudAnimationsEnabled}
             onHudLayoutPresetChange={setHudLayoutPreset}
+            onHudSizeChange={setHudSize}
             onHudPinnedChange={setHudPinned}
             onSaveLayout={saveCustomLayout}
             onLoadLayout={loadCustomLayout}

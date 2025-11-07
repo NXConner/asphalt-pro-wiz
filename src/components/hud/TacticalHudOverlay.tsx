@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Sparkles, TimerReset, ChevronDown, Maximize2, Minimize2, GripVertical, Pin, PinOff } from 'lucide-react';
-import { memo, useState, useEffect } from 'react';
+import { memo, useState, useEffect, useCallback, useRef } from 'react';
 
 import { mergeHudTypography } from '@/design';
 import { cn } from '@/lib/utils';
@@ -81,21 +81,31 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
     className,
   }: TacticalHudOverlayProps,
 ) {
-  const { preferences, setHudPosition, setHudPinned } = useTheme();
+  const { preferences, setHudPosition, setHudPinned, setHudSize, setHudLayoutPreset } = useTheme();
   const isMobile = useIsMobile();
   const [isExpanded, setIsExpanded] = useState(!isMobile);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    // Update position on window resize for layout presets
     const handleResize = () => {
       if (preferences.hudLayoutPreset !== 'custom' && !isMobile) {
-        // Trigger a preset re-application on resize
         window.dispatchEvent(new CustomEvent('hudLayoutUpdate'));
       }
     };
+    
+    const handleLayoutShortcut = (e: CustomEvent<string>) => {
+      if (e.detail) {
+        setHudLayoutPreset(e.detail as any);
+      }
+    };
+    
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [preferences.hudLayoutPreset, isMobile]);
+    window.addEventListener('setHudLayout', handleLayoutShortcut as EventListener);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('setHudLayout', handleLayoutShortcut as EventListener);
+    };
+  }, [preferences.hudLayoutPreset, isMobile, setHudLayoutPreset]);
   
   const formattedCost = typeof totalCost === 'number' ? currencyFormatter.format(totalCost) : '—';
   const formattedArea = totalAreaSqFt > 0 ? `${numberFormatter.format(totalAreaSqFt)} sq ft` : 'Awaiting draw';
@@ -119,14 +129,23 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
 
   return (
     <motion.div
+      ref={containerRef}
       initial={{ opacity: 0, x: isMobile ? 0 : 20, y: isMobile ? 20 : 0 }}
       animate={{ 
         opacity: 1, 
         x: preferences.hudPosition?.x ?? 0, 
-        y: preferences.hudPosition?.y ?? 0 
+        y: preferences.hudPosition?.y ?? 0,
+        width: isMobile ? '100%' : preferences.hudSize.width,
+        height: isMobile ? (isExpanded ? '85vh' : 80) : preferences.hudSize.height,
       }}
       exit={{ opacity: 0, x: isMobile ? 0 : 20, y: isMobile ? 20 : 0 }}
-      transition={motionPreset}
+      transition={{ 
+        ...motionPreset,
+        width: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
+        height: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
+        x: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
+        y: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
+      }}
       drag={!isMobile && !preferences.hudPinned}
       dragMomentum={false}
       dragElastic={0.1}
@@ -137,17 +156,16 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
         }
       }}
       className={cn(
-        'pointer-events-auto fixed z-[60] flex flex-col overflow-hidden shadow-2xl backdrop-blur-md transition-all',
+        'pointer-events-auto fixed z-[60] flex flex-col overflow-hidden shadow-2xl backdrop-blur-md',
         isMobile
           ? 'bottom-0 left-0 right-0 rounded-t-3xl border-t border-x border-border/50'
-          : 'top-4 right-4 w-96 rounded-2xl border border-border/50',
-        isMobile && !isExpanded && 'max-h-20',
-        isMobile && isExpanded && 'max-h-[85vh]',
+          : 'rounded-2xl border border-border/50',
         className,
       )}
       style={{
         backdropFilter: `blur(${preferences.hudBlur}px)`,
         backgroundColor: `hsl(var(--card) / ${preferences.hudOpacity})`,
+        transition: preferences.hudAnimationsEnabled ? 'backdrop-filter 0.3s ease, background-color 0.3s ease' : 'none',
       }}
     >
       {/* Header with drag handle and expand/collapse */}

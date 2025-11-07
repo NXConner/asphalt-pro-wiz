@@ -103,16 +103,16 @@ export function MissionSchedulerPanel({ coords }: MissionSchedulerPanelProps) {
             </Badge>
           </CardHeader>
           <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm text-slate-200">
+            <div className="text-sm">
               <div>
-                <span className="font-semibold text-slate-50">{taskCount}</span>{' '}
+                <span className="font-semibold text-foreground">{taskCount}</span>{' '}
                 scheduled missions
               </div>
               <div>
-                <span className="font-semibold text-slate-50">{crewCount}</span> active crews
+                <span className="font-semibold text-foreground">{crewCount}</span> active crews
               </div>
               <div>
-                <span className="font-semibold text-slate-50">{blackoutCount}</span> blackout windows
+                <span className="font-semibold text-foreground">{blackoutCount}</span> blackout windows
               </div>
             </div>
             <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
@@ -138,7 +138,7 @@ export function MissionSchedulerPanel({ coords }: MissionSchedulerPanelProps) {
                 <Upload className="mr-2 h-4 w-4" />
                 {icsImporting ? 'Importing…' : 'Import Worship Calendar (.ics)'}
               </Button>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-muted-foreground">
                 {icsSummary ??
                   (supabaseEnabled
                     ? 'Synced with mission_tasks & crew blackout tables'
