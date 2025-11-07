@@ -25,11 +25,33 @@ export type HudTransitionPreset = 'smooth' | 'instant' | 'bouncy' | 'slow';
 
 export type HudThemeVariant = 'default' | 'minimal' | 'tactical' | 'glass' | 'solid';
 
+export type HudAlertAnimation = 'pulse' | 'shake' | 'slide' | 'bounce' | 'glow' | 'none';
+
 export interface SavedHudLayout {
   name: string;
   position: HudPosition;
   size: HudSize;
   isPinned: boolean;
+  timestamp: number;
+}
+
+export interface HudConfigurationProfile {
+  name: string;
+  hudOpacity: number;
+  hudBlur: number;
+  showHud: boolean;
+  hudPreset: HudPresetMode;
+  hudAnimationsEnabled: boolean;
+  hudLayoutPreset: HudLayoutPreset;
+  hudSize: HudSize;
+  hudTransitionPreset: HudTransitionPreset;
+  hudMiniMode: boolean;
+  hudAutoHide: boolean;
+  hudAutoHideDelay: number;
+  hudThemeVariant: HudThemeVariant;
+  hudProximityEffect: boolean;
+  hudProximityDistance: number;
+  hudAlertAnimation: HudAlertAnimation;
   timestamp: number;
 }
 
@@ -62,6 +84,11 @@ export interface ThemePreferences {
   hudAutoHide: boolean;
   hudAutoHideDelay: number;
   hudThemeVariant: HudThemeVariant;
+  hudProximityEffect: boolean;
+  hudProximityDistance: number;
+  hudAlertAnimation: HudAlertAnimation;
+  hudQuickShortcuts: boolean;
+  hudProfiles: HudConfigurationProfile[];
 }
 
 export type ThemeWallpaperSelection =
@@ -108,6 +135,11 @@ const createDefaults = (): ThemePreferences => {
     hudAutoHide: false,
     hudAutoHideDelay: 3000,
     hudThemeVariant: 'default',
+    hudProximityEffect: false,
+    hudProximityDistance: 150,
+    hudAlertAnimation: 'pulse',
+    hudQuickShortcuts: true,
+    hudProfiles: [],
   };
 };
 
@@ -550,6 +582,99 @@ export function setHudThemeVariant(variant: HudThemeVariant): void {
   const next = coerceWallpaper({ ...prefs, hudThemeVariant: variant });
   saveThemePreferences(next);
   applyThemePreferences(next);
+}
+
+export function setHudProximityEffect(enabled: boolean): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, hudProximityEffect: enabled });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudProximityDistance(distance: number): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({
+    ...prefs,
+    hudProximityDistance: Math.max(50, Math.min(300, distance)),
+  });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudAlertAnimation(animation: HudAlertAnimation): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, hudAlertAnimation: animation });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudQuickShortcuts(enabled: boolean): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, hudQuickShortcuts: enabled });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function saveHudProfile(name: string): void {
+  const prefs = loadThemePreferences();
+  
+  const newProfile: HudConfigurationProfile = {
+    name,
+    hudOpacity: prefs.hudOpacity,
+    hudBlur: prefs.hudBlur,
+    showHud: prefs.showHud,
+    hudPreset: prefs.hudPreset,
+    hudAnimationsEnabled: prefs.hudAnimationsEnabled,
+    hudLayoutPreset: prefs.hudLayoutPreset,
+    hudSize: prefs.hudSize,
+    hudTransitionPreset: prefs.hudTransitionPreset,
+    hudMiniMode: prefs.hudMiniMode,
+    hudAutoHide: prefs.hudAutoHide,
+    hudAutoHideDelay: prefs.hudAutoHideDelay,
+    hudThemeVariant: prefs.hudThemeVariant,
+    hudProximityEffect: prefs.hudProximityEffect,
+    hudProximityDistance: prefs.hudProximityDistance,
+    hudAlertAnimation: prefs.hudAlertAnimation,
+    timestamp: Date.now(),
+  };
+  
+  const hudProfiles = [...prefs.hudProfiles.filter(p => p.name !== name), newProfile];
+  const next = coerceWallpaper({ ...prefs, hudProfiles });
+  saveThemePreferences(next);
+}
+
+export function loadHudProfile(name: string): void {
+  const prefs = loadThemePreferences();
+  const profile = prefs.hudProfiles.find(p => p.name === name);
+  if (!profile) return;
+  
+  const next = coerceWallpaper({
+    ...prefs,
+    hudOpacity: profile.hudOpacity,
+    hudBlur: profile.hudBlur,
+    showHud: profile.showHud,
+    hudPreset: profile.hudPreset,
+    hudAnimationsEnabled: profile.hudAnimationsEnabled,
+    hudLayoutPreset: profile.hudLayoutPreset,
+    hudSize: profile.hudSize,
+    hudTransitionPreset: profile.hudTransitionPreset,
+    hudMiniMode: profile.hudMiniMode,
+    hudAutoHide: profile.hudAutoHide,
+    hudAutoHideDelay: profile.hudAutoHideDelay,
+    hudThemeVariant: profile.hudThemeVariant,
+    hudProximityEffect: profile.hudProximityEffect,
+    hudProximityDistance: profile.hudProximityDistance,
+    hudAlertAnimation: profile.hudAlertAnimation,
+  });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function deleteHudProfile(name: string): void {
+  const prefs = loadThemePreferences();
+  const hudProfiles = prefs.hudProfiles.filter(p => p.name !== name);
+  const next = coerceWallpaper({ ...prefs, hudProfiles });
+  saveThemePreferences(next);
 }
 
 export function resetThemePreferences(): ThemePreferences {

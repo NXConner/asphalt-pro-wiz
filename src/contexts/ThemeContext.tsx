@@ -29,6 +29,13 @@ import {
   setHudAutoHide as persistHudAutoHide,
   setHudAutoHideDelay as persistHudAutoHideDelay,
   setHudThemeVariant as persistHudThemeVariant,
+  setHudProximityEffect as persistHudProximityEffect,
+  setHudProximityDistance as persistHudProximityDistance,
+  setHudAlertAnimation as persistHudAlertAnimation,
+  setHudQuickShortcuts as persistHudQuickShortcuts,
+  saveHudProfile as persistSaveHudProfile,
+  loadHudProfile as persistLoadHudProfile,
+  deleteHudProfile as persistDeleteHudProfile,
   resetThemePreferences,
   type ThemePreferences,
   type ThemeMode,
@@ -40,6 +47,7 @@ import {
   type HudSize,
   type HudTransitionPreset,
   type HudThemeVariant,
+  type HudAlertAnimation,
 } from '@/lib/theme';
 
 interface ThemeContextValue {
@@ -70,6 +78,13 @@ interface ThemeContextValue {
   setHudAutoHide: (enabled: boolean) => void;
   setHudAutoHideDelay: (delay: number) => void;
   setHudThemeVariant: (variant: HudThemeVariant) => void;
+  setHudProximityEffect: (enabled: boolean) => void;
+  setHudProximityDistance: (distance: number) => void;
+  setHudAlertAnimation: (animation: HudAlertAnimation) => void;
+  setHudQuickShortcuts: (enabled: boolean) => void;
+  saveHudProfile: (name: string) => void;
+  loadHudProfile: (name: string) => void;
+  deleteHudProfile: (name: string) => void;
   reset: () => void;
 }
 
@@ -210,6 +225,34 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     },
     setHudThemeVariant: (variant) => {
       persistHudThemeVariant(variant);
+      syncPreferences();
+    },
+    setHudProximityEffect: (enabled) => {
+      persistHudProximityEffect(enabled);
+      syncPreferences();
+    },
+    setHudProximityDistance: (distance) => {
+      persistHudProximityDistance(distance);
+      syncPreferences();
+    },
+    setHudAlertAnimation: (animation) => {
+      persistHudAlertAnimation(animation);
+      syncPreferences();
+    },
+    setHudQuickShortcuts: (enabled) => {
+      persistHudQuickShortcuts(enabled);
+      syncPreferences();
+    },
+    saveHudProfile: (name) => {
+      persistSaveHudProfile(name);
+      syncPreferences();
+    },
+    loadHudProfile: (name) => {
+      persistLoadHudProfile(name);
+      syncPreferences();
+    },
+    deleteHudProfile: (name) => {
+      persistDeleteHudProfile(name);
       syncPreferences();
     },
     reset: () => {

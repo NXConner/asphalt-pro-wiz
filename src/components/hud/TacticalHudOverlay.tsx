@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
-import { Sparkles, TimerReset, ChevronDown, Maximize2, Minimize2, GripVertical, Pin, PinOff } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkles, TimerReset, ChevronDown, Maximize2, Minimize2, GripVertical, Pin, PinOff, Zap, Bookmark, AlertCircle } from 'lucide-react';
 import { memo, useState, useEffect, useCallback, useRef } from 'react';
 
 import { mergeHudTypography } from '@/design';
@@ -85,6 +85,9 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
   const isMobile = useIsMobile();
   const [isExpanded, setIsExpanded] = useState(!isMobile);
   const [isVisible, setIsVisible] = useState(true);
+  const [proximityScale, setProximityScale] = useState(1);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [alerts, setAlerts] = useState<Array<{ id: string; message: string; type: 'info' | 'warning' | 'error' }>>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -155,6 +158,58 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
     }
   }, [preferences.hudAutoHide, preferences.hudAutoHideDelay, isMobile, resetHideTimer]);
 
+  // Proximity effect
+  useEffect(() => {
+    if (!preferences.hudProximityEffect || isMobile || !containerRef.current) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+      
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const distance = Math.sqrt(
+        Math.pow(e.clientX - centerX, 2) + Math.pow(e.clientY - centerY, 2)
+      );
+      
+      if (distance < preferences.hudProximityDistance) {
+        const scale = 1 + (1 - distance / preferences.hudProximityDistance) * 0.05;
+        setProximityScale(scale);
+      } else {
+        setProximityScale(1);
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [preferences.hudProximityEffect, preferences.hudProximityDistance, isMobile]);
+
+  // Alert system
+  const triggerAlert = useCallback((message: string, type: 'info' | 'warning' | 'error' = 'info') => {
+    const id = Math.random().toString(36).substr(2, 9);
+    setAlerts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setAlerts(prev => prev.filter(a => a.id !== id));
+    }, 5000);
+  }, []);
+
+  // Quick shortcuts
+  const handleQuickAction = useCallback((action: string) => {
+    switch (action) {
+      case 'bookmark':
+        triggerAlert('Location bookmarked', 'info');
+        break;
+      case 'refresh':
+        triggerAlert('Data refreshed', 'info');
+        break;
+      case 'alert':
+        triggerAlert('Alert triggered', 'warning');
+        break;
+    }
+  }, [triggerAlert]);
+
   // Transition presets
   const transitionConfig = {
     smooth: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
@@ -202,7 +257,7 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
         y: preferences.hudPosition?.y ?? 0,
         width: isMobile ? '100%' : (preferences.hudMiniMode ? '280px' : `${preferences.hudSize.width}px`),
         height: isMobile ? (isExpanded ? '85vh' : 80) : (preferences.hudMiniMode ? 'auto' : `${preferences.hudSize.height}px`),
-        scale: isVisible ? 1 : 0.95,
+        scale: isVisible ? (preferences.hudProximityEffect ? proximityScale : 1) : 0.95,
       }}
       exit={{ opacity: 0, x: isMobile ? 0 : 20, y: isMobile ? 20 : 0 }}
       transition={transitionConfig as any}
@@ -259,6 +314,37 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
           </h2>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          {!isMobile && preferences.hudQuickShortcuts && (
+            <>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleQuickAction('bookmark')}
+                className="h-8 w-8 p-0"
+                aria-label="Bookmark location"
+              >
+                <Bookmark className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleQuickAction('refresh')}
+                className="h-8 w-8 p-0"
+                aria-label="Refresh data"
+              >
+                <Zap className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleQuickAction('alert')}
+                className="h-8 w-8 p-0"
+                aria-label="Trigger alert"
+              >
+                <AlertCircle className="h-4 w-4" />
+              </Button>
+            </>
+          )}
           {!isMobile && (
             <Button
               size="sm"
@@ -299,6 +385,49 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
           )}
         </div>
       </header>
+
+      {/* Alerts */}
+      <AnimatePresence>
+        {alerts.map((alert) => (
+          <motion.div
+            key={alert.id}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ 
+              opacity: 1, 
+              y: 0,
+              ...(preferences.hudAlertAnimation === 'pulse' && {
+                scale: [1, 1.05, 1],
+                transition: { repeat: 2, duration: 0.5 }
+              }),
+              ...(preferences.hudAlertAnimation === 'shake' && {
+                x: [0, -10, 10, -10, 10, 0],
+                transition: { duration: 0.5 }
+              }),
+              ...(preferences.hudAlertAnimation === 'bounce' && {
+                y: [0, -10, 0],
+                transition: { repeat: 2, duration: 0.3 }
+              }),
+              ...(preferences.hudAlertAnimation === 'glow' && {
+                boxShadow: [
+                  '0 0 0px hsl(var(--primary) / 0)',
+                  '0 0 20px hsl(var(--primary) / 0.5)',
+                  '0 0 0px hsl(var(--primary) / 0)'
+                ],
+                transition: { repeat: 2, duration: 0.5 }
+              })
+            }}
+            exit={{ opacity: 0, y: -20 }}
+            className={cn(
+              'absolute top-16 left-4 right-4 rounded-lg border p-3 text-sm backdrop-blur-sm z-50',
+              alert.type === 'error' && 'border-destructive bg-destructive/20 text-destructive-foreground',
+              alert.type === 'warning' && 'border-warning bg-warning/20 text-warning-foreground',
+              alert.type === 'info' && 'border-primary bg-primary/20 text-primary-foreground'
+            )}
+          >
+            {alert.message}
+          </motion.div>
+        ))}
+      </AnimatePresence>
 
       {/* Body - collapsible on mobile */}
       {(!isMobile || isExpanded) && (

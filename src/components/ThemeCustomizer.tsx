@@ -45,6 +45,13 @@ export function ThemeCustomizer() {
     setHudAutoHide,
     setHudAutoHideDelay,
     setHudThemeVariant,
+    setHudProximityEffect,
+    setHudProximityDistance,
+    setHudAlertAnimation,
+    setHudQuickShortcuts,
+    saveHudProfile,
+    loadHudProfile,
+    deleteHudProfile,
     reset,
   } = useTheme();
   const { builtin, custom, addWallpaper, removeWallpaper, getById } = useWallpaperLibrary();
@@ -217,12 +224,24 @@ export function ThemeCustomizer() {
             hudMiniMode={preferences.hudMiniMode}
             setHudMiniMode={setHudMiniMode}
             hudAutoHide={preferences.hudAutoHide}
-            setHudAutoHide={setHudAutoHide}
-            hudAutoHideDelay={preferences.hudAutoHideDelay}
-            setHudAutoHideDelay={setHudAutoHideDelay}
-            hudThemeVariant={preferences.hudThemeVariant}
-            setHudThemeVariant={setHudThemeVariant}
-          />
+              setHudAutoHide={setHudAutoHide}
+              hudAutoHideDelay={preferences.hudAutoHideDelay}
+              setHudAutoHideDelay={setHudAutoHideDelay}
+              hudThemeVariant={preferences.hudThemeVariant}
+              setHudThemeVariant={setHudThemeVariant}
+              hudProximityEffect={preferences.hudProximityEffect}
+              setHudProximityEffect={setHudProximityEffect}
+              hudProximityDistance={preferences.hudProximityDistance}
+              setHudProximityDistance={setHudProximityDistance}
+              hudAlertAnimation={preferences.hudAlertAnimation}
+              setHudAlertAnimation={setHudAlertAnimation}
+              hudQuickShortcuts={preferences.hudQuickShortcuts}
+              setHudQuickShortcuts={setHudQuickShortcuts}
+              hudProfiles={preferences.hudProfiles}
+              onSaveProfile={saveHudProfile}
+              onLoadProfile={loadHudProfile}
+              onDeleteProfile={deleteHudProfile}
+            />
           <ThemeWallpaperManager
             builtin={builtin}
             custom={custom}

@@ -1,4 +1,4 @@
-import { Monitor, Zap, Pin, Save, Trash2 } from 'lucide-react';
+import { Monitor, Zap, Pin, Save, Trash2, Radio, Bell, Layers } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
-import type { HudPresetMode, HudLayoutPreset, SavedHudLayout, HudSize, HudTransitionPreset, HudThemeVariant } from '@/lib/theme';
+import type { HudPresetMode, HudLayoutPreset, SavedHudLayout, HudSize, HudTransitionPreset, HudThemeVariant, HudAlertAnimation, HudConfigurationProfile } from '@/lib/theme';
 import { useToast } from '@/hooks/use-toast';
 import { Kbd } from '@/components/common/Kbd';
 
@@ -41,6 +41,18 @@ interface ThemeHudControlsProps {
   setHudAutoHideDelay: (delay: number) => void;
   hudThemeVariant: HudThemeVariant;
   setHudThemeVariant: (variant: HudThemeVariant) => void;
+  hudProximityEffect: boolean;
+  setHudProximityEffect: (enabled: boolean) => void;
+  hudProximityDistance: number;
+  setHudProximityDistance: (distance: number) => void;
+  hudAlertAnimation: HudAlertAnimation;
+  setHudAlertAnimation: (animation: HudAlertAnimation) => void;
+  hudQuickShortcuts: boolean;
+  setHudQuickShortcuts: (enabled: boolean) => void;
+  hudProfiles: HudConfigurationProfile[];
+  onSaveProfile: (name: string) => void;
+  onLoadProfile: (name: string) => void;
+  onDeleteProfile: (name: string) => void;
 }
 
 export function ThemeHudControls({
@@ -74,12 +86,25 @@ export function ThemeHudControls({
   setHudAutoHideDelay,
   hudThemeVariant,
   setHudThemeVariant,
+  hudProximityEffect,
+  setHudProximityEffect,
+  hudProximityDistance,
+  setHudProximityDistance,
+  hudAlertAnimation,
+  setHudAlertAnimation,
+  hudQuickShortcuts,
+  setHudQuickShortcuts,
+  hudProfiles,
+  onSaveProfile,
+  onLoadProfile,
+  onDeleteProfile,
 }: ThemeHudControlsProps) {
   const [localOpacity, setLocalOpacity] = useState(hudOpacity);
   const [localBlur, setLocalBlur] = useState(hudBlur);
   const [localWidth, setLocalWidth] = useState(hudSize.width);
   const [localHeight, setLocalHeight] = useState(hudSize.height);
   const [layoutName, setLayoutName] = useState('');
+  const [profileName, setProfileName] = useState('');
   const { toast } = useToast();
 
   const presets: Array<{ mode: HudPresetMode; label: string }> = [
@@ -103,6 +128,16 @@ export function ThemeHudControls({
     onSaveLayout(layoutName.trim());
     setLayoutName('');
     toast({ title: 'Layout saved', description: `"${layoutName}" saved successfully` });
+  };
+
+  const handleSaveProfile = () => {
+    if (!profileName.trim()) {
+      toast({ title: 'Enter a name', description: 'Please enter a name for the profile', variant: 'destructive' });
+      return;
+    }
+    onSaveProfile(profileName.trim());
+    setProfileName('');
+    toast({ title: 'Profile saved', description: `"${profileName}" saved successfully` });
   };
 
   return (
@@ -409,6 +444,126 @@ export function ThemeHudControls({
                     value={[hudAutoHideDelay]}
                     onValueChange={([value]) => setHudAutoHideDelay(value)}
                   />
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-3 pt-3 border-t border-border/30">
+              <div className="flex items-center gap-3">
+                <Radio className="h-4 w-4 text-primary" />
+                <Label className="text-sm font-medium text-foreground/90">Proximity Effect</Label>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-border/40 bg-card/30 p-3">
+                <Label htmlFor="hud-proximity" className="text-sm font-medium text-foreground/90">
+                  Enable Proximity
+                </Label>
+                <Switch
+                  id="hud-proximity"
+                  checked={hudProximityEffect}
+                  onCheckedChange={setHudProximityEffect}
+                />
+              </div>
+              {hudProximityEffect && (
+                <div className="space-y-2">
+                  <Label htmlFor="hud-proximity-distance" className="text-sm font-medium text-muted-foreground">
+                    Distance: {hudProximityDistance}px
+                  </Label>
+                  <Slider
+                    id="hud-proximity-distance"
+                    min={50}
+                    max={300}
+                    step={10}
+                    value={[hudProximityDistance]}
+                    onValueChange={([value]) => setHudProximityDistance(value)}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-3 pt-3 border-t border-border/30">
+              <div className="flex items-center gap-3">
+                <Bell className="h-4 w-4 text-primary" />
+                <Label className="text-sm font-medium text-foreground/90">Alert Animation</Label>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {(['pulse', 'shake', 'slide', 'bounce', 'glow', 'none'] as const).map((anim) => (
+                  <Button
+                    key={anim}
+                    type="button"
+                    variant={hudAlertAnimation === anim ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setHudAlertAnimation(anim)}
+                    className="capitalize"
+                  >
+                    {anim}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-border/40 bg-card/30 p-3">
+              <Label htmlFor="hud-quick-shortcuts" className="text-sm font-medium text-foreground/90">
+                Quick Shortcuts
+              </Label>
+              <Switch
+                id="hud-quick-shortcuts"
+                checked={hudQuickShortcuts}
+                onCheckedChange={setHudQuickShortcuts}
+              />
+            </div>
+
+            <div className="space-y-3 pt-3 border-t border-border/30">
+              <div className="flex items-center gap-3">
+                <Layers className="h-4 w-4 text-primary" />
+                <Label className="text-sm font-medium text-foreground/90">Configuration Profiles</Label>
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Profile name..."
+                  value={profileName}
+                  onChange={(e) => setProfileName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSaveProfile()}
+                  className="flex-1"
+                  aria-label="Profile name"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleSaveProfile}
+                  disabled={!profileName.trim()}
+                >
+                  <Save className="h-4 w-4" />
+                </Button>
+              </div>
+              {hudProfiles.length > 0 && (
+                <div className="space-y-2">
+                  {hudProfiles.map((profile) => (
+                    <div
+                      key={profile.name}
+                      className="flex items-center justify-between rounded-lg border border-border/40 bg-card/30 p-2"
+                    >
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onLoadProfile(profile.name)}
+                        className="flex-1 justify-start"
+                      >
+                        {profile.name}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          onDeleteProfile(profile.name);
+                          toast({ title: 'Profile deleted', description: `"${profile.name}" removed` });
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
