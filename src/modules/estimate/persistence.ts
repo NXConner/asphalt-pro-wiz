@@ -263,8 +263,8 @@ export async function saveEstimateDocument(payload: DocumentPayload): Promise<st
       priceSummary: payload.priceSummary ?? null,
     });
 
-    const existing = await (supabase
-      .from('job_documents') as any)
+    const existing = await (supabase as any)
+      .from('job_documents')
       .select('id')
       .eq('job_id', jobId)
       .eq('title', payload.title)
@@ -279,8 +279,8 @@ export async function saveEstimateDocument(payload: DocumentPayload): Promise<st
     });
 
     if ((existing as any).data) {
-      const { error, data } = await (supabase
-      .from('job_documents') as any)
+    const { error, data } = await (supabase as any)
+      .from('job_documents')
       .update({
         kind: 'mission_document',
         content: documentContent,
@@ -298,8 +298,8 @@ export async function saveEstimateDocument(payload: DocumentPayload): Promise<st
       return docId;
     }
 
-    const { error, data } = await (supabase
-      .from('job_documents') as any)
+    const { error, data } = await (supabase as any)
+      .from('job_documents')
       .insert({
         job_id: jobId,
         title: payload.title,
@@ -395,9 +395,14 @@ async function syncLineItems(estimateId: string, params: PersistEstimateParams) 
   const drafts = buildLineItemDrafts(params.costs, params.breakdown, params.customServices);
   if (drafts.length === 0) return;
 
-  const rows: EstimateLineItemInsert[] = drafts.map((draft) => ({
-    ...draft,
+  const rows: any[] = drafts.map((draft) => ({
     estimate_id: estimateId,
+    item_name: draft.label || 'Item',
+    quantity: 1,
+    unit: 'unit',
+    unit_cost: draft.amount || 0,
+    line_total: draft.amount || 0,
+    ...draft,
   }));
 
   const { error } = await (supabase.from('estimate_line_items') as any).insert(rows);
@@ -417,8 +422,8 @@ async function upsertEstimateDocument(
 
   const content = buildEstimateDocumentContent(params, premiumSelections);
 
-  const { data: existing, error: existingError } = await (supabase
-    .from('job_documents') as any)
+    const { data: existing, error: existingError } = await (supabase as any)
+      .from('job_documents')
     .select('id')
     .eq('job_id', jobId)
     .eq('kind', 'estimate_summary')
@@ -433,8 +438,8 @@ async function upsertEstimateDocument(
   };
 
   if ((existing as any)?.id) {
-    const { error, data } = await (supabase
-      .from('job_documents') as any)
+    const { error, data } = await (supabase as any)
+      .from('job_documents')
       .update({
         title: `Estimate Summary - ${params.job.name || 'Mission'}`,
         content,
@@ -449,8 +454,8 @@ async function upsertEstimateDocument(
     return (data as any).id;
   }
 
-  const { data, error } = await (supabase
-    .from('job_documents') as any)
+  const { data, error } = await (supabase as any)
+    .from('job_documents')
     .insert({
       job_id: jobId,
       title: `Estimate Summary - ${params.job.name || 'Mission'}`,
@@ -483,8 +488,8 @@ async function syncPremiumSelections(jobId: string, params: PersistEstimateParam
 
   if (rows.length === 0) return;
 
-  const { error } = await (supabase
-    .from('job_premium_services') as any)
+  const { error } = await (supabase as any)
+    .from('job_premium_services')
     .upsert(rows, { onConflict: 'job_id,service_id' });
 
   if (error) throw error;

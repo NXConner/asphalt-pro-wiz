@@ -30,22 +30,22 @@ export async function loadSchedulerSnapshot(): Promise<SchedulerSnapshot | null>
 
   const [{ data: taskRows, error: taskError }, { data: crewRows, error: crewError }, { data: blackoutRows, error: blackoutError }] =
     await Promise.all([
-      (supabase
-        .from('mission_tasks') as any)
+      (supabase as any)
+        .from('mission_tasks')
         .select(
           'id, org_id, job_id, job_name, site, start_at, end_at, crew_required, crew_assigned_ids, status, priority, accessibility_impact, notes, color, metadata'
         )
         .eq('org_id', orgId)
         .order('start_at', { ascending: true }),
-      (supabase
-        .from('mission_crew_members') as any)
+      (supabase as any)
+        .from('mission_crew_members')
         .select(
           'id, org_id, name, role, color, max_hours_per_day, availability, metadata'
         )
         .eq('org_id', orgId)
         .order('name', { ascending: true }),
-      (supabase
-        .from('crew_blackouts') as any)
+      (supabase as any)
+        .from('crew_blackouts')
         .select('id, org_id, starts_at, ends_at, reason')
         .eq('org_id', orgId)
         .order('starts_at', { ascending: true }),
@@ -124,8 +124,8 @@ export async function upsertMissionTask(task: MissionTask) {
       created_by: userId ?? undefined,
     };
 
-    const { error } = await (supabase
-      .from('mission_tasks') as any)
+    const { error } = await (supabase as any)
+      .from('mission_tasks')
       .upsert(payload, { onConflict: 'id' });
     if (error) throw error;
 
@@ -142,7 +142,7 @@ export async function deleteMissionTask(taskId: string) {
     if (!UUID_REGEX.test(taskId)) {
       return;
     }
-    const { error } = await (supabase.from('mission_tasks') as any).delete().eq('id', taskId);
+    const { error } = await (supabase as any).from('mission_tasks').delete().eq('id', taskId);
     if (error) throw error;
     logEvent('scheduler.task_deleted', { taskId });
   } catch (error) {
@@ -174,8 +174,8 @@ export async function upsertCrewMember(member: CrewMember) {
       created_by: userId ?? undefined,
     };
 
-    const { error } = await (supabase
-      .from('mission_crew_members') as any)
+    const { error } = await (supabase as any)
+      .from('mission_crew_members')
       .upsert(payload, { onConflict: 'id' });
     if (error) throw error;
 
@@ -192,7 +192,7 @@ export async function deleteCrewMember(crewId: string) {
     if (!UUID_REGEX.test(crewId)) {
       return;
     }
-    const { error } = await (supabase.from('mission_crew_members') as any).delete().eq('id', crewId);
+    const { error } = await (supabase as any).from('mission_crew_members').delete().eq('id', crewId);
     if (error) throw error;
     logEvent('scheduler.crew_deleted', { crewId });
   } catch (error) {
@@ -221,7 +221,7 @@ export async function upsertBlackout(window: BlackoutWindow) {
       created_by: userId ?? undefined,
     };
 
-    const { error } = await (supabase.from('crew_blackouts') as any).upsert(payload, { onConflict: 'id' });
+    const { error } = await (supabase as any).from('crew_blackouts').insert(payload);
     if (error) throw error;
 
     logEvent('scheduler.blackout_synced', { blackoutId: window.id, mode: 'upsert' });
@@ -237,7 +237,7 @@ export async function deleteBlackout(id: string) {
     if (!UUID_REGEX.test(id)) {
       return;
     }
-    const { error } = await (supabase.from('crew_blackouts') as any).delete().eq('id', id);
+    const { error } = await (supabase as any).from('crew_blackouts').delete().eq('id', id);
     if (error) throw error;
     logEvent('scheduler.blackout_deleted', { blackoutId: id });
   } catch (error) {
