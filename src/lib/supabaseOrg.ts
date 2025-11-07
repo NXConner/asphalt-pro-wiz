@@ -20,7 +20,7 @@ export async function resolveOrgId(): Promise<string | null> {
 
   const { data: memberships, error } = await supabase
     .from('user_org_memberships')
-    .select<'user_org_memberships', Pick<UserOrgMembershipRow, 'org_id'>>('org_id')
+    .select('org_id')
     .order('joined_at', { ascending: true })
     .limit(1);
 

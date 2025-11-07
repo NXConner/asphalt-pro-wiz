@@ -30,7 +30,7 @@ function calculateCenter(points: DivisionMapPoint[]): [number, number] {
 
 async function fetchDivisionMapTelemetry(): Promise<DivisionMapTelemetry> {
   // Query job_telemetry table for operational data
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('job_telemetry')
     .select(
       'job_id, status, quote_value, area_sqft, location_lat, location_lng, customer_address, created_at, updated_at',

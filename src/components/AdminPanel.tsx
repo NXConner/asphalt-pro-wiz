@@ -42,10 +42,10 @@ export function AdminPanel() {
     queryFn: async () => {
       const [{ data: profiles, error: profileError }, { data: assignments, error: roleError }] =
         await Promise.all([
-          supabase.from('profiles').select('id, email, full_name, created_at').order('created_at', {
+          (supabase as any).from('profiles').select('id, email, full_name, created_at').order('created_at', {
             ascending: false,
           }),
-          supabase.from('user_roles').select('user_id, role_name'),
+          (supabase as any).from('user_roles').select('user_id, role_name'),
         ]);
 
       if (profileError) throw profileError;
@@ -62,12 +62,12 @@ export function AdminPanel() {
         assignmentMap.set(row.user_id, current);
       });
 
-      return (profiles ?? []).map<UserWithRoles>((profile) => ({
-        id: profile.id,
-        email: profile.email,
-        full_name: profile.full_name,
-        roles: assignmentMap.get(profile.id) ?? [],
-      }));
+      return (profiles ?? []).map((profile) => ({
+        id: (profile as any).id,
+        email: (profile as any).email,
+        full_name: (profile as any).full_name,
+        roles: assignmentMap.get((profile as any).id) ?? [],
+      })) as UserWithRoles[];
     },
     enabled: isAdmin && !roleLoading,
   });
@@ -76,14 +76,14 @@ export function AdminPanel() {
     mutationFn: async ({ userId, roleName, enable }: { userId: string; roleName: RoleName; enable: boolean }) => {
       if (enable) {
         const { error } = await supabase
-          .from('user_roles')
+          .from<any>('user_roles')
           .upsert({ user_id: userId, role_name: roleName } satisfies Partial<UserRoleRow>, {
             onConflict: 'user_id,role_name',
           });
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from('user_roles')
+          .from<any>('user_roles')
           .delete()
           .eq('user_id', userId)
           .eq('role_name', roleName);

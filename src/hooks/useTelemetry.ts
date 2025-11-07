@@ -47,7 +47,7 @@ export function useCrewTelemetry(crewId?: string) {
   return useQuery({
     queryKey: ['crew-telemetry', crewId],
     queryFn: async () => {
-      let query = supabase
+      let query = (supabase as any)
         .from('crew_telemetry')
         .select('*')
         .order('created_at', { ascending: false });
@@ -72,7 +72,7 @@ export function useInsertCrewTelemetry() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('crew_telemetry')
         .insert({
           ...event,
@@ -148,7 +148,7 @@ export function useJobTelemetry(jobId?: string) {
   return useQuery({
     queryKey: ['job-telemetry', jobId],
     queryFn: async () => {
-      let query = supabase
+      let query = (supabase as any)
         .from('job_telemetry')
         .select('*')
         .order('created_at', { ascending: false });
@@ -180,7 +180,7 @@ export function useJobTelemetryStats(options: JobTelemetryStatsOptions = {}) {
     gcTime: ONE_DAY_IN_MS,
     refetchOnWindowFocus: false,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('job_telemetry')
         .select('job_id, status, quote_value, area_sqft, location_lat, location_lng, customer_address, created_at, updated_at')
         .order('created_at', { ascending: false })
@@ -337,7 +337,7 @@ export function useInsertJobTelemetry() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('job_telemetry')
         .insert({
           ...event,
@@ -379,7 +379,7 @@ export function useEquipmentTelemetry(equipmentId?: string) {
   return useQuery({
     queryKey: ['equipment-telemetry', equipmentId],
     queryFn: async () => {
-      let query = supabase
+      let query = (supabase as any)
         .from('equipment_telemetry')
         .select('*')
         .order('created_at', { ascending: false });
@@ -404,7 +404,7 @@ export function useInsertEquipmentTelemetry() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('equipment_telemetry')
         .insert({
           ...event,
@@ -441,7 +441,7 @@ export function useSystemTelemetry(category?: string) {
   return useQuery({
     queryKey: ['system-telemetry', category],
     queryFn: async () => {
-      let query = supabase
+      let query = (supabase as any)
         .from('system_telemetry')
         .select('*')
         .order('created_at', { ascending: false });
@@ -464,7 +464,7 @@ export function useInsertSystemTelemetry() {
     mutationFn: async (event: SystemTelemetryEvent) => {
       const { data: { user } } = await supabase.auth.getUser();
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('system_telemetry')
         .insert({
           ...event,
