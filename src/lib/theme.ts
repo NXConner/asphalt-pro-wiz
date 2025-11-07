@@ -22,6 +22,9 @@ export interface ThemePreferences {
   highContrast?: boolean;
   wallpaperName?: string | null;
   wallpaperDescription?: string | null;
+  hudOpacity: number;
+  hudBlur: number;
+  showHud: boolean;
 }
 
 export type ThemeWallpaperSelection =
@@ -53,6 +56,9 @@ const createDefaults = (): ThemePreferences => {
     highContrast: false,
     wallpaperName: fallback.name,
     wallpaperDescription: fallback.description,
+    hudOpacity: 0.8,
+    hudBlur: 12,
+    showHud: true,
   };
 };
 
@@ -294,6 +300,33 @@ export function setWallpaperBlur(px: number): void {
 export function setHighContrastMode(enabled: boolean): void {
   const prefs = loadThemePreferences();
   const next = coerceWallpaper({ ...prefs, highContrast: enabled });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudOpacity(opacity: number): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({
+    ...prefs,
+    hudOpacity: Math.max(0.3, Math.min(1, opacity)),
+  });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudBlur(px: number): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({
+    ...prefs,
+    hudBlur: Math.max(0, Math.min(24, Math.round(px))),
+  });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setShowHud(enabled: boolean): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, showHud: enabled });
   saveThemePreferences(next);
   applyThemePreferences(next);
 }

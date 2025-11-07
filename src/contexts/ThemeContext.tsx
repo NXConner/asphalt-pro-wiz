@@ -12,6 +12,9 @@ import {
   setWallpaperBlur as persistWallpaperBlur,
   setUseHueOverride as persistUseHueOverride,
   setHighContrastMode as persistHighContrastMode,
+  setHudOpacity as persistHudOpacity,
+  setHudBlur as persistHudBlur,
+  setShowHud as persistShowHud,
   resetThemePreferences,
   type ThemePreferences,
   type ThemeMode,
@@ -30,6 +33,9 @@ interface ThemeContextValue {
   setWallpaperOpacity: (opacity: number) => void;
   setWallpaperBlur: (blur: number) => void;
   setHighContrast: (enabled: boolean) => void;
+  setHudOpacity: (opacity: number) => void;
+  setHudBlur: (blur: number) => void;
+  setShowHud: (enabled: boolean) => void;
   reset: () => void;
 }
 
@@ -92,6 +98,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     },
     setHighContrast: (enabled) => {
       persistHighContrastMode(enabled);
+      syncPreferences();
+    },
+    setHudOpacity: (opacity) => {
+      persistHudOpacity(opacity);
+      syncPreferences();
+    },
+    setHudBlur: (blur) => {
+      persistHudBlur(blur);
+      syncPreferences();
+    },
+    setShowHud: (enabled) => {
+      persistShowHud(enabled);
       syncPreferences();
     },
     reset: () => {

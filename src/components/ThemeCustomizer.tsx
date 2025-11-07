@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ThemeAccessibilityPanel } from '@/components/theme/ThemeAccessibilityPanel';
 import { ThemeDesignTokensPanel } from '@/components/theme/ThemeDesignTokensPanel';
+import { ThemeHudControls } from '@/components/theme/ThemeHudControls';
 import { ThemeHueControls } from '@/components/theme/ThemeHueControls';
 import { ThemeMissionPresets } from '@/components/theme/ThemeMissionPresets';
 import { ThemePreview } from '@/components/theme/ThemePreview';
@@ -28,6 +29,9 @@ export function ThemeCustomizer() {
     setWallpaperOpacity,
     setWallpaperBlur,
     setHighContrast,
+    setHudOpacity,
+    setHudBlur,
+    setShowHud,
     reset,
   } = useTheme();
   const { builtin, custom, addWallpaper, removeWallpaper, getById } = useWallpaperLibrary();
@@ -38,6 +42,8 @@ export function ThemeCustomizer() {
   const [localRadius, setLocalRadius] = useState(preferences.radius);
   const [localOpacity, setLocalOpacity] = useState(preferences.wallpaperOpacity);
   const [localBlur, setLocalBlur] = useState(preferences.wallpaperBlur);
+  const [localHudOpacity, setLocalHudOpacity] = useState(preferences.hudOpacity);
+  const [localHudBlur, setLocalHudBlur] = useState(preferences.hudBlur);
   const [activeWallpaperId, setActiveWallpaperId] = useState<string | null>(
     preferences.wallpaperId ?? DEFAULT_WALLPAPER.id,
   );
@@ -47,6 +53,8 @@ export function ThemeCustomizer() {
     setLocalRadius(preferences.radius);
     setLocalOpacity(preferences.wallpaperOpacity);
     setLocalBlur(preferences.wallpaperBlur);
+    setLocalHudOpacity(preferences.hudOpacity);
+    setLocalHudBlur(preferences.hudBlur);
     setActiveWallpaperId(preferences.wallpaperId ?? DEFAULT_WALLPAPER.id);
   }, [preferences]);
 
@@ -143,7 +151,7 @@ export function ThemeCustomizer() {
           onSelectPreset={handlePresetSelect}
         />
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <ThemeHueControls
             useHueOverride={preferences.useHueOverride}
             hue={localHue}
@@ -159,6 +167,20 @@ export function ThemeCustomizer() {
               setRadius(value);
             }}
             onToggleHighContrast={setHighContrast}
+          />
+          <ThemeHudControls
+            hudOpacity={localHudOpacity}
+            hudBlur={localHudBlur}
+            showHud={preferences.showHud}
+            onHudOpacityChange={(value) => {
+              setLocalHudOpacity(value);
+              setHudOpacity(value);
+            }}
+            onHudBlurChange={(value) => {
+              setLocalHudBlur(value);
+              setHudBlur(value);
+            }}
+            onShowHudChange={setShowHud}
           />
           <ThemeWallpaperManager
             builtin={builtin}

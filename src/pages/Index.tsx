@@ -2,7 +2,8 @@ import { Shield } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { ComplianceResources, type ComplianceTopic } from '@/components/ComplianceResources';
-import { TacticalHudOverlay, type TacticalHudOverlayProps } from '@/components/hud';
+import { HudWrapper } from '@/components/hud/HudWrapper';
+import { type TacticalHudOverlayProps } from '@/components/hud/TacticalHudOverlay';
 import { Button } from '@/components/ui/button';
 import { EngagementHubPanel } from '@/modules/engagement/EngagementHubPanel';
 import { EstimatorStudio } from '@/modules/estimate/EstimatorStudio';
@@ -225,7 +226,7 @@ const Index = () => {
             </span>
           }
           hudOverlay={
-            <TacticalHudOverlay
+            <HudWrapper
               missionName={estimator.job.name || 'Pavement Mission'}
               missionStatus={estimator.job.status}
               missionPhase={missionPhase}

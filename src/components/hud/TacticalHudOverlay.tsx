@@ -4,6 +4,7 @@ import { memo } from 'react';
 
 import { mergeHudTypography } from '@/design';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const currencyFormatter = new Intl.NumberFormat(undefined, {
   style: 'currency',
@@ -43,15 +44,15 @@ export interface TacticalHudOverlayProps {
 }
 
 const watcherTone: Record<NonNullable<TacticalHudOverlayProps['watchers']>[number]['tone'], string> = {
-  ok: 'text-emerald-300',
-  warn: 'text-amber-300',
-  critical: 'text-rose-300',
+  ok: 'text-success',
+  warn: 'text-warning',
+  critical: 'text-destructive',
 };
 
 const riskTone: Record<'low' | 'medium' | 'high', string> = {
-  low: 'text-emerald-300',
-  medium: 'text-amber-300',
-  high: 'text-rose-300',
+  low: 'text-success',
+  medium: 'text-warning',
+  high: 'text-destructive',
 };
 
 const motionPreset = {
@@ -77,6 +78,7 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
     className,
   }: TacticalHudOverlayProps,
 ) {
+  const { preferences } = useTheme();
   const formattedCost = typeof totalCost === 'number' ? currencyFormatter.format(totalCost) : '—';
   const formattedArea = totalAreaSqFt > 0 ? `${numberFormatter.format(totalAreaSqFt)} sq ft` : 'Awaiting draw';
   const formattedTravel = typeof travelMiles === 'number' && travelMiles > 0
@@ -100,40 +102,45 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
   return (
     <div
       className={cn(
-        'pointer-events-none fixed inset-0 z-[5] flex flex-col justify-between px-4 pt-4 pb-10 sm:px-6 lg:px-10',
-        'text-slate-100/80',
+        'pointer-events-none fixed inset-0 z-[5] flex flex-col justify-between px-3 pt-3 pb-8 sm:px-6 sm:pt-4 sm:pb-10 lg:px-10',
+        'text-foreground/80',
         className,
       )}
     >
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,28rem)]">
+      <div className="grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,28rem)]">
         <motion.section
           {...motionPreset}
-          className="pointer-events-auto relative isolate flex flex-col gap-5 rounded-3xl border border-white/10 bg-slate-950/60 px-5 py-4 shadow-[0_8px_32px_rgba(4,8,20,0.25)] backdrop-blur-md"
+          className="pointer-events-auto relative isolate flex flex-col gap-4 sm:gap-5 rounded-2xl sm:rounded-3xl border border-border/50 bg-card/80 px-4 py-3 sm:px-5 sm:py-4 shadow-lg backdrop-blur-md"
+          style={{
+            backdropFilter: `blur(${preferences.hudBlur}px)`,
+            backgroundColor: `hsl(var(--card) / ${preferences.hudOpacity})`,
+          }}
         >
           <div className="hud-grid-divider absolute inset-y-3 left-0 w-[1px] opacity-30" />
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="hud-eyebrow">Current Mission</p>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex-1">
+              <p className="hud-eyebrow text-muted-foreground">Current Mission</p>
               <h2
-                style={mergeHudTypography('display-lg', {
-                  textShadow: '0 0 16px rgba(56,189,248,0.25)',
-                })}
+                className="text-2xl sm:text-3xl md:text-4xl font-display uppercase tracking-wider text-foreground"
+                style={{
+                  textShadow: '0 0 16px hsl(var(--accent) / 0.25)',
+                }}
               >
                 {missionName || 'Unnamed Operation'}
               </h2>
             </div>
             <div className="flex flex-col items-end">
-              <span className="hud-eyebrow text-xs text-slate-200/60">STATUS</span>
+              <span className="hud-eyebrow text-xs text-muted-foreground">STATUS</span>
               <span
                 className={cn(
-                  'rounded-full border border-white/15 px-4 py-1 text-[0.72rem] font-semibold tracking-[0.45em]',
-                  'bg-white/5 text-orange-200',
+                  'rounded-full border border-primary/40 px-3 sm:px-4 py-1 text-[0.72rem] font-semibold tracking-[0.45em]',
+                  'bg-primary/10 text-primary-foreground',
                 )}
               >
                 {missionGlyph}
               </span>
               {missionPhase ? (
-                <span className="hud-mono mt-1 text-xs text-slate-300/80">{missionPhase}</span>
+                <span className="hud-mono mt-1 text-xs text-muted-foreground">{missionPhase}</span>
               ) : null}
             </div>
           </div>
@@ -161,21 +168,25 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
         <motion.section
           {...motionPreset}
           transition={{ ...motionPreset.transition, delay: 0.18 }}
-          className="pointer-events-auto relative flex flex-col gap-4 rounded-3xl border border-white/10 bg-slate-950/60 px-5 py-4 shadow-[0_8px_32px_rgba(4,8,20,0.25)] backdrop-blur-md"
+          className="pointer-events-auto relative flex flex-col gap-4 rounded-2xl sm:rounded-3xl border border-border/50 bg-card/80 px-4 py-3 sm:px-5 sm:py-4 shadow-lg backdrop-blur-md"
+          style={{
+            backdropFilter: `blur(${preferences.hudBlur}px)`,
+            backgroundColor: `hsl(var(--card) / ${preferences.hudOpacity})`,
+          }}
         >
           <header className="flex items-center justify-between">
-            <p className="hud-eyebrow">Mission Telemetry</p>
-            <span className="hud-mono text-xs text-slate-300/70">Updated {updatedLabel}</span>
+            <p className="hud-eyebrow text-muted-foreground">Mission Telemetry</p>
+            <span className="hud-mono text-xs text-muted-foreground/70">Updated {updatedLabel}</span>
           </header>
 
           {environment ? (
-            <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs">
-              <span className="hud-eyebrow text-[0.58rem] text-slate-200/60">SITE CONDITIONS</span>
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 rounded-xl sm:rounded-2xl border border-border/40 bg-muted/20 px-3 sm:px-4 py-2 sm:py-3 text-xs">
+              <span className="hud-eyebrow text-[0.58rem] text-muted-foreground">SITE CONDITIONS</span>
               {typeof environment.tempF === 'number' ? (
-                <span className="hud-mono text-slate-100/85">{environment.tempF.toFixed(0)}°F</span>
+                <span className="hud-mono text-foreground/85">{environment.tempF.toFixed(0)}°F</span>
               ) : null}
               {environment.conditions ? (
-                <span className="hud-mono text-slate-200/70">{environment.conditions}</span>
+                <span className="hud-mono text-foreground/70">{environment.conditions}</span>
               ) : null}
               {environment.riskLevel ? (
                 <span className={cn('hud-mono uppercase tracking-[0.35em]', riskTone[environment.riskLevel])}>
@@ -191,16 +202,16 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
                 <li
                   key={flag.id}
                   className={cn(
-                    'hud-mono inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.68rem]',
+                    'hud-mono inline-flex items-center gap-2 rounded-full border px-2.5 sm:px-3 py-1 text-[0.68rem]',
                     flag.active
-                      ? 'border-emerald-400/50 bg-emerald-500/15 text-emerald-200'
-                      : 'border-slate-300/20 bg-slate-600/10 text-slate-300/70',
+                      ? 'border-success/50 bg-success/15 text-success-foreground'
+                      : 'border-border/30 bg-muted/20 text-muted-foreground',
                   )}
                 >
                   <span
                     className={cn(
                       'inline-block h-2.5 w-2.5 rounded-full',
-                      flag.active ? 'bg-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.6)]' : 'bg-slate-500',
+                      flag.active ? 'bg-success shadow-[0_0_12px_hsl(var(--success)/0.6)]' : 'bg-muted-foreground',
                     )}
                   />
                   {flag.label}
@@ -214,17 +225,17 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
               {watchers.map((watcher) => (
                 <div
                   key={watcher.label}
-                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2"
+                  className="flex items-center justify-between rounded-xl sm:rounded-2xl border border-border/40 bg-muted/20 px-3 py-2"
                 >
-                  <span className="hud-mono text-xs text-slate-200/70">{watcher.label}</span>
-                  <span className={cn('hud-mono text-sm uppercase tracking-[0.35em]', watcher.tone ? watcherTone[watcher.tone] : 'text-slate-100')}>
+                  <span className="hud-mono text-xs text-muted-foreground">{watcher.label}</span>
+                  <span className={cn('hud-mono text-sm uppercase tracking-[0.35em]', watcher.tone ? watcherTone[watcher.tone] : 'text-foreground')}>
                     {watcher.value}
                   </span>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="hud-mono text-xs text-slate-300/65">Telemetry queue clear.</p>
+            <p className="hud-mono text-xs text-muted-foreground">Telemetry queue clear.</p>
           )}
         </motion.section>
       </div>
@@ -232,7 +243,7 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
       <motion.footer
         {...motionPreset}
         transition={{ ...motionPreset.transition, delay: 0.28 }}
-        className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+        className="hidden sm:grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
       >
         <OverlayFooterTile label="Command Mode" value={missionPhase ?? 'Awaiting briefing'} />
         <OverlayFooterTile
@@ -256,14 +267,14 @@ interface OverlayMetricProps {
 function OverlayMetric({ label, value, accent = 'primary' }: OverlayMetricProps) {
   const accentClass =
     accent === 'primary'
-      ? 'text-orange-200'
+      ? 'text-primary-foreground'
       : accent === 'secondary'
-        ? 'text-cyan-200'
-        : 'text-sky-200';
+        ? 'text-secondary-foreground'
+        : 'text-accent-foreground';
 
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/5 px-3 py-3">
-      <span className="hud-eyebrow text-[0.58rem] text-slate-200/60">{label}</span>
+    <article className="rounded-xl sm:rounded-2xl border border-border/40 bg-muted/20 px-3 py-2.5 sm:py-3">
+      <span className="hud-eyebrow text-[0.58rem] text-muted-foreground">{label}</span>
       <p className={cn('hud-mono mt-1 text-sm', accentClass)}>{value}</p>
     </article>
   );
@@ -277,12 +288,12 @@ interface OverlayCalloutProps {
 
 function OverlayCallout({ label, value, icon }: OverlayCalloutProps) {
   return (
-    <article className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+    <article className="flex items-center justify-between gap-3 rounded-xl sm:rounded-2xl border border-border/40 bg-muted/20 px-3 sm:px-4 py-2.5 sm:py-3">
       <div>
-        <span className="hud-eyebrow text-[0.58rem] text-slate-200/60">{label}</span>
-        <p className="hud-mono text-sm text-slate-100/85">{value}</p>
+        <span className="hud-eyebrow text-[0.58rem] text-muted-foreground">{label}</span>
+        <p className="hud-mono text-sm text-foreground/85">{value}</p>
       </div>
-      {icon ? <span className="text-cyan-200/80">{icon}</span> : null}
+      {icon ? <span className="text-accent/80">{icon}</span> : null}
     </article>
   );
 }
@@ -295,10 +306,10 @@ interface OverlayFooterTileProps {
 
 function OverlayFooterTile({ label, value, secondary }: OverlayFooterTileProps) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-slate-950/35 px-4 py-3">
-      <span className="hud-eyebrow text-[0.58rem] text-slate-200/60">{label}</span>
-      <p className="hud-mono text-[0.95rem] text-slate-100/85">{value}</p>
-      {secondary ? <p className="hud-mono text-xs text-slate-400/70">{secondary}</p> : null}
+    <div className="rounded-xl sm:rounded-2xl border border-border/50 bg-card/70 px-3 sm:px-4 py-2.5 sm:py-3">
+      <span className="hud-eyebrow text-[0.58rem] text-muted-foreground">{label}</span>
+      <p className="hud-mono text-[0.95rem] text-foreground/85">{value}</p>
+      {secondary ? <p className="hud-mono text-xs text-muted-foreground">{secondary}</p> : null}
     </div>
   );
 }
