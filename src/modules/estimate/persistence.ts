@@ -1,4 +1,5 @@
 import type { CustomService } from '@/components/CustomServices';
+import { isSupabaseConfigured, supabase } from '@/integrations/supabase/client';
 import type {
   JobDocumentRow,
   JobPremiumServiceRow,
@@ -6,10 +7,9 @@ import type {
   JobStatus,
   Tables,
 } from '@/integrations/supabase/types';
-import { isSupabaseConfigured, supabase } from '@/integrations/supabase/client';
-import { logError, logEvent } from '@/lib/logging';
-import type { CostBreakdown, Costs, ProjectInputs } from '@/lib/calculations';
 import type { Json } from '@/integrations/supabase/types';
+import type { CostBreakdown, Costs, ProjectInputs } from '@/lib/calculations';
+import { logError, logEvent } from '@/lib/logging';
 import { getCurrentUserId, resolveOrgId } from '@/lib/supabaseOrg';
 
 type EstimateInsert = Tables['estimates']['Insert'];
@@ -71,8 +71,7 @@ const PREMIUM_SERVICE_IDS: Record<
   debrisRemoval: 'debris-removal',
 };
 
-export interface LineItemDraft
-  extends Omit<EstimateLineItemInsert, 'estimate_id' | 'id'> {}
+export type LineItemDraft = Omit<EstimateLineItemInsert, 'estimate_id' | 'id'>;
 
 const CURRENCY_KEYS: Array<{
   key: keyof Costs;
@@ -94,8 +93,7 @@ const CURRENCY_KEYS: Array<{
   { key: 'profit', kind: 'profit', label: 'Profit' },
 ];
 
-export const roundCurrency = (value: number) =>
-  Math.round((value + Number.EPSILON) * 100) / 100;
+export const roundCurrency = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 
 export function buildLineItemDrafts(
   costs: Costs,
@@ -125,7 +123,9 @@ export function buildLineItemDrafts(
           : kind === 'material'
             ? {
                 detail: breakdown
-                  .filter((item) => item.item.toLowerCase().includes(label.split(' ')[0].toLowerCase()))
+                  .filter((item) =>
+                    item.item.toLowerCase().includes(label.split(' ')[0].toLowerCase()),
+                  )
                   .slice(0, 3),
               }
             : null,
@@ -304,11 +304,7 @@ async function findJobId(orgId: string, name: string, address: string) {
   return data?.id ?? null;
 }
 
-async function upsertJob(
-  orgId: string,
-  userId: string | null,
-  params: PersistEstimateParams,
-) {
+async function upsertJob(orgId: string, userId: string | null, params: PersistEstimateParams) {
   const existingId = await findJobId(orgId, params.job.name, params.job.address);
 
   const payload: JobInsert = {
@@ -340,11 +336,7 @@ async function upsertJob(
   return { id: data.id };
 }
 
-async function insertEstimate(
-  jobId: string,
-  userId: string | null,
-  params: PersistEstimateParams,
-) {
+async function insertEstimate(jobId: string, userId: string | null, params: PersistEstimateParams) {
   const estimatePayload: EstimateInsert = {
     job_id: jobId,
     prepared_by: userId,
@@ -443,9 +435,9 @@ async function upsertEstimateDocument(
 }
 
 async function syncPremiumSelections(jobId: string, params: PersistEstimateParams) {
-  const rows: JobPremiumServiceInsert[] = (Object.keys(params.premium) as Array<
-    keyof PersistEstimateParams['premium']
-  >).map((key) => ({
+  const rows: JobPremiumServiceInsert[] = (
+    Object.keys(params.premium) as Array<keyof PersistEstimateParams['premium']>
+  ).map((key) => ({
     job_id: jobId,
     service_id: PREMIUM_SERVICE_IDS[key],
     enabled: params.premium[key],

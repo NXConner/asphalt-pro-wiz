@@ -17,6 +17,10 @@ test.describe('Mission Scheduler', () => {
         commandCenter: true,
       } as const;
       window.localStorage.setItem('pps:flags', JSON.stringify(baseFlags));
+      window.localStorage.setItem(
+        'pps:demo-auth',
+        JSON.stringify({ email: 'demo@scheduler.test' }),
+      );
     });
   });
 
@@ -36,4 +40,3 @@ test.describe('Mission Scheduler', () => {
     await expect(page.getByText('Playwright Mission')).toBeVisible();
   });
 });
-

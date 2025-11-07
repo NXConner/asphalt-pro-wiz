@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +14,32 @@ export const ROLE_LABELS: Record<RoleName, string> = {
   super_admin: 'Super Admin',
 };
 
+const normalizeRoleName = (value: unknown): RoleName | null => {
+  if (!value) return null;
+  const normalized = String(value).trim().toLowerCase();
+  switch (normalized) {
+    case 'viewer':
+    case 'client':
+      return 'viewer';
+    case 'operator':
+    case 'estimator':
+    case 'field tech':
+    case 'field_tech':
+      return 'operator';
+    case 'manager':
+    case 'moderator':
+      return 'manager';
+    case 'administrator':
+    case 'admin':
+    case 'super_admin':
+    case 'super admin':
+    case 'super administrator':
+      return 'super_admin';
+    default:
+      return null;
+  }
+};
+
 export function useUserRole() {
   const { user, isAuthenticated } = useAuthContext();
 
@@ -26,11 +52,11 @@ export function useUserRole() {
 
       const { data, error } = await supabase
         .from('user_roles')
-        .select('user_id, role_name, granted_at')
+        .select('user_id, role_name, granted_at, role')
         .eq('user_id', user.id);
 
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as Array<UserRoleRow & { role?: string | null }>;
     },
     enabled: isAuthenticated && !!user,
   });
@@ -38,12 +64,16 @@ export function useUserRole() {
   const roles = useMemo(
     () =>
       (assignmentRows ?? [])
-        .map((row) => row.role_name)
+        .map((row) => normalizeRoleName((row as any).role_name ?? (row as any).role))
         .filter((role): role is RoleName => Boolean(role)) ?? [],
     [assignmentRows],
   );
 
-  const hasRole = (role: AppRole): boolean => roles.includes(role);
+  const hasRole = (role: AppRole | string): boolean => {
+    const normalized = normalizeRoleName(role);
+    if (!normalized) return false;
+    return roles.includes(normalized);
+  };
 
   const isAdmin = hasRole('super_admin');
   const isModerator = hasRole('manager');

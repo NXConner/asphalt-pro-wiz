@@ -1,9 +1,4 @@
-import {
-  BASE_COLOR_TOKENS,
-  BASE_HUD_VARIABLES,
-  BASE_SHADOW_TOKENS,
-  HUD_FONTS,
-} from '@/design';
+import { BASE_COLOR_TOKENS, BASE_HUD_VARIABLES, BASE_SHADOW_TOKENS, HUD_FONTS } from '@/design';
 
 export type DesignSpacingToken = '3xs' | '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 export type DesignRadiusToken = 'sm' | 'md' | 'lg' | 'xl';
@@ -80,7 +75,7 @@ export const DESIGN_TRANSITIONS: Record<DesignTransitionToken, string> = {
 
 const makeTokenMeta = (
   entries: Record<string, string>,
-  descriptions: Partial<Record<string, string>>, 
+  descriptions: Partial<Record<string, string>>,
 ): DesignTokenMeta[] =>
   Object.entries(entries).map(([cssVar, value]) => {
     const normalized = cssVar.startsWith('--') ? cssVar.slice(2) : cssVar;
@@ -148,20 +143,28 @@ export const CANONICAL_DESIGN_TOKENS: Record<
   typography: makeTokenMeta(BASE_HUD_VARIABLES, TYPOGRAPHY_DESCRIPTIONS),
   spacing: Object.entries(DESIGN_SPACING_SCALE).map(([token, value]) => ({
     token,
-    cssVar: `spacing-${token}`,
+    cssVar: `--spacing-${token}`,
     value: `${value}px`,
     description: SPACING_DESCRIPTIONS[token as DesignSpacingToken],
   })),
-  radii: Object.entries(DESIGN_RADII).map(([token, value]) => ({
-    token,
-    cssVar: `radius-${token}`,
-    value,
-    description: RADIUS_DESCRIPTIONS[token as DesignRadiusToken],
-  })),
+  radii: [
+    ...Object.entries(DESIGN_RADII).map(([token, value]) => ({
+      token,
+      cssVar: `--radius-${token}`,
+      value,
+      description: RADIUS_DESCRIPTIONS[token as DesignRadiusToken],
+    })),
+    {
+      token: 'radius',
+      cssVar: '--radius',
+      value: DESIGN_RADII.md,
+      description: RADIUS_DESCRIPTIONS.md,
+    },
+  ],
   shadows: makeTokenMeta(BASE_SHADOW_TOKENS, SHADOW_DESCRIPTIONS),
   transitions: Object.entries(DESIGN_TRANSITIONS).map(([token, value]) => ({
     token,
-    cssVar: `transition-${token}`,
+    cssVar: `--transition-${token}`,
     value,
     description: `${token} animation timing curve`,
   })),
@@ -177,4 +180,3 @@ export const DESIGN_SYSTEM: DesignSystemConfig = {
   transitions: DESIGN_TRANSITIONS,
   breakpoints: DESIGN_BREAKPOINTS,
 };
-

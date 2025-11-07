@@ -151,14 +151,19 @@ export function applyThemePreferences(prefs: ThemePreferences): void {
     root.style.setProperty('--primary', `${resolved.primaryHue} 100% 50%`);
     root.style.setProperty('--primary-foreground', `${resolved.primaryHue} 10% 95%`);
   } else {
-    root.style.removeProperty('--primary');
-    root.style.removeProperty('--primary-foreground');
+    if (tokens['--primary']) {
+      root.style.setProperty('--primary', tokens['--primary']);
+    }
+    if (tokens['--primary-foreground']) {
+      root.style.setProperty('--primary-foreground', tokens['--primary-foreground']);
+    }
   }
 
   const wallpaperValue = resolveWallpaperValue(resolved);
   if (wallpaperValue) {
     const trimmed = wallpaperValue.trim();
-    const isGradient = trimmed.startsWith('linear-gradient') || trimmed.startsWith('radial-gradient');
+    const isGradient =
+      trimmed.startsWith('linear-gradient') || trimmed.startsWith('radial-gradient');
     root.style.setProperty('--app-wallpaper', isGradient ? trimmed : `url('${trimmed}')`);
     root.style.setProperty('--wallpaper-opacity', `${resolved.wallpaperOpacity}`);
     root.style.setProperty('--wallpaper-blur', `${resolved.wallpaperBlur}px`);
