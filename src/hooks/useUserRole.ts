@@ -16,27 +16,34 @@ export const ROLE_LABELS: Record<RoleName, string> = {
   'Client': 'Client',
 };
 
+const ADMIN_ROLES: RoleName[] = ['Super Administrator', 'Administrator'];
+
 const normalizeRoleName = (value: unknown): RoleName | null => {
   if (!value) return null;
   const normalized = String(value).trim().toLowerCase();
   switch (normalized) {
     case 'viewer':
     case 'client':
-      return 'viewer';
+      return 'Client';
     case 'operator':
     case 'estimator':
+      return 'Estimator';
     case 'field tech':
     case 'field_tech':
-      return 'operator';
+    case 'field technician':
+      return 'Field Technician';
+    case 'field crew lead':
+    case 'crew lead':
+      return 'Field Crew Lead';
     case 'manager':
     case 'moderator':
-      return 'manager';
     case 'administrator':
     case 'admin':
+      return 'Administrator';
     case 'super_admin':
     case 'super admin':
     case 'super administrator':
-      return 'super_admin';
+      return 'Super Administrator';
     default:
       return null;
   }
@@ -45,7 +52,7 @@ const normalizeRoleName = (value: unknown): RoleName | null => {
 export function useUserRole() {
   const { user, isAuthenticated } = useAuthContext();
 
-  const { data: assignmentRows = [], isLoading } = useQuery<UserRoleRow[]>({
+  const { data: assignmentRows = [], isLoading } = useQuery({
     queryKey: ['user-roles', user?.id],
     queryFn: async () => {
       if (!user) {
@@ -54,11 +61,11 @@ export function useUserRole() {
 
       const { data, error } = await supabase
         .from('user_roles')
-        .select('user_id, role, created_at')
+        .select('id, user_id, role, created_at')
         .eq('user_id', user.id);
 
       if (error) throw error;
-      return (data ?? []) as Array<UserRoleRow & { role?: string | null }>;
+      return (data ?? []) as Array<{ id: string; user_id: string; role: RoleName; created_at: string }>;
     },
     enabled: isAuthenticated && !!user,
   });

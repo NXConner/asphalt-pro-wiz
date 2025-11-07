@@ -20,40 +20,51 @@ interface UserWithRoles {
   roles: RoleName[];
 }
 
-const AVAILABLE_ROLE_ORDER: RoleName[] = ['viewer', 'operator', 'manager', 'super_admin'];
+const AVAILABLE_ROLE_ORDER: RoleName[] = [
+  'Client',
+  'Field Technician',
+  'Field Crew Lead',
+  'Estimator',
+  'Administrator',
+  'Super Administrator'
+];
 
 export function AdminPanel() {
   const { isAdmin, isLoading: roleLoading } = useIsAdmin();
   const [emailLookup, setEmailLookup] = useState('');
   const queryClient = useQueryClient();
 
-  const { data: availableRoles = [], isLoading: availableRolesLoading } = useQuery<RoleRow[]>({
+  const { data: availableRoles = [], isLoading: availableRolesLoading } = useQuery({
     queryKey: ['roles-all'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('roles').select('name, description, created_at');
-      if (error) throw error;
-      return data ?? [];
+      // Return available roles directly from the enum
+      return AVAILABLE_ROLE_ORDER.map(role => ({
+        id: role,
+        role: role,
+        user_id: '',
+        created_at: new Date().toISOString()
+      }));
     },
     enabled: isAdmin && !roleLoading,
   });
 
-  const { data: users = [], isLoading: usersLoading } = useQuery<UserWithRoles[]>({
+  const { data: users = [], isLoading: usersLoading } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
       const [{ data: profiles, error: profileError }, { data: assignments, error: roleError }] =
         await Promise.all([
-          (supabase as any).from('profiles').select('id, email, full_name, created_at').order('created_at', {
+          supabase.from('profiles').select('id, email, full_name, created_at').order('created_at', {
             ascending: false,
           }),
-          (supabase as any).from('user_roles').select('user_id, role_name'),
+          supabase.from('user_roles').select('user_id, role'),
         ]);
 
       if (profileError) throw profileError;
       if (roleError) throw roleError;
 
       const assignmentMap = new Map<string, RoleName[]>();
-      (assignments ?? []).forEach((row) => {
-        const roleName = row.role_name as RoleName | null;
+      (assignments ?? []).forEach((row: any) => {
+        const roleName = row.role as RoleName | null;
         if (!roleName) return;
         const current = assignmentMap.get(row.user_id) ?? [];
         if (!current.includes(roleName)) {
@@ -62,11 +73,11 @@ export function AdminPanel() {
         assignmentMap.set(row.user_id, current);
       });
 
-      return (profiles ?? []).map((profile) => ({
-        id: (profile as any).id,
-        email: (profile as any).email,
-        full_name: (profile as any).full_name,
-        roles: assignmentMap.get((profile as any).id) ?? [],
+      return (profiles ?? []).map((profile: any) => ({
+        id: profile.id,
+        email: profile.email,
+        full_name: profile.full_name,
+        roles: assignmentMap.get(profile.id) ?? [],
       })) as UserWithRoles[];
     },
     enabled: isAdmin && !roleLoading,
@@ -75,16 +86,10 @@ export function AdminPanel() {
   const toggleRoleMutation = useMutation({
     mutationFn: async ({ userId, roleName, enable }: { userId: string; roleName: RoleName; enable: boolean }) => {
       if (enable) {
-        const { error } = await (supabase.from('user_roles') as any).upsert(
-          { user_id: userId, role_name: roleName },
-          { onConflict: 'user_id,role_name' }
-        );
-        if (error) throw error;
+        const { error } = await supabase.from('user_roles').insert({ user_id: userId, role: roleName });
+        if (error && !error.message.includes('duplicate')) throw error;
       } else {
-        const { error } = await (supabase.from('user_roles') as any)
-          .delete()
-          .eq('user_id', userId)
-          .eq('role_name', roleName);
+        const { error } = await supabase.from('user_roles').delete().eq('user_id', userId).eq('role', roleName);
         if (error) throw error;
       }
     },
@@ -119,8 +124,8 @@ export function AdminPanel() {
   };
 
   const superAdminRoleExists = useMemo(
-    () => availableRoles.some((role) => role.name === 'super_admin'),
-    [availableRoles],
+    () => AVAILABLE_ROLE_ORDER.includes('Super Administrator'),
+    [],
   );
 
   if (roleLoading || availableRolesLoading) {
@@ -164,7 +169,7 @@ export function AdminPanel() {
                 />
                 <Button
                   type="button"
-                  onClick={() => grantRoleByEmail('super_admin', 'grant')}
+                  onClick={() => grantRoleByEmail('Super Administrator', 'grant')}
                   disabled={!emailLookup || toggleRoleMutation.isPending}
                 >
                   <UserPlus className="mr-2 h-4 w-4" />
@@ -173,7 +178,7 @@ export function AdminPanel() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => grantRoleByEmail('super_admin', 'revoke')}
+                  onClick={() => grantRoleByEmail('Super Administrator', 'revoke')}
                   disabled={!emailLookup || toggleRoleMutation.isPending}
                 >
                   <UserX className="mr-2 h-4 w-4" />
@@ -205,7 +210,7 @@ export function AdminPanel() {
                           <Badge variant="outline">No roles</Badge>
                         ) : (
                           user.roles.map((role) => (
-                            <Badge key={role} variant={role === 'super_admin' ? 'default' : 'secondary'}>
+                            <Badge key={role} variant={role === 'Super Administrator' ? 'default' : 'secondary'}>
                               {ROLE_LABELS[role]}
                             </Badge>
                           ))

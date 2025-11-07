@@ -1,7 +1,7 @@
 import { isSupabaseConfigured, supabase } from '@/integrations/supabase/client';
 import { logError, logEvent } from '@/lib/logging';
 import { getCurrentUserId, resolveOrgId } from '@/lib/supabaseOrg';
-import type { MissionCrewMemberRow, MissionTaskRow, Tables } from '@/integrations/supabase/types';
+import type { MissionCrewMemberRow, MissionTaskRow } from '@/integrations/supabase/types-helpers';
 import type { BlackoutWindow, CrewMember, MissionTask } from '@/modules/scheduler/types';
 
 const DEFAULT_AVAILABILITY: CrewMember['availability'] = [
@@ -105,7 +105,7 @@ export async function upsertMissionTask(task: MissionTask) {
     const userId = await getCurrentUserId();
     if (!orgId) return;
 
-    const payload: Tables['mission_tasks']['Insert'] = {
+    const payload: any = {
       id: task.id,
       org_id: orgId,
       job_id: task.jobId ?? null,
@@ -142,7 +142,7 @@ export async function deleteMissionTask(taskId: string) {
     if (!UUID_REGEX.test(taskId)) {
       return;
     }
-    const { error } = await supabase.from('mission_tasks').delete().eq('id', taskId);
+    const { error } = await (supabase.from('mission_tasks') as any).delete().eq('id', taskId);
     if (error) throw error;
     logEvent('scheduler.task_deleted', { taskId });
   } catch (error) {
@@ -162,7 +162,7 @@ export async function upsertCrewMember(member: CrewMember) {
     const userId = await getCurrentUserId();
     if (!orgId) return;
 
-    const payload: Tables['mission_crew_members']['Insert'] = {
+    const payload: any = {
       id: member.id,
       org_id: orgId,
       name: member.name,

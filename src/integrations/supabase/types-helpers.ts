@@ -13,6 +13,7 @@ export type RoleRow = UserRoleRow; // Alias for compatibility
 // Enum types  
 export type RoleName = Database['public']['Enums']['app_role'];
 export type UserRole = Database['public']['Enums']['user_role'];
+export type AppRole = RoleName;
 
 // Job-related types
 export type JobRow = Database['public']['Tables']['jobs']['Row'];
@@ -62,8 +63,20 @@ export interface UserOrgMembershipRow {
   joined_at: string;
 }
 
-// Generic Tables helper
+// Organization types
+export interface OrganizationRow {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+// Generic Tables helper with type safety
 export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T];
+
+// Helper for table insert/update types
+export type TableInsert<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert'];
+export type TableUpdate<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update'];
 
 // Re-export Database type
 export type { Database };
