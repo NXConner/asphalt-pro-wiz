@@ -94,6 +94,42 @@ const globalShortcuts: ShortcutConfig[] = [
     },
     description: 'HUD Layout: Center',
   },
+    {
+      key: 'ArrowUp',
+      ctrl: true,
+      callback: (event) => {
+        const magnitude = event.shiftKey ? 2 : 1;
+        window.dispatchEvent(new CustomEvent('nudgeHud', { detail: { dx: 0, dy: -1, magnitude } }));
+      },
+      description: 'HUD Nudge Up',
+    },
+    {
+      key: 'ArrowDown',
+      ctrl: true,
+      callback: (event) => {
+        const magnitude = event.shiftKey ? 2 : 1;
+        window.dispatchEvent(new CustomEvent('nudgeHud', { detail: { dx: 0, dy: 1, magnitude } }));
+      },
+      description: 'HUD Nudge Down',
+    },
+    {
+      key: 'ArrowLeft',
+      ctrl: true,
+      callback: (event) => {
+        const magnitude = event.shiftKey ? 2 : 1;
+        window.dispatchEvent(new CustomEvent('nudgeHud', { detail: { dx: -1, dy: 0, magnitude } }));
+      },
+      description: 'HUD Nudge Left',
+    },
+    {
+      key: 'ArrowRight',
+      ctrl: true,
+      callback: (event) => {
+        const magnitude = event.shiftKey ? 2 : 1;
+        window.dispatchEvent(new CustomEvent('nudgeHud', { detail: { dx: 1, dy: 0, magnitude } }));
+      },
+      description: 'HUD Nudge Right',
+    },
 ];
 
 export function KeyboardProvider({ children }: { children: ReactNode }) {

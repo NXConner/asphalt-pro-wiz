@@ -37,7 +37,7 @@ AI-assisted operations command center purpose-built for asphalt paving, sealcoat
 
 - **Estimator Studio** – multi-step cost modelling with AI assistance, compliance guardrails, scenario comparisons, and offline resilience.
 - **Mission Scheduler** – crew-aware timeline with worship blackout windows, ADA alerts, conflict detection, and what-if optimization.
-- **Command Center HUD** – live telemetry, revenue and margin dashboards, configurable widgets, and Supabase-backed data panels.
+- **Command Center HUD** – live telemetry, revenue and margin dashboards, configurable widgets, multi-monitor layout memory, gesture controls, keyboard navigation, animation presets, and Supabase-backed data panels with export/import workflows.
 - **Theme Command Center** – multi-theme gallery with liturgical presets, custom wallpaper uploads, adaptive typography, and instant previews.
 - **Layout & Mapping Suite** – GIS overlays, measurement tools, tactical map waypoints, hazard zoning, and drone-ready workflows.
 - **Automation & Notifications** – templated outreach flows, incident management, and workflow hooks for estimator → mission transitions.
@@ -88,6 +88,7 @@ npm run seed
 - Common overrides (set in `.env` or Supabase config):
   - `VITE_FLAG_COMMANDCENTER`, `VITE_FLAG_SCHEDULER`, `VITE_FLAG_OBSERVABILITY`, `VITE_FLAG_TACTICALMAPV2`
   - Experimental toggles: `VITE_FLAG_AIASSISTANT`, `VITE_FLAG_IMAGEAREAANALYZER`, `VITE_FLAG_PWA`, `VITE_FLAG_I18N`
+  - HUD suite toggles: `VITE_FLAG_HUD_MULTI_MONITOR`, `VITE_FLAG_HUD_GESTURES`, `VITE_FLAG_HUD_KEYBOARD_NAV`, `VITE_FLAG_HUD_ANIMATIONS`, `VITE_FLAG_HUD_CONFIG_SYNC`
 - Flags support environment scoping (dev/test/prod) and integrate with feature telemetry when `VITE_ENABLE_FEATURE_TELEMETRY=true`.
 
 ---
@@ -100,6 +101,7 @@ npm run seed
   - **AI Proxy**: `VITE_GEMINI_PROXY_URL`, `GEMINI_API_KEY`, `LOVABLE_API_KEY`.
   - **Observability**: `VITE_LOG_BEACON_URL`, `VITE_OBSERVABILITY_EXPORTER_URL`, `OBSERVABILITY_API_KEY`, `VITE_SENTRY_DSN`.
   - **Mapping & Weather**: `VITE_GOOGLE_MAPS_API_KEY`, `VITE_OPENWEATHER_API_KEY`, `VITE_MAPBOX_TOKEN`, `VITE_AIR_QUALITY_API_KEY`.
+  - **HUD Sync & Export**: `VITE_HUD_DEFAULT_ANIMATION_PRESET`, `VITE_HUD_ANIMATION_PRESETS_PATH`, `VITE_HUD_GESTURE_SENSITIVITY`, `VITE_HUD_MULTI_MONITOR_STRATEGY`, `VITE_HUD_CONFIG_EXPORT_FORMAT`, `VITE_HUD_CONFIG_EXPORT_ENDPOINT`, plus secrets `HUD_CONFIG_EXPORT_SIGNING_KEY`, `HUD_CONFIG_EXPORT_ENCRYPTION_KEY`, `HUD_CONFIG_EXPORT_BUCKET`.
   - **Developer tooling**: `GITHUB_TOKEN` for ingest scripts.
 - Secrets automation templates live in `config/secrets/` for Doppler, Vault, and AWS Secrets Manager pipelines.
 - Never commit real secrets. Use Supabase Edge Secrets or your chosen secret manager for runtime credentials.

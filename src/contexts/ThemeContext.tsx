@@ -33,6 +33,10 @@ import {
   setHudProximityDistance as persistHudProximityDistance,
   setHudAlertAnimation as persistHudAlertAnimation,
   setHudQuickShortcuts as persistHudQuickShortcuts,
+    setHudAnimationPreset as persistHudAnimationPreset,
+    setHudGestureSensitivity as persistHudGestureSensitivity,
+    setHudMultiMonitorStrategy as persistHudMultiMonitorStrategy,
+    setHudKeyboardNavigation as persistHudKeyboardNavigation,
   saveHudProfile as persistSaveHudProfile,
   loadHudProfile as persistLoadHudProfile,
   deleteHudProfile as persistDeleteHudProfile,
@@ -51,6 +55,9 @@ import {
   type HudTransitionPreset,
   type HudThemeVariant,
   type HudAlertAnimation,
+    type HudAnimationPresetId,
+    type HudGestureSensitivity,
+    type HudMultiMonitorStrategy,
 } from '@/lib/theme';
 
 interface ThemeContextValue {
@@ -85,6 +92,10 @@ interface ThemeContextValue {
   setHudProximityDistance: (distance: number) => void;
   setHudAlertAnimation: (animation: HudAlertAnimation) => void;
   setHudQuickShortcuts: (enabled: boolean) => void;
+    setHudAnimationPreset: (preset: HudAnimationPresetId) => void;
+    setHudGestureSensitivity: (sensitivity: HudGestureSensitivity) => void;
+    setHudMultiMonitorStrategy: (strategy: HudMultiMonitorStrategy) => void;
+    setHudKeyboardNavigation: (enabled: boolean) => void;
   saveHudProfile: (name: string) => void;
   loadHudProfile: (name: string) => void;
   deleteHudProfile: (name: string) => void;
@@ -103,25 +114,31 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     applyThemePreferences(preferences);
   }, [preferences]);
 
-  useEffect(() => {
-    const handleStorage = (event: StorageEvent) => {
-      if (event.key === 'pps:theme') {
-        setPreferences(loadThemePreferences());
-      }
-    };
-    
-    const handleToggleHud = () => {
-      persistShowHud(!preferences.showHud);
-      syncPreferences();
-    };
-    
-    window.addEventListener('storage', handleStorage);
-    window.addEventListener('toggleHud', handleToggleHud);
-    return () => {
-      window.removeEventListener('storage', handleStorage);
-      window.removeEventListener('toggleHud', handleToggleHud);
-    };
-  }, [preferences.showHud]);
+    useEffect(() => {
+      const handleStorage = (event: StorageEvent) => {
+        if (event.key === 'pps:theme') {
+          setPreferences(loadThemePreferences());
+        }
+      };
+
+      const handleToggleHud = () => {
+        persistShowHud(!preferences.showHud);
+        syncPreferences();
+      };
+
+      const handleHudPreferencesUpdated = () => {
+        syncPreferences();
+      };
+
+      window.addEventListener('storage', handleStorage);
+      window.addEventListener('toggleHud', handleToggleHud);
+      window.addEventListener('hudPreferencesUpdated', handleHudPreferencesUpdated);
+      return () => {
+        window.removeEventListener('storage', handleStorage);
+        window.removeEventListener('toggleHud', handleToggleHud);
+        window.removeEventListener('hudPreferencesUpdated', handleHudPreferencesUpdated);
+      };
+    }, [preferences.showHud]);
 
   const syncPreferences = () => {
     setPreferences(loadThemePreferences());
@@ -249,6 +266,22 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       persistHudQuickShortcuts(enabled);
       syncPreferences();
     },
+      setHudAnimationPreset: (preset) => {
+        persistHudAnimationPreset(preset);
+        syncPreferences();
+      },
+      setHudGestureSensitivity: (sensitivity) => {
+        persistHudGestureSensitivity(sensitivity);
+        syncPreferences();
+      },
+      setHudMultiMonitorStrategy: (strategy) => {
+        persistHudMultiMonitorStrategy(strategy);
+        syncPreferences();
+      },
+      setHudKeyboardNavigation: (enabled) => {
+        persistHudKeyboardNavigation(enabled);
+        syncPreferences();
+      },
     saveHudProfile: (name) => {
       persistSaveHudProfile(name);
       syncPreferences();

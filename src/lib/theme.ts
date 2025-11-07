@@ -27,6 +27,21 @@ export type HudThemeVariant = 'default' | 'minimal' | 'tactical' | 'glass' | 'so
 
 export type HudAlertAnimation = 'pulse' | 'shake' | 'slide' | 'bounce' | 'glow' | 'none';
 
+export type HudAnimationPresetId = 'deploy' | 'patrol' | 'stealth' | 'recon' | 'command';
+
+export type HudGestureSensitivity = 'conservative' | 'standard' | 'aggressive';
+
+export type HudMultiMonitorStrategy = 'auto' | 'single' | 'persist-latest';
+
+export interface SavedHudDisplayLayout {
+  position: HudPosition | null;
+  size: HudSize;
+  pinned: boolean;
+  miniMode: boolean;
+  profileName?: string;
+  timestamp: number;
+}
+
 export interface SavedHudLayout {
   name: string;
   position: HudPosition;
@@ -52,6 +67,10 @@ export interface HudConfigurationProfile {
   hudProximityEffect: boolean;
   hudProximityDistance: number;
   hudAlertAnimation: HudAlertAnimation;
+  hudAnimationPreset: HudAnimationPresetId;
+  hudGestureSensitivity: HudGestureSensitivity;
+  hudMultiMonitorStrategy: HudMultiMonitorStrategy;
+  hudKeyboardNavigation: boolean;
   timestamp: number;
 }
 
@@ -92,6 +111,11 @@ export interface ThemePreferences {
   hudGridSnap: boolean;
   hudGridSize: number;
   hudCollisionDetection: boolean;
+  hudAnimationPreset: HudAnimationPresetId;
+  hudGestureSensitivity: HudGestureSensitivity;
+  hudMultiMonitorStrategy: HudMultiMonitorStrategy;
+  hudDisplayLayouts: Record<string, SavedHudDisplayLayout>;
+  hudKeyboardNavigation: boolean;
 }
 
 export type ThemeWallpaperSelection =
@@ -106,6 +130,7 @@ export type ThemeWallpaperSelection =
 
 const STORAGE_KEY = 'pps:theme';
 const DEFAULT_THEME_NAME: ThemeName = 'division-agent';
+const DISPLAY_LAYOUT_RETENTION = 8;
 
 const createDefaults = (): ThemePreferences => {
   const fallback = getDefaultWallpaperAsset();
@@ -146,6 +171,11 @@ const createDefaults = (): ThemePreferences => {
     hudGridSnap: true,
     hudGridSize: 20,
     hudCollisionDetection: true,
+    hudAnimationPreset: 'deploy',
+    hudGestureSensitivity: 'standard',
+    hudMultiMonitorStrategy: 'auto',
+    hudDisplayLayouts: {},
+    hudKeyboardNavigation: true,
   };
 };
 
@@ -192,11 +222,11 @@ export function getDefaultPreferences(): ThemePreferences {
 export function loadThemePreferences(): ThemePreferences {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return getDefaultPreferences();
+    if (!raw) return applyDisplayStrategy(getDefaultPreferences());
     const parsed = JSON.parse(raw) as Partial<ThemePreferences>;
-    return normalisePreferences(parsed);
+    return applyDisplayStrategy(normalisePreferences(parsed));
   } catch {
-    return getDefaultPreferences();
+    return applyDisplayStrategy(getDefaultPreferences());
   }
 }
 
@@ -273,6 +303,10 @@ export function applyThemePreferences(prefs: ThemePreferences): void {
     root.style.removeProperty('--wallpaper-blur');
     body.classList.remove('has-wallpaper');
   }
+
+  root.dataset.hudAnimationPreset = resolved.hudAnimationPreset;
+  root.dataset.hudGestureSensitivity = resolved.hudGestureSensitivity;
+  root.dataset.hudKeyboardNavigation = resolved.hudKeyboardNavigation ? 'on' : 'off';
 }
 
 export function setThemeMode(mode: ThemeMode): void {
@@ -472,42 +506,58 @@ const LAYOUT_PRESETS: Record<HudLayoutPreset, HudPosition | null> = {
 export function setHudLayoutPreset(preset: HudLayoutPreset): void {
   const prefs = loadThemePreferences();
   const position = LAYOUT_PRESETS[preset];
-  const next = coerceWallpaper({
+  let working: ThemePreferences = {
     ...prefs,
     hudLayoutPreset: preset,
     hudPosition: position,
-  });
+  };
+
+  if (position) {
+    working = withDisplayLayout(working, { position });
+  }
+
+  const next = coerceWallpaper(working);
   saveThemePreferences(next);
   applyThemePreferences(next);
 }
 
 export function setHudPosition(position: HudPosition): void {
   const prefs = loadThemePreferences();
-  const next = coerceWallpaper({
-    ...prefs,
-    hudPosition: position,
-    hudLayoutPreset: 'custom',
-  });
+  const working = withDisplayLayout(
+    {
+      ...prefs,
+      hudPosition: position,
+      hudLayoutPreset: 'custom',
+    },
+    { position },
+  );
+  const next = coerceWallpaper(working);
   saveThemePreferences(next);
   applyThemePreferences(next);
 }
 
 export function setHudPinned(pinned: boolean): void {
   const prefs = loadThemePreferences();
-  const next = coerceWallpaper({ ...prefs, hudPinned: pinned });
+  const working = withDisplayLayout({ ...prefs, hudPinned: pinned }, { pinned });
+  const next = coerceWallpaper(working);
   saveThemePreferences(next);
   applyThemePreferences(next);
 }
 
 export function setHudSize(size: HudSize): void {
   const prefs = loadThemePreferences();
-  const next = coerceWallpaper({
-    ...prefs,
-    hudSize: {
-      width: Math.max(300, Math.min(800, size.width)),
-      height: Math.max(400, Math.min(1000, size.height)),
+  const boundedSize = {
+    width: Math.max(300, Math.min(800, size.width)),
+    height: Math.max(400, Math.min(1000, size.height)),
+  };
+  const working = withDisplayLayout(
+    {
+      ...prefs,
+      hudSize: boundedSize,
     },
-  });
+    { size: boundedSize },
+  );
+  const next = coerceWallpaper(working);
   saveThemePreferences(next);
   applyThemePreferences(next);
 }
@@ -534,13 +584,22 @@ export function loadCustomLayout(name: string): void {
   const layout = prefs.savedLayouts.find(l => l.name === name);
   if (!layout) return;
   
-  const next = coerceWallpaper({
-    ...prefs,
-    hudPosition: layout.position,
-    hudSize: layout.size || { width: 384, height: 600 },
-    hudPinned: layout.isPinned,
-    hudLayoutPreset: 'custom',
-  });
+  const working = withDisplayLayout(
+    {
+      ...prefs,
+      hudPosition: layout.position,
+      hudSize: layout.size || { width: 384, height: 600 },
+      hudPinned: layout.isPinned,
+      hudLayoutPreset: 'custom',
+    },
+    {
+      position: layout.position,
+      size: layout.size,
+      pinned: layout.isPinned,
+      profileName: name,
+    },
+  );
+  const next = coerceWallpaper(working);
   saveThemePreferences(next);
   applyThemePreferences(next);
 }
@@ -561,7 +620,8 @@ export function setHudTransitionPreset(preset: HudTransitionPreset): void {
 
 export function setHudMiniMode(enabled: boolean): void {
   const prefs = loadThemePreferences();
-  const next = coerceWallpaper({ ...prefs, hudMiniMode: enabled });
+  const working = withDisplayLayout({ ...prefs, hudMiniMode: enabled }, { miniMode: enabled });
+  const next = coerceWallpaper(working);
   saveThemePreferences(next);
   applyThemePreferences(next);
 }
@@ -621,6 +681,38 @@ export function setHudQuickShortcuts(enabled: boolean): void {
   applyThemePreferences(next);
 }
 
+export function setHudAnimationPreset(preset: HudAnimationPresetId): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, hudAnimationPreset: preset });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudGestureSensitivity(sensitivity: HudGestureSensitivity): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, hudGestureSensitivity: sensitivity });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudMultiMonitorStrategy(strategy: HudMultiMonitorStrategy): void {
+  const prefs = loadThemePreferences();
+  const adjusted = applyDisplayStrategy({
+    ...prefs,
+    hudMultiMonitorStrategy: strategy,
+  });
+  const next = coerceWallpaper(adjusted);
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudKeyboardNavigation(enabled: boolean): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, hudKeyboardNavigation: enabled });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
 export function saveHudProfile(name: string): void {
   const prefs = loadThemePreferences();
   
@@ -641,6 +733,10 @@ export function saveHudProfile(name: string): void {
     hudProximityEffect: prefs.hudProximityEffect,
     hudProximityDistance: prefs.hudProximityDistance,
     hudAlertAnimation: prefs.hudAlertAnimation,
+    hudAnimationPreset: prefs.hudAnimationPreset,
+    hudGestureSensitivity: prefs.hudGestureSensitivity,
+    hudMultiMonitorStrategy: prefs.hudMultiMonitorStrategy,
+    hudKeyboardNavigation: prefs.hudKeyboardNavigation,
     timestamp: Date.now(),
   };
   
@@ -654,24 +750,36 @@ export function loadHudProfile(name: string): void {
   const profile = prefs.hudProfiles.find(p => p.name === name);
   if (!profile) return;
   
-  const next = coerceWallpaper({
-    ...prefs,
-    hudOpacity: profile.hudOpacity,
-    hudBlur: profile.hudBlur,
-    showHud: profile.showHud,
-    hudPreset: profile.hudPreset,
-    hudAnimationsEnabled: profile.hudAnimationsEnabled,
-    hudLayoutPreset: profile.hudLayoutPreset,
-    hudSize: profile.hudSize,
-    hudTransitionPreset: profile.hudTransitionPreset,
-    hudMiniMode: profile.hudMiniMode,
-    hudAutoHide: profile.hudAutoHide,
-    hudAutoHideDelay: profile.hudAutoHideDelay,
-    hudThemeVariant: profile.hudThemeVariant,
-    hudProximityEffect: profile.hudProximityEffect,
-    hudProximityDistance: profile.hudProximityDistance,
-    hudAlertAnimation: profile.hudAlertAnimation,
-  });
+  const working = withDisplayLayout(
+    {
+      ...prefs,
+      hudOpacity: profile.hudOpacity,
+      hudBlur: profile.hudBlur,
+      showHud: profile.showHud,
+      hudPreset: profile.hudPreset,
+      hudAnimationsEnabled: profile.hudAnimationsEnabled,
+      hudLayoutPreset: profile.hudLayoutPreset,
+      hudSize: profile.hudSize,
+      hudTransitionPreset: profile.hudTransitionPreset,
+      hudMiniMode: profile.hudMiniMode,
+      hudAutoHide: profile.hudAutoHide,
+      hudAutoHideDelay: profile.hudAutoHideDelay,
+      hudThemeVariant: profile.hudThemeVariant,
+      hudProximityEffect: profile.hudProximityEffect,
+      hudProximityDistance: profile.hudProximityDistance,
+      hudAlertAnimation: profile.hudAlertAnimation,
+      hudAnimationPreset: profile.hudAnimationPreset,
+      hudGestureSensitivity: profile.hudGestureSensitivity,
+      hudMultiMonitorStrategy: profile.hudMultiMonitorStrategy,
+      hudKeyboardNavigation: profile.hudKeyboardNavigation,
+    },
+    {
+      size: profile.hudSize,
+      miniMode: profile.hudMiniMode,
+      profileName: profile.name,
+    },
+  );
+  const next = coerceWallpaper(working);
   saveThemePreferences(next);
   applyThemePreferences(next);
 }
@@ -718,4 +826,154 @@ function getSystemMode(): 'light' | 'dark' {
   return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
     ? 'dark'
     : 'light';
+}
+
+function applyDisplayStrategy(prefs: ThemePreferences): ThemePreferences {
+  if (typeof window === 'undefined') return prefs;
+  const strategy = prefs.hudMultiMonitorStrategy ?? 'auto';
+  const key = getCurrentDisplayKey();
+
+  if (!key) {
+    return clampHudToViewport(prefs);
+  }
+
+  const currentLayout = prefs.hudDisplayLayouts?.[key];
+  if (currentLayout) {
+    return applyLayoutSnapshot(prefs, currentLayout);
+  }
+
+  if (strategy === 'persist-latest') {
+    const latest = getMostRecentDisplayLayout(prefs);
+    if (latest) {
+      return applyLayoutSnapshot(prefs, latest);
+    }
+  }
+
+  if (strategy === 'auto') {
+    return clampHudToViewport(prefs);
+  }
+
+  return prefs;
+}
+
+function applyLayoutSnapshot(prefs: ThemePreferences, layout: SavedHudDisplayLayout): ThemePreferences {
+  return {
+    ...prefs,
+    hudPosition: layout.position ?? prefs.hudPosition,
+    hudSize: layout.size ?? prefs.hudSize,
+    hudPinned: layout.pinned ?? prefs.hudPinned,
+    hudMiniMode: layout.miniMode ?? prefs.hudMiniMode,
+    hudLayoutPreset: 'custom',
+  };
+}
+
+function clampHudToViewport(prefs: ThemePreferences): ThemePreferences {
+  if (typeof window === 'undefined') return prefs;
+  const viewportWidth = Math.max(window.innerWidth || 0, 1);
+  const viewportHeight = Math.max(window.innerHeight || 0, 1);
+  const size = prefs.hudSize ?? { width: 384, height: 600 };
+  const { width, height } = size;
+  const position = prefs.hudPosition ?? LAYOUT_PRESETS['top-right'] ?? { x: viewportWidth - width - 20, y: 20 };
+  const clampedPosition = {
+    x: Math.max(0, Math.min(position.x, viewportWidth - width)),
+    y: Math.max(0, Math.min(position.y, viewportHeight - height)),
+  };
+
+  if (clampedPosition.x === position.x && clampedPosition.y === position.y) {
+    return prefs;
+  }
+
+  return {
+    ...prefs,
+    hudPosition: clampedPosition,
+    hudLayoutPreset: 'custom',
+  };
+}
+
+function getMostRecentDisplayLayout(prefs: ThemePreferences): SavedHudDisplayLayout | null {
+  const layouts = prefs.hudDisplayLayouts;
+  if (!layouts || Object.keys(layouts).length === 0) return null;
+  return Object.values(layouts).sort((a, b) => b.timestamp - a.timestamp)[0] ?? null;
+}
+
+function withDisplayLayout(
+  prefs: ThemePreferences,
+  overrides: Partial<SavedHudDisplayLayout> & { position?: HudPosition | null; size?: HudSize },
+): ThemePreferences {
+  if (typeof window === 'undefined') return prefs;
+  const key = getCurrentDisplayKey();
+  if (!key) return prefs;
+
+  const existingLayouts = prefs.hudDisplayLayouts ?? {};
+  const baseline: SavedHudDisplayLayout =
+    existingLayouts[key] ?? {
+      position: prefs.hudPosition,
+      size: prefs.hudSize,
+      pinned: prefs.hudPinned,
+      miniMode: prefs.hudMiniMode,
+      profileName: undefined,
+      timestamp: Date.now(),
+    };
+
+  const nextLayout: SavedHudDisplayLayout = {
+    position: overrides.position ?? baseline.position ?? prefs.hudPosition,
+    size: overrides.size ?? baseline.size ?? prefs.hudSize,
+    pinned: overrides.pinned ?? baseline.pinned ?? prefs.hudPinned,
+    miniMode: overrides.miniMode ?? baseline.miniMode ?? prefs.hudMiniMode,
+    profileName: overrides.profileName ?? baseline.profileName,
+    timestamp: Date.now(),
+  };
+
+  const updatedLayouts = { ...existingLayouts, [key]: nextLayout };
+  const trimmedLayouts = trimDisplayLayouts(updatedLayouts);
+
+  return {
+    ...prefs,
+    hudDisplayLayouts: trimmedLayouts,
+  };
+}
+
+function trimDisplayLayouts(layouts: Record<string, SavedHudDisplayLayout>): Record<string, SavedHudDisplayLayout> {
+  const entries = Object.entries(layouts).sort((a, b) => b[1].timestamp - a[1].timestamp);
+  if (entries.length <= DISPLAY_LAYOUT_RETENTION) {
+    return layouts;
+  }
+
+  return entries.slice(0, DISPLAY_LAYOUT_RETENTION).reduce<Record<string, SavedHudDisplayLayout>>((acc, [key, layout]) => {
+    acc[key] = layout;
+    return acc;
+  }, {});
+}
+
+export function getCurrentDisplayKey(): string | null {
+  if (typeof window === 'undefined') return null;
+  const screen = window.screen;
+  if (!screen) return null;
+
+  const width = Math.round(screen.width || window.innerWidth || 0);
+  const height = Math.round(screen.height || window.innerHeight || 0);
+  if (width === 0 || height === 0) return null;
+
+  const availWidth = Math.round(screen.availWidth || width);
+  const availHeight = Math.round(screen.availHeight || height);
+  const pixelRatio =
+    typeof window.devicePixelRatio === 'number'
+      ? Number(window.devicePixelRatio.toFixed(2))
+      : 1;
+  const orientation =
+    screen.orientation?.type ??
+    (width >= height ? 'landscape-primary' : 'portrait-primary');
+  const offsetX = Math.round(window.screenLeft ?? (window as typeof window & { screenX?: number }).screenX ?? 0);
+  const offsetY = Math.round(window.screenTop ?? (window as typeof window & { screenY?: number }).screenY ?? 0);
+
+  return [
+    `w${width}`,
+    `h${height}`,
+    `aw${availWidth}`,
+    `ah${availHeight}`,
+    `pr${pixelRatio}`,
+    `o${orientation}`,
+    `x${offsetX}`,
+    `y${offsetY}`,
+  ].join('-');
 }
