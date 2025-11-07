@@ -3,15 +3,17 @@ import { useQuery } from '@tanstack/react-query';
 
 import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import type { RoleName, UserRoleRow } from '@/integrations/supabase/types';
+import type { RoleName, UserRoleRow } from '@/integrations/supabase/types-helpers';
 
 export type AppRole = RoleName;
 
 export const ROLE_LABELS: Record<RoleName, string> = {
-  viewer: 'Viewer',
-  operator: 'Operator',
-  manager: 'Manager',
-  super_admin: 'Super Admin',
+  'Super Administrator': 'Super Admin',
+  'Administrator': 'Administrator',
+  'Estimator': 'Estimator',
+  'Field Crew Lead': 'Field Crew Lead',
+  'Field Technician': 'Field Technician',
+  'Client': 'Client',
 };
 
 export function useUserRole() {
@@ -26,7 +28,7 @@ export function useUserRole() {
 
       const { data, error } = await supabase
         .from('user_roles')
-        .select('user_id, role_name, granted_at')
+        .select('user_id, role, created_at')
         .eq('user_id', user.id);
 
       if (error) throw error;
@@ -38,18 +40,18 @@ export function useUserRole() {
   const roles = useMemo(
     () =>
       (assignmentRows ?? [])
-        .map((row) => row.role_name)
+        .map((row) => row.role)
         .filter((role): role is RoleName => Boolean(role)) ?? [],
     [assignmentRows],
   );
 
   const hasRole = (role: AppRole): boolean => roles.includes(role);
 
-  const isAdmin = hasRole('super_admin');
-  const isModerator = hasRole('manager');
-  const isEstimator = hasRole('operator');
-  const isFieldTech = hasRole('operator');
-  const isClient = hasRole('viewer');
+  const isAdmin = hasRole('Super Administrator') || hasRole('Administrator');
+  const isModerator = hasRole('Administrator');
+  const isEstimator = hasRole('Estimator');
+  const isFieldTech = hasRole('Field Crew Lead') || hasRole('Field Technician');
+  const isClient = hasRole('Client');
 
   return {
     roles,

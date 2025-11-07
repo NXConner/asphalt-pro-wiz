@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ROLE_LABELS, useIsAdmin } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
-import type { ProfileRow, RoleName, RoleRow, UserRoleRow } from '@/integrations/supabase/types';
+import type { ProfileRow, RoleName, RoleRow, UserRoleRow } from '@/integrations/supabase/types-helpers';
 
 interface UserWithRoles {
   id: string;
