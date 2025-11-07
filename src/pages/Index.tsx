@@ -1,6 +1,8 @@
 import { Shield } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
+import { KeyboardShortcutsModal } from '@/components/KeyboardShortcutsModal';
+
 import { ComplianceResources, type ComplianceTopic } from '@/components/ComplianceResources';
 import { HudWrapper } from '@/components/hud/HudWrapper';
 import { type TacticalHudOverlayProps } from '@/components/hud/TacticalHudOverlay';
@@ -21,6 +23,7 @@ const Index = () => {
   const wallpaper = useMemo(() => getWallpaperById(wallpaperId), [wallpaperId]);
   const [complianceOpen, setComplianceOpen] = useState(false);
   const [complianceTopic, setComplianceTopic] = useState<ComplianceTopic>('striping');
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   const summary = useMemo(
     () => ({
@@ -155,6 +158,12 @@ const Index = () => {
     setComplianceOpen(true);
   };
 
+  useEffect(() => {
+    const handleOpenShortcuts = () => setShortcutsOpen(true);
+    window.addEventListener('openShortcuts', handleOpenShortcuts);
+    return () => window.removeEventListener('openShortcuts', handleOpenShortcuts);
+  }, []);
+
   return (
     <>
       <main id="main-content">
@@ -247,6 +256,7 @@ const Index = () => {
         onOpenChange={setComplianceOpen}
         activeTopic={complianceTopic}
       />
+      <KeyboardShortcutsModal open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
     </>
   );
 };

@@ -1,10 +1,13 @@
 import { motion } from 'framer-motion';
-import { Sparkles, TimerReset } from 'lucide-react';
-import { memo } from 'react';
+import { Sparkles, TimerReset, ChevronDown, Maximize2, Minimize2, GripVertical } from 'lucide-react';
+import { memo, useState } from 'react';
 
 import { mergeHudTypography } from '@/design';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { CollapsibleHudSection } from './CollapsibleHudSection';
+import { Button } from '@/components/ui/button';
 
 const currencyFormatter = new Intl.NumberFormat(undefined, {
   style: 'currency',
@@ -79,6 +82,9 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
   }: TacticalHudOverlayProps,
 ) {
   const { preferences } = useTheme();
+  const isMobile = useIsMobile();
+  const [isExpanded, setIsExpanded] = useState(!isMobile);
+  
   const formattedCost = typeof totalCost === 'number' ? currencyFormatter.format(totalCost) : '—';
   const formattedArea = totalAreaSqFt > 0 ? `${numberFormatter.format(totalAreaSqFt)} sq ft` : 'Awaiting draw';
   const formattedTravel = typeof travelMiles === 'number' && travelMiles > 0
@@ -100,161 +106,191 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
   const missionGlyph = missionStatus.toUpperCase();
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, x: isMobile ? 0 : 20, y: isMobile ? 20 : 0 }}
+      animate={{ opacity: 1, x: 0, y: 0 }}
+      exit={{ opacity: 0, x: isMobile ? 0 : 20, y: isMobile ? 20 : 0 }}
+      transition={motionPreset}
+      drag={!isMobile}
+      dragMomentum={false}
+      dragElastic={0.1}
+      dragConstraints={{ top: 0, left: window.innerWidth - 400, right: window.innerWidth - 50, bottom: window.innerHeight - 200 }}
       className={cn(
-        'pointer-events-none fixed inset-0 z-[5] flex flex-col justify-between px-3 pt-3 pb-8 sm:px-6 sm:pt-4 sm:pb-10 lg:px-10',
-        'text-foreground/80',
+        'pointer-events-auto fixed z-[60] flex flex-col overflow-hidden shadow-2xl backdrop-blur-md transition-all',
+        isMobile
+          ? 'bottom-0 left-0 right-0 rounded-t-3xl border-t border-x border-border/50'
+          : 'top-4 right-4 w-96 rounded-2xl border border-border/50',
+        isMobile && !isExpanded && 'max-h-20',
+        isMobile && isExpanded && 'max-h-[85vh]',
         className,
       )}
+      style={{
+        backdropFilter: `blur(${preferences.hudBlur}px)`,
+        backgroundColor: `hsl(var(--card) / ${preferences.hudOpacity})`,
+      }}
     >
-      <div className="grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,28rem)]">
-        <motion.section
-          {...motionPreset}
-          className="pointer-events-auto relative isolate flex flex-col gap-4 sm:gap-5 rounded-2xl sm:rounded-3xl border border-border/50 bg-card/80 px-4 py-3 sm:px-5 sm:py-4 shadow-lg backdrop-blur-md"
-          style={{
-            backdropFilter: `blur(${preferences.hudBlur}px)`,
-            backgroundColor: `hsl(var(--card) / ${preferences.hudOpacity})`,
-          }}
-        >
-          <div className="hud-grid-divider absolute inset-y-3 left-0 w-[1px] opacity-30" />
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-            <div className="flex-1">
-              <p className="hud-eyebrow text-muted-foreground">Current Mission</p>
-              <h2
-                className="text-2xl sm:text-3xl md:text-4xl font-display uppercase tracking-wider text-foreground"
-                style={{
-                  textShadow: '0 0 16px hsl(var(--accent) / 0.25)',
-                }}
-              >
-                {missionName || 'Unnamed Operation'}
-              </h2>
-            </div>
-            <div className="flex flex-col items-end">
-              <span className="hud-eyebrow text-xs text-muted-foreground">STATUS</span>
-              <span
-                className={cn(
-                  'rounded-full border border-primary/40 px-3 sm:px-4 py-1 text-[0.72rem] font-semibold tracking-[0.45em]',
-                  'bg-primary/10 text-primary-foreground',
-                )}
-              >
-                {missionGlyph}
-              </span>
-              {missionPhase ? (
-                <span className="hud-mono mt-1 text-xs text-muted-foreground">{missionPhase}</span>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            <OverlayMetric label="Mission Budget" value={formattedCost} accent="accent" />
-            <OverlayMetric label="Surface Footprint" value={formattedArea} accent="secondary" />
-            <OverlayMetric label="Travel Logistics" value={formattedTravel} accent="primary" />
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <OverlayCallout
-              label="Site Coordinates"
-              value={formattedCoords}
-              icon={<Sparkles className="h-4 w-4" />}
-            />
-            <OverlayCallout
-              label="Schedule Window"
-              value={formattedWindow}
-              icon={<TimerReset className="h-4 w-4" />}
-            />
-          </div>
-        </motion.section>
-
-        <motion.section
-          {...motionPreset}
-          transition={{ ...motionPreset.transition, delay: 0.18 }}
-          className="pointer-events-auto relative flex flex-col gap-4 rounded-2xl sm:rounded-3xl border border-border/50 bg-card/80 px-4 py-3 sm:px-5 sm:py-4 shadow-lg backdrop-blur-md"
-          style={{
-            backdropFilter: `blur(${preferences.hudBlur}px)`,
-            backgroundColor: `hsl(var(--card) / ${preferences.hudOpacity})`,
-          }}
-        >
-          <header className="flex items-center justify-between">
-            <p className="hud-eyebrow text-muted-foreground">Mission Telemetry</p>
-            <span className="hud-mono text-xs text-muted-foreground/70">Updated {updatedLabel}</span>
-          </header>
-
-          {environment ? (
-            <div className="flex flex-wrap items-center gap-3 sm:gap-4 rounded-xl sm:rounded-2xl border border-border/40 bg-muted/20 px-3 sm:px-4 py-2 sm:py-3 text-xs">
-              <span className="hud-eyebrow text-[0.58rem] text-muted-foreground">SITE CONDITIONS</span>
-              {typeof environment.tempF === 'number' ? (
-                <span className="hud-mono text-foreground/85">{environment.tempF.toFixed(0)}°F</span>
-              ) : null}
-              {environment.conditions ? (
-                <span className="hud-mono text-foreground/70">{environment.conditions}</span>
-              ) : null}
-              {environment.riskLevel ? (
-                <span className={cn('hud-mono uppercase tracking-[0.35em]', riskTone[environment.riskLevel])}>
-                  {environment.riskLevel} risk
-                </span>
-              ) : null}
-            </div>
-          ) : null}
-
-          {flags && flags.length ? (
-            <ul className="flex flex-wrap gap-2">
-              {flags.map((flag) => (
-                <li
-                  key={flag.id}
-                  className={cn(
-                    'hud-mono inline-flex items-center gap-2 rounded-full border px-2.5 sm:px-3 py-1 text-[0.68rem]',
-                    flag.active
-                      ? 'border-success/50 bg-success/15 text-success-foreground'
-                      : 'border-border/30 bg-muted/20 text-muted-foreground',
-                  )}
-                >
-                  <span
-                    className={cn(
-                      'inline-block h-2.5 w-2.5 rounded-full',
-                      flag.active ? 'bg-success shadow-[0_0_12px_hsl(var(--success)/0.6)]' : 'bg-muted-foreground',
-                    )}
-                  />
-                  {flag.label}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-
-          {watchers && watchers.length ? (
-            <div className="grid gap-2">
-              {watchers.map((watcher) => (
-                <div
-                  key={watcher.label}
-                  className="flex items-center justify-between rounded-xl sm:rounded-2xl border border-border/40 bg-muted/20 px-3 py-2"
-                >
-                  <span className="hud-mono text-xs text-muted-foreground">{watcher.label}</span>
-                  <span className={cn('hud-mono text-sm uppercase tracking-[0.35em]', watcher.tone ? watcherTone[watcher.tone] : 'text-foreground')}>
-                    {watcher.value}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="hud-mono text-xs text-muted-foreground">Telemetry queue clear.</p>
+      {/* Header with drag handle and expand/collapse */}
+      <header className="flex items-center gap-3 border-b border-border/30 p-4 touch-manipulation">
+        {!isMobile && (
+          <button
+            className="cursor-grab active:cursor-grabbing touch-none"
+            aria-label="Drag to reposition HUD"
+          >
+            <GripVertical className="h-5 w-5 text-muted-foreground" />
+          </button>
+        )}
+        <div className="flex-1 min-w-0">
+          <h2 className="truncate text-base font-semibold uppercase tracking-wide text-foreground">
+            {missionName || 'Mission Brief'}
+          </h2>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span
+            className={cn(
+              'rounded-full border border-primary/40 px-3 py-1 text-[0.72rem] font-semibold tracking-[0.35em]',
+              'bg-primary/10 text-primary-foreground',
+            )}
+          >
+            {missionGlyph}
+          </span>
+          {isMobile && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="h-9 w-9 p-0"
+              aria-label={isExpanded ? 'Collapse HUD' : 'Expand HUD'}
+            >
+              {isExpanded ? (
+                <Minimize2 className="h-4 w-4" />
+              ) : (
+                <Maximize2 className="h-4 w-4" />
+              )}
+            </Button>
           )}
-        </motion.section>
-      </div>
+        </div>
+      </header>
 
-      <motion.footer
-        {...motionPreset}
-        transition={{ ...motionPreset.transition, delay: 0.28 }}
-        className="hidden sm:grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
-      >
-        <OverlayFooterTile label="Command Mode" value={missionPhase ?? 'Awaiting briefing'} />
-        <OverlayFooterTile
-          label="Live Flags"
-          value={flags?.filter((f) => f.active).length ?? 0}
-          secondary={`${flags?.length ?? 0} total`}
-        />
-        <OverlayFooterTile label="Area Captured" value={formattedArea} />
-        <OverlayFooterTile label="RT Distance" value={formattedTravel} />
-      </motion.footer>
-    </div>
+      {/* Body - collapsible on mobile */}
+      {(!isMobile || isExpanded) && (
+        <div className="flex-1 space-y-3 overflow-y-auto p-4">
+          {/* Mission Details */}
+          <CollapsibleHudSection title="Mission Details" defaultOpen={true}>
+            <div className="grid gap-3">
+              <OverlayMetric label="Mission Budget" value={formattedCost} accent="accent" />
+              <OverlayMetric label="Surface Footprint" value={formattedArea} accent="secondary" />
+              <OverlayMetric label="Travel Logistics" value={formattedTravel} accent="primary" />
+            </div>
+
+            <div className="mt-3 grid gap-2">
+              <OverlayCallout
+                label="Site Coordinates"
+                value={formattedCoords}
+                icon={<Sparkles className="h-4 w-4" />}
+              />
+              <OverlayCallout
+                label="Schedule Window"
+                value={formattedWindow}
+                icon={<TimerReset className="h-4 w-4" />}
+              />
+            </div>
+          </CollapsibleHudSection>
+
+          {/* Telemetry */}
+          <CollapsibleHudSection 
+            title="Mission Telemetry" 
+            defaultOpen={!isMobile}
+          >
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">Updated {updatedLabel}</span>
+                {missionPhase && (
+                  <span className="text-xs text-muted-foreground">{missionPhase}</span>
+                )}
+              </div>
+
+              {environment && (
+                <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border/40 bg-muted/20 px-3 py-2 text-xs">
+                  <span className="text-[0.58rem] text-muted-foreground uppercase tracking-wider">SITE CONDITIONS</span>
+                  {typeof environment.tempF === 'number' && (
+                    <span className="text-foreground/85">{environment.tempF.toFixed(0)}°F</span>
+                  )}
+                  {environment.conditions && (
+                    <span className="text-foreground/70">{environment.conditions}</span>
+                  )}
+                  {environment.riskLevel && (
+                    <span className={cn('uppercase tracking-[0.35em]', riskTone[environment.riskLevel])}>
+                      {environment.riskLevel} risk
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {watchers && watchers.length > 0 && (
+                <div className="grid gap-2">
+                  {watchers.map((watcher) => (
+                    <div
+                      key={watcher.label}
+                      className="flex items-center justify-between rounded-xl border border-border/40 bg-muted/20 px-3 py-2"
+                    >
+                      <span className="text-xs text-muted-foreground">{watcher.label}</span>
+                      <span className={cn('text-sm uppercase tracking-[0.35em]', watcher.tone ? watcherTone[watcher.tone] : 'text-foreground')}>
+                        {watcher.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </CollapsibleHudSection>
+
+          {/* Flags */}
+          {flags && flags.length > 0 && (
+            <CollapsibleHudSection title="Active Flags" defaultOpen={!isMobile}>
+              <ul className="flex flex-wrap gap-2">
+                {flags.map((flag) => (
+                  <li
+                    key={flag.id}
+                    className={cn(
+                      'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.68rem]',
+                      flag.active
+                        ? 'border-success/50 bg-success/15 text-success-foreground'
+                        : 'border-border/30 bg-muted/20 text-muted-foreground',
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'inline-block h-2.5 w-2.5 rounded-full',
+                        flag.active ? 'bg-success shadow-[0_0_12px_hsl(var(--success)/0.6)]' : 'bg-muted-foreground',
+                      )}
+                    />
+                    {flag.label}
+                  </li>
+                ))}
+              </ul>
+            </CollapsibleHudSection>
+          )}
+        </div>
+      )}
+
+      {/* Footer - compact view on mobile when collapsed */}
+      {isMobile && !isExpanded && (
+        <div className="grid grid-cols-3 gap-2 border-t border-border/30 px-4 py-2 text-xs">
+          <div>
+            <span className="text-muted-foreground">Budget</span>
+            <p className="font-semibold text-foreground">{formattedCost}</p>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Area</span>
+            <p className="font-semibold text-foreground">{formattedArea}</p>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Travel</span>
+            <p className="font-semibold text-foreground">{formattedTravel}</p>
+          </div>
+        </div>
+      )}
+    </motion.div>
   );
 });
 
@@ -273,9 +309,9 @@ function OverlayMetric({ label, value, accent = 'primary' }: OverlayMetricProps)
         : 'text-accent-foreground';
 
   return (
-    <article className="rounded-xl sm:rounded-2xl border border-border/40 bg-muted/20 px-3 py-2.5 sm:py-3">
-      <span className="hud-eyebrow text-[0.58rem] text-muted-foreground">{label}</span>
-      <p className={cn('hud-mono mt-1 text-sm', accentClass)}>{value}</p>
+    <article className="rounded-xl border border-border/40 bg-muted/20 px-3 py-2.5">
+      <span className="text-[0.58rem] text-muted-foreground uppercase tracking-wider">{label}</span>
+      <p className={cn('mt-1 text-sm font-mono', accentClass)}>{value}</p>
     </article>
   );
 }
@@ -288,29 +324,13 @@ interface OverlayCalloutProps {
 
 function OverlayCallout({ label, value, icon }: OverlayCalloutProps) {
   return (
-    <article className="flex items-center justify-between gap-3 rounded-xl sm:rounded-2xl border border-border/40 bg-muted/20 px-3 sm:px-4 py-2.5 sm:py-3">
+    <article className="flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/20 px-3 py-2.5">
       <div>
-        <span className="hud-eyebrow text-[0.58rem] text-muted-foreground">{label}</span>
-        <p className="hud-mono text-sm text-foreground/85">{value}</p>
+        <span className="text-[0.58rem] text-muted-foreground uppercase tracking-wider">{label}</span>
+        <p className="text-sm text-foreground/85 font-mono">{value}</p>
       </div>
-      {icon ? <span className="text-accent/80">{icon}</span> : null}
+      {icon && <span className="text-accent/80">{icon}</span>}
     </article>
-  );
-}
-
-interface OverlayFooterTileProps {
-  label: string;
-  value: string | number;
-  secondary?: string;
-}
-
-function OverlayFooterTile({ label, value, secondary }: OverlayFooterTileProps) {
-  return (
-    <div className="rounded-xl sm:rounded-2xl border border-border/50 bg-card/70 px-3 sm:px-4 py-2.5 sm:py-3">
-      <span className="hud-eyebrow text-[0.58rem] text-muted-foreground">{label}</span>
-      <p className="hud-mono text-[0.95rem] text-foreground/85">{value}</p>
-      {secondary ? <p className="hud-mono text-xs text-muted-foreground">{secondary}</p> : null}
-    </div>
   );
 }
 

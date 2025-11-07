@@ -12,4 +12,5 @@ export * from './ParticleBackground';
 export * from './TacticalLoader';
 export * from './TacticalHudOverlay';
 export * from './HudWrapper';
+export * from './CollapsibleHudSection';
 

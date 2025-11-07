@@ -31,6 +31,16 @@ const globalShortcuts: ShortcutConfig[] = [
     description: 'Toggle HUD overlay',
   },
   {
+    key: '?',
+    shift: true,
+    callback: () => {
+      // Open shortcuts modal
+      const event = new CustomEvent('openShortcuts');
+      window.dispatchEvent(event);
+    },
+    description: 'Show keyboard shortcuts',
+  },
+  {
     key: '/',
     callback: () => {
       // Focus search
