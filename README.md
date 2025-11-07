@@ -1,44 +1,57 @@
 # Pavement Performance Suite
 
-AI-assisted operations command center purpose-built for asphalt paving, sealcoating, and line-striping crews supporting Virginia and North Carolina church campuses. The suite covers estimation, mission scheduling, compliance automation, and observability from a single Division-inspired HUD.
+AI-assisted operations command center purpose-built for asphalt paving, sealcoating, and line-striping crews serving Virginia and North Carolina church campuses. The platform delivers estimation, scheduling, compliance automation, observability, and mobile experiences through a Division-inspired tactical HUD.
 
 ---
 
 ## Table of Contents
 
-1. [Feature Highlights](#feature-highlights)
-2. [Architecture](#architecture)
-3. [Quickstart](#quickstart)
-4. [Environment & Secrets](#environment--secrets)
-5. [Core Workflows](#core-workflows)
-6. [Quality Gates](#quality-gates)
-7. [API & Edge Functions](#api--edge-functions)
-8. [Load & Performance Testing](#load--performance-testing)
-9. [Deployment Targets](#deployment-targets)
-10. [Contribution Checklist](#contribution-checklist)
-11. [Reference Docs](#reference-docs)
-12. [License](#license)
+1. [Overview](#overview)
+2. [Core Capabilities](#core-capabilities)
+3. [Architecture](#architecture)
+4. [Quickstart](#quickstart)
+5. [Feature Flags & Configuration](#feature-flags--configuration)
+6. [Environment & Secrets](#environment--secrets)
+7. [Observability & Operations](#observability--operations)
+8. [Security & Compliance](#security--compliance)
+9. [Testing & Quality Gates](#testing--quality-gates)
+10. [Load & Performance Testing](#load--performance-testing)
+11. [Deployment Targets](#deployment-targets)
+12. [Mobile & Offline Field Ops](#mobile--offline-field-ops)
+13. [Contribution & Developer Experience](#contribution--developer-experience)
+14. [Strategic Roadmap Snapshot](#strategic-roadmap-snapshot)
+15. [Reference Docs](#reference-docs)
+16. [License](#license)
 
 ---
 
-## Feature Highlights
+## Overview
 
-- **Estimator Studio** – multi-step cost modelling with AI-assisted scenarios, compliance guardrails, and offline resilience.
-- **Mission Scheduler** – crew-aware timeline with blackout windows for worship services, ADA alerts, and staffing analytics.
-- **Command Center** – live mission telemetry, revenue dashboards, and Supabase-backed data views.
-- **Theme Command Center** – multi-theme gallery with liturgical presets, live wallpaper uploads, and instant HUD previews for every campus context.
-- **Observability & AI** – Gemini proxy via Supabase Edge Functions, log beacons, and structured monitoring hooks.
-- **Mobile Readiness** – Capacitor Android shell plus responsive HUD designed for field teams.
+- **Mission**: Equip small church-focused paving crews with an AI-guided command center that streamlines estimation, mission planning, crew coordination, compliance, and reporting.
+- **Key Pillars**: User-centric HUD design, offline-ready workflows, Supabase-backed data integrity, structured observability, security-first automation, and extensible integrations.
+- **Primary Users**: Pavement operations leads, pastors and facility directors, field crew chiefs, and back-office administrators handling compliance and finance.
+
+---
+
+## Core Capabilities
+
+- **Estimator Studio** – multi-step cost modelling with AI assistance, compliance guardrails, scenario comparisons, and offline resilience.
+- **Mission Scheduler** – crew-aware timeline with worship blackout windows, ADA alerts, conflict detection, and what-if optimization.
+- **Command Center HUD** – live telemetry, revenue and margin dashboards, configurable widgets, and Supabase-backed data panels.
+- **Theme Command Center** – multi-theme gallery with liturgical presets, custom wallpaper uploads, adaptive typography, and instant previews.
+- **Layout & Mapping Suite** – GIS overlays, measurement tools, tactical map waypoints, hazard zoning, and drone-ready workflows.
+- **Automation & Notifications** – templated outreach flows, incident management, and workflow hooks for estimator → mission transitions.
+- **Mobile Readiness** – Capacitor Android shell, responsive design, offline queues, and background sync tailored for field teams.
 
 ---
 
 ## Architecture
 
 - **Frontend**: React 18, Vite, TypeScript, TailwindCSS, shadcn/ui, `react-grid-layout`.
-- **State/Data**: React Query, IndexedDB caching, feature flags, Supabase client.
-- **Edge Functions**: `gemini-proxy` (AI gateway) and `log-beacon` (telemetry ingress) documented in `docs/swagger.json`.
-- **Tooling**: ESLint, Prettier, Husky + lint-staged, Vitest, Playwright, k6, Artillery.
-- **Mobile**: Capacitor shell for Android packaging.
+- **State & Data**: TanStack Query, feature flag context, Supabase client, IndexedDB caching, optimistic mutation helpers.
+- **Edge Functions**: `gemini-proxy` (AI gateway) and `log-beacon` (telemetry ingress) with OpenAPI definitions in `docs/swagger.json`.
+- **Tooling**: ESLint flat config, Prettier + Tailwind plugin, Husky + lint-staged, Vitest, Playwright, k6, Artillery, Commitlint.
+- **Mobile**: Capacitor packaging for Android; PWA path for iOS/desktop crews.
 
 ---
 
@@ -49,18 +62,18 @@ AI-assisted operations command center purpose-built for asphalt paving, sealcoat
 git clone https://github.com/continue-repo/pavement-performance-suite.git
 cd pavement-performance-suite
 
-# 2. Configure environment
-cp .env.example .env   # edit with real secrets (no placeholders)
+# 2. Configure environment (populate with *real* secrets)
+cp .env.example .env
 
-# 3. Install tooling (PowerShell users run the .ps1 equivalent)
+# 3. Install dependencies (PowerShell equivalent available)
 scripts/install_dependencies.sh
 #  --skip-playwright   # avoid browser downloads in CI containers
 #  --skip-husky        # disable git hooks for read-only runners
 
-# 4. Run dev server (refresh existing preview)
+# 4. Start dev server (refresh running preview if already launched)
 npm run dev
 
-# 5. Prime Supabase (optional)
+# 5. Prime Supabase (optional for local data)
 npm run migrate:up
 npm run seed
 ```
@@ -69,83 +82,72 @@ npm run seed
 
 ---
 
+## Feature Flags & Configuration
+
+- Global flags live under `src/lib/featureFlags` and are surfaced via the in-app Settings → Feature Flags panel.
+- Common overrides (set in `.env` or Supabase config):
+  - `VITE_FLAG_COMMANDCENTER`, `VITE_FLAG_SCHEDULER`, `VITE_FLAG_OBSERVABILITY`, `VITE_FLAG_TACTICALMAPV2`
+  - Experimental toggles: `VITE_FLAG_AIASSISTANT`, `VITE_FLAG_IMAGEAREAANALYZER`, `VITE_FLAG_PWA`, `VITE_FLAG_I18N`
+- Flags support environment scoping (dev/test/prod) and integrate with feature telemetry when `VITE_ENABLE_FEATURE_TELEMETRY=true`.
+
+---
+
 ## Environment & Secrets
 
-- `.env` keys (see template):
-  - Deployment metadata: `APP_ENV`, `VITE_ENVIRONMENT`, `VITE_APP_VERSION`, `VITE_BASE_PATH`, `VITE_BASE_NAME`, `VITE_BASE_URL`
-  - Lovable previews: `VITE_LOVABLE_BASE_PATH`, `LOVABLE_BASE_PATH` (optional; leave unset for auto detection)
-  - Supabase: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_PROJECT_REF`, `DATABASE_URL`
-  - AI proxy: `VITE_GEMINI_PROXY_URL`, `VITE_GEMINI_API_KEY`, `GEMINI_API_KEY`, `LOVABLE_API_KEY`
-  - Observability: `VITE_LOG_BEACON_URL`, `VITE_OBSERVABILITY_EXPORTER_URL`, `OBSERVABILITY_API_KEY`, `VITE_SENTRY_DSN`, `VITE_OBSERVABILITY_SAMPLE_RATE`, `VITE_ENABLE_WEB_VITALS`, `VITE_ENABLE_FEATURE_TELEMETRY`
-  - Mapping & weather: `VITE_GOOGLE_MAPS_API_KEY`, `VITE_OPENWEATHER_API_KEY`, `VITE_MAPBOX_TOKEN`, `VITE_AIR_QUALITY_API_KEY`
-  - Optional ingest: `GITHUB_TOKEN`
-  - Feature flags: `VITE_FLAG_*` overrides (`AIASSISTANT`, `SCHEDULER`, etc.)
-- Feature flags (1/0): `VITE_FLAG_COMMANDCENTER`, `VITE_FLAG_SCHEDULER`, `VITE_FLAG_OBSERVABILITY`, `VITE_FLAG_TACTICALMAPV2`, etc.
-- Supabase bootstrapping, RLS, and seed workflows: `docs/UNIFIED_SUPABASE_GUIDE.md`.
-- Never commit `.env`; rely on `.env.example` for onboarding.
-- Secrets automation templates live in `config/secrets/` (`doppler.yaml.example`, `vault.env.template`, `aws-secrets-manager.json.example`) to streamline Doppler, Vault, or AWS Secrets Manager integration.
+- `.env` keys (see `.env.example`):
+  - **Deployment metadata**: `APP_ENV`, `VITE_ENVIRONMENT`, `VITE_APP_VERSION`, `VITE_BASE_PATH`, `VITE_BASE_NAME`, `VITE_BASE_URL`.
+  - **Supabase**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SUPABASE_PROJECT_ID`, `SUPABASE_PROJECT_REF`, `DATABASE_URL`.
+  - **AI Proxy**: `VITE_GEMINI_PROXY_URL`, `GEMINI_API_KEY`, `LOVABLE_API_KEY`.
+  - **Observability**: `VITE_LOG_BEACON_URL`, `VITE_OBSERVABILITY_EXPORTER_URL`, `OBSERVABILITY_API_KEY`, `VITE_SENTRY_DSN`.
+  - **Mapping & Weather**: `VITE_GOOGLE_MAPS_API_KEY`, `VITE_OPENWEATHER_API_KEY`, `VITE_MAPBOX_TOKEN`, `VITE_AIR_QUALITY_API_KEY`.
+  - **Developer tooling**: `GITHUB_TOKEN` for ingest scripts.
+- Secrets automation templates live in `config/secrets/` for Doppler, Vault, and AWS Secrets Manager pipelines.
+- Never commit real secrets. Use Supabase Edge Secrets or your chosen secret manager for runtime credentials.
+- Supabase bootstrapping, RLS, and seed workflows are documented in `docs/UNIFIED_SUPABASE_GUIDE.md`.
 
 ---
 
-## Core Workflows
+## Observability & Operations
 
-### Mission Scheduler
-
-1. Enable the scheduler flag via Settings → Feature Flags or set `VITE_FLAG_SCHEDULER=1`.
-2. Open Engagement Hub → Crew Scheduler.
-3. Intake form queues missions with crew requirements, ADA impacts, and blackout-aware scheduling.
-4. Drag cards on the timeline to reschedule; conflicts and ADA warnings surface in real time.
-5. Structured logs emit via the log-beacon function when observability is enabled.
-6. Supabase persistence keeps missions, crew availability, and blackout windows in sync (`mission_tasks`, `mission_crew_members`, `crew_blackouts`).
-7. Import worship calendars (`.ics`) from the Mission Sync Center to auto-generate blackout buffers around services.
-
-### AI Proxy & Log Beacon (Supabase Edge)
-
-```bash
-supabase functions deploy gemini-proxy --no-verify-jwt
-supabase functions deploy log-beacon --no-verify-jwt
-supabase secrets set GEMINI_API_KEY=$GEMINI_API_KEY
-```
-
-Set `VITE_GEMINI_PROXY_URL=https://<project-ref>.functions.supabase.co/gemini-proxy` and `VITE_LOG_BEACON_URL` accordingly.
+- The app initializes monitoring via `initializeMonitoring()` and streams telemetry through the `log-beacon` edge function.
+- Structured logging emits for:
+  - Feature flag evaluations and overrides.
+  - Mission scheduler events (crew conflicts, ADA alerts, ICS imports).
+  - Estimator lifecycle (scenario creation, AI recommendations, proposal exports).
+  - Mobile/Capacitor events (back button handling, offline sync).
+- Enable/disable web vitals and feature telemetry with `VITE_ENABLE_WEB_VITALS` and `VITE_ENABLE_FEATURE_TELEMETRY`.
+- Integrate with external APMs by configuring `VITE_OBSERVABILITY_EXPORTER_URL` and `VITE_SENTRY_DSN`.
 
 ---
 
-## Quality Gates
+## Security & Compliance
 
-```bash
-npm run format             # Prettier + Tailwind plugin
-npm run lint               # ESLint (React, a11y, security)
-npm run typecheck          # TypeScript structural checks
-npm run test:unit -- --run # Vitest
-npm run test:e2e           # Playwright (requires browsers)
-npm run security:scan      # npm audit + Snyk
-npm run security:report    # JSON audit report saved to security-report.json
-
-# Load packs (detailed below)
-BASE_URL=http://localhost:5173 npx k6 run scripts/load/k6-estimate.js
-npx artillery run scripts/load/artillery.yml
-```
-
-> **Playwright system deps**: Linux hosts must install GTK/libvpx/GStreamer/etc. listed after `npx playwright install`.
+- Supabase schema enforces RLS across organizations, jobs, estimates, crew data, documents, and premium services.
+- Roles (`viewer`, `operator`, `manager`, `super_admin`) backed by `user_roles` and `user_org_memberships`.
+- Scripts:
+  - `npm run security:scan` (npm audit + Snyk)
+  - `npm run security:report` (JSON audit snapshot)
+  - GitHub Actions pipeline (`.github/workflows/main.yml`) runs CodeQL SAST, dependency scans, and tests per push.
+- Secrets management patterns documented in `docs/SECRETS_AND_CONFIG.md` with Doppler/Vault/AWS sample configs.
+- Virginia contractor compliance workflows, invoicing expectations, and retention policies detailed in `docs/PRODUCTION_READINESS.md` and `docs/SECURITY_REMEDIATION_GUIDE.md`.
 
 ---
 
-## API & Edge Functions
+## Testing & Quality Gates
 
-- OpenAPI spec lives at `docs/swagger.json` (generate with `npm run openapi:generate`).
-- Endpoint usage examples live in [docs/API_REFERENCE.md](./docs/API_REFERENCE.md).
-- Key endpoints:
-  - `POST /gemini-proxy` – proxy Gemini chat/image/embed requests.
-  - `POST /log-beacon` – ingest structured telemetry.
+| Category | Command | Notes |
+| --- | --- | --- |
+| Formatting | `npm run format` / `npm run format:check` | Prettier + Tailwind plugin |
+| Linting | `npm run lint` / `npm run lint:fix` | ESLint with React, a11y, security plugins |
+| Type Safety | `npm run typecheck` | Strict TS config |
+| Unit | `npm run test:unit -- --run` | Vitest; coverage thresholds 85%/85%/70% configured |
+| Integration | `npm run test -- --run` | Module-level suites under `tests/` |
+| E2E | `npm run test:e2e` | Playwright specs (`e2e/`) |
+| Accessibility | `npm run test:unit -- --run` | Uses `vitest-axe` assertions |
+| Security | `npm run security:scan` | npm audit + Snyk |
+| Load | see [Load & Performance Testing](#load--performance-testing) | k6 + Artillery packs |
 
-Example request:
-
-```bash
-curl -X POST "$SUPABASE_URL/functions/v1/gemini-proxy" \
-  -H "Content-Type: application/json" -H "apikey: $SUPABASE_ANON_KEY" \
-  -d '{ "action": "chat", "contents": [{ "role": "user", "parts": [{ "text": "Summarize sealcoating prep" }] }] }'
-```
+Husky pre-commit hooks execute lint-staged, lint, typecheck, unit tests, and optional Playwright checks via `npm run precommit:hook`.
 
 ---
 
@@ -161,7 +163,7 @@ npx k6 run scripts/load/k6-estimate.js
 STAGE_MULTIPLIER=3 BASE_URL=https://preview.example npx k6 run scripts/load/k6-estimate.js
 ```
 
-Metrics emitted: `successful_requests`, `request_duration` (Trend), `content_validation_failures`. Thresholds enforce p95 < 800 ms and success rate > 97%.
+Metrics emitted: `successful_requests`, `request_duration`, `content_validation_failures`. Thresholds enforce p95 < 800 ms and success rate > 97%.
 
 ### Artillery Smoke Pulse
 
@@ -169,7 +171,7 @@ Metrics emitted: `successful_requests`, `request_duration` (Trend), `content_val
 npx artillery run scripts/load/artillery.yml
 ```
 
-Ideal for CI or quick pre-deploy pulses. Full instructions live in `scripts/load/README.md`.
+Ideal for CI or pre-release smoke tests. Full instructions live in `scripts/load/README.md`.
 
 ---
 
@@ -183,7 +185,7 @@ docker compose --env-file .env up --build
 docker compose down -v
 ```
 
-> **Quality gate:** The Docker image build stage runs `npm run lint`, `npm run typecheck`, and `npm run test:unit -- --run` before bundling. Container builds will fail fast if these checks do not pass.
+> **Quality gate:** The Docker build stage runs `npm run lint`, `npm run typecheck`, and `npm run test:unit -- --run` before bundling, failing fast on regressions.
 
 ### Android
 
@@ -202,28 +204,45 @@ npm run android:gradle:debug
 
 ---
 
-## Contribution Checklist
+## Mobile & Offline Field Ops
+
+- Capacitor shell delivers native Android packaging; field devices receive offline caching, background sync, and optimized touch targets.
+- `MobileOptimizations` component handles PWA prompts, install banners, and viewport adjustments.
+- Offline-first patterns leverage IndexedDB persistence for estimator drafts, missions, telemetry, and wallpaper assets.
+- Push notification ready via Capacitor plugins (enable corresponding feature flags and provider credentials).
+
+---
+
+## Contribution & Developer Experience
 
 - Branch naming: `feature/<scope>` or `hotfix/<scope>`.
-- Conventional Commits; Husky pre-commit runs lint-staged, lint, and unit suites.
-- Update/add tests (Vitest, Playwright); call out load or performance validation when relevant.
-- Regenerate OpenAPI (`npm run openapi:generate`) when Edge Function contracts change.
-- Document user-facing or Ops changes in `docs/` and `CHANGELOG.md`.
-- Use `.github` issue/PR templates and provide risk/rollback & verification notes.
+- Conventional Commits enforced via Husky + Commitlint.
+- Generator scripts (`scripts/openapi`, `scripts/ingest`, planned `scripts/generate`) keep new modules consistent.
+- Provide risk/rollback notes in PR template (`.github/pull_request_template.md`) and keep docs in sync.
+- Consult `CONTRIBUTING.md` for coding standards, review checklist, and DevEx expectations.
 
-Detailed guidelines: [CONTRIBUTING.md](./CONTRIBUTING.md).
+---
+
+## Strategic Roadmap Snapshot
+
+- **Estimator Studio Enhancements**: AI co-pilot, layout-driven quantity extraction, supplier pricing alerts, compliance guardrails, proposal PDFs.
+- **Mission Scheduler Optimization**: Constraint-based timeline planning, worship blackout imports, crew mobile sync, incident rerouting.
+- **Command Center & Observability**: Customizable HUD layouts, incident management, OTEL instrumentation, in-app observability console.
+
+Full roadmap and phased analysis live in `docs/PHASE_1_ANALYSIS.md`, `docs/PHASE_COMPLETION_SUMMARY.md`, and `docs/IMPROVEMENT_PLAN.md`.
 
 ---
 
 ## Reference Docs
 
-- Supabase & security: `docs/UNIFIED_SUPABASE_GUIDE.md`, `docs/SECURITY.md`
+- Supabase & security: `docs/UNIFIED_SUPABASE_GUIDE.md`, `docs/SECURITY_REMEDIATION_GUIDE.md`, `docs/RLS_SECURITY.md`
 - Mission scheduler & UX: `docs/DIVISION_UI_TRANSFORMATION.md`, `docs/MOBILE_GUIDE.md`
-- Testing: `docs/TESTING_GUIDE.md`, `scripts/load/README.md`
-- API interactions: `docs/API_REFERENCE.md`
+- Testing & quality: `docs/TESTING_GUIDE.md`, `scripts/load/README.md`
+- API & integrations: `docs/API_REFERENCE.md`, `docs/INTEGRATIONS_GUIDE.md`
+- Deployment & operations: `docs/DEPLOYMENT.md`, `docs/PRODUCTION_READINESS.md`
 
 ---
 
 ## License
 
-MIT © Pavement Performance Suite contributors – see [LICENSE](./LICENSE).
+MIT © Pavement Performance Suite contributors — see [LICENSE](./LICENSE).
