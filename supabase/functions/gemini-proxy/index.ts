@@ -1,7 +1,33 @@
-// Supabase Edge Function: Gemini Proxy
+// Supabase Edge Function: Gemini Proxy with Authentication & Validation
 // Deploy with `supabase functions deploy gemini-proxy` and set secret GEMINI_API_KEY
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+
+// Validation schemas
+const chatSchema = z.object({
+  action: z.literal("chat"),
+  contents: z.array(z.object({
+    parts: z.array(z.object({
+      text: z.string().max(10000, "Text must be less than 10,000 characters")
+    })).max(20, "Maximum 20 parts per message")
+  })).max(10, "Maximum 10 messages in conversation"),
+});
+
+const imageSchema = z.object({
+  action: z.literal("image"),
+  contents: z.array(z.object({
+    parts: z.array(z.union([
+      z.object({ text: z.string().max(5000) }),
+      z.object({ inlineData: z.object({ mimeType: z.string(), data: z.string() }) })
+    ])).max(10)
+  })).max(5),
+});
+
+const embedSchema = z.object({
+  action: z.literal("embed"),
+  text: z.string().min(1).max(5000, "Text must be between 1 and 5,000 characters"),
+});
 
 async function handleChat(contents: unknown, apiKey: string): Promise<Response> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKey}`;
@@ -49,16 +75,44 @@ async function handleEmbed(text: string, apiKey: string): Promise<Response> {
 
 serve(async (req) => {
   if (req.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
+  
   const apiKey = Deno.env.get("GEMINI_API_KEY");
   if (!apiKey) return new Response("Missing GEMINI_API_KEY", { status: 500 });
+  
+  // Extract user from JWT (automatically verified by Supabase when verify_jwt = true)
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  
   try {
     const body = await req.json();
     const action = String(body?.action || "").toLowerCase();
-    if (action === "chat") return await handleChat(body?.contents, apiKey);
-    if (action === "image") return await handleImage(body?.contents, apiKey);
-    if (action === "embed") return await handleEmbed(String(body?.text || ""), apiKey);
-    return new Response("Bad Request", { status: 400 });
+    
+    // Validate input based on action
+    if (action === "chat") {
+      const validated = chatSchema.parse(body);
+      return await handleChat(validated.contents, apiKey);
+    }
+    
+    if (action === "image") {
+      const validated = imageSchema.parse(body);
+      return await handleImage(validated.contents, apiKey);
+    }
+    
+    if (action === "embed") {
+      const validated = embedSchema.parse(body);
+      return await handleEmbed(validated.text, apiKey);
+    }
+    
+    return new Response("Invalid action. Must be 'chat', 'image', or 'embed'", { status: 400 });
   } catch (e) {
+    if (e instanceof z.ZodError) {
+      return new Response(JSON.stringify({ error: "Validation failed", details: e.errors }), { 
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
     return new Response(String((e as Error)?.message || e), { status: 500 });
   }
 });

@@ -1,1 +1,7 @@
 project_id = "vodglzbgqsafghlihivy"
+
+[functions.gemini-proxy]
+verify_jwt = true
+
+[functions.log-beacon]
+verify_jwt = true
