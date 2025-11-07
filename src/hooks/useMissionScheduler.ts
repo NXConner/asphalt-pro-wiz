@@ -8,52 +8,30 @@ import {
   parseISO,
 } from 'date-fns';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
-import { logEvent } from '@/lib/logging';
-
-export type MissionTaskStatus = 'planned' | 'scheduled' | 'in_progress' | 'completed' | 'blocked';
-
-export type MissionTaskPriority = 'critical' | 'standard' | 'low';
-
-export type AccessibilityImpact =
-  | 'entrance'
-  | 'parking'
-  | 'mobility'
-  | 'auditorium'
-  | 'walkway'
-  | 'none';
-
-export interface MissionTask {
-  id: string;
-  jobId?: string;
-  jobName: string;
-  site?: string;
-  start: string; // ISO timestamp
-  end: string; // ISO timestamp
-  crewRequired: number;
-  crewAssignedIds: string[];
-  status: MissionTaskStatus;
-  priority: MissionTaskPriority;
-  accessibilityImpact: AccessibilityImpact;
-  notes?: string;
-  color?: string;
-}
-
-export interface CrewMember {
-  id: string;
-  name: string;
-  role: string;
-  maxHoursPerDay: number;
-  availability?: Array<'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat'>;
-}
-
-export interface BlackoutWindow {
-  id: string;
-  title: string;
-  reason?: string;
-  start: string; // ISO timestamp
-  end: string; // ISO timestamp
-}
+import { logError, logEvent } from '@/lib/logging';
+import {
+  deleteBlackout,
+  deleteCrewMember,
+  deleteMissionTask,
+  loadSchedulerSnapshot,
+  schedulerSyncAvailable,
+  upsertBlackout,
+  upsertCrewMember,
+  upsertMissionTask,
+} from '@/modules/scheduler/persistence';
+import type {
+  AccessibilityImpact,
+  BlackoutWindow,
+  CrewMember,
+  MissionTask,
+  MissionTaskPriority,
+  MissionTaskStatus,
+  WorshipImportOptions,
+  WorshipImportResult,
+} from '@/modules/scheduler/types';
+import { extractWorshipBlackouts } from '@/modules/scheduler/ics';
 
 export type MissionConflictType =
   | 'crew-overlap'
@@ -128,12 +106,20 @@ const STORAGE_VERSION = 2;
 const SLOT_MINUTES = 30;
 const DEFAULT_CAPACITY = 3; // Two full-time + one part-time crew members
 
+function generateFallbackUuid(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
+    const rand = Math.random() * 16 | 0;
+    const value = char === 'x' ? rand : (rand & 0x3) | 0x8;
+    return value.toString(16);
+  });
+}
+
 function createId(): string {
   const globalCrypto = (globalThis as typeof globalThis & { crypto?: Crypto }).crypto;
   if (globalCrypto && typeof globalCrypto.randomUUID === 'function') {
     return globalCrypto.randomUUID();
   }
-  return `mission-${Math.random().toString(36).slice(2, 10)}`;
+  return generateFallbackUuid();
 }
 
 const defaultState: MissionSchedulerState = {
@@ -564,6 +550,7 @@ export interface MissionSchedulerHook {
   updateBlackout: (window: BlackoutWindow) => void;
   removeBlackout: (blackoutId: string) => void;
   setCapacityPerShift: (capacity: number) => void;
+  importBlackoutsFromICS: (icsContent: string, options?: WorshipImportOptions) => WorshipImportResult;
 }
 
 export function useMissionScheduler(): MissionSchedulerHook {
@@ -575,6 +562,8 @@ export function useMissionScheduler(): MissionSchedulerHook {
   );
 
   const hydratedRef = useRef(false);
+  const supabaseEnabledRef = useRef(schedulerSyncAvailable());
+  const remoteHydratedRef = useRef(false);
 
   useEffect(() => {
     if (hydratedRef.current) return;
@@ -607,77 +596,175 @@ export function useMissionScheduler(): MissionSchedulerHook {
     }
   }, [state]);
 
-  const addTask = useCallback((task: Omit<MissionTask, 'id'>): MissionTask => {
-    const newTask: MissionTask = { id: createId(), ...task };
-    dispatch({ type: 'add-task', payload: newTask });
-    try {
-      logEvent('scheduler.task_created', {
-        taskId: newTask.id,
-        jobName: newTask.jobName,
-        start: newTask.start,
-        end: newTask.end,
+  useEffect(() => {
+    if (!supabaseEnabledRef.current || !state.ready || remoteHydratedRef.current) return;
+    (async () => {
+      try {
+        const snapshot = await loadSchedulerSnapshot();
+        if (snapshot) {
+          dispatch({ type: 'set-tasks', payload: snapshot.tasks });
+          dispatch({ type: 'set-crew', payload: snapshot.crew });
+          dispatch({ type: 'set-blackouts', payload: snapshot.blackouts });
+        }
+      } catch (error) {
+        logError(error, { source: 'scheduler.loadSnapshot' });
+        toast.error('Unable to sync scheduler from Supabase');
+      } finally {
+        remoteHydratedRef.current = true;
+      }
+    })();
+  }, [state.ready]);
+
+  const syncTaskToCloud = useCallback((task: MissionTask) => {
+    if (!supabaseEnabledRef.current) return;
+    void upsertMissionTask(task).catch(() => {
+      toast.error('Failed to sync mission task to Supabase');
+    });
+  }, []);
+
+  const deleteTaskFromCloud = useCallback((taskId: string) => {
+    if (!supabaseEnabledRef.current) return;
+    void deleteMissionTask(taskId).catch(() => {
+      toast.error('Failed to remove mission task from Supabase');
+    });
+  }, []);
+
+  const syncCrewToCloud = useCallback((member: CrewMember) => {
+    if (!supabaseEnabledRef.current) return;
+    void upsertCrewMember(member).catch(() => {
+      toast.error('Failed to sync crew member to Supabase');
+    });
+  }, []);
+
+  const deleteCrewFromCloud = useCallback((crewId: string) => {
+    if (!supabaseEnabledRef.current) return;
+    void deleteCrewMember(crewId).catch(() => {
+      toast.error('Failed to remove crew member from Supabase');
+    });
+  }, []);
+
+  const syncTasksBatch = useCallback((tasks: MissionTask[]) => {
+    if (!supabaseEnabledRef.current || tasks.length === 0) return;
+    let notified = false;
+    tasks.forEach((task) => {
+      void upsertMissionTask(task).catch(() => {
+        if (!notified) {
+          toast.error('Failed to sync mission tasks to Supabase');
+          notified = true;
+        }
       });
-    } catch {}
-    return newTask;
+    });
   }, []);
 
-  const updateTask = useCallback((task: MissionTask) => {
-    dispatch({ type: 'update-task', payload: task });
-    try {
-      logEvent('scheduler.task_updated', { taskId: task.id });
-    } catch {}
+  const syncBlackoutToCloud = useCallback((window: BlackoutWindow) => {
+    if (!supabaseEnabledRef.current) return;
+    void upsertBlackout(window).catch(() => {
+      toast.error('Failed to sync blackout window to Supabase');
+    });
   }, []);
 
-  const removeTask = useCallback((taskId: string) => {
-    dispatch({ type: 'remove-task', payload: taskId });
-    try {
-      logEvent('scheduler.task_removed', { taskId });
-    } catch {}
+  const deleteBlackoutFromCloud = useCallback((id: string) => {
+    if (!supabaseEnabledRef.current) return;
+    void deleteBlackout(id).catch(() => {
+      toast.error('Failed to remove blackout window from Supabase');
+    });
   }, []);
 
-  const setTaskStatus = useCallback((taskId: string, status: MissionTaskStatus) => {
-    dispatch({ type: 'set-task-status', payload: { id: taskId, status } });
-    try {
-      logEvent('scheduler.task_status_changed', { taskId, status });
-    } catch {}
-  }, []);
+  const addTask = useCallback(
+    (task: Omit<MissionTask, 'id'>): MissionTask => {
+      const newTask: MissionTask = { id: createId(), ...task };
+      dispatch({ type: 'add-task', payload: newTask });
+      try {
+        logEvent('scheduler.task_created', {
+          taskId: newTask.id,
+          jobName: newTask.jobName,
+          start: newTask.start,
+          end: newTask.end,
+        });
+      } catch {}
+      syncTaskToCloud(newTask);
+      return newTask;
+    },
+    [syncTaskToCloud],
+  );
+
+  const updateTask = useCallback(
+    (task: MissionTask) => {
+      dispatch({ type: 'update-task', payload: task });
+      try {
+        logEvent('scheduler.task_updated', { taskId: task.id });
+      } catch {}
+      syncTaskToCloud(task);
+    },
+    [syncTaskToCloud],
+  );
+
+  const removeTask = useCallback(
+    (taskId: string) => {
+      dispatch({ type: 'remove-task', payload: taskId });
+      try {
+        logEvent('scheduler.task_removed', { taskId });
+      } catch {}
+      deleteTaskFromCloud(taskId);
+    },
+    [deleteTaskFromCloud],
+  );
+
+  const setTaskStatus = useCallback(
+    (taskId: string, status: MissionTaskStatus) => {
+      const task = state.tasks.find((item) => item.id === taskId);
+      const updated = task ? { ...task, status } : null;
+      dispatch({ type: 'set-task-status', payload: { id: taskId, status } });
+      try {
+        logEvent('scheduler.task_status_changed', { taskId, status });
+      } catch {}
+      if (updated) {
+        syncTaskToCloud(updated);
+      }
+    },
+    [state.tasks, syncTaskToCloud],
+  );
 
   const rescheduleTask = useCallback(
     (taskId: string, start: Date, end: Date) => {
       const task = state.tasks.find((item) => item.id === taskId);
       if (!task) return;
+      const updated: MissionTask = {
+        ...task,
+        start: formatISO(start),
+        end: formatISO(end),
+      };
       dispatch({
         type: 'update-task',
-        payload: {
-          ...task,
-          start: formatISO(start),
-          end: formatISO(end),
-        },
+        payload: updated,
       });
       try {
         logEvent('scheduler.task_rescheduled', {
           taskId,
-          start: formatISO(start),
-          end: formatISO(end),
+          start: updated.start,
+          end: updated.end,
         });
       } catch {}
+      syncTaskToCloud(updated);
     },
-    [state.tasks],
+    [state.tasks, syncTaskToCloud],
   );
 
   const assignCrew = useCallback(
     (taskId: string, crewIds: string[]) => {
       const task = state.tasks.find((item) => item.id === taskId);
       if (!task) return;
+      const updated: MissionTask = { ...task, crewAssignedIds: Array.from(new Set(crewIds)) };
       dispatch({
         type: 'update-task',
-        payload: { ...task, crewAssignedIds: Array.from(new Set(crewIds)) },
+        payload: updated,
       });
       try {
         logEvent('scheduler.task_crew_assigned', { taskId, crewCount: crewIds.length });
       } catch {}
+      syncTaskToCloud(updated);
     },
-    [state.tasks],
+    [state.tasks, syncTaskToCloud],
   );
 
   const addCrewMember = useCallback(
@@ -691,9 +778,10 @@ export function useMissionScheduler(): MissionSchedulerHook {
       try {
         logEvent('scheduler.crew_added', { crewId: next.id, role: next.role });
       } catch {}
+      syncCrewToCloud(next);
       return next;
     },
-    [state.crew],
+    [state.crew, syncCrewToCloud],
   );
 
   const updateCrewMember = useCallback(
@@ -702,8 +790,9 @@ export function useMissionScheduler(): MissionSchedulerHook {
         type: 'set-crew',
         payload: state.crew.map((item) => (item.id === member.id ? member : item)),
       });
+      syncCrewToCloud(member);
     },
-    [state.crew],
+    [state.crew, syncCrewToCloud],
   );
 
   const removeCrewMember = useCallback(
@@ -714,10 +803,17 @@ export function useMissionScheduler(): MissionSchedulerHook {
           ? { ...task, crewAssignedIds: task.crewAssignedIds.filter((id) => id !== crewId) }
           : task,
       );
+      const tasksNeedingSync = nextTasks.filter((task) =>
+        state.tasks.some(
+          (previous) => previous.id === task.id && previous.crewAssignedIds.includes(crewId),
+        ),
+      );
       dispatch({ type: 'set-crew', payload: nextCrew });
       dispatch({ type: 'set-tasks', payload: nextTasks });
+      deleteCrewFromCloud(crewId);
+      syncTasksBatch(tasksNeedingSync);
     },
-    [state.crew, state.tasks],
+    [state.crew, state.tasks, deleteCrewFromCloud, syncTasksBatch],
   );
 
   const setCrewAvailability = useCallback(
@@ -736,9 +832,10 @@ export function useMissionScheduler(): MissionSchedulerHook {
       try {
         logEvent('scheduler.blackout_added', { blackoutId: next.id });
       } catch {}
+      syncBlackoutToCloud(next);
       return next;
     },
-    [state.blackouts],
+    [state.blackouts, syncBlackoutToCloud],
   );
 
   const updateBlackout = useCallback(
@@ -747,8 +844,9 @@ export function useMissionScheduler(): MissionSchedulerHook {
         type: 'set-blackouts',
         payload: state.blackouts.map((item) => (item.id === window.id ? window : item)),
       });
+      syncBlackoutToCloud(window);
     },
-    [state.blackouts],
+    [state.blackouts, syncBlackoutToCloud],
   );
 
   const removeBlackout = useCallback(
@@ -757,8 +855,47 @@ export function useMissionScheduler(): MissionSchedulerHook {
         type: 'set-blackouts',
         payload: state.blackouts.filter((item) => item.id !== blackoutId),
       });
+      deleteBlackoutFromCloud(blackoutId);
     },
-    [state.blackouts],
+    [state.blackouts, deleteBlackoutFromCloud],
+  );
+
+  const importBlackoutsFromICS = useCallback(
+    (icsContent: string, options?: WorshipImportOptions): WorshipImportResult => {
+      const drafts = extractWorshipBlackouts(icsContent, options);
+      if (drafts.length === 0) {
+        toast.info('No worship services detected in uploaded calendar');
+        return { totalEvents: 0, created: 0, updated: 0, skipped: 0 };
+      }
+
+      const existingByKey = new Map(
+        state.blackouts.map((blackout) => [`${blackout.start}|${blackout.end}`, blackout]),
+      );
+
+      let created = 0;
+      let updated = 0;
+      drafts.forEach((draft) => {
+        const key = `${draft.start}|${draft.end}`;
+        const existing = existingByKey.get(key);
+        if (existing) {
+          updateBlackout({ ...existing, title: draft.title, reason: draft.reason });
+          updated += 1;
+        } else {
+          addBlackout(draft);
+          created += 1;
+        }
+      });
+
+      const skipped = drafts.length - (created + updated);
+      toast.success(`Worship calendar synced (${created} added, ${updated} refreshed)`);
+      return {
+        totalEvents: drafts.length,
+        created,
+        updated,
+        skipped,
+      };
+    },
+    [addBlackout, state.blackouts, updateBlackout],
   );
 
   const setCapacityPerShift = useCallback((capacity: number) => {
@@ -793,5 +930,6 @@ export function useMissionScheduler(): MissionSchedulerHook {
     updateBlackout,
     removeBlackout,
     setCapacityPerShift,
+    importBlackoutsFromICS,
   };
 }

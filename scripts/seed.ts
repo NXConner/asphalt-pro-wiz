@@ -530,6 +530,117 @@ async function main() {
             JSON.stringify({ seedSource: "seed-script" }),
           ] satisfies QueryOptions,
         );
+
+        const crewSeeds = [
+          {
+            name: "Alpha Crew",
+            role: "Lead Crew",
+            color: "#f97316",
+            maxHoursPerDay: 10,
+            availability: ["mon", "tue", "wed", "thu"],
+          },
+          {
+            name: "Bravo Crew",
+            role: "Support Crew",
+            color: "#38bdf8",
+            maxHoursPerDay: 8,
+            availability: ["thu", "fri", "sat"],
+          },
+        ];
+
+        for (const crew of crewSeeds) {
+          await client.query(
+            `INSERT INTO public.mission_crew_members (org_id, name, role, color, max_hours_per_day, availability, metadata, created_by)
+             VALUES ($1, $2, $3, $4, $5, $6::text[], $7::jsonb, $8)
+             ON CONFLICT (org_id, name)
+             DO UPDATE SET role = EXCLUDED.role,
+                           color = EXCLUDED.color,
+                           max_hours_per_day = EXCLUDED.max_hours_per_day,
+                           availability = EXCLUDED.availability,
+                           metadata = mission_crew_members.metadata || EXCLUDED.metadata,
+                           updated_at = now();`,
+            [
+              orgId,
+              crew.name,
+              crew.role,
+              crew.color,
+              crew.maxHoursPerDay,
+              crew.availability,
+              JSON.stringify({ seedSource: "seed-script" }),
+              adminUserId,
+            ] satisfies QueryOptions,
+          );
+        }
+
+        const { rows: crewRows } = await client.query<{ id: string; name: string }>(
+          `SELECT id, name FROM public.mission_crew_members WHERE org_id = $1 AND name = ANY($2::text[])`,
+          [orgId, crewSeeds.map((crew) => crew.name)],
+        );
+        const crewIdMap = new Map(crewRows.map((row) => [row.name, row.id]));
+
+        const missionTasks = [
+          {
+            title: "Sealcoat Prep & Repairs",
+            site: "Sanctuary Lot",
+            start: "2025-05-12T08:00:00Z",
+            end: "2025-05-12T17:00:00Z",
+            crewRequired: 3,
+            status: "scheduled",
+            priority: "critical",
+            accessibilityImpact: "parking",
+            notes: "Nightly staging to keep ADA stalls clear for Wednesday activities.",
+            assignedCrew: ["Alpha Crew"],
+          },
+          {
+            title: "Striping & ADA Compliance",
+            site: "Sanctuary Lot",
+            start: "2025-05-14T12:00:00Z",
+            end: "2025-05-14T18:00:00Z",
+            crewRequired: 2,
+            status: "planned",
+            priority: "standard",
+            accessibilityImpact: "walkway",
+            notes: "Coordinate with trustees for signage placement.",
+            assignedCrew: ["Alpha Crew", "Bravo Crew"],
+          },
+        ];
+
+        for (const task of missionTasks) {
+          const assignedIds = task.assignedCrew
+            .map((name) => crewIdMap.get(name))
+            .filter((value): value is string => Boolean(value));
+
+          await client.query(
+            `INSERT INTO public.mission_tasks (org_id, job_id, job_name, site, start_at, end_at, crew_required, crew_assigned_ids, status, priority, accessibility_impact, notes, metadata, created_by)
+             VALUES ($1, $2, $3, $4, $5::timestamptz, $6::timestamptz, $7, $8::text[], $9::mission_task_status, $10::mission_task_priority, $11::mission_accessibility_impact, $12, $13::jsonb, $14)
+             ON CONFLICT (org_id, job_name, start_at)
+             DO UPDATE SET end_at = EXCLUDED.end_at,
+                           crew_required = EXCLUDED.crew_required,
+                           crew_assigned_ids = EXCLUDED.crew_assigned_ids,
+                           status = EXCLUDED.status,
+                           priority = EXCLUDED.priority,
+                           accessibility_impact = EXCLUDED.accessibility_impact,
+                           notes = EXCLUDED.notes,
+                           metadata = mission_tasks.metadata || EXCLUDED.metadata,
+                           updated_at = now();`,
+            [
+              orgId,
+              stMarkJobId,
+              task.title,
+              task.site,
+              task.start,
+              task.end,
+              task.crewRequired,
+              assignedIds,
+              task.status,
+              task.priority,
+              task.accessibilityImpact,
+              task.notes,
+              JSON.stringify({ seedSource: "seed-script" }),
+              adminUserId,
+            ] satisfies QueryOptions,
+          );
+        }
     }
 
     await client.query(

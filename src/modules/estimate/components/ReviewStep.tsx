@@ -1,4 +1,5 @@
-import { Calculator } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { Calculator, Loader2 } from 'lucide-react';
 
 import { CustomServices } from '@/components/CustomServices';
 import { Button } from '@/components/ui/button';
@@ -75,23 +76,28 @@ export function ReviewStep({
       </section>
 
       <div className="flex flex-col gap-3 rounded-2xl border border-white/15 bg-white/5 p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-50">Generate Mission Estimate</h3>
-            <p className="text-sm text-slate-200/80">
-              This wraps up the calculation run and surfaces cost intelligence to the Insight Tower.
-            </p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-50">Generate Mission Estimate</h3>
+              <p className="text-sm text-slate-200/80">
+                This wraps up the calculation run and surfaces cost intelligence to the Insight Tower.
+              </p>
+            </div>
+            <Button
+              type="button"
+              size="lg"
+              className="bg-orange-500/90 text-white shadow-lg shadow-orange-500/40 hover:bg-orange-500"
+              onClick={() => void calculation.handleCalculate()}
+              disabled={calculation.isSaving}
+            >
+              {calculation.isSaving ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Calculator className="mr-2 h-4 w-4" />
+              )}
+              {calculation.isSaving ? 'Syncing Estimate…' : 'Generate Estimate'}
+            </Button>
           </div>
-          <Button
-            type="button"
-            size="lg"
-            className="bg-orange-500/90 text-white shadow-lg shadow-orange-500/40 hover:bg-orange-500"
-            onClick={calculation.handleCalculate}
-          >
-            <Calculator className="mr-2 h-4 w-4" />
-            Generate Estimate
-          </Button>
-        </div>
         {calculation.showResults && calculation.costs ? (
           <div className="rounded-2xl border border-white/20 bg-white/10 p-4 text-sm text-slate-100">
             <div className="flex flex-wrap justify-between gap-2">
@@ -112,6 +118,24 @@ export function ReviewStep({
             </div>
           </div>
         ) : null}
+          <div className="flex flex-col gap-1 text-xs text-slate-200/70">
+            {calculation.lastSyncedAt ? (
+              <span>
+                Synced{' '}
+                {formatDistanceToNow(new Date(calculation.lastSyncedAt), { addSuffix: true })}
+                {calculation.lastSyncedEstimateId
+                  ? ` • Estimate ${calculation.lastSyncedEstimateId.slice(0, 8)}`
+                  : ''}
+              </span>
+            ) : calculation.showResults ? (
+              <span>
+                Sync the estimate to push totals into the Command Center and customer deliverables.
+              </span>
+            ) : null}
+            {calculation.syncError ? (
+              <span className="text-red-300">Sync error: {calculation.syncError}</span>
+            ) : null}
+          </div>
       </div>
 
       <div className="flex items-center justify-between">
