@@ -55,6 +55,10 @@ export function ThemeCustomizer() {
     setHudGridSnap,
     setHudGridSize,
     setHudCollisionDetection,
+    setHudAnimationPreset,
+    setHudGestureSensitivity,
+    setHudMultiMonitorStrategy,
+    setHudKeyboardNavigation,
     reset,
   } = useTheme();
   const { builtin, custom, addWallpaper, removeWallpaper, getById } = useWallpaperLibrary();
@@ -250,6 +254,15 @@ export function ThemeCustomizer() {
               setHudGridSize={setHudGridSize}
               hudCollisionDetection={preferences.hudCollisionDetection}
               setHudCollisionDetection={setHudCollisionDetection}
+            hudAnimationPreset={preferences.hudAnimationPreset}
+            setHudAnimationPreset={setHudAnimationPreset}
+            hudGestureSensitivity={preferences.hudGestureSensitivity}
+            setHudGestureSensitivity={setHudGestureSensitivity}
+            hudMultiMonitorStrategy={preferences.hudMultiMonitorStrategy}
+            setHudMultiMonitorStrategy={setHudMultiMonitorStrategy}
+            hudKeyboardNavigation={preferences.hudKeyboardNavigation}
+            setHudKeyboardNavigation={setHudKeyboardNavigation}
+            hudDisplayLayouts={preferences.hudDisplayLayouts}
             />
           <ThemeWallpaperManager
             builtin={builtin}

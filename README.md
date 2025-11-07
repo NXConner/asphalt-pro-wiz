@@ -37,7 +37,7 @@ AI-assisted operations command center purpose-built for asphalt paving, sealcoat
 
 - **Estimator Studio** – multi-step cost modelling with AI assistance, compliance guardrails, scenario comparisons, and offline resilience.
 - **Mission Scheduler** – crew-aware timeline with worship blackout windows, ADA alerts, conflict detection, and what-if optimization.
-- **Command Center HUD** – live telemetry, revenue and margin dashboards, configurable widgets, and Supabase-backed data panels.
+- **Command Center HUD** – live telemetry, revenue and margin dashboards, configurable widgets, multi-monitor layout memory, gesture controls, keyboard navigation, animation presets, and Supabase-backed data panels with export/import workflows.
 - **Theme Command Center** – multi-theme gallery with liturgical presets, custom wallpaper uploads, adaptive typography, and instant previews.
 - **Layout & Mapping Suite** – GIS overlays, measurement tools, tactical map waypoints, hazard zoning, and drone-ready workflows.
 - **Automation & Notifications** – templated outreach flows, incident management, and workflow hooks for estimator → mission transitions.
