@@ -21,7 +21,7 @@ import type {
   CrewMember,
   MissionTaskPriority,
   MissionTaskStatus,
-} from '@/hooks/useMissionScheduler';
+} from '@/modules/scheduler/types';
 import { listJobs, type SavedJob } from '@/lib/idb';
 
 interface MissionTaskDraft {

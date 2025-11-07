@@ -116,9 +116,8 @@ export async function batchInsert<T>(
   records: Partial<T>[],
 ): Promise<QueryResult<T[]>> {
   return safeQuery(async () => {
-    const { data, error } = await supabase
-      .from(table as any)
-      .insert(records)
+    const { data, error } = await (supabase.from(table as any) as any)
+      .insert(records as any)
       .select();
     return { data: data as T[] | null, error };
   });

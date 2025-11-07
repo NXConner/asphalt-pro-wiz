@@ -1,14 +1,8 @@
 export type MissionTaskStatus = 'planned' | 'scheduled' | 'in_progress' | 'completed' | 'blocked';
-
 export type MissionTaskPriority = 'critical' | 'standard' | 'low';
+export type MissionAccessibilityImpact = 'entrance' | 'parking' | 'mobility' | 'auditorium' | 'walkway' | 'none';
 
-export type AccessibilityImpact =
-  | 'entrance'
-  | 'parking'
-  | 'mobility'
-  | 'auditorium'
-  | 'walkway'
-  | 'none';
+export type AccessibilityImpact = MissionAccessibilityImpact;
 
 export interface MissionTask {
   id: string;

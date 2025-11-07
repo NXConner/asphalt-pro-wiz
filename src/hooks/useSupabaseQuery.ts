@@ -66,9 +66,8 @@ export function useSupabaseInsert<T>({
 
   return useMutation({
     mutationFn: async (data: Partial<T>) => {
-      const { data: result, error } = await supabase
-        .from(table as any)
-        .insert(data)
+      const { data: result, error } = await (supabase.from(table as any) as any)
+        .insert(data as any)
         .select()
         .single();
 
@@ -98,9 +97,8 @@ export function useSupabaseUpdate<T>({
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string | number; data: Partial<T> }) => {
-      const { data: result, error } = await supabase
-        .from(table as any)
-        .update(data)
+      const { data: result, error } = await (supabase.from(table as any) as any)
+        .update(data as any)
         .eq('id', id)
         .select()
         .single();

@@ -18,6 +18,9 @@ type JobInsert = Tables['jobs']['Insert'];
 type JobDocumentInsert = Tables['job_documents']['Insert'];
 type JobPremiumServiceInsert = Tables['job_premium_services']['Insert'];
 
+// Helper to satisfy Supabase Json type
+const asJson = <T,>(v: T) => v as unknown as Json;
+
 export interface PersistEstimateParams {
   inputs: ProjectInputs;
   costs: Costs;
@@ -109,26 +112,24 @@ export function buildLineItemDrafts(
       kind,
       label,
       amount: roundCurrency(amount),
-      metadata:
-        key === 'customServices'
-          ? {
-              services: customServices.map((svc) => ({
-                id: svc.id,
-                name: svc.name,
-                type: svc.type,
-                unitPrice: roundCurrency(svc.unitPrice || 0),
-                quantity: svc.quantity ?? null,
-              })),
-            }
-          : kind === 'material'
-            ? {
-                detail: breakdown
-                  .filter((item) =>
-                    item.item.toLowerCase().includes(label.split(' ')[0].toLowerCase()),
-                  )
-                  .slice(0, 3),
-              }
-            : null,
+          metadata:
+            key === 'customServices'
+              ? asJson({
+                  services: customServices.map((svc) => ({
+                    id: svc.id,
+                    name: svc.name,
+                    type: svc.type,
+                    unitPrice: roundCurrency(svc.unitPrice || 0),
+                    quantity: svc.quantity ?? null,
+                  })),
+                })
+              : kind === 'material'
+                ? asJson({
+                    detail: breakdown
+                      .filter((item) => item.item.toLowerCase().includes(label.split(' ')[0].toLowerCase()))
+                      .slice(0, 3),
+                  })
+                : null,
     });
   }
 
@@ -148,7 +149,7 @@ export function buildEstimateDocumentContent(
   } = params;
   const generatedAt = new Date().toISOString();
 
-  return {
+  return asJson({
     version: 1,
     generatedAt,
     job: {
@@ -174,7 +175,7 @@ export function buildEstimateDocumentContent(
     })),
     inputs,
     costs,
-  };
+  });
 }
 
 export async function persistEstimateResult(
@@ -223,7 +224,7 @@ export async function saveEstimateDocument(payload: DocumentPayload): Promise<st
     const jobId = await findJobId(orgId, payload.jobName, payload.customerAddress);
     if (!jobId) throw new Error('No matching job found for document upload.');
 
-    const documentContent: Json = {
+    const documentContent: Json = asJson({
       version: 1,
       generatedAt: new Date().toISOString(),
       docType: payload.docType,
@@ -233,11 +234,11 @@ export async function saveEstimateDocument(payload: DocumentPayload): Promise<st
       schedule: payload.schedule ?? null,
       notes: payload.notes ?? null,
       priceSummary: payload.priceSummary ?? null,
-    };
+    });
 
-    const existing = await supabase
-      .from('job_documents')
-      .select<'job_documents', JobDocumentRow>('id')
+    const existing = await (supabase
+      .from('job_documents') as any)
+      .select('id')
       .eq('job_id', jobId)
       .eq('title', payload.title)
       .limit(1)
@@ -245,32 +246,34 @@ export async function saveEstimateDocument(payload: DocumentPayload): Promise<st
 
     if (existing.error) throw existing.error;
 
-    const metadata: Json = {
+    const metadata: Json = asJson({
       docType: payload.docType,
       source: 'document_generator',
-    };
+    });
 
-    if (existing.data) {
-      const { error, data } = await supabase
-        .from('job_documents')
-        .update({
-          kind: 'mission_document',
-          content: documentContent,
-          metadata,
-          created_by: userId,
-        })
-        .eq('id', existing.data.id)
-        .select<'job_documents', JobDocumentRow>('id')
-        .single();
+    if ((existing as any).data) {
+      const { error, data } = await (supabase
+      .from('job_documents') as any)
+      .update({
+        kind: 'mission_document',
+        content: documentContent,
+        metadata,
+        created_by: userId,
+      })
+      .eq('id', (existing as any).data.id)
+      .select('id')
+      .single();
 
       if (error) throw error;
-      logEvent('estimate.document_updated', { documentId: data.id, jobId });
-      return data.id;
+      const docId = (data as any)?.id;
+      if (!docId) throw new Error('Failed to update document');
+      logEvent('estimate.document_updated', { documentId: docId, jobId });
+      return docId;
     }
 
-    const { error, data } = await supabase
-      .from('job_documents')
-      .insert<JobDocumentInsert>({
+    const { error, data } = await (supabase
+      .from('job_documents') as any)
+      .insert({
         job_id: jobId,
         title: payload.title,
         kind: 'mission_document',
@@ -278,12 +281,14 @@ export async function saveEstimateDocument(payload: DocumentPayload): Promise<st
         metadata,
         created_by: userId,
       })
-      .select<'job_documents', JobDocumentRow>('id')
+      .select('id')
       .single();
 
     if (error) throw error;
-    logEvent('estimate.document_created', { documentId: data.id, jobId });
-    return data.id;
+    const docId = (data as any)?.id;
+    if (!docId) throw new Error('Failed to create document');
+    logEvent('estimate.document_created', { documentId: docId, jobId });
+    return docId;
   } catch (error) {
     logError(error, { source: 'estimate.document', title: payload.title });
     throw error;
@@ -291,9 +296,9 @@ export async function saveEstimateDocument(payload: DocumentPayload): Promise<st
 }
 
 async function findJobId(orgId: string, name: string, address: string) {
-  const { data, error } = await supabase
-    .from('jobs')
-    .select<'jobs', Pick<JobRow, 'id'>>('id')
+  const { data, error } = await (supabase
+    .from('jobs') as any)
+    .select('id')
     .eq('org_id', orgId)
     .eq('name', name || '')
     .eq('customer_address', address || null)
@@ -301,7 +306,7 @@ async function findJobId(orgId: string, name: string, address: string) {
     .maybeSingle();
 
   if (error && error.code !== 'PGRST116') throw error;
-  return data?.id ?? null;
+  return (data as any)?.id ?? null;
 }
 
 async function upsertJob(orgId: string, userId: string | null, params: PersistEstimateParams) {
@@ -321,27 +326,27 @@ async function upsertJob(orgId: string, userId: string | null, params: PersistEs
   };
 
   if (existingId) {
-    const { error } = await supabase.from('jobs').update(payload).eq('id', existingId);
+    const { error } = await (supabase.from('jobs') as any).update(payload).eq('id', existingId);
     if (error) throw error;
     return { id: existingId };
   }
 
-  const { data, error } = await supabase
-    .from('jobs')
+  const { data, error } = await (supabase
+    .from('jobs') as any)
     .insert(payload)
-    .select<'jobs', Pick<JobRow, 'id'>>('id')
+    .select('id')
     .single();
 
   if (error) throw error;
-  return { id: data.id };
+  return { id: (data as any).id };
 }
 
 async function insertEstimate(jobId: string, userId: string | null, params: PersistEstimateParams) {
   const estimatePayload: EstimateInsert = {
     job_id: jobId,
     prepared_by: userId,
-    inputs: params.inputs,
-    costs: params.costs,
+    inputs: asJson(params.inputs),
+    costs: asJson(params.costs),
     subtotal: roundCurrency(params.costs.subtotal),
     overhead: roundCurrency(params.costs.overhead),
     profit: roundCurrency(params.costs.profit),
@@ -349,14 +354,14 @@ async function insertEstimate(jobId: string, userId: string | null, params: Pers
     created_at: new Date().toISOString(),
   };
 
-  const { data, error } = await supabase
-    .from('estimates')
+  const { data, error } = await (supabase
+    .from('estimates') as any)
     .insert(estimatePayload)
-    .select<'estimates', Pick<EstimateInsert, 'id'>>('id')
+    .select('id')
     .single();
 
   if (error) throw error;
-  return { id: data.id as string };
+  return { id: (data as any).id as string };
 }
 
 async function syncLineItems(estimateId: string, params: PersistEstimateParams) {
@@ -368,7 +373,7 @@ async function syncLineItems(estimateId: string, params: PersistEstimateParams) 
     estimate_id: estimateId,
   }));
 
-  const { error } = await supabase.from('estimate_line_items').insert(rows);
+  const { error } = await (supabase.from('estimate_line_items') as any).insert(rows);
   if (error) throw error;
 }
 
@@ -385,9 +390,9 @@ async function upsertEstimateDocument(
 
   const content = buildEstimateDocumentContent(params, premiumSelections);
 
-  const { data: existing, error: existingError } = await supabase
-    .from('job_documents')
-    .select<'job_documents', Pick<JobDocumentRow, 'id'>>('id')
+  const { data: existing, error: existingError } = await (supabase
+    .from('job_documents') as any)
+    .select('id')
     .eq('job_id', jobId)
     .eq('kind', 'estimate_summary')
     .limit(1)
@@ -400,26 +405,26 @@ async function upsertEstimateDocument(
     estimateId,
   };
 
-  if (existing?.id) {
-    const { error, data } = await supabase
-      .from('job_documents')
+  if ((existing as any)?.id) {
+    const { error, data } = await (supabase
+      .from('job_documents') as any)
       .update({
         title: `Estimate Summary - ${params.job.name || 'Mission'}`,
         content,
         metadata,
         created_by: userId,
       })
-      .eq('id', existing.id)
-      .select<'job_documents', Pick<JobDocumentRow, 'id'>>('id')
+      .eq('id', (existing as any).id)
+      .select('id')
       .single();
 
     if (error) throw error;
-    return data.id;
+    return (data as any).id;
   }
 
-  const { data, error } = await supabase
-    .from('job_documents')
-    .insert<JobDocumentInsert>({
+  const { data, error } = await (supabase
+    .from('job_documents') as any)
+    .insert({
       job_id: jobId,
       title: `Estimate Summary - ${params.job.name || 'Mission'}`,
       kind: 'estimate_summary',
@@ -427,11 +432,11 @@ async function upsertEstimateDocument(
       metadata,
       created_by: userId,
     })
-    .select<'job_documents', Pick<JobDocumentRow, 'id'>>('id')
+    .select('id')
     .single();
 
   if (error) throw error;
-  return data.id;
+  return (data as any).id;
 }
 
 async function syncPremiumSelections(jobId: string, params: PersistEstimateParams) {
@@ -449,8 +454,8 @@ async function syncPremiumSelections(jobId: string, params: PersistEstimateParam
 
   if (rows.length === 0) return;
 
-  const { error } = await supabase
-    .from('job_premium_services')
+  const { error } = await (supabase
+    .from('job_premium_services') as any)
     .upsert(rows, { onConflict: 'job_id,service_id' });
 
   if (error) throw error;
