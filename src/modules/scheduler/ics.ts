@@ -65,7 +65,16 @@ function extractDateComponents(value: string): DateComponents {
 }
 
 function constructUtcDate(components: DateComponents, timeZone?: string): Date {
-  const baseUtc = new Date(Date.UTC(components.year, components.month - 1, components.day, components.hour, components.minute, components.second));
+  const baseUtc = new Date(
+    Date.UTC(
+      components.year,
+      components.month - 1,
+      components.day,
+      components.hour,
+      components.minute,
+      components.second,
+    ),
+  );
   if (!timeZone) {
     return baseUtc;
   }
@@ -75,19 +84,21 @@ function constructUtcDate(components: DateComponents, timeZone?: string): Date {
   return new Date(baseUtc.getTime() + diff);
 }
 
-function parseIcsDate(value: string, params: Record<string, string>, options?: WorshipImportOptions): string | null {
+function parseIcsDate(
+  value: string,
+  params: Record<string, string>,
+  options?: WorshipImportOptions,
+): string | null {
   if (!value) return null;
   const isDateOnly = params.VALUE === 'DATE' || value.length === 8;
-  if (value.endsWith('Z') && !isDateOnly) {
-    return new Date(value).toISOString();
-  }
-
   const components = extractDateComponents(value);
-  const tz = params.TZID || options?.timezone;
+  const tz = value.endsWith('Z') ? 'UTC' : params.TZID || options?.timezone;
   const date = constructUtcDate(components, tz);
 
   if (isDateOnly) {
-    return new Date(Date.UTC(components.year, components.month - 1, components.day, 0, 0, 0)).toISOString();
+    return new Date(
+      Date.UTC(components.year, components.month - 1, components.day, 0, 0, 0),
+    ).toISOString();
   }
 
   return date.toISOString();
@@ -152,7 +163,11 @@ function parseIcsEvents(icsContent: string, options?: WorshipImportOptions): Par
   return events;
 }
 
-function applyBuffer(startIso: string, endIso: string, options?: WorshipImportOptions): { start: string; end: string } {
+function applyBuffer(
+  startIso: string,
+  endIso: string,
+  options?: WorshipImportOptions,
+): { start: string; end: string } {
   const startDate = new Date(startIso);
   const endDate = new Date(endIso);
   const beforeMinutes = options?.bufferMinutes?.before ?? DEFAULT_BUFFER_BEFORE_MINUTES;
@@ -194,7 +209,9 @@ export function extractWorshipBlackouts(
     }
 
     const reason = event.summary || defaultReason;
-    const endIso = event.end || new Date(new Date(event.start).getTime() + durationMinutes * 60 * 1000).toISOString();
+    const endIso =
+      event.end ||
+      new Date(new Date(event.start).getTime() + durationMinutes * 60 * 1000).toISOString();
     const { start, end } = applyBuffer(event.start, endIso, options);
 
     drafts.push({
