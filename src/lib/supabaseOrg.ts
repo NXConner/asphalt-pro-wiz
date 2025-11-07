@@ -18,12 +18,12 @@ export async function resolveOrgId(): Promise<string | null> {
     logError(error, { source: 'supabase.resolveOrg.rpc' });
   }
 
-  const { data: memberships, error } = await supabase
-    .from('user_org_memberships')
+  const { data: memberships, error } = await (supabase
+    .from('user_org_memberships') as any)
     .select('org_id')
     .order('joined_at', { ascending: true })
     .limit(1);
 
   if (error) throw error;
-  return memberships?.[0]?.org_id ?? null;
+  return (memberships as any)?.[0]?.org_id ?? null;
 }

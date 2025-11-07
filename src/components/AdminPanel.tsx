@@ -75,15 +75,13 @@ export function AdminPanel() {
   const toggleRoleMutation = useMutation({
     mutationFn: async ({ userId, roleName, enable }: { userId: string; roleName: RoleName; enable: boolean }) => {
       if (enable) {
-        const { error } = await supabase
-          .from<any>('user_roles')
-          .upsert({ user_id: userId, role_name: roleName } satisfies Partial<UserRoleRow>, {
-            onConflict: 'user_id,role_name',
-          });
+        const { error } = await (supabase.from('user_roles') as any).upsert(
+          { user_id: userId, role_name: roleName },
+          { onConflict: 'user_id,role_name' }
+        );
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from<any>('user_roles')
+        const { error } = await (supabase.from('user_roles') as any)
           .delete()
           .eq('user_id', userId)
           .eq('role_name', roleName);

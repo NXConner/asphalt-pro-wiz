@@ -238,8 +238,8 @@ export async function saveEstimateDocument(payload: DocumentPayload): Promise<st
       priceSummary: payload.priceSummary ?? null,
     });
 
-    const existing = await supabase
-      .from('job_documents')
+    const existing = await (supabase
+      .from('job_documents') as any)
       .select('id')
       .eq('job_id', jobId)
       .eq('title', payload.title)
@@ -253,26 +253,28 @@ export async function saveEstimateDocument(payload: DocumentPayload): Promise<st
       source: 'document_generator',
     });
 
-    if (existing.data) {
-      const { error, data } = await supabase
-      .from('job_documents')
+    if ((existing as any).data) {
+      const { error, data } = await (supabase
+      .from('job_documents') as any)
       .update({
         kind: 'mission_document',
         content: documentContent,
         metadata,
         created_by: userId,
       })
-      .eq('id', existing.data.id)
+      .eq('id', (existing as any).data.id)
       .select('id')
       .single();
 
       if (error) throw error;
-      logEvent('estimate.document_updated', { documentId: data.id, jobId });
-      return data.id;
+      const docId = (data as any)?.id;
+      if (!docId) throw new Error('Failed to update document');
+      logEvent('estimate.document_updated', { documentId: docId, jobId });
+      return docId;
     }
 
-    const { error, data } = await supabase
-      .from('job_documents')
+    const { error, data } = await (supabase
+      .from('job_documents') as any)
       .insert({
         job_id: jobId,
         title: payload.title,
@@ -285,8 +287,10 @@ export async function saveEstimateDocument(payload: DocumentPayload): Promise<st
       .single();
 
     if (error) throw error;
-    logEvent('estimate.document_created', { documentId: data.id, jobId });
-    return data.id;
+    const docId = (data as any)?.id;
+    if (!docId) throw new Error('Failed to create document');
+    logEvent('estimate.document_created', { documentId: docId, jobId });
+    return docId;
   } catch (error) {
     logError(error, { source: 'estimate.document', title: payload.title });
     throw error;
@@ -294,9 +298,9 @@ export async function saveEstimateDocument(payload: DocumentPayload): Promise<st
 }
 
 async function findJobId(orgId: string, name: string, address: string) {
-  const { data, error } = await supabase
-    .from('jobs')
-    .select<'jobs', Pick<JobRow, 'id'>>('id')
+  const { data, error } = await (supabase
+    .from('jobs') as any)
+    .select('id')
     .eq('org_id', orgId)
     .eq('name', name || '')
     .eq('customer_address', address || null)
@@ -304,7 +308,7 @@ async function findJobId(orgId: string, name: string, address: string) {
     .maybeSingle();
 
   if (error && error.code !== 'PGRST116') throw error;
-  return data?.id ?? null;
+  return (data as any)?.id ?? null;
 }
 
 async function upsertJob(
@@ -328,19 +332,19 @@ async function upsertJob(
   };
 
   if (existingId) {
-    const { error } = await supabase.from<any>('jobs').update(payload).eq('id', existingId);
+    const { error } = await (supabase.from('jobs') as any).update(payload).eq('id', existingId);
     if (error) throw error;
     return { id: existingId };
   }
 
-  const { data, error } = await supabase
-    .from<any>('jobs')
+  const { data, error } = await (supabase
+    .from('jobs') as any)
     .insert(payload)
     .select('id')
     .single();
 
   if (error) throw error;
-  return { id: data.id };
+  return { id: (data as any).id };
 }
 
 async function insertEstimate(
@@ -360,14 +364,14 @@ async function insertEstimate(
     created_at: new Date().toISOString(),
   };
 
-  const { data, error } = await supabase
-    .from<any>('estimates')
+  const { data, error } = await (supabase
+    .from('estimates') as any)
     .insert(estimatePayload)
     .select('id')
     .single();
 
   if (error) throw error;
-  return { id: data.id as string };
+  return { id: (data as any).id as string };
 }
 
 async function syncLineItems(estimateId: string, params: PersistEstimateParams) {
@@ -379,7 +383,7 @@ async function syncLineItems(estimateId: string, params: PersistEstimateParams) 
     estimate_id: estimateId,
   }));
 
-  const { error } = await supabase.from<any>('estimate_line_items').insert(rows as any);
+  const { error } = await (supabase.from('estimate_line_items') as any).insert(rows);
   if (error) throw error;
 }
 
@@ -396,8 +400,8 @@ async function upsertEstimateDocument(
 
   const content = buildEstimateDocumentContent(params, premiumSelections);
 
-  const { data: existing, error: existingError } = await supabase
-    .from('job_documents')
+  const { data: existing, error: existingError } = await (supabase
+    .from('job_documents') as any)
     .select('id')
     .eq('job_id', jobId)
     .eq('kind', 'estimate_summary')
@@ -411,25 +415,25 @@ async function upsertEstimateDocument(
     estimateId,
   };
 
-  if (existing?.id) {
-    const { error, data } = await supabase
-      .from('job_documents')
+  if ((existing as any)?.id) {
+    const { error, data } = await (supabase
+      .from('job_documents') as any)
       .update({
         title: `Estimate Summary - ${params.job.name || 'Mission'}`,
         content,
         metadata,
         created_by: userId,
       })
-      .eq('id', existing.id)
+      .eq('id', (existing as any).id)
       .select('id')
       .single();
 
     if (error) throw error;
-    return data.id;
+    return (data as any).id;
   }
 
-  const { data, error } = await supabase
-    .from('job_documents')
+  const { data, error } = await (supabase
+    .from('job_documents') as any)
     .insert({
       job_id: jobId,
       title: `Estimate Summary - ${params.job.name || 'Mission'}`,
@@ -442,7 +446,7 @@ async function upsertEstimateDocument(
     .single();
 
   if (error) throw error;
-  return data.id;
+  return (data as any).id;
 }
 
 async function syncPremiumSelections(jobId: string, params: PersistEstimateParams) {
@@ -460,9 +464,9 @@ async function syncPremiumSelections(jobId: string, params: PersistEstimateParam
 
   if (rows.length === 0) return;
 
-  const { error } = await supabase
-    .from<any>('job_premium_services')
-    .upsert(rows as any, { onConflict: 'job_id,service_id' });
+  const { error } = await (supabase
+    .from('job_premium_services') as any)
+    .upsert(rows, { onConflict: 'job_id,service_id' });
 
   if (error) throw error;
 }
