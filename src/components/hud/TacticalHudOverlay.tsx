@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
-import { Sparkles, TimerReset, ChevronDown, Maximize2, Minimize2, GripVertical } from 'lucide-react';
-import { memo, useState } from 'react';
+import { Sparkles, TimerReset, ChevronDown, Maximize2, Minimize2, GripVertical, Pin, PinOff } from 'lucide-react';
+import { memo, useState, useEffect } from 'react';
 
 import { mergeHudTypography } from '@/design';
 import { cn } from '@/lib/utils';
@@ -81,9 +81,21 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
     className,
   }: TacticalHudOverlayProps,
 ) {
-  const { preferences } = useTheme();
+  const { preferences, setHudPosition, setHudPinned } = useTheme();
   const isMobile = useIsMobile();
   const [isExpanded, setIsExpanded] = useState(!isMobile);
+  
+  useEffect(() => {
+    // Update position on window resize for layout presets
+    const handleResize = () => {
+      if (preferences.hudLayoutPreset !== 'custom' && !isMobile) {
+        // Trigger a preset re-application on resize
+        window.dispatchEvent(new CustomEvent('hudLayoutUpdate'));
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [preferences.hudLayoutPreset, isMobile]);
   
   const formattedCost = typeof totalCost === 'number' ? currencyFormatter.format(totalCost) : '—';
   const formattedArea = totalAreaSqFt > 0 ? `${numberFormatter.format(totalAreaSqFt)} sq ft` : 'Awaiting draw';
@@ -108,13 +120,22 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
   return (
     <motion.div
       initial={{ opacity: 0, x: isMobile ? 0 : 20, y: isMobile ? 20 : 0 }}
-      animate={{ opacity: 1, x: 0, y: 0 }}
+      animate={{ 
+        opacity: 1, 
+        x: preferences.hudPosition?.x ?? 0, 
+        y: preferences.hudPosition?.y ?? 0 
+      }}
       exit={{ opacity: 0, x: isMobile ? 0 : 20, y: isMobile ? 20 : 0 }}
       transition={motionPreset}
-      drag={!isMobile}
+      drag={!isMobile && !preferences.hudPinned}
       dragMomentum={false}
       dragElastic={0.1}
-      dragConstraints={{ top: 0, left: window.innerWidth - 400, right: window.innerWidth - 50, bottom: window.innerHeight - 200 }}
+      dragConstraints={{ top: 0, left: 0, right: window.innerWidth - 400, bottom: window.innerHeight - 200 }}
+      onDragEnd={(_, info) => {
+        if (!isMobile && !preferences.hudPinned) {
+          setHudPosition({ x: info.point.x, y: info.point.y });
+        }
+      }}
       className={cn(
         'pointer-events-auto fixed z-[60] flex flex-col overflow-hidden shadow-2xl backdrop-blur-md transition-all',
         isMobile
@@ -133,10 +154,14 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
       <header className="flex items-center gap-3 border-b border-border/30 p-4 touch-manipulation">
         {!isMobile && (
           <button
-            className="cursor-grab active:cursor-grabbing touch-none"
-            aria-label="Drag to reposition HUD"
+            className={cn(
+              'touch-none',
+              preferences.hudPinned ? 'cursor-not-allowed' : 'cursor-grab active:cursor-grabbing'
+            )}
+            aria-label={preferences.hudPinned ? 'HUD is pinned' : 'Drag to reposition HUD'}
+            disabled={preferences.hudPinned}
           >
-            <GripVertical className="h-5 w-5 text-muted-foreground" />
+            <GripVertical className={cn('h-5 w-5', preferences.hudPinned ? 'text-muted-foreground/40' : 'text-muted-foreground')} />
           </button>
         )}
         <div className="flex-1 min-w-0">
@@ -145,6 +170,21 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
           </h2>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          {!isMobile && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setHudPinned(!preferences.hudPinned)}
+              className="h-8 w-8 p-0"
+              aria-label={preferences.hudPinned ? 'Unpin HUD' : 'Pin HUD'}
+            >
+              {preferences.hudPinned ? (
+                <Pin className="h-4 w-4 text-primary" />
+              ) : (
+                <PinOff className="h-4 w-4" />
+              )}
+            </Button>
+          )}
           <span
             className={cn(
               'rounded-full border border-primary/40 px-3 py-1 text-[0.72rem] font-semibold tracking-[0.35em]',

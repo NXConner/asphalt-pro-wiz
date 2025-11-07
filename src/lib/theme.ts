@@ -9,6 +9,19 @@ export type ThemeMode = 'light' | 'dark' | 'system';
 export type ThemeName = ThemeNameFromTokens;
 
 export type HudPresetMode = 'minimal' | 'standard' | 'full' | 'custom';
+export type HudLayoutPreset = 'top-right' | 'bottom-right' | 'bottom-left' | 'center' | 'custom';
+
+export interface HudPosition {
+  x: number;
+  y: number;
+}
+
+export interface SavedHudLayout {
+  name: string;
+  position: HudPosition;
+  isPinned: boolean;
+  timestamp: number;
+}
 
 export interface ThemePreferences {
   mode: ThemeMode;
@@ -29,6 +42,10 @@ export interface ThemePreferences {
   showHud: boolean;
   hudPreset: HudPresetMode;
   hudAnimationsEnabled: boolean;
+  hudLayoutPreset: HudLayoutPreset;
+  hudPosition: HudPosition | null;
+  hudPinned: boolean;
+  savedLayouts: SavedHudLayout[];
 }
 
 export type ThemeWallpaperSelection =
@@ -65,6 +82,10 @@ const createDefaults = (): ThemePreferences => {
     showHud: true,
     hudPreset: 'standard',
     hudAnimationsEnabled: true,
+    hudLayoutPreset: 'top-right',
+    hudPosition: null,
+    hudPinned: false,
+    savedLayouts: [],
   };
 };
 
@@ -378,6 +399,82 @@ export function setHudAnimationsEnabled(enabled: boolean): void {
   } else {
     document.documentElement.classList.add('reduce-motion');
   }
+}
+
+const LAYOUT_PRESETS: Record<HudLayoutPreset, HudPosition | null> = {
+  'top-right': { x: window.innerWidth - 420, y: 20 },
+  'bottom-right': { x: window.innerWidth - 420, y: window.innerHeight - 600 },
+  'bottom-left': { x: 20, y: window.innerHeight - 600 },
+  'center': { x: window.innerWidth / 2 - 200, y: window.innerHeight / 2 - 300 },
+  'custom': null,
+};
+
+export function setHudLayoutPreset(preset: HudLayoutPreset): void {
+  const prefs = loadThemePreferences();
+  const position = LAYOUT_PRESETS[preset];
+  const next = coerceWallpaper({
+    ...prefs,
+    hudLayoutPreset: preset,
+    hudPosition: position,
+  });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudPosition(position: HudPosition): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({
+    ...prefs,
+    hudPosition: position,
+    hudLayoutPreset: 'custom',
+  });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudPinned(pinned: boolean): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, hudPinned: pinned });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function saveCustomLayout(name: string): void {
+  const prefs = loadThemePreferences();
+  if (!prefs.hudPosition) return;
+  
+  const newLayout: SavedHudLayout = {
+    name,
+    position: prefs.hudPosition,
+    isPinned: prefs.hudPinned,
+    timestamp: Date.now(),
+  };
+  
+  const savedLayouts = [...prefs.savedLayouts.filter(l => l.name !== name), newLayout];
+  const next = coerceWallpaper({ ...prefs, savedLayouts });
+  saveThemePreferences(next);
+}
+
+export function loadCustomLayout(name: string): void {
+  const prefs = loadThemePreferences();
+  const layout = prefs.savedLayouts.find(l => l.name === name);
+  if (!layout) return;
+  
+  const next = coerceWallpaper({
+    ...prefs,
+    hudPosition: layout.position,
+    hudPinned: layout.isPinned,
+    hudLayoutPreset: 'custom',
+  });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function deleteCustomLayout(name: string): void {
+  const prefs = loadThemePreferences();
+  const savedLayouts = prefs.savedLayouts.filter(l => l.name !== name);
+  const next = coerceWallpaper({ ...prefs, savedLayouts });
+  saveThemePreferences(next);
 }
 
 export function resetThemePreferences(): ThemePreferences {

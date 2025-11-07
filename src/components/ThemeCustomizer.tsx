@@ -34,6 +34,11 @@ export function ThemeCustomizer() {
     setShowHud,
     setHudPreset,
     setHudAnimationsEnabled,
+    setHudLayoutPreset,
+    setHudPinned,
+    saveCustomLayout,
+    loadCustomLayout,
+    deleteCustomLayout,
     reset,
   } = useTheme();
   const { builtin, custom, addWallpaper, removeWallpaper, getById } = useWallpaperLibrary();
@@ -129,6 +134,16 @@ export function ThemeCustomizer() {
     reset();
   }, [reset]);
 
+  const handleHudOpacityChange = useCallback((value: number) => {
+    setLocalHudOpacity(value);
+    setHudOpacity(value);
+  }, [setHudOpacity]);
+
+  const handleHudBlurChange = useCallback((value: number) => {
+    setLocalHudBlur(value);
+    setHudBlur(value);
+  }, [setHudBlur]);
+
   return (
     <Card className="border border-white/10 bg-slate-950/60 shadow-[0_40px_120px_rgba(8,12,24,0.6)] backdrop-blur-xl">
       <CardHeader>
@@ -176,17 +191,19 @@ export function ThemeCustomizer() {
             showHud={preferences.showHud}
             hudPreset={preferences.hudPreset}
             hudAnimationsEnabled={preferences.hudAnimationsEnabled}
-            onHudOpacityChange={(value) => {
-              setLocalHudOpacity(value);
-              setHudOpacity(value);
-            }}
-            onHudBlurChange={(value) => {
-              setLocalHudBlur(value);
-              setHudBlur(value);
-            }}
+            hudLayoutPreset={preferences.hudLayoutPreset}
+            hudPinned={preferences.hudPinned}
+            savedLayouts={preferences.savedLayouts}
+            onHudOpacityChange={handleHudOpacityChange}
+            onHudBlurChange={handleHudBlurChange}
             onShowHudChange={setShowHud}
             onHudPresetChange={setHudPreset}
             onHudAnimationsEnabledChange={setHudAnimationsEnabled}
+            onHudLayoutPresetChange={setHudLayoutPreset}
+            onHudPinnedChange={setHudPinned}
+            onSaveLayout={saveCustomLayout}
+            onLoadLayout={loadCustomLayout}
+            onDeleteLayout={deleteCustomLayout}
           />
           <ThemeWallpaperManager
             builtin={builtin}

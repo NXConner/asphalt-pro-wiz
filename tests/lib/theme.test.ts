@@ -16,6 +16,9 @@ describe('theme', () => {
     expect(document.documentElement.style.getPropertyValue('--primary')).not.toBe('');
     expect(document.documentElement.style.getPropertyValue('--radius')).toBe('8px');
     expect(document.documentElement.classList.contains('reduce-motion')).toBe(false);
+    expect(prefs.hudLayoutPreset).toBe('top-right');
+    expect(prefs.hudPinned).toBe(false);
+    expect(prefs.savedLayouts).toEqual([]);
   });
 
   it('hydrates wallpaper variables and body class', () => {

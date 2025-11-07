@@ -17,12 +17,20 @@ import {
   setShowHud as persistShowHud,
   setHudPreset as persistHudPreset,
   setHudAnimationsEnabled as persistHudAnimationsEnabled,
+  setHudLayoutPreset as persistHudLayoutPreset,
+  setHudPosition as persistHudPosition,
+  setHudPinned as persistHudPinned,
+  saveCustomLayout as persistSaveCustomLayout,
+  loadCustomLayout as persistLoadCustomLayout,
+  deleteCustomLayout as persistDeleteCustomLayout,
   resetThemePreferences,
   type ThemePreferences,
   type ThemeMode,
   type ThemeName,
   type ThemeWallpaperSelection,
   type HudPresetMode,
+  type HudLayoutPreset,
+  type HudPosition,
 } from '@/lib/theme';
 
 interface ThemeContextValue {
@@ -41,6 +49,12 @@ interface ThemeContextValue {
   setShowHud: (enabled: boolean) => void;
   setHudPreset: (preset: HudPresetMode) => void;
   setHudAnimationsEnabled: (enabled: boolean) => void;
+  setHudLayoutPreset: (preset: HudLayoutPreset) => void;
+  setHudPosition: (position: HudPosition) => void;
+  setHudPinned: (pinned: boolean) => void;
+  saveCustomLayout: (name: string) => void;
+  loadCustomLayout: (name: string) => void;
+  deleteCustomLayout: (name: string) => void;
   reset: () => void;
 }
 
@@ -133,6 +147,30 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     },
     setHudAnimationsEnabled: (enabled) => {
       persistHudAnimationsEnabled(enabled);
+      syncPreferences();
+    },
+    setHudLayoutPreset: (preset) => {
+      persistHudLayoutPreset(preset);
+      syncPreferences();
+    },
+    setHudPosition: (position) => {
+      persistHudPosition(position);
+      syncPreferences();
+    },
+    setHudPinned: (pinned) => {
+      persistHudPinned(pinned);
+      syncPreferences();
+    },
+    saveCustomLayout: (name) => {
+      persistSaveCustomLayout(name);
+      syncPreferences();
+    },
+    loadCustomLayout: (name) => {
+      persistLoadCustomLayout(name);
+      syncPreferences();
+    },
+    deleteCustomLayout: (name) => {
+      persistDeleteCustomLayout(name);
       syncPreferences();
     },
     reset: () => {

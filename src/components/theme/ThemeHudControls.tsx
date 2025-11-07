@@ -1,11 +1,13 @@
-import { Monitor, Zap } from 'lucide-react';
+import { Monitor, Zap, Pin, Save, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import type { HudPresetMode } from '@/lib/theme';
+import { Input } from '@/components/ui/input';
+import type { HudPresetMode, HudLayoutPreset, SavedHudLayout } from '@/lib/theme';
+import { useToast } from '@/hooks/use-toast';
 
 interface ThemeHudControlsProps {
   hudOpacity: number;
@@ -13,11 +15,19 @@ interface ThemeHudControlsProps {
   showHud: boolean;
   hudPreset: HudPresetMode;
   hudAnimationsEnabled: boolean;
+  hudLayoutPreset: HudLayoutPreset;
+  hudPinned: boolean;
+  savedLayouts: SavedHudLayout[];
   onHudOpacityChange: (value: number) => void;
   onHudBlurChange: (value: number) => void;
   onShowHudChange: (enabled: boolean) => void;
   onHudPresetChange: (preset: HudPresetMode) => void;
   onHudAnimationsEnabledChange: (enabled: boolean) => void;
+  onHudLayoutPresetChange: (preset: HudLayoutPreset) => void;
+  onHudPinnedChange: (pinned: boolean) => void;
+  onSaveLayout: (name: string) => void;
+  onLoadLayout: (name: string) => void;
+  onDeleteLayout: (name: string) => void;
 }
 
 export function ThemeHudControls({
@@ -26,20 +36,47 @@ export function ThemeHudControls({
   showHud,
   hudPreset,
   hudAnimationsEnabled,
+  hudLayoutPreset,
+  hudPinned,
+  savedLayouts,
   onHudOpacityChange,
   onHudBlurChange,
   onShowHudChange,
   onHudPresetChange,
   onHudAnimationsEnabledChange,
+  onHudLayoutPresetChange,
+  onHudPinnedChange,
+  onSaveLayout,
+  onLoadLayout,
+  onDeleteLayout,
 }: ThemeHudControlsProps) {
   const [localOpacity, setLocalOpacity] = useState(hudOpacity);
   const [localBlur, setLocalBlur] = useState(hudBlur);
+  const [layoutName, setLayoutName] = useState('');
+  const { toast } = useToast();
 
   const presets: Array<{ mode: HudPresetMode; label: string }> = [
     { mode: 'minimal', label: 'Minimal' },
     { mode: 'standard', label: 'Standard' },
     { mode: 'full', label: 'Full' },
   ];
+
+  const layoutPresets: Array<{ mode: HudLayoutPreset; label: string }> = [
+    { mode: 'top-right', label: 'Top Right' },
+    { mode: 'bottom-right', label: 'Bottom Right' },
+    { mode: 'bottom-left', label: 'Bottom Left' },
+    { mode: 'center', label: 'Center' },
+  ];
+
+  const handleSaveLayout = () => {
+    if (!layoutName.trim()) {
+      toast({ title: 'Enter a name', description: 'Please enter a name for the layout', variant: 'destructive' });
+      return;
+    }
+    onSaveLayout(layoutName.trim());
+    setLayoutName('');
+    toast({ title: 'Layout saved', description: `"${layoutName}" saved successfully` });
+  };
 
   return (
     <div className="space-y-6 rounded-xl border border-border/40 bg-card/50 p-5 shadow-md backdrop-blur-sm">
@@ -141,6 +178,93 @@ export function ThemeHudControls({
                 onCheckedChange={onHudAnimationsEnabledChange} 
               />
             </div>
+
+            <div className="space-y-3 pt-3 border-t border-border/30">
+              <Label className="text-sm font-medium text-foreground/90">Layout Position</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {layoutPresets.map((preset) => (
+                  <Button
+                    key={preset.mode}
+                    type="button"
+                    variant={hudLayoutPreset === preset.mode ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => onHudLayoutPresetChange(preset.mode)}
+                  >
+                    {preset.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-border/40 bg-card/30 p-3">
+              <div className="flex items-center gap-2">
+                <Pin className="h-4 w-4 text-primary" />
+                <Label htmlFor="hud-pinned" className="text-sm font-medium text-foreground/90">
+                  Pin Panel
+                </Label>
+              </div>
+              <Switch 
+                id="hud-pinned" 
+                checked={hudPinned} 
+                onCheckedChange={onHudPinnedChange} 
+              />
+            </div>
+
+            <div className="space-y-3 pt-3 border-t border-border/30">
+              <Label className="text-sm font-medium text-foreground/90">Save Custom Layout</Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Layout name..."
+                  value={layoutName}
+                  onChange={(e) => setLayoutName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSaveLayout()}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleSaveLayout}
+                  disabled={!layoutName.trim()}
+                >
+                  <Save className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {savedLayouts.length > 0 && (
+              <div className="space-y-3 pt-3 border-t border-border/30">
+                <Label className="text-sm font-medium text-foreground/90">Saved Layouts</Label>
+                <div className="space-y-2">
+                  {savedLayouts.map((layout) => (
+                    <div
+                      key={layout.name}
+                      className="flex items-center justify-between rounded-lg border border-border/40 bg-card/30 p-2"
+                    >
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onLoadLayout(layout.name)}
+                        className="flex-1 justify-start"
+                      >
+                        {layout.name}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          onDeleteLayout(layout.name);
+                          toast({ title: 'Layout deleted', description: `"${layout.name}" removed` });
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
