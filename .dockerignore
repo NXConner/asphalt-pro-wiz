@@ -1,3 +1,5 @@
+# Pavement Performance Suite Docker context exclusions.
+
 # Dependencies
 node_modules
 bun.lockb
