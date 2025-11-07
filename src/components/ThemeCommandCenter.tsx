@@ -23,7 +23,6 @@ export function ThemeCommandCenter() {
           type="button"
           variant="secondary"
           size="lg"
-          className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
         >
           <Palette className="mr-2 h-4 w-4" /> Theme Lab
         </Button>

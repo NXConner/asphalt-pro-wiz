@@ -61,7 +61,7 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
                 value={job.name}
                 placeholder="St. Mark Sanctuary"
                 onChange={(event) => job.setName(event.target.value)}
-                className="mt-1 bg-white/10 text-base text-slate-50 placeholder:text-slate-200/50"
+                className="mt-1 bg-secondary/80 text-base text-secondary-foreground placeholder:text-muted-foreground/60"
               />
             </fieldset>
             <fieldset>
@@ -76,15 +76,12 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
                 value={job.address}
                 placeholder="Search or type address"
                 onChange={(event) => job.setAddress(event.target.value)}
-                className="mt-1 bg-white/10 text-base text-slate-50 placeholder:text-slate-200/50"
+                className="mt-1 bg-secondary/80 text-base text-secondary-foreground placeholder:text-muted-foreground/60"
               />
             </fieldset>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             <fieldset>
-              <Label className="text-xs uppercase tracking-wide text-slate-200/70">
-                Job Status
-              </Label>
               <Label
                 htmlFor="jobStatus"
                 className="text-xs uppercase tracking-wide text-slate-200/70"
@@ -94,7 +91,7 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
               <Select value={job.status} onValueChange={(value: JobStatus) => job.setStatus(value)}>
                 <SelectTrigger
                   id="jobStatus"
-                  className="mt-1 h-10 bg-white/10 text-slate-50"
+                  className="mt-1 h-10 bg-secondary/80 text-secondary-foreground"
                   aria-label="Select job status"
                 >
                   <SelectValue />
@@ -120,7 +117,7 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
                 value={job.competitor}
                 placeholder="Optional"
                 onChange={(event) => job.setCompetitor(event.target.value)}
-                className="mt-1 bg-white/10 text-base text-slate-50 placeholder:text-slate-200/50"
+                className="mt-1 bg-secondary/80 text-base text-secondary-foreground placeholder:text-muted-foreground/60"
               />
             </fieldset>
             <fieldset>
@@ -133,8 +130,8 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
               <Button
                 id="refreshButton"
                 type="button"
-                variant="outline"
-                className="mt-1 h-10 border-white/30 bg-white/10 text-slate-50 hover:bg-white/20"
+                variant="secondary"
+                className="mt-1 h-10"
                 onClick={() =>
                   job.handleAddressUpdate(job.coords ?? job.businessCoords, job.address)
                 }

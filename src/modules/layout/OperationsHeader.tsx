@@ -285,7 +285,6 @@ export const OperationsHeader = memo(function OperationsHeader({
             asChild
             variant="secondary"
             size="lg"
-            className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
           >
             <Link to="/admin">
               <Shield className="mr-2 h-4 w-4" />
@@ -297,7 +296,6 @@ export const OperationsHeader = memo(function OperationsHeader({
           type="button"
           variant="secondary"
           size="lg"
-          className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
           onClick={onNextWallpaper}
         >
           <SwitchCamera className="mr-2 h-4 w-4" />
@@ -307,7 +305,6 @@ export const OperationsHeader = memo(function OperationsHeader({
           type="button"
           variant="secondary"
           size="lg"
-          className="border-white/10 bg-white/10 text-slate-50 hover:bg-white/20"
           onClick={handleAuthAction}
           title={isAuthenticated ? user?.email || undefined : 'Sign in'}
         >
