@@ -21,6 +21,16 @@ const globalShortcuts: ShortcutConfig[] = [
     description: 'Open command palette',
   },
   {
+    key: 'h',
+    ctrl: true,
+    callback: () => {
+      // Toggle HUD overlay
+      const event = new CustomEvent('toggleHud');
+      window.dispatchEvent(event);
+    },
+    description: 'Toggle HUD overlay',
+  },
+  {
     key: '/',
     callback: () => {
       // Focus search

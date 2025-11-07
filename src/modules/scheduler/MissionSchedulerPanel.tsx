@@ -16,6 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { schedulerSyncAvailable } from '@/modules/scheduler/persistence';
 
 interface MissionSchedulerPanelProps {
@@ -115,12 +116,17 @@ export function MissionSchedulerPanel({ coords }: MissionSchedulerPanelProps) {
               </div>
             </div>
             <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
+              <Label htmlFor="ics-file-upload" className="sr-only">
+                Import Worship Calendar File
+              </Label>
               <input
+                id="ics-file-upload"
                 ref={fileInputRef}
                 type="file"
                 accept=".ics,text/calendar"
                 className="hidden"
                 onChange={handleIcsFileChange}
+                aria-label="Import worship calendar file (.ics format)"
               />
               <Button
                 type="button"

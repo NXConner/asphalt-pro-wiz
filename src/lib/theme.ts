@@ -8,6 +8,8 @@ import {
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type ThemeName = ThemeNameFromTokens;
 
+export type HudPresetMode = 'minimal' | 'standard' | 'full' | 'custom';
+
 export interface ThemePreferences {
   mode: ThemeMode;
   name: ThemeName;
@@ -25,6 +27,8 @@ export interface ThemePreferences {
   hudOpacity: number;
   hudBlur: number;
   showHud: boolean;
+  hudPreset: HudPresetMode;
+  hudAnimationsEnabled: boolean;
 }
 
 export type ThemeWallpaperSelection =
@@ -59,6 +63,8 @@ const createDefaults = (): ThemePreferences => {
     hudOpacity: 0.8,
     hudBlur: 12,
     showHud: true,
+    hudPreset: 'standard',
+    hudAnimationsEnabled: true,
   };
 };
 
@@ -151,6 +157,12 @@ export function applyThemePreferences(prefs: ThemePreferences): void {
     root.classList.add('high-contrast');
   } else {
     root.classList.remove('high-contrast');
+  }
+  
+  if (resolved.hudAnimationsEnabled) {
+    root.classList.remove('reduce-motion');
+  } else {
+    root.classList.add('reduce-motion');
   }
 
   if (resolved.useHueOverride && Number.isFinite(resolved.primaryHue)) {
@@ -329,6 +341,43 @@ export function setShowHud(enabled: boolean): void {
   const next = coerceWallpaper({ ...prefs, showHud: enabled });
   saveThemePreferences(next);
   applyThemePreferences(next);
+}
+
+export function setHudPreset(preset: HudPresetMode): void {
+  const prefs = loadThemePreferences();
+  let next: ThemePreferences;
+  
+  switch (preset) {
+    case 'minimal':
+      next = { ...prefs, hudOpacity: 0.5, hudBlur: 4, hudPreset: preset };
+      break;
+    case 'standard':
+      next = { ...prefs, hudOpacity: 0.8, hudBlur: 12, hudPreset: preset };
+      break;
+    case 'full':
+      next = { ...prefs, hudOpacity: 0.95, hudBlur: 20, hudPreset: preset };
+      break;
+    default:
+      next = { ...prefs, hudPreset: 'custom' };
+  }
+  
+  next = coerceWallpaper(next);
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudAnimationsEnabled(enabled: boolean): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, hudAnimationsEnabled: enabled });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+  
+  // Apply animation state to document
+  if (enabled) {
+    document.documentElement.classList.remove('reduce-motion');
+  } else {
+    document.documentElement.classList.add('reduce-motion');
+  }
 }
 
 export function resetThemePreferences(): ThemePreferences {

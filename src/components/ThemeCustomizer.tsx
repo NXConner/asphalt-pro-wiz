@@ -32,6 +32,8 @@ export function ThemeCustomizer() {
     setHudOpacity,
     setHudBlur,
     setShowHud,
+    setHudPreset,
+    setHudAnimationsEnabled,
     reset,
   } = useTheme();
   const { builtin, custom, addWallpaper, removeWallpaper, getById } = useWallpaperLibrary();
@@ -172,6 +174,8 @@ export function ThemeCustomizer() {
             hudOpacity={localHudOpacity}
             hudBlur={localHudBlur}
             showHud={preferences.showHud}
+            hudPreset={preferences.hudPreset}
+            hudAnimationsEnabled={preferences.hudAnimationsEnabled}
             onHudOpacityChange={(value) => {
               setLocalHudOpacity(value);
               setHudOpacity(value);
@@ -181,6 +185,8 @@ export function ThemeCustomizer() {
               setHudBlur(value);
             }}
             onShowHudChange={setShowHud}
+            onHudPresetChange={setHudPreset}
+            onHudAnimationsEnabledChange={setHudAnimationsEnabled}
           />
           <ThemeWallpaperManager
             builtin={builtin}

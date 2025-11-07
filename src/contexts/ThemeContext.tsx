@@ -15,11 +15,14 @@ import {
   setHudOpacity as persistHudOpacity,
   setHudBlur as persistHudBlur,
   setShowHud as persistShowHud,
+  setHudPreset as persistHudPreset,
+  setHudAnimationsEnabled as persistHudAnimationsEnabled,
   resetThemePreferences,
   type ThemePreferences,
   type ThemeMode,
   type ThemeName,
   type ThemeWallpaperSelection,
+  type HudPresetMode,
 } from '@/lib/theme';
 
 interface ThemeContextValue {
@@ -36,6 +39,8 @@ interface ThemeContextValue {
   setHudOpacity: (opacity: number) => void;
   setHudBlur: (blur: number) => void;
   setShowHud: (enabled: boolean) => void;
+  setHudPreset: (preset: HudPresetMode) => void;
+  setHudAnimationsEnabled: (enabled: boolean) => void;
   reset: () => void;
 }
 
@@ -54,9 +59,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         setPreferences(loadThemePreferences());
       }
     };
+    
+    const handleToggleHud = () => {
+      persistShowHud(!preferences.showHud);
+      syncPreferences();
+    };
+    
     window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, []);
+    window.addEventListener('toggleHud', handleToggleHud);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('toggleHud', handleToggleHud);
+    };
+  }, [preferences.showHud]);
 
   const syncPreferences = () => {
     setPreferences(loadThemePreferences());
@@ -110,6 +125,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     },
     setShowHud: (enabled) => {
       persistShowHud(enabled);
+      syncPreferences();
+    },
+    setHudPreset: (preset) => {
+      persistHudPreset(preset);
+      syncPreferences();
+    },
+    setHudAnimationsEnabled: (enabled) => {
+      persistHudAnimationsEnabled(enabled);
       syncPreferences();
     },
     reset: () => {

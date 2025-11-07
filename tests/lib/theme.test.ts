@@ -15,6 +15,7 @@ describe('theme', () => {
     expect(document.documentElement.classList.contains('dark')).toBe(true);
     expect(document.documentElement.style.getPropertyValue('--primary')).not.toBe('');
     expect(document.documentElement.style.getPropertyValue('--radius')).toBe('8px');
+    expect(document.documentElement.classList.contains('reduce-motion')).toBe(false);
   });
 
   it('hydrates wallpaper variables and body class', () => {
