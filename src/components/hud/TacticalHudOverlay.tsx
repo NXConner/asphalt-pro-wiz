@@ -641,8 +641,8 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
               'rounded-full border border-primary/40 px-3 py-1 text-[0.72rem] font-semibold tracking-[0.35em]',
               'bg-primary/10 text-primary-foreground',
             )}
-              initial={accentMotion.initial}
-              animate={accentMotion.animate}
+              initial={accentMotion.initial as any}
+              animate={accentMotion.animate as any}
               transition={accentTransition as any}
           >
             {missionGlyph}
@@ -674,7 +674,7 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
                 opacity: alertMotion.initial?.opacity ?? 0,
                 y: (alertMotion.initial?.y as number) ?? -20,
                 ...(alertMotion.initial ?? {}),
-              }}
+              } as any}
               animate={{
                 ...(alertMotion.animate ?? {}),
                 opacity: 1,
@@ -704,7 +704,7 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
                 opacity: alertMotion.exit?.opacity ?? 0,
                 y: (alertMotion.exit?.y as number) ?? -20,
                 ...(alertMotion.exit ?? {}),
-              }}
+              } as any}
               transition={alertTransition as any}
             className={cn(
               'absolute top-16 left-4 right-4 rounded-lg border p-3 text-sm backdrop-blur-sm z-50',
@@ -722,8 +722,8 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
         {(!isMobile || isExpanded) && (
           <motion.div
             className="flex-1 space-y-3 overflow-y-auto p-4"
-            initial={panelMotion.initial}
-            animate={panelMotion.animate}
+            initial={panelMotion.initial as any}
+            animate={panelMotion.animate as any}
             transition={panelTransition as any}
           >
           {/* Mini Mode - Compact View */}
@@ -749,7 +749,7 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
                       {environment.riskLevel}
                     </span>
                   )}
-          </motion.div>
+                </div>
               )}
             </div>
           ) : (
@@ -852,7 +852,7 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
           )}
             </>
           )}
-        </div>
+        </motion.div>
       )}
 
       {/* Footer - compact view on mobile when collapsed */}
