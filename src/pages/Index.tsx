@@ -1,11 +1,10 @@
 import { Shield } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-
-import { KeyboardShortcutsModal } from '@/components/KeyboardShortcutsModal';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ComplianceResources, type ComplianceTopic } from '@/components/ComplianceResources';
 import { HudWrapper } from '@/components/hud/HudWrapper';
 import { type TacticalHudOverlayProps } from '@/components/hud/TacticalHudOverlay';
+import { KeyboardShortcutsModal } from '@/components/KeyboardShortcutsModal';
 import { Button } from '@/components/ui/button';
 import { EngagementHubPanel } from '@/modules/engagement/EngagementHubPanel';
 import { EstimatorStudio } from '@/modules/estimate/EstimatorStudio';
@@ -17,7 +16,10 @@ import { OperationsHeader } from '@/modules/layout/OperationsHeader';
 import { DEFAULT_WALLPAPER, getNextWallpaper, getWallpaperById } from '@/modules/layout/wallpapers';
 import { MissionControlPanel } from '@/modules/mission-control/MissionControlPanel';
 
-const Index = () => {
+/**
+ * Main Index page component - Optimized with memo and callbacks
+ */
+const Index = memo(() => {
   const estimator = useEstimatorState();
   const [wallpaperId, setWallpaperId] = useState(DEFAULT_WALLPAPER.id);
   const wallpaper = useMemo(() => getWallpaperById(wallpaperId), [wallpaperId]);
@@ -148,15 +150,15 @@ const Index = () => {
     estimator.areas.total,
   ]);
 
-  const cycleWallpaper = () => {
+  const cycleWallpaper = useCallback(() => {
     const next = getNextWallpaper(wallpaperId);
     setWallpaperId(next.id);
-  };
+  }, [wallpaperId]);
 
-  const openCompliance = (topic: ComplianceTopic) => {
+  const openCompliance = useCallback((topic: ComplianceTopic) => {
     setComplianceTopic(topic);
     setComplianceOpen(true);
-  };
+  }, []);
 
   useEffect(() => {
     const handleOpenShortcuts = () => setShortcutsOpen(true);
@@ -259,6 +261,8 @@ const Index = () => {
       <KeyboardShortcutsModal open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
     </>
   );
-};
+});
+
+Index.displayName = 'Index';
 
 export default Index;

@@ -1,16 +1,18 @@
 import { motion } from 'framer-motion';
 import { memo, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
-import { resolveHudAnimationPreset } from '@/design';
-import { cn } from '@/lib/utils';
+import { HudAlerts } from './HudAlerts';
+import { HudFooter } from './HudFooter';
+import { HudFullContent } from './HudFullContent';
+import { HudHeader } from './HudHeader';
+import { HudMiniContent } from './HudMiniContent';
+
 import { useTheme } from '@/contexts/ThemeContext';
+import { resolveHudAnimationPreset } from '@/design';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useHudGestures } from '@/hooks/useHudGestures';
-import { HudHeader } from './HudHeader';
-import { HudAlerts } from './HudAlerts';
-import { HudMiniContent } from './HudMiniContent';
-import { HudFullContent } from './HudFullContent';
-import { HudFooter } from './HudFooter';
+import { cn } from '@/lib/utils';
+
 
 const currencyFormatter = new Intl.NumberFormat(undefined, {
   style: 'currency',
@@ -194,6 +196,7 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
       clampPosition,
       preferences.hudGridSize,
       preferences.hudPosition,
+      preferences.hudPinned,
       setHudPosition,
       triggerAlert,
     ]);

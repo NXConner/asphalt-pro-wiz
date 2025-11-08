@@ -2,8 +2,8 @@ import { motion } from 'framer-motion';
 import { GripVertical, Pin, PinOff, Bookmark, Zap, AlertCircle, Maximize2, Minimize2 } from 'lucide-react';
 import { memo } from 'react';
 
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface HudHeaderProps {
   missionName: string;

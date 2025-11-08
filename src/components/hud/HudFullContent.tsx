@@ -1,8 +1,9 @@
 import { Sparkles, TimerReset } from 'lucide-react';
 import { memo } from 'react';
 
-import { cn } from '@/lib/utils';
 import { CollapsibleHudSection } from './CollapsibleHudSection';
+
+import { cn } from '@/lib/utils';
 
 interface HudFullContentProps {
   formattedCost: string;

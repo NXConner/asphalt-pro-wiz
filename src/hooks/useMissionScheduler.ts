@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'r
 import { toast } from 'sonner';
 
 import { logError, logEvent } from '@/lib/logging';
+import { extractWorshipBlackouts } from '@/modules/scheduler/ics';
 import {
   deleteBlackout,
   deleteCrewMember,
@@ -31,7 +32,6 @@ import type {
   WorshipImportOptions,
   WorshipImportResult,
 } from '@/modules/scheduler/types';
-import { extractWorshipBlackouts } from '@/modules/scheduler/ics';
 
 export type MissionConflictType =
   | 'crew-overlap'

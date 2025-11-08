@@ -1,5 +1,7 @@
-import { useState } from 'react';
 import { Command, Search, X } from 'lucide-react';
+import { useState } from 'react';
+
+import { Kbd } from '@/components/common/Kbd';
 import {
   Dialog,
   DialogContent,
@@ -9,7 +11,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Kbd } from '@/components/common/Kbd';
 import { useKeyboard } from '@/contexts/KeyboardContext';
 
 interface KeyboardShortcutsModalProps {

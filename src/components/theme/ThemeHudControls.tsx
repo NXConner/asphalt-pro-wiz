@@ -15,11 +15,14 @@ import {
 } from 'lucide-react';
 import { useRef, useState, type ChangeEvent } from 'react';
 
+import { Kbd } from '@/components/common/Kbd';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { exportHudConfigArchive, importHudConfigArchive } from '@/lib/hudConfigSync';
 import type {
   HudPresetMode,
   HudLayoutPreset,
@@ -34,9 +37,6 @@ import type {
   HudMultiMonitorStrategy,
   ThemePreferences,
 } from '@/lib/theme';
-import { useToast } from '@/hooks/use-toast';
-import { Kbd } from '@/components/common/Kbd';
-import { exportHudConfigArchive, importHudConfigArchive } from '@/lib/hudConfigSync';
 
 interface ThemeHudControlsProps {
   hudOpacity: number;

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { CustomService } from '@/components/CustomServices';
+import { isSupabaseConfigured } from '@/integrations/supabase/client';
 import {
   calculateDistance,
   calculateProject,
@@ -21,7 +22,6 @@ import {
 } from '@/lib/locations';
 import { logError, logEvent } from '@/lib/logging';
 import { getServiceById } from '@/lib/serviceCatalog';
-import { isSupabaseConfigured } from '@/integrations/supabase/client';
 import { persistEstimateResult } from '@/modules/estimate/persistence';
 
 export type AreaShape = 'rectangle' | 'triangle' | 'circle' | 'drawn' | 'manual' | 'image';

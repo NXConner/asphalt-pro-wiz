@@ -15,21 +15,34 @@ try {
 
 // Session bootstrap logging
 try {
-  setLogContext({ appVersion: (import.meta as any)?.env?.VITE_APP_VERSION });
+  const env = import.meta.env as Record<string, string | undefined>;
+  setLogContext({ appVersion: env.VITE_APP_VERSION });
   logEvent('app.start');
-} catch {}
+} catch {
+  // Ignore logging errors during bootstrap
+}
 
-createRoot(document.getElementById('root')!).render(<App />);
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error('Root element not found');
+}
+
+createRoot(rootElement).render(<App />);
 
 // Web-vitals (lazy) with sampling
-if ((import.meta as any)?.env?.VITE_ENABLE_WEB_VITALS) {
+const env = import.meta.env as Record<string, string | undefined>;
+if (env.VITE_ENABLE_WEB_VITALS === 'true') {
   import('web-vitals').then(({ onCLS, onLCP, onFCP, onTTFB, onINP }) => {
     try {
       onCLS((m) => logVital('CLS', m.value, m.id));
       onLCP((m) => logVital('LCP', m.value, m.id));
-      onFCP?.((m: any) => logVital('FCP', m.value, m.id));
-      onTTFB?.((m: any) => logVital('TTFB', m.value, m.id));
-      onINP?.((m: any) => logVital('INP', m.value, m.id));
-    } catch {}
+      onFCP?.((m) => logVital('FCP', m.value, m.id));
+      onTTFB?.((m) => logVital('TTFB', m.value, m.id));
+      onINP?.((m) => logVital('INP', m.value, m.id));
+    } catch {
+      // Ignore web vitals errors
+    }
+  }).catch(() => {
+    // Ignore import errors for web-vitals
   });
 }

@@ -50,6 +50,9 @@ export function useHudGestures<T extends HTMLElement>(
     if (!enabled) return;
     const element = ref.current;
     if (!element) return;
+    
+    // Capture ref at effect start for cleanup
+    const pointers = pointersRef.current;
 
     const handlePointerDown = (event: PointerEvent) => {
       element.setPointerCapture(event.pointerId);
@@ -156,7 +159,10 @@ export function useHudGestures<T extends HTMLElement>(
       element.removeEventListener('pointermove', handlePointerMove);
       element.removeEventListener('pointerup', handlePointerUp);
       element.removeEventListener('pointercancel', handlePointerCancel);
-      pointersRef.current.clear();
+      // Clear pointers captured at effect start
+      if (pointers) {
+        pointers.clear();
+      }
       swipeOriginRef.current = null;
     };
   }, [enabled, thresholds, ref, onPinch, onSwipe, onTap]);

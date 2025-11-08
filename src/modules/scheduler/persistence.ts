@@ -1,7 +1,7 @@
 import { isSupabaseConfigured, supabase } from '@/integrations/supabase/client';
+import type { MissionCrewMemberRow, MissionTaskRow } from '@/integrations/supabase/types-helpers';
 import { logError, logEvent } from '@/lib/logging';
 import { getCurrentUserId, resolveOrgId } from '@/lib/supabaseOrg';
-import type { MissionCrewMemberRow, MissionTaskRow } from '@/integrations/supabase/types-helpers';
 import type { BlackoutWindow, CrewMember, MissionTask } from '@/modules/scheduler/types';
 
 const DEFAULT_AVAILABILITY: CrewMember['availability'] = [
