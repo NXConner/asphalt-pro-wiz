@@ -1,14 +1,16 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, TimerReset, ChevronDown, Maximize2, Minimize2, GripVertical, Pin, PinOff, Zap, Bookmark, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { memo, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
-import { mergeHudTypography, resolveHudAnimationPreset } from '@/design';
+import { resolveHudAnimationPreset } from '@/design';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { CollapsibleHudSection } from './CollapsibleHudSection';
-import { Button } from '@/components/ui/button';
 import { useHudGestures } from '@/hooks/useHudGestures';
+import { HudHeader } from './HudHeader';
+import { HudAlerts } from './HudAlerts';
+import { HudMiniContent } from './HudMiniContent';
+import { HudFullContent } from './HudFullContent';
+import { HudFooter } from './HudFooter';
 
 const currencyFormatter = new Intl.NumberFormat(undefined, {
   style: 'currency',
@@ -570,350 +572,69 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
         transition: preferences.hudAnimationsEnabled ? 'backdrop-filter 0.3s ease, background-color 0.3s ease' : 'none',
       }}
     >
-      {/* Header with drag handle and expand/collapse */}
-      <header className="flex items-center gap-3 border-b border-border/30 p-4 touch-manipulation">
-        {!isMobile && (
-          <button
-            className={cn(
-              'touch-none',
-              preferences.hudPinned ? 'cursor-not-allowed' : 'cursor-grab active:cursor-grabbing'
-            )}
-            aria-label={preferences.hudPinned ? 'HUD is pinned' : 'Drag to reposition HUD'}
-            disabled={preferences.hudPinned}
-          >
-            <GripVertical className={cn('h-5 w-5', preferences.hudPinned ? 'text-muted-foreground/40' : 'text-muted-foreground')} />
-          </button>
-        )}
-        <div className="flex-1 min-w-0">
-          <h2 className="truncate text-base font-semibold uppercase tracking-wide text-foreground">
-            {missionName || 'Mission Brief'}
-          </h2>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {!isMobile && preferences.hudQuickShortcuts && (
-            <>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => handleQuickAction('bookmark')}
-                className="h-8 w-8 p-0"
-                aria-label="Bookmark location"
-              >
-                <Bookmark className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => handleQuickAction('refresh')}
-                className="h-8 w-8 p-0"
-                aria-label="Refresh data"
-              >
-                <Zap className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => handleQuickAction('alert')}
-                className="h-8 w-8 p-0"
-                aria-label="Trigger alert"
-              >
-                <AlertCircle className="h-4 w-4" />
-              </Button>
-            </>
-          )}
-          {!isMobile && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setHudPinned(!preferences.hudPinned)}
-              className="h-8 w-8 p-0"
-              aria-label={preferences.hudPinned ? 'Unpin HUD' : 'Pin HUD'}
-            >
-              {preferences.hudPinned ? (
-                <Pin className="h-4 w-4 text-primary" />
-              ) : (
-                <PinOff className="h-4 w-4" />
-              )}
-            </Button>
-          )}
-            <motion.span
-            className={cn(
-              'rounded-full border border-primary/40 px-3 py-1 text-[0.72rem] font-semibold tracking-[0.35em]',
-              'bg-primary/10 text-primary-foreground',
-            )}
-              initial={accentMotion.initial as any}
-              animate={accentMotion.animate as any}
-              transition={accentTransition as any}
-          >
-            {missionGlyph}
-            </motion.span>
-          {isMobile && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="h-9 w-9 p-0"
-              aria-label={isExpanded ? 'Collapse HUD' : 'Expand HUD'}
-            >
-              {isExpanded ? (
-                <Minimize2 className="h-4 w-4" />
-              ) : (
-                <Maximize2 className="h-4 w-4" />
-              )}
-            </Button>
-          )}
-        </div>
-      </header>
+      {/* Header */}
+      <HudHeader
+        missionName={missionName}
+        missionGlyph={missionGlyph}
+        isMobile={isMobile}
+        isPinned={preferences.hudPinned}
+        isExpanded={isExpanded}
+        showQuickShortcuts={preferences.hudQuickShortcuts}
+        accentMotion={accentMotion}
+        accentTransition={accentTransition}
+        onTogglePin={() => setHudPinned(!preferences.hudPinned)}
+        onToggleExpand={() => setIsExpanded(!isExpanded)}
+        onQuickAction={handleQuickAction}
+      />
 
       {/* Alerts */}
-      <AnimatePresence>
-        {alerts.map((alert) => (
-          <motion.div
-            key={alert.id}
-              initial={{
-                opacity: alertMotion.initial?.opacity ?? 0,
-                y: (alertMotion.initial?.y as number) ?? -20,
-                ...(alertMotion.initial ?? {}),
-              } as any}
-              animate={{
-                ...(alertMotion.animate ?? {}),
-                opacity: 1,
-                y: 0,
-              ...(preferences.hudAlertAnimation === 'pulse' && {
-                scale: [1, 1.05, 1],
-                transition: { repeat: 2, duration: 0.5 }
-              }),
-              ...(preferences.hudAlertAnimation === 'shake' && {
-                x: [0, -10, 10, -10, 10, 0],
-                transition: { duration: 0.5 }
-              }),
-              ...(preferences.hudAlertAnimation === 'bounce' && {
-                y: [0, -10, 0],
-                transition: { repeat: 2, duration: 0.3 }
-              }),
-              ...(preferences.hudAlertAnimation === 'glow' && {
-                boxShadow: [
-                  '0 0 0px hsl(var(--primary) / 0)',
-                  '0 0 20px hsl(var(--primary) / 0.5)',
-                  '0 0 0px hsl(var(--primary) / 0)'
-                ],
-                transition: { repeat: 2, duration: 0.5 }
-              })
-            }}
-              exit={{
-                opacity: alertMotion.exit?.opacity ?? 0,
-                y: (alertMotion.exit?.y as number) ?? -20,
-                ...(alertMotion.exit ?? {}),
-              } as any}
-              transition={alertTransition as any}
-            className={cn(
-              'absolute top-16 left-4 right-4 rounded-lg border p-3 text-sm backdrop-blur-sm z-50',
-              alert.type === 'error' && 'border-destructive bg-destructive/20 text-destructive-foreground',
-              alert.type === 'warning' && 'border-warning bg-warning/20 text-warning-foreground',
-              alert.type === 'info' && 'border-primary bg-primary/20 text-primary-foreground'
-            )}
-          >
-            {alert.message}
-          </motion.div>
-        ))}
-      </AnimatePresence>
+      <HudAlerts
+        alerts={alerts}
+        alertAnimation={preferences.hudAlertAnimation}
+        alertMotion={alertMotion}
+        alertTransition={alertTransition}
+      />
 
       {/* Body - collapsible on mobile */}
-        {(!isMobile || isExpanded) && (
-          <motion.div
-            className="flex-1 space-y-3 overflow-y-auto p-4"
-            initial={panelMotion.initial as any}
-            animate={panelMotion.animate as any}
-            transition={panelTransition as any}
-          >
-          {/* Mini Mode - Compact View */}
+      {(!isMobile || isExpanded) && (
+        <motion.div
+          className="flex-1 space-y-3 overflow-y-auto p-4"
+          initial={panelMotion.initial as any}
+          animate={panelMotion.animate as any}
+          transition={panelTransition as any}
+        >
           {preferences.hudMiniMode ? (
-            <div className="space-y-2">
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <span className="text-muted-foreground">Budget</span>
-                  <p className="font-semibold text-foreground">{formattedCost}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Area</span>
-                  <p className="font-semibold text-foreground">{formattedArea}</p>
-                </div>
-              </div>
-              {environment && (
-                <div className="flex items-center justify-between rounded-lg border border-border/40 bg-muted/20 px-2 py-1 text-xs">
-                  {typeof environment.tempF === 'number' && (
-                    <span className="text-foreground/85">{environment.tempF.toFixed(0)}°F</span>
-                  )}
-                  {environment.riskLevel && (
-                    <span className={cn('uppercase text-[0.65rem]', riskTone[environment.riskLevel])}>
-                      {environment.riskLevel}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
+            <HudMiniContent
+              formattedCost={formattedCost}
+              formattedArea={formattedArea}
+              environment={environment}
+            />
           ) : (
-            <>
-              {/* Mission Details */}
-              <CollapsibleHudSection title="Mission Details" defaultOpen={true}>
-            <div className="grid gap-3">
-              <OverlayMetric label="Mission Budget" value={formattedCost} accent="accent" />
-              <OverlayMetric label="Surface Footprint" value={formattedArea} accent="secondary" />
-              <OverlayMetric label="Travel Logistics" value={formattedTravel} accent="primary" />
-            </div>
-
-            <div className="mt-3 grid gap-2">
-              <OverlayCallout
-                label="Site Coordinates"
-                value={formattedCoords}
-                icon={<Sparkles className="h-4 w-4" />}
-              />
-              <OverlayCallout
-                label="Schedule Window"
-                value={formattedWindow}
-                icon={<TimerReset className="h-4 w-4" />}
-              />
-            </div>
-          </CollapsibleHudSection>
-
-          {/* Telemetry */}
-          <CollapsibleHudSection 
-            title="Mission Telemetry" 
-            defaultOpen={!isMobile}
-          >
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Updated {updatedLabel}</span>
-                {missionPhase && (
-                  <span className="text-xs text-muted-foreground">{missionPhase}</span>
-                )}
-              </div>
-
-              {environment && (
-                <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border/40 bg-muted/20 px-3 py-2 text-xs">
-                  <span className="text-[0.58rem] text-muted-foreground uppercase tracking-wider">SITE CONDITIONS</span>
-                  {typeof environment.tempF === 'number' && (
-                    <span className="text-foreground/85">{environment.tempF.toFixed(0)}°F</span>
-                  )}
-                  {environment.conditions && (
-                    <span className="text-foreground/70">{environment.conditions}</span>
-                  )}
-                  {environment.riskLevel && (
-                    <span className={cn('uppercase tracking-[0.35em]', riskTone[environment.riskLevel])}>
-                      {environment.riskLevel} risk
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {watchers && watchers.length > 0 && (
-                <div className="grid gap-2">
-                  {watchers.map((watcher) => (
-                    <div
-                      key={watcher.label}
-                      className="flex items-center justify-between rounded-xl border border-border/40 bg-muted/20 px-3 py-2"
-                    >
-                      <span className="text-xs text-muted-foreground">{watcher.label}</span>
-                      <span className={cn('text-sm uppercase tracking-[0.35em]', watcher.tone ? watcherTone[watcher.tone] : 'text-foreground')}>
-                        {watcher.value}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </CollapsibleHudSection>
-
-          {/* Flags */}
-          {flags && flags.length > 0 && (
-            <CollapsibleHudSection title="Active Flags" defaultOpen={!isMobile}>
-              <ul className="flex flex-wrap gap-2">
-                {flags.map((flag) => (
-                  <li
-                    key={flag.id}
-                    className={cn(
-                      'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.68rem]',
-                      flag.active
-                        ? 'border-success/50 bg-success/15 text-success-foreground'
-                        : 'border-border/30 bg-muted/20 text-muted-foreground',
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        'inline-block h-2.5 w-2.5 rounded-full',
-                        flag.active ? 'bg-success shadow-[0_0_12px_hsl(var(--success)/0.6)]' : 'bg-muted-foreground',
-                      )}
-                    />
-                    {flag.label}
-                  </li>
-                ))}
-              </ul>
-            </CollapsibleHudSection>
-          )}
-            </>
+            <HudFullContent
+              formattedCost={formattedCost}
+              formattedArea={formattedArea}
+              formattedTravel={formattedTravel}
+              formattedCoords={formattedCoords}
+              formattedWindow={formattedWindow}
+              updatedLabel={updatedLabel}
+              missionPhase={missionPhase}
+              isMobile={isMobile}
+              environment={environment}
+              watchers={watchers}
+              flags={flags}
+            />
           )}
         </motion.div>
       )}
 
       {/* Footer - compact view on mobile when collapsed */}
       {isMobile && !isExpanded && (
-        <div className="grid grid-cols-3 gap-2 border-t border-border/30 px-4 py-2 text-xs">
-          <div>
-            <span className="text-muted-foreground">Budget</span>
-            <p className="font-semibold text-foreground">{formattedCost}</p>
-          </div>
-          <div>
-            <span className="text-muted-foreground">Area</span>
-            <p className="font-semibold text-foreground">{formattedArea}</p>
-          </div>
-          <div>
-            <span className="text-muted-foreground">Travel</span>
-            <p className="font-semibold text-foreground">{formattedTravel}</p>
-          </div>
-        </div>
+        <HudFooter
+          formattedCost={formattedCost}
+          formattedArea={formattedArea}
+          formattedTravel={formattedTravel}
+        />
       )}
     </motion.div>
   );
 });
-
-interface OverlayMetricProps {
-  label: string;
-  value: string;
-  accent?: 'primary' | 'secondary' | 'accent';
-}
-
-function OverlayMetric({ label, value, accent = 'primary' }: OverlayMetricProps) {
-  const accentClass =
-    accent === 'primary'
-      ? 'text-primary-foreground'
-      : accent === 'secondary'
-        ? 'text-secondary-foreground'
-        : 'text-accent-foreground';
-
-  return (
-    <article className="rounded-xl border border-border/40 bg-muted/20 px-3 py-2.5">
-      <span className="text-[0.58rem] text-muted-foreground uppercase tracking-wider">{label}</span>
-      <p className={cn('mt-1 text-sm font-mono', accentClass)}>{value}</p>
-    </article>
-  );
-}
-
-interface OverlayCalloutProps {
-  label: string;
-  value: string;
-  icon?: React.ReactNode;
-}
-
-function OverlayCallout({ label, value, icon }: OverlayCalloutProps) {
-  return (
-    <article className="flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/20 px-3 py-2.5">
-      <div>
-        <span className="text-[0.58rem] text-muted-foreground uppercase tracking-wider">{label}</span>
-        <p className="text-sm text-foreground/85 font-mono">{value}</p>
-      </div>
-      {icon && <span className="text-accent/80">{icon}</span>}
-    </article>
-  );
-}
-
-export type { OverlayMetricProps as TacticalHudOverlayMetricProps };
