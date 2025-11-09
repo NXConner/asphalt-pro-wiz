@@ -37,7 +37,8 @@ const Portal = lazy(() => import('./pages/Portal/Portal'));
 const CommandCenter = lazy(() => import('./pages/CommandCenter'));
 const Auth = lazy(() => import('./pages/Auth'));
 const AdminPanel = lazy(() => import('@/components/AdminPanel'));
-
+import Health from './pages/Health';
+import PreviewSafe from './pages/PreviewSafe';
 const queryClient = new QueryClient();
 
 function RouteTracker() {
@@ -99,6 +100,7 @@ const App = () => {
 
   const isPreviewEnv = isLovablePreviewRuntime();
   const Guard: React.ComponentType<{ children: React.ReactNode }> = isPreviewEnv ? Fragment : ProtectedRoute;
+  const routerBase = isPreviewEnv ? '/' : baseName;
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
@@ -129,7 +131,7 @@ const App = () => {
                             <MobileOptimizations />
                             <Toaster />
                             <Sonner />
-                            <BrowserRouter basename={baseName}>
+                            <BrowserRouter basename={routerBase}>
                               <CommandPalette />
                               {process.env.NODE_ENV === 'development' && <AccessibilityChecker />}
                               <RouteTracker />
@@ -144,12 +146,17 @@ const App = () => {
                               >
                                   <Routes>
                                     <Route path="/auth" element={<Auth />} />
+                                    <Route path="/health" element={<Health />} />
                                     <Route
                                       path="/"
                                       element={
-                                        <Guard>
-                                          <Index />
-                                        </Guard>
+                                        isPreviewEnv ? (
+                                          <PreviewSafe />
+                                        ) : (
+                                          <Guard>
+                                            <Index />
+                                          </Guard>
+                                        )
                                       }
                                     />
                                     <Route
