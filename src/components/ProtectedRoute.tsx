@@ -36,7 +36,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   // In Lovable preview or when Supabase isn't configured (or demo mode), render children.
-  if (isLovablePreview || !isConfigured) {
+  if (isPreviewEnv || !isConfigured) {
     return <>{children}</>;
   }
 
