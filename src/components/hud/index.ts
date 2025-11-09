@@ -13,4 +13,9 @@ export * from './TacticalLoader';
 export * from './TacticalHudOverlay';
 export * from './HudWrapper';
 export * from './CollapsibleHudSection';
+export * from './HudHeader';
+export * from './HudAlerts';
+export * from './HudMiniContent';
+export * from './HudFullContent';
+export * from './HudFooter';
 

@@ -13,6 +13,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useHudGestures } from '@/hooks/useHudGestures';
 import { cn } from '@/lib/utils';
 
+
 const currencyFormatter = new Intl.NumberFormat(undefined, {
   style: 'currency',
   currency: 'USD',
@@ -218,6 +219,27 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay({
     }
   }, [isMobile, preferences.hudMultiMonitorStrategy, setHudMultiMonitorStrategy]);
 
+    }, [
+      preferences.hudLayoutPreset,
+      preferences.hudProfiles,
+      preferences.hudMultiMonitorStrategy,
+      isMobile,
+      setHudLayoutPreset,
+      setHudMultiMonitorStrategy,
+      clampPosition,
+      preferences.hudGridSize,
+      preferences.hudPosition,
+      preferences.hudPinned,
+      setHudPosition,
+      triggerAlert,
+    ]);
+  
+    useEffect(() => {
+      if (!isMobile) {
+        setHudMultiMonitorStrategy(preferences.hudMultiMonitorStrategy);
+      }
+    }, [isMobile, preferences.hudMultiMonitorStrategy, setHudMultiMonitorStrategy]);
+  
   const formattedCost = typeof totalCost === 'number' ? currencyFormatter.format(totalCost) : '—';
   const formattedArea =
     totalAreaSqFt > 0 ? `${numberFormatter.format(totalAreaSqFt)} sq ft` : 'Awaiting draw';
