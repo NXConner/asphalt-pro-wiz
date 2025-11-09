@@ -36,6 +36,9 @@ jobs:
       - name: Run E2E tests
         run: npm run test:e2e
 
+      - name: Run Lovable preview smoke
+        run: npm run test:preview
+
       - name: Build application
         run: npm run build
 

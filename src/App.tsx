@@ -25,6 +25,7 @@ import { trackPageView } from '@/lib/analytics';
 import { I18nProvider } from '@/lib/i18n';
 import { logEvent } from '@/lib/logging';
 import { initializeMonitoring } from '@/lib/monitoring';
+import { installLovableAssetMonitoring } from '@/lib/monitoring/lovableAssets';
 import { getRouterBaseName, subscribeToLovableConfig } from '@/lib/routing/basePath';
 
 // Route-level code splitting for faster initial load
@@ -93,6 +94,7 @@ const App = () => {
   const [baseName, setBaseName] = useState(getRouterBaseName);
 
   useEffect(() => subscribeToLovableConfig(setBaseName), []);
+  useEffect(() => installLovableAssetMonitoring(), []);
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
