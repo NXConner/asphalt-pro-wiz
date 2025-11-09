@@ -190,27 +190,26 @@ export const TacticalMap = memo(
             : null}
         </GoogleMap>
 
-        {enhancementsEnabled ? (
-          <TacticalOverlay
-            className="pointer-events-none absolute inset-0 rounded-2xl"
-            accentColor="rgba(255,145,0,0.85)"
-            backgroundTint="transparent"
-            showGrid
-            gridOpacity={0.2}
-            gridDensity={96}
-            showScanLines
-            scanLinesProps={{ opacity: 0.28, speedMs: 4200 }}
-            cornerProps={{ size: 32, thickness: 1.5, offset: 8, glow: false, animated: false }}
-            pulse={false}
-          >
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/30 to-slate-950/60" />
-            {showPulse ? (
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <span className="tactical-pulse-ring" />
-              </div>
-            ) : null}
-          </TacticalOverlay>
-        ) : null}
+          {enhancementsEnabled ? (
+            <TacticalOverlay
+              className="pointer-events-none absolute inset-0 rounded-2xl"
+              tone="dusk"
+              showGrid
+              gridOpacity={0.22}
+              gridDensity={96}
+              showScanLines
+              scanLinesProps={{ opacity: 0.32, speedMs: 4200 }}
+              cornerProps={{ size: 32, thickness: 1.5, offset: 8, glow: false, animated: false }}
+              pulse={false}
+            >
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/30 to-slate-950/60" />
+              {showPulse ? (
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <span className="tactical-pulse-ring" />
+                </div>
+              ) : null}
+            </TacticalOverlay>
+          ) : null}
 
         <div
           className="pointer-events-none absolute inset-0"
