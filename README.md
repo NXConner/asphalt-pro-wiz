@@ -164,6 +164,16 @@ Husky pre-commit hooks execute lint-staged, lint, typecheck, unit tests, and opt
 
 ## Load & Performance Testing
 
+### k6 Observability Beacon
+
+```bash
+LOG_BEACON_URL=https://your-project.supabase.co/functions/v1/log-beacon \
+LOG_BEACON_TOKEN=SUPABASE_JWT_OR_ANON_KEY \
+npx k6 run scripts/load/k6-observability.js
+```
+
+Sends synthetic `lovable.asset_*` telemetry into the Supabase Edge Function to validate ingestion latency, dedupe, and incident rollups. Tune intensity with `STAGE_MULTIPLIER` and export JSON summaries via `--summary-export`.
+
 ### k6 Mission Sweep
 
 ```bash
@@ -210,7 +220,7 @@ npm run android:gradle:debug
 1. `npm run security:scan`
 2. `npm run openapi:generate`
 3. `npm run test:e2e`
-4. Run load smoke (`k6` or `artillery`)
+4. Run load smoke (`k6-observability`, `k6-estimate`, or `artillery`)
 5. Update `CHANGELOG.md`
 
 ---
