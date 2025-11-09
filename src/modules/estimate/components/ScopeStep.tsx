@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { Loader2, Sparkles } from 'lucide-react';
+
 import AreaSection from '@/components/AreaSection';
 import ImageAreaAnalyzer from '@/components/ImageAreaAnalyzer';
 import { LayoutOptimizer } from '@/components/Optimizer/LayoutOptimizer';
@@ -5,6 +8,7 @@ import { ServiceCategories } from '@/components/ServiceCategories';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Select,
   SelectContent,
@@ -12,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { generateChat } from '@/lib/gemini';
 import type { EstimatorState } from '@/modules/estimate/useEstimatorState';
 
 interface ScopeStepProps {
@@ -22,6 +27,38 @@ interface ScopeStepProps {
 }
 
 export function ScopeStep({ areas, options, featureFlags, onNext }: ScopeStepProps) {
+  const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+
+  const handleAiSuggest = async () => {
+    if (!featureFlags.isEnabled('aiAssistant')) return;
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const summaryLines = [
+        `Segments: ${areas.items.length}`,
+        `Total area: ${areas.total.toFixed(1)} sq ft`,
+        `Services: ${[
+          options.includeSealcoating ? 'sealcoating' : null,
+          options.includeStriping ? 'striping' : null,
+          options.includeCleaningRepair ? 'cleaning & repair' : null,
+        ]
+          .filter(Boolean)
+          .join(', ') || 'none'}`,
+      ];
+      const prompt = `You are an estimator for church campus asphalt missions. Based on the following scope data suggest key quantity call-outs (coats, prep labor, premium add-ons) and risk watch-outs in 3 concise bullet points.\n${summaryLines.join('\n')}`;
+      const response = await generateChat(prompt);
+      setAiSuggestion(response?.trim() || 'No recommendation generated.');
+    } catch (error) {
+      setAiError(
+        error instanceof Error ? error.message : 'Unable to generate AI recommendation right now.',
+      );
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   return (
     <>
       <section className="space-y-4">
@@ -80,6 +117,18 @@ export function ScopeStep({ areas, options, featureFlags, onNext }: ScopeStepPro
             >
               Add Shape
             </Button>
+              {featureFlags.isEnabled('aiAssistant') ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-9 border-white/40 bg-purple-500/10 text-slate-50 hover:bg-purple-500/20"
+                  onClick={() => void handleAiSuggest()}
+                  disabled={aiLoading}
+                >
+                  {aiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                  AI Scope Assist
+                </Button>
+              ) : null}
           </div>
         </header>
 
@@ -128,6 +177,19 @@ export function ScopeStep({ areas, options, featureFlags, onNext }: ScopeStepPro
             </div>
           )}
         </div>
+
+          {aiSuggestion ? (
+            <Alert className="border-purple-500/60 bg-purple-500/10 text-slate-100">
+              <AlertTitle>AI Recommendation</AlertTitle>
+              <AlertDescription>{aiSuggestion}</AlertDescription>
+            </Alert>
+          ) : null}
+          {aiError ? (
+            <Alert variant="destructive">
+              <AlertTitle>Assistant Unavailable</AlertTitle>
+              <AlertDescription>{aiError}</AlertDescription>
+            </Alert>
+          ) : null}
 
         {featureFlags.isEnabled('optimizer') && areas.total > 0 ? (
           <div className="rounded-2xl border border-white/15 bg-white/5 p-4">

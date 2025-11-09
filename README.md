@@ -35,7 +35,7 @@ AI-assisted operations command center purpose-built for asphalt paving, sealcoat
 
 ## Core Capabilities
 
-- **Estimator Studio** – multi-step cost modelling with AI assistance, compliance guardrails, scenario comparisons, and offline resilience.
+- **Estimator Studio** – multi-step cost modelling with AI assistance, compliance guardrails, multi-scenario simulation lab, and offline resilience.
 - **Mission Scheduler** – crew-aware timeline with worship blackout windows, ADA alerts, conflict detection, and what-if optimization.
 - **Command Center HUD** – live telemetry, revenue and margin dashboards, configurable widgets, multi-monitor layout memory, gesture controls, keyboard navigation, animation presets, and Supabase-backed data panels with export/import workflows.
 - **Theme Command Center** – multi-theme gallery with liturgical presets, custom wallpaper uploads, adaptive typography, and instant previews.
@@ -175,6 +175,17 @@ npx k6 run scripts/load/k6-observability.js
 
 Sends synthetic `lovable.asset_*` telemetry into the Supabase Edge Function to validate ingestion latency, dedupe, and incident rollups. Tune intensity with `STAGE_MULTIPLIER` and export JSON summaries via `--summary-export`.
 
+### k6 Gemini Proxy Assist
+
+```bash
+GEMINI_PROXY_URL=https://your-project.supabase.co/functions/v1/gemini-proxy \
+GEMINI_PROXY_TOKEN=SUPABASE_SERVICE_OR_ANON_JWT \
+GEMINI_PROMPT="Summarize church sealcoating scope best practices." \
+npx k6 run scripts/load/k6-gemini-proxy.js
+```
+
+Validates the authenticated Gemini chat proxy that powers scope recommendations. Monitors `gemini_chat_duration` and enforces `gemini_chat_success` > 95%.
+
 ### k6 Mission Sweep
 
 ```bash
@@ -219,7 +230,7 @@ npm run android:gradle:debug
 ### Release Checklist
 
 1. `npm run security:scan`
-2. `npm run openapi:generate`
+2. `npm run openapi:generate` (parses Supabase Edge Function annotations and refreshes `docs/swagger.json`)
 3. `npm run test:e2e`
 4. Run load smoke (`k6-observability`, `k6-estimate`, or `artillery`)
 5. Update `CHANGELOG.md`

@@ -1,10 +1,20 @@
-# Pavement Performance Suite Docker context exclusions.
+.git
+.gitmodules
+.github
+.husky
+.vscode
+.idea
+.cursor
+.cursorrules
+.history
 
 # Dependencies
 node_modules
 bun.lockb
+pnpm-lock.yaml
+yarn.lock
 
-# Build outputs
+# Build outputs & reports
 dist
 build
 coverage
@@ -16,27 +26,22 @@ playwright-report
 .env
 .env.*
 .envrc
+*.local
 
-# Tooling & IDE state
-.git
-.gitmodules
-.gitignore
-.husky
-.github
-.vscode
-.idea
-.history
-.cursor
-.cursorrules
-
-# OS noise
-.DS_Store
-Thumbs.db
+# Logs
+*.log
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
 
 # Temporary caches
 tmp
 temp
 .cache
+
+# OS noise
+.DS_Store
+Thumbs.db
 
 # Archived items
 deleted files/
@@ -47,6 +52,8 @@ supabase/.branches
 
 # Android build artifacts
 android/.gradle
+android/.idea
+android/local.properties
 android/app/build
 
 # Docker overrides
@@ -55,12 +62,6 @@ Dockerfile.local
 docker-compose.override.yml
 docker-compose.local.yml
 
-# Logs
-*.log
-npm-debug.log
-yarn-error.log
-pnpm-debug.log
-
-# Script outputs
+# Script outputs & generated artifacts
 scripts/load/output
 docs/swagger.json
