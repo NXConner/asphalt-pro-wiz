@@ -5,12 +5,14 @@ import {
   applyThemePreferences,
   setThemeMode as persistThemeMode,
   setThemeName as persistThemeName,
-  setPrimaryHue as persistPrimaryHue,
+    setPrimaryHue as persistPrimaryHue,
+    setAccentHue as persistAccentHue,
   setRadius as persistRadius,
   setWallpaper as persistWallpaper,
   setWallpaperOpacity as persistWallpaperOpacity,
   setWallpaperBlur as persistWallpaperBlur,
-  setUseHueOverride as persistUseHueOverride,
+    setUseHueOverride as persistUseHueOverride,
+    setUseAccentOverride as persistUseAccentOverride,
   setHighContrastMode as persistHighContrastMode,
   setHudOpacity as persistHudOpacity,
   setHudBlur as persistHudBlur,
@@ -42,7 +44,8 @@ import {
   deleteHudProfile as persistDeleteHudProfile,
   setHudGridSnap as persistHudGridSnap,
   setHudGridSize as persistHudGridSize,
-  setHudCollisionDetection as persistHudCollisionDetection,
+    setHudCollisionDetection as persistHudCollisionDetection,
+    randomizeMissionPalette as executeRandomizePalette,
   resetThemePreferences,
   type ThemePreferences,
   type ThemeMode,
@@ -58,6 +61,7 @@ import {
     type HudAnimationPresetId,
     type HudGestureSensitivity,
     type HudMultiMonitorStrategy,
+    type RandomizePaletteOptions,
 } from '@/lib/theme';
 
 interface ThemeContextValue {
@@ -65,8 +69,10 @@ interface ThemeContextValue {
   setMode: (mode: ThemeMode) => void;
   setTheme: (name: ThemeName) => void;
   setPrimaryHue: (hue: number) => void;
+  setAccentHue: (hue: number) => void;
   setRadius: (radius: number) => void;
   setUseHueOverride: (enabled: boolean) => void;
+  setUseAccentOverride: (enabled: boolean) => void;
   setWallpaper: (selection: ThemeWallpaperSelection) => void;
   setWallpaperOpacity: (opacity: number) => void;
   setWallpaperBlur: (blur: number) => void;
@@ -103,6 +109,7 @@ interface ThemeContextValue {
   setHudGridSize: (size: number) => void;
   setHudCollisionDetection: (enabled: boolean) => void;
   reset: () => void;
+  randomizePalette: (options?: RandomizePaletteOptions) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
@@ -144,28 +151,36 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setPreferences(loadThemePreferences());
   };
 
-  const value: ThemeContextValue = {
-    preferences,
-    setMode: (mode) => {
-      persistThemeMode(mode);
-      syncPreferences();
-    },
-    setTheme: (name) => {
-      persistThemeName(name);
-      syncPreferences();
-    },
-    setPrimaryHue: (hue) => {
-      persistPrimaryHue(hue);
-      syncPreferences();
-    },
-    setRadius: (radius) => {
-      persistRadius(radius);
-      syncPreferences();
-    },
-    setUseHueOverride: (enabled) => {
-      persistUseHueOverride(enabled);
-      syncPreferences();
-    },
+    const value: ThemeContextValue = {
+      preferences,
+      setMode: (mode) => {
+        persistThemeMode(mode);
+        syncPreferences();
+      },
+      setTheme: (name) => {
+        persistThemeName(name);
+        syncPreferences();
+      },
+      setPrimaryHue: (hue) => {
+        persistPrimaryHue(hue);
+        syncPreferences();
+      },
+      setAccentHue: (hue) => {
+        persistAccentHue(hue);
+        syncPreferences();
+      },
+      setRadius: (radius) => {
+        persistRadius(radius);
+        syncPreferences();
+      },
+      setUseHueOverride: (enabled) => {
+        persistUseHueOverride(enabled);
+        syncPreferences();
+      },
+      setUseAccentOverride: (enabled) => {
+        persistUseAccentOverride(enabled);
+        syncPreferences();
+      },
     setWallpaper: (selection) => {
       persistWallpaper(selection);
       syncPreferences();
@@ -306,10 +321,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       persistHudCollisionDetection(enabled);
       syncPreferences();
     },
-    reset: () => {
-      const defaults = resetThemePreferences();
-      setPreferences(defaults);
-    },
+      reset: () => {
+        const defaults = resetThemePreferences();
+        setPreferences(defaults);
+      },
+      randomizePalette: (options) => {
+        executeRandomizePalette(options);
+        syncPreferences();
+      },
   };
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
