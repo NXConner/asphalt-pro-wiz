@@ -62,20 +62,5 @@ export function useSupplierIntelligence(params: SupplierIntelHookParams) {
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
     meta: { feature: 'supplier-intelligence' },
-    onSuccess: (data) => {
-      logEvent('analytics.supplier_intel_loaded', {
-        materialCount: data.materials.length,
-        supplierCount: data.insights.length,
-      });
-    },
-    onError: (error) => {
-      logEvent(
-        'analytics.supplier_intel_failed',
-        {
-          message: error.message,
-        },
-        'error',
-      );
-    },
   });
 }

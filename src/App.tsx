@@ -100,7 +100,7 @@ const App = () => {
 
     const isPreviewEnv = isLovablePreviewRuntime();
     const Guard: React.ComponentType<{ children: React.ReactNode }> = isPreviewEnv ? Fragment : ProtectedRoute;
-    const routerBase = baseName || '/';
+    const routerBase = isPreviewEnv ? '/' : (baseName || '/');
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
@@ -152,9 +152,13 @@ const App = () => {
                                     <Route
                                       path="/"
                                       element={
-                                        <Guard>
-                                          <Index />
-                                        </Guard>
+                                        isPreviewEnv ? (
+                                          <PreviewSafe />
+                                        ) : (
+                                          <Guard>
+                                            <Index />
+                                          </Guard>
+                                        )
                                       }
                                     />
                                     <Route path="/preview-safe" element={<PreviewSafe />} />
