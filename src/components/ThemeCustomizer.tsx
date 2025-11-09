@@ -9,6 +9,7 @@ import { ThemeMissionPresets } from '@/components/theme/ThemeMissionPresets';
 import { ThemePreview } from '@/components/theme/ThemePreview';
 import { ThemeShowcase } from '@/components/theme/ThemeShowcase';
 import { ThemeWallpaperManager } from '@/components/theme/ThemeWallpaperManager';
+import { ThemeWallpaperSynth } from '@/components/theme/ThemeWallpaperSynth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -155,6 +156,36 @@ export function ThemeCustomizer() {
     [getById, handleWallpaperSelect, preferences.wallpaperId, removeWallpaper],
   );
 
+  const handleWallpaperSynthesize = useCallback(
+    async ({
+      name,
+      gradient,
+      tone,
+      description,
+    }: {
+      name: string;
+      gradient: string;
+      tone: Parameters<typeof addWallpaper>[0]['accentTone'];
+      description?: string;
+    }) => {
+      const asset = addWallpaper({
+        name,
+        dataUrl: gradient,
+        accentTone: tone,
+        description:
+          description ??
+          `Command Center synthesized ${tone} gradient generated ${new Date().toLocaleDateString()}`,
+      });
+      handleWallpaperSelect({
+        id: asset.id,
+        source: asset.source,
+        name: asset.name,
+        description: asset.description,
+      });
+    },
+    [addWallpaper, handleWallpaperSelect],
+  );
+
   const handleReset = useCallback(() => {
     reset();
   }, [reset]);
@@ -190,17 +221,17 @@ export function ThemeCustomizer() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-10">
-        <ThemePreview />
+          <ThemePreview />
 
-        <ThemeShowcase limitPerGroup={3} />
+          <ThemeShowcase limitPerGroup={3} />
 
-        <ThemeMissionPresets
-          groups={themeGroups}
-          activeTheme={preferences.name}
-          mode={preferences.mode}
-          onModeChange={setMode}
-          onSelectPreset={handlePresetSelect}
-        />
+          <ThemeMissionPresets
+            groups={themeGroups}
+            activeTheme={preferences.name}
+            mode={preferences.mode}
+            onModeChange={setMode}
+            onSelectPreset={handlePresetSelect}
+          />
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <ThemeHueControls
@@ -308,6 +339,7 @@ export function ThemeCustomizer() {
                 setWallpaperBlur(value);
               }}
             />
+            <ThemeWallpaperSynth onCreate={handleWallpaperSynthesize} />
           </div>
 
         <ThemeDesignTokensPanel

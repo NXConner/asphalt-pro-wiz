@@ -28,6 +28,14 @@ const LEGACY_THEME_IDS = [
 
 const LITURGICAL_THEME_IDS = ['advent-vigil', 'lent-refocus', 'easter-radiance', 'pentecost-flare'] as const;
 
+const OPERATIONS_THEME_IDS = [
+  'night-watch',
+  'dawn-patrol',
+  'rain-shelter',
+  'afterglow-service',
+  'revival-night',
+] as const;
+
 const CAMPUS_THEME_IDS = ['chapel-stonework', 'family-life', 'youth-center', 'parking-strategy'] as const;
 
 const SEASONAL_THEME_IDS = ['summer-outreach', 'autumn-renewal', 'winter-brilliance', 'storm-response'] as const;
@@ -38,6 +46,7 @@ export const THEME_NAMES: ThemeNameFromTokens[] = [
   ...LEGACY_THEME_IDS,
   ...DIVISION_THEME_NAMES,
   ...LITURGICAL_THEME_IDS,
+  ...OPERATIONS_THEME_IDS,
   ...CAMPUS_THEME_IDS,
   ...SEASONAL_THEME_IDS,
 ];
@@ -46,10 +55,11 @@ export type ThemeNameFromTokens =
   | (typeof LEGACY_THEME_IDS)[number]
   | DivisionThemeName
   | (typeof LITURGICAL_THEME_IDS)[number]
+  | (typeof OPERATIONS_THEME_IDS)[number]
   | (typeof CAMPUS_THEME_IDS)[number]
   | (typeof SEASONAL_THEME_IDS)[number];
 
-export type ThemeCategory = 'legacy' | 'division' | 'liturgical' | 'campus' | 'seasonal';
+export type ThemeCategory = 'legacy' | 'division' | 'operations' | 'liturgical' | 'campus' | 'seasonal';
 
 export interface ThemePresetMeta {
   readonly id: ThemeNameFromTokens;
@@ -152,6 +162,22 @@ const seasonalTheme = (
     label,
     description,
     category: 'seasonal',
+    overrides,
+    recommendedWallpaperId,
+  });
+
+const operationsTheme = (
+  id: (typeof OPERATIONS_THEME_IDS)[number],
+  label: string,
+  description: string,
+  overrides: Partial<Record<string, string>>,
+  recommendedWallpaperId: string,
+) =>
+  createPreset({
+    id,
+    label,
+    description,
+    category: 'operations',
     overrides,
     recommendedWallpaperId,
   });
@@ -271,6 +297,79 @@ const LITURGICAL_THEME_PRESETS: ThemePresetMeta[] = [
       '--ring': '12 96% 62%',
     },
     'division-pentecost-flare',
+  ),
+];
+
+const OPERATIONS_THEME_PRESETS: ThemePresetMeta[] = [
+  operationsTheme(
+    'night-watch',
+    'Night Watch',
+    'Nocturnal patrol palette for after-hours campus monitoring.',
+    {
+      '--primary': '220 88% 58%',
+      '--accent': '36 100% 56%',
+      '--background': '220 64% 6%',
+      '--card': '220 60% 11%',
+      '--foreground': '216 18% 92%',
+      '--ring': '220 88% 64%',
+    },
+    'division-dark-zone',
+  ),
+  operationsTheme(
+    'dawn-patrol',
+    'Dawn Patrol',
+    'Warm morning gradients tuned for sunrise lot inspections.',
+    {
+      '--primary': '32 96% 62%',
+      '--accent': '197 88% 58%',
+      '--background': '216 52% 7%',
+      '--card': '216 46% 12%',
+      '--foreground': '32 22% 94%',
+      '--ring': '32 96% 68%',
+    },
+    'division-sunrise-service',
+  ),
+  operationsTheme(
+    'rain-shelter',
+    'Rain Shelter',
+    'Cool aqua and steel for wet-weather contingency planning.',
+    {
+      '--primary': '200 88% 60%',
+      '--accent': '168 72% 52%',
+      '--background': '210 58% 6%',
+      '--card': '210 52% 11%',
+      '--foreground': '200 18% 94%',
+      '--ring': '200 88% 64%',
+    },
+    'division-storm-response',
+  ),
+  operationsTheme(
+    'afterglow-service',
+    'Afterglow Service',
+    'Crimson and brass ambience for evening wrap-up briefings.',
+    {
+      '--primary': '12 94% 60%',
+      '--accent': '45 100% 55%',
+      '--background': '220 60% 5%',
+      '--card': '220 54% 10%',
+      '--foreground': '18 20% 93%',
+      '--ring': '12 94% 64%',
+    },
+    'division-vespers-halo',
+  ),
+  operationsTheme(
+    'revival-night',
+    'Revival Night',
+    'Electric violets and teals for high-energy youth rallies.',
+    {
+      '--primary': '282 82% 64%',
+      '--accent': '167 82% 54%',
+      '--background': '248 58% 6%',
+      '--card': '248 52% 10%',
+      '--foreground': '240 20% 94%',
+      '--ring': '167 82% 58%',
+    },
+    'division-revival-rush',
   ),
 ];
 
@@ -396,6 +495,7 @@ export const THEME_CATALOG: ThemePresetMeta[] = [
   ...LEGACY_THEME_PRESETS,
   ...DIVISION_THEME_PRESETS,
   ...LITURGICAL_THEME_PRESETS,
+  ...OPERATIONS_THEME_PRESETS,
   ...CAMPUS_THEME_PRESETS,
   ...SEASONAL_THEME_PRESETS,
 ];
@@ -420,25 +520,30 @@ const THEME_CATEGORY_METADATA: Record<ThemeCategory, { label: string; descriptio
     description: 'Immersive SHD-grade palettes with tactical contrast and mission-ready readability.',
     order: 0,
   },
+  operations: {
+    label: 'Mission Operations',
+    description: 'Night watch, weather contingencies, and youth rally modes tuned for on-the-ground decisions.',
+    order: 1,
+  },
   legacy: {
     label: 'Legacy Palettes',
     description: 'Classic contractor-friendly colorways crews already know and love.',
-    order: 1,
+    order: 2,
   },
   liturgical: {
     label: 'Liturgical Seasons',
     description: 'Sacred-season palettes tuned for Advent, Lent, Easter, and Pentecost programming.',
-    order: 2,
+    order: 3,
   },
   campus: {
     label: 'Campus Contexts',
     description: 'Layouts tailored to sanctuary heritage, family life centers, youth spaces, and parking ops.',
-    order: 3,
+    order: 4,
   },
   seasonal: {
     label: 'Seasonal Operations',
     description: 'Weather-aware themes aligned with outreach pushes, harvest prep, winterization, and storm response.',
-    order: 4,
+    order: 5,
   },
 };
 
