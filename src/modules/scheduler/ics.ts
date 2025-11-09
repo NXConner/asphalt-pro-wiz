@@ -232,3 +232,51 @@ export function extractWorshipBlackouts(
 
   return Array.from(deduped.values()).sort((a, b) => a.start.localeCompare(b.start));
 }
+
+function escapeIcsText(value: string | undefined | null): string {
+  if (!value) return '';
+  return value.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+}
+
+function formatUtcIcs(dateIso: string): string {
+  const iso = new Date(dateIso).toISOString();
+  return iso.replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+}
+
+export function generateWorshipBlackoutsICS(
+  blackouts: Array<{ id: string; title?: string; reason?: string; start: string; end: string }>,
+  metadata?: { calendarName?: string; organization?: string },
+): string {
+  const lines: string[] = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Pavement Performance Suite//Mission Scheduler//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+  ];
+
+  if (metadata?.calendarName) {
+    lines.push(`X-WR-CALNAME:${escapeIcsText(metadata.calendarName)}`);
+  }
+  if (metadata?.organization) {
+    lines.push(`X-WR-CALDESC:Blackout windows for ${escapeIcsText(metadata.organization)}`);
+  }
+
+  const now = formatUtcIcs(new Date().toISOString());
+  blackouts.forEach((blackout) => {
+    const uid = `${blackout.id}@pavement.performance`;
+    lines.push('BEGIN:VEVENT');
+    lines.push(`UID:${uid}`);
+    lines.push(`DTSTAMP:${now}`);
+    lines.push(`DTSTART:${formatUtcIcs(blackout.start)}`);
+    lines.push(`DTEND:${formatUtcIcs(blackout.end)}`);
+    lines.push(`SUMMARY:${escapeIcsText(blackout.title ?? 'Worship Blackout')}`);
+    if (blackout.reason) {
+      lines.push(`DESCRIPTION:${escapeIcsText(blackout.reason)}`);
+    }
+    lines.push('END:VEVENT');
+  });
+
+  lines.push('END:VCALENDAR');
+  return `${lines.join('\r\n')}\r\n`;
+}

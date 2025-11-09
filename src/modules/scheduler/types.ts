@@ -54,5 +54,15 @@ export interface WorshipImportResult {
   totalEvents: number;
   created: number;
   updated: number;
+  merged: number;
   skipped: number;
+  conflicts: WorshipImportConflict[];
+}
+
+export interface WorshipImportConflict {
+  type: 'task_overlap' | 'blackout_overlap';
+  referenceId: string;
+  blackoutId: string;
+  start: string;
+  end: string;
 }

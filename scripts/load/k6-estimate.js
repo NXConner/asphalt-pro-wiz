@@ -4,6 +4,17 @@ import { Counter, Rate, Trend } from 'k6/metrics';
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:5173';
 const STAGE_MULTIPLIER = Math.max(1, Number(__ENV.STAGE_MULTIPLIER || '1'));
+const SUPPLIER_INTEL_URL = __ENV.SUPPLIER_INTEL_URL || 'http://localhost:54321/functions/v1/supplier-intel';
+const SUPPLIER_INTEL_TOKEN = __ENV.SUPPLIER_INTEL_TOKEN || '';
+const SUPPLIER_ORG_ID = __ENV.SUPPLIER_ORG_ID || '00000000-0000-0000-0000-000000000000';
+const SUPPLIER_MATERIALS = (__ENV.SUPPLIER_MATERIALS || 'Acrylic Sealer,Crack Filler')
+  .split(',')
+  .map((value) => value.trim())
+  .filter((value) => value.length > 0);
+const SUPPLIER_INCLUDE_AI_SUMMARY = (__ENV.SUPPLIER_INCLUDE_AI_SUMMARY || 'false').toLowerCase() === 'true';
+const parsedSupplierRadius = Number(__ENV.SUPPLIER_RADIUS_MILES);
+const SUPPLIER_RADIUS_MILES = Number.isFinite(parsedSupplierRadius) ? parsedSupplierRadius : 75;
+const SKIP_SUPPLIER_INTEL = SUPPLIER_INTEL_TOKEN.length === 0;
 
 function scaleTarget(value) {
   return Math.max(1, Math.round(value * STAGE_MULTIPLIER));
@@ -109,6 +120,53 @@ export default function () {
         'robots served': (r) => r.status === 200,
       },
     });
+  });
+
+  group('Supplier intelligence edge function', () => {
+    if (SKIP_SUPPLIER_INTEL) {
+      return;
+    }
+
+    const response = http.post(
+      SUPPLIER_INTEL_URL,
+      JSON.stringify({
+        orgId: SUPPLIER_ORG_ID,
+        materials: SUPPLIER_MATERIALS.length > 0 ? SUPPLIER_MATERIALS : undefined,
+        includeAiSummary: SUPPLIER_INCLUDE_AI_SUMMARY,
+        radiusMiles: SUPPLIER_RADIUS_MILES,
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${SUPPLIER_INTEL_TOKEN}`,
+        },
+        tags: { name: 'supplier_intel_post', path: SUPPLIER_INTEL_URL },
+      },
+    );
+
+    requestDuration.add(response.timings.duration, { name: 'supplier_intel_post', path: SUPPLIER_INTEL_URL });
+
+    const passed = check(response, {
+      'supplier intel status ok': (r) => r.status === 200,
+      'insights payload present': (r) => {
+        try {
+          const payload = r.json();
+          return Array.isArray(payload?.insights);
+        } catch {
+          return false;
+        }
+      },
+    });
+
+    successfulRequests.add(passed ? 1 : 0, { name: 'supplier_intel_post', path: SUPPLIER_INTEL_URL });
+
+    if (!passed) {
+      contentValidationFailures.add(1, {
+        name: 'supplier_intel_post',
+        path: SUPPLIER_INTEL_URL,
+        status: response.status,
+      });
+    }
   });
 
   sleep(1);

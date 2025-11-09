@@ -41,6 +41,7 @@ AI-assisted operations command center purpose-built for asphalt paving, sealcoat
 - **Theme Command Center** – multi-theme gallery with liturgical presets, custom wallpaper uploads, adaptive typography, and instant previews.
 - **Layout & Mapping Suite** – GIS overlays, measurement tools, tactical map waypoints, hazard zoning, and drone-ready workflows.
 - **Automation & Notifications** – templated outreach flows, incident management, and workflow hooks for estimator → mission transitions.
+- **Supplier Intelligence** – Supabase-backed pricing telemetry, AI summaries, and lead-time signals for regional material partners.
 - **Mobile Readiness** – Capacitor Android shell, responsive design, offline queues, and background sync tailored for field teams.
 
 ---

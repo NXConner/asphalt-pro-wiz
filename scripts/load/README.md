@@ -50,11 +50,28 @@ Targets covered:
 2. `/` – confirms the app shell or redirect logic responds within budget.
 3. `/command-center` – warms mission dashboards to capture cold-start behaviour.
 4. `/robots.txt` – ensures static assets flow while the system is under load.
+5. `supplier-intel` edge function – optional, exercised when supplier credentials are provided.
 
 Tune the arrival profile with environment variables:
 
 - `BASE_URL` – origin to exercise (default `http://localhost:5173`).
 - `STAGE_MULTIPLIER` – optionally override intensity (e.g. `STAGE_MULTIPLIER=3`).
+- `SUPPLIER_INTEL_URL` – override Supabase function origin (default `http://localhost:54321/functions/v1/supplier-intel`).
+- `SUPPLIER_INTEL_TOKEN` – JWT used to authenticate against Supabase (service-role or session token). Required to exercise the supplier scenario.
+- `SUPPLIER_ORG_ID` – Optional organization UUID; defaults to all-zero placeholder if omitted.
+- `SUPPLIER_MATERIALS` – Comma-delimited material list (defaults to `Acrylic Sealer,Crack Filler`).
+- `SUPPLIER_RADIUS_MILES` – Numeric radius filter (defaults to `75`).
+- `SUPPLIER_INCLUDE_AI_SUMMARY` – Set to `true` to include Gemini summarization in the load (defaults to `false` to minimize external API burn).
+
+Example: run the full sweep including supplier intelligence with a Supabase service-role token
+
+```bash
+SUPPLIER_INTEL_TOKEN=$(cat service_role_jwt.txt) \
+SUPPLIER_ORG_ID=d3b5a945-4fd3-4f0c-a2b8-1fbd65cb91ad \
+SUPPLIER_INCLUDE_AI_SUMMARY=false \
+BASE_URL=http://localhost:5173 \
+npx k6 run scripts/load/k6-estimate.js
+```
 
 > Tip: k6 emits a `content_validation_failures` counter when HTML checks fail. Use the `--summary-export` flag to capture JSON output for CI artefacts.
 
