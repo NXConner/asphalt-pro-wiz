@@ -135,17 +135,21 @@ const fallbackBase = (): string => {
   return '/';
 };
 
+let CACHED_BASE: string | undefined;
+
 export const getRouterBaseName = (): string => {
-  const metaBase = resolveMetaBasePath();
-  if (metaBase) return metaBase;
-
-  const lovableBase = resolveLovableGlobalBase();
-  if (lovableBase) return lovableBase;
-
-  const envBase = resolveBaseFromEnv();
-  if (envBase) return envBase;
-
-  return fallbackBase();
+  if (CACHED_BASE) return CACHED_BASE;
+  
+  const candidates = [
+    resolveLovableGlobalBase(),
+    resolveMetaBasePath(),
+    resolveBaseFromEnv(),
+    fallbackBase(),
+  ];
+  
+  const base = candidates.find((b) => b && b !== '/') || '/';
+  CACHED_BASE = base;
+  return base;
 };
 
 export const subscribeToLovableConfig = (listener: (basePath: string) => void): (() => void) => {

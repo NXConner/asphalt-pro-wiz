@@ -93,28 +93,25 @@ const App = () => {
     };
   }, []);
 
-    const [baseName, setBaseName] = useState(getRouterBaseName);
+    const [routerBase] = useState(getRouterBaseName);
 
-    useEffect(() => subscribeToLovableConfig(setBaseName), []);
     useEffect(() => installLovableAssetMonitoring(), []);
 
     const isPreviewEnv = isLovablePreviewRuntime();
     const Guard: React.ComponentType<{ children: React.ReactNode }> = isPreviewEnv ? Fragment : ProtectedRoute;
-    const routerBase = baseName || '/';
 
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.documentElement.dataset.routerBase = routerBase;
-    }
-    if (typeof window !== 'undefined') {
-      (window as typeof window & { __PPS_ROUTER_BASE?: string }).__PPS_ROUTER_BASE = routerBase;
-      // Debug: trace base routing
-      try {
-        console.debug('[App] Router base set', { baseName: routerBase, path: window.location.pathname });
-      } catch {}
-    }
-    logEvent('lovable.routing.base', { baseName: routerBase });
-  }, [baseName, routerBase]);
+    // Keep diagnostic sync only (no Router remount)
+    return subscribeToLovableConfig((next) => {
+      if (typeof document !== 'undefined') {
+        document.documentElement.dataset.routerBase = next;
+      }
+      if (typeof window !== 'undefined') {
+        (window as typeof window & { __PPS_ROUTER_BASE?: string }).__PPS_ROUTER_BASE = next;
+      }
+      logEvent('lovable.routing.base', { baseName: next });
+    });
+  }, []);
 
   return (
     <ErrorBoundary>
@@ -133,7 +130,7 @@ const App = () => {
                             <MobileOptimizations />
                             <Toaster />
                             <Sonner />
-                            <BrowserRouter basename={routerBase}>
+                            <BrowserRouter key="router" basename={routerBase}>
                               <CommandPalette />
                               {process.env.NODE_ENV === 'development' && <AccessibilityChecker />}
                               <RouteTracker />
