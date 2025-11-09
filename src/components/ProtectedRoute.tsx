@@ -18,6 +18,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const isPreviewEnv = isLovablePreviewRuntime();
   // Only redirect to /auth when the backend is configured and not in Lovable preview.
   useEffect(() => {
+    try { console.debug('[ProtectedRoute]', { isPreviewEnv, isConfigured, isAuthenticated, loading }); } catch {}
     if (!loading && isConfigured && !isPreviewEnv && !isAuthenticated) {
       navigate('/auth', { replace: true });
     }

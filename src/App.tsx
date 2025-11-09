@@ -103,6 +103,8 @@ const App = () => {
     }
     if (typeof window !== 'undefined') {
       (window as typeof window & { __PPS_ROUTER_BASE?: string }).__PPS_ROUTER_BASE = baseName;
+      // Debug: trace base routing
+      try { console.debug('[App] Router base set', { baseName, path: window.location.pathname }); } catch {}
     }
     logEvent('lovable.routing.base', { baseName });
   }, [baseName]);
