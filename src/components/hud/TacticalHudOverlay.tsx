@@ -13,7 +13,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useHudGestures } from '@/hooks/useHudGestures';
 import { cn } from '@/lib/utils';
 
-
 const currencyFormatter = new Intl.NumberFormat(undefined, {
   style: 'currency',
   currency: 'USD',
@@ -219,7 +218,6 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay({
     }
   }, [isMobile, preferences.hudMultiMonitorStrategy, setHudMultiMonitorStrategy]);
 
-  
   const formattedCost = typeof totalCost === 'number' ? currencyFormatter.format(totalCost) : '—';
   const formattedArea =
     totalAreaSqFt > 0 ? `${numberFormatter.format(totalAreaSqFt)} sq ft` : 'Awaiting draw';
@@ -502,9 +500,8 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay({
   }[preferences.hudThemeVariant];
 
   return (
-    <motion.div
+    <motion.section
       ref={containerRef}
-      role="region"
       tabIndex={0}
       aria-label="Mission heads-up display"
       data-hud-animation={preferences.hudAnimationPreset}
@@ -689,6 +686,6 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay({
           formattedTravel={formattedTravel}
         />
       )}
-    </motion.div>
+    </motion.section>
   );
 });

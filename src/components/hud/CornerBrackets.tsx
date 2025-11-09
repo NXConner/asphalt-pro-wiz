@@ -76,7 +76,13 @@ const CornerElement = ({
   };
 
   if (!animated) {
-    return <span aria-hidden className="pointer-events-none rounded-none border absolute" style={{ ...style, ...shimmer }} />;
+    return (
+      <span
+        aria-hidden
+        className="pointer-events-none rounded-none border absolute"
+        style={{ ...style, ...shimmer }}
+      />
+    );
   }
 
   return (
@@ -106,11 +112,7 @@ const CornerBracketsComponent = ({
   pulseDelayMs = 180,
   className,
 }: CornerBracketsProps) => (
-  <div
-    aria-hidden
-    className={cn('pointer-events-none absolute inset-0', className)}
-    role="presentation"
-  >
+  <div aria-hidden className={cn('pointer-events-none absolute inset-0', className)}>
     {CORNERS.map((corner, index) => (
       <CornerElement
         key={corner}
@@ -128,4 +130,3 @@ const CornerBracketsComponent = ({
 );
 
 export const CornerBrackets = memo(CornerBracketsComponent);
-

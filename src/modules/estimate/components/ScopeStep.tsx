@@ -1,14 +1,14 @@
-import { useState } from 'react';
 import { Loader2, Sparkles } from 'lucide-react';
+import { useState } from 'react';
 
 import AreaSection from '@/components/AreaSection';
 import ImageAreaAnalyzer from '@/components/ImageAreaAnalyzer';
 import { LayoutOptimizer } from '@/components/Optimizer/LayoutOptimizer';
 import { ServiceCategories } from '@/components/ServiceCategories';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Select,
   SelectContent,

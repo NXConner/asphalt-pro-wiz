@@ -1,7 +1,7 @@
-import { logEvent } from '@/lib/logging';
 
 import { getFeatureFlagDefinition, type FeatureFlag } from '@/lib/featureFlags/definitions';
 import { getFlagSnapshot } from '@/lib/featureFlags/state';
+import { logEvent } from '@/lib/logging';
 
 type FeatureFlagToggleSource =
   | 'local'

@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 import { logEvent } from '@/lib/logging';
 import { invokeSupplierIntelligence } from '@/modules/estimate/supplier/api';
@@ -22,11 +22,14 @@ function normalizeMaterials(materials: string[] | undefined): string[] {
 
 function buildRequest(params: SupplierIntelHookParams): SupplierIntelRequest {
   const materials = normalizeMaterials(params.materials);
-  const radiusMiles = typeof params.radiusMiles === 'number' && Number.isFinite(params.radiusMiles)
-    ? Math.max(0, params.radiusMiles)
-    : undefined;
+  const radiusMiles =
+    typeof params.radiusMiles === 'number' && Number.isFinite(params.radiusMiles)
+      ? Math.max(0, params.radiusMiles)
+      : undefined;
   const jobLocation =
-    params.jobLocation && Number.isFinite(params.jobLocation.lat) && Number.isFinite(params.jobLocation.lng)
+    params.jobLocation &&
+    Number.isFinite(params.jobLocation.lat) &&
+    Number.isFinite(params.jobLocation.lng)
       ? params.jobLocation
       : undefined;
 
@@ -39,7 +42,18 @@ function buildRequest(params: SupplierIntelHookParams): SupplierIntelRequest {
 }
 
 export function useSupplierIntelligence(params: SupplierIntelHookParams) {
-  const request = useMemo(() => buildRequest(params), [params.materials, params.radiusMiles, params.jobLocation, params.includeAiSummary]);
+  const { materials, radiusMiles, jobLocation, includeAiSummary, enabled = true } = params;
+
+  const request = useMemo(
+    () =>
+      buildRequest({
+        materials,
+        radiusMiles,
+        jobLocation,
+        includeAiSummary,
+      }),
+    [materials, radiusMiles, jobLocation, includeAiSummary],
+  );
   const key = useMemo(
     () => [
       'supplier-intelligence',
@@ -51,9 +65,7 @@ export function useSupplierIntelligence(params: SupplierIntelHookParams) {
     [request.materials, request.radiusMiles, request.jobLocation?.lat, request.jobLocation?.lng],
   );
 
-  const shouldFetch =
-    (params.enabled ?? true) &&
-    Boolean(request.materials && request.materials.length > 0);
+  const shouldFetch = enabled && Boolean(request.materials && request.materials.length > 0);
 
   return useQuery<SupplierIntelResponse, Error>({
     queryKey: key,

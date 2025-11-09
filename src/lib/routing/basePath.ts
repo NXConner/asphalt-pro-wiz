@@ -1,4 +1,3 @@
-// @ts-nocheck - Uses window/document with typeof guards for non-DOM runtimes
 import { runtimeEnv } from '../runtimeEnv';
 
 const LOVABLE_HOST_REGEX = /(^|\.)lovable(?:project\.com|\.app|\.dev)$/i;
@@ -11,12 +10,14 @@ type LovableGlobal =
     }
   | undefined;
 
+type LovableWindow = Window & {
+  __LOVABLE__?: LovableGlobal;
+  lovable?: { basePath?: string };
+};
+
 const lovables = (): LovableGlobal => {
   if (typeof window === 'undefined') return undefined;
-  const win = window as Window & {
-    __LOVABLE__?: LovableGlobal;
-    lovable?: { basePath?: string };
-  };
+  const win: LovableWindow = window as LovableWindow;
   return win.__LOVABLE__ ?? win.lovable ?? undefined;
 };
 
@@ -142,6 +143,9 @@ const ensureBaseForLocation = (base?: string): string => {
   try {
     if (typeof window === 'undefined') return base;
     const pathname = (window as Window).location?.pathname || '/';
+    if (pathname === '/' || pathname === '') {
+      return base;
+    }
     if (pathname === base || pathname.startsWith(`${base}/`)) {
       return base;
     }
@@ -152,15 +156,13 @@ const ensureBaseForLocation = (base?: string): string => {
 };
 
 export const getRouterBaseName = (): string => {
-  if (CACHED_BASE) return CACHED_BASE;
-  
   const candidates = [
     resolveLovableGlobalBase(),
     resolveMetaBasePath(),
     resolveBaseFromEnv(),
     fallbackBase(),
   ];
-  
+
   const selected = candidates.find((b) => b && b !== '/') || '/';
   const safe = ensureBaseForLocation(selected);
   CACHED_BASE = safe;

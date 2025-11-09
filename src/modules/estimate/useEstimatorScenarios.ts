@@ -47,7 +47,10 @@ export interface UseEstimatorScenariosOptions {
 
 export function useEstimatorScenarios(options: UseEstimatorScenariosOptions): ScenarioManager {
   const { simulate, baselineSignature } = options;
-  const baseline = useMemo(() => simulate(), [simulate, baselineSignature]);
+  const baseline = useMemo(() => {
+    void baselineSignature;
+    return simulate();
+  }, [simulate, baselineSignature]);
 
   const [scenarios, setScenarios] = useState<ScenarioPlan[]>(() =>
     seedDefaults(simulate, baseline),
@@ -73,12 +76,12 @@ export function useEstimatorScenarios(options: UseEstimatorScenariosOptions): Sc
     (preset?: Partial<ScenarioPlan>) => {
       setScenarios((prev) => [
         ...prev,
-        createScenario(
-          simulate,
-          { overrides: {}, ...(preset ?? { name: 'Alt Quote' }) } as Partial<ScenarioPlan> & {
-            overrides: ScenarioOverrides;
-          },
-        ),
+        createScenario(simulate, {
+          overrides: {},
+          ...(preset ?? { name: 'Alt Quote' }),
+        } as Partial<ScenarioPlan> & {
+          overrides: ScenarioOverrides;
+        }),
       ]);
     },
     [simulate],
@@ -191,7 +194,12 @@ function seedDefaults(
   };
 
   return [
-    createScenario(simulate, { name: 'Baseline', overrides: {}, isPrimary: true, description: 'Current configuration snapshot' }),
+    createScenario(simulate, {
+      name: 'Baseline',
+      overrides: {},
+      isPrimary: true,
+      description: 'Current configuration snapshot',
+    }),
     createScenario(simulate, {
       name: 'Premium Weekend Blitz',
       overrides: premiumOverrides,
