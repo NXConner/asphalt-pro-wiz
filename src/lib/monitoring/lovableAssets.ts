@@ -37,28 +37,84 @@ export const installLovableAssetMonitoring = (): (() => void) => {
     return () => {};
   }
 
+  const pageUrl = typeof location !== 'undefined' ? location.href : undefined;
+  try {
+    logEvent('lovable.asset_monitoring.enabled', {
+      pageUrl,
+      timestamp: new Date().toISOString(),
+      host: window.location?.host,
+    });
+  } catch {
+    // ignore bootstrap logging failures
+  }
+
   const handleResourceError = (event: Event) => {
     const details = extractUrl(event.target);
-    if (!details) return;
+    if (!details) {
+      logEvent(
+        'lovable.asset_load_error.unresolved',
+        {
+          pageUrl,
+          timestamp: new Date().toISOString(),
+          phase: event.type,
+        },
+        'warn',
+      );
+      return;
+    }
+
+    const errorMeta =
+      event instanceof ErrorEvent
+        ? {
+            message: event.message,
+            filename: event.filename,
+            lineno: event.lineno,
+            colno: event.colno,
+          }
+        : {};
 
     logEvent(
       'lovable.asset_load_error',
       {
-        ...details,
-        timestamp: Date.now(),
+        assetUrl: details.url,
+        assetTag: details.tag,
+        pageUrl,
+        timestamp: new Date().toISOString(),
+        networkState:
+          typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean'
+            ? navigator.onLine
+              ? 'online'
+              : 'offline'
+            : undefined,
+        ...errorMeta,
       },
-      'warn',
+      'error',
     );
   };
 
   const handleRejection = (event: PromiseRejectionEvent) => {
+    let reasonValue: string | undefined;
+    if (event.reason instanceof Error) {
+      reasonValue = event.reason.message;
+    } else if (typeof event.reason === 'string') {
+      reasonValue = event.reason;
+    } else {
+      try {
+        reasonValue = JSON.stringify(event.reason);
+      } catch {
+        reasonValue = String(event.reason ?? 'unknown');
+      }
+    }
+
     logEvent(
       'lovable.asset_promise_rejection',
       {
-        reason: event.reason?.message ?? String(event.reason ?? 'unknown'),
-        timestamp: Date.now(),
+        reason: reasonValue ?? 'unknown',
+        stack: event.reason?.stack,
+        pageUrl,
+        timestamp: new Date().toISOString(),
       },
-      'warn',
+      'error',
     );
   };
 
