@@ -123,6 +123,7 @@ npm run seed
   - Mission scheduler events (crew conflicts, ADA alerts, ICS imports).
   - Estimator lifecycle (scenario creation, AI recommendations, proposal exports).
   - Mobile/Capacitor events (back button handling, offline sync).
+  - Lovable preview asset watchers (`lovable.asset_load_error`, `lovable.asset_promise_rejection`) for visibility into missing bundles or proxy misconfigurations.
 - Enable/disable web vitals and feature telemetry with `VITE_ENABLE_WEB_VITALS` and `VITE_ENABLE_FEATURE_TELEMETRY`.
 - Integrate with external APMs by configuring `VITE_OBSERVABILITY_EXPORTER_URL` and `VITE_SENTRY_DSN`.
 
