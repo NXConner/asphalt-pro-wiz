@@ -1,7 +1,7 @@
 import { isSupabaseConfigured, supabase } from '@/integrations/supabase/client';
+import type { MissionCrewMemberRow, MissionTaskRow } from '@/integrations/supabase/types-helpers';
 import { logError, logEvent } from '@/lib/logging';
 import { getCurrentUserId, resolveOrgId } from '@/lib/supabaseOrg';
-import type { MissionCrewMemberRow, MissionTaskRow } from '@/integrations/supabase/types-helpers';
 import type { BlackoutWindow, CrewMember, MissionTask } from '@/modules/scheduler/types';
 
 const DEFAULT_AVAILABILITY: CrewMember['availability'] = [
@@ -28,28 +28,29 @@ export async function loadSchedulerSnapshot(): Promise<SchedulerSnapshot | null>
   const orgId = await resolveOrgId();
   if (!orgId) return null;
 
-  const [{ data: taskRows, error: taskError }, { data: crewRows, error: crewError }, { data: blackoutRows, error: blackoutError }] =
-    await Promise.all([
-      (supabase as any)
-        .from('mission_tasks')
-        .select(
-          'id, org_id, job_id, job_name, site, start_at, end_at, crew_required, crew_assigned_ids, status, priority, accessibility_impact, notes, color, metadata'
-        )
-        .eq('org_id', orgId)
-        .order('start_at', { ascending: true }),
-      (supabase as any)
-        .from('mission_crew_members')
-        .select(
-          'id, org_id, name, role, color, max_hours_per_day, availability, metadata'
-        )
-        .eq('org_id', orgId)
-        .order('name', { ascending: true }),
-      (supabase as any)
-        .from('crew_blackouts')
-        .select('id, org_id, starts_at, ends_at, reason')
-        .eq('org_id', orgId)
-        .order('starts_at', { ascending: true }),
-    ]);
+  const [
+    { data: taskRows, error: taskError },
+    { data: crewRows, error: crewError },
+    { data: blackoutRows, error: blackoutError },
+  ] = await Promise.all([
+    (supabase as any)
+      .from('mission_tasks')
+      .select(
+        'id, org_id, job_id, job_name, site, start_at, end_at, crew_required, crew_assigned_ids, status, priority, accessibility_impact, notes, color, metadata',
+      )
+      .eq('org_id', orgId)
+      .order('start_at', { ascending: true }),
+    (supabase as any)
+      .from('mission_crew_members')
+      .select('id, org_id, name, role, color, max_hours_per_day, availability, metadata')
+      .eq('org_id', orgId)
+      .order('name', { ascending: true }),
+    (supabase as any)
+      .from('crew_blackouts')
+      .select('id, org_id, starts_at, ends_at, reason')
+      .eq('org_id', orgId)
+      .order('starts_at', { ascending: true }),
+  ]);
 
   if (taskError) throw taskError;
   if (crewError) throw crewError;
@@ -77,7 +78,9 @@ export async function loadSchedulerSnapshot(): Promise<SchedulerSnapshot | null>
     role: row.role ?? 'Crew Member',
     color: row.color ?? undefined,
     maxHoursPerDay: row.max_hours_per_day,
-    availability: (row.availability?.length ? row.availability : DEFAULT_AVAILABILITY) as CrewMember['availability'],
+    availability: (row.availability?.length
+      ? row.availability
+      : DEFAULT_AVAILABILITY) as CrewMember['availability'],
   }));
 
   const blackouts: BlackoutWindow[] = ((blackoutRows as any) ?? []).map((row: any) => ({
@@ -91,8 +94,7 @@ export async function loadSchedulerSnapshot(): Promise<SchedulerSnapshot | null>
   return { tasks, crew, blackouts };
 }
 
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function upsertMissionTask(task: MissionTask) {
   if (!isSupabaseConfigured) return;
@@ -192,7 +194,10 @@ export async function deleteCrewMember(crewId: string) {
     if (!UUID_REGEX.test(crewId)) {
       return;
     }
-    const { error } = await (supabase as any).from('mission_crew_members').delete().eq('id', crewId);
+    const { error } = await (supabase as any)
+      .from('mission_crew_members')
+      .delete()
+      .eq('id', crewId);
     if (error) throw error;
     logEvent('scheduler.crew_deleted', { crewId });
   } catch (error) {
@@ -205,7 +210,10 @@ export async function upsertBlackout(window: BlackoutWindow) {
   if (!isSupabaseConfigured) return;
   try {
     if (!UUID_REGEX.test(window.id)) {
-      logEvent('scheduler.blackout_sync_skipped', { blackoutId: window.id, reason: 'invalid_blackout_id' });
+      logEvent('scheduler.blackout_sync_skipped', {
+        blackoutId: window.id,
+        reason: 'invalid_blackout_id',
+      });
       return;
     }
     const orgId = await resolveOrgId();

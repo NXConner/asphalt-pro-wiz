@@ -1,6 +1,7 @@
 import { memo } from 'react';
 
 import { TacticalHudOverlay, type TacticalHudOverlayProps } from './TacticalHudOverlay';
+
 import { useTheme } from '@/contexts/ThemeContext';
 
 export const HudWrapper = memo(function HudWrapper(props: TacticalHudOverlayProps) {

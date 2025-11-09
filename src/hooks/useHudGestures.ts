@@ -7,7 +7,11 @@ type SwipeDirection = 'up' | 'down' | 'left' | 'right';
 export interface HudGestureCallbacks {
   onPinch?: (scaleDelta: number, meta: { origin: { x: number; y: number } }) => void;
   onSwipe?: (direction: SwipeDirection, meta: { velocity: number }) => void;
-  onTap?: (meta: { double: boolean; position: { x: number; y: number }; pointerType: string }) => void;
+  onTap?: (meta: {
+    double: boolean;
+    position: { x: number; y: number };
+    pointerType: string;
+  }) => void;
 }
 
 export interface HudGestureOptions extends HudGestureCallbacks {
@@ -50,6 +54,7 @@ export function useHudGestures<T extends HTMLElement>(
     if (!enabled) return;
     const element = ref.current;
     if (!element) return;
+    const pointerSet = pointersRef.current;
 
     const handlePointerDown = (event: PointerEvent) => {
       element.setPointerCapture(event.pointerId);
@@ -60,22 +65,22 @@ export function useHudGestures<T extends HTMLElement>(
         time: performance.now(),
         pointerType: event.pointerType,
       };
-      pointersRef.current.set(event.pointerId, state);
+      pointerSet.set(event.pointerId, state);
 
-      if (pointersRef.current.size === 1) {
+      if (pointerSet.size === 1) {
         swipeOriginRef.current = state;
       }
     };
 
     const handlePointerMove = (event: PointerEvent) => {
-      const stored = pointersRef.current.get(event.pointerId);
+      const stored = pointerSet.get(event.pointerId);
       if (!stored) return;
 
       const updated: PointerState = { ...stored, x: event.clientX, y: event.clientY };
-      pointersRef.current.set(event.pointerId, updated);
+      pointerSet.set(event.pointerId, updated);
 
-      if (pointersRef.current.size >= 2 && onPinch) {
-        const [first, second] = Array.from(pointersRef.current.values());
+      if (pointerSet.size >= 2 && onPinch) {
+        const [first, second] = Array.from(pointerSet.values());
         const initialDistance = distanceBetween(stored, second.id === stored.id ? first : second);
         const currentDistance = distanceBetween(updated, second.id === updated.id ? first : second);
         if (initialDistance === 0) return;
@@ -92,7 +97,7 @@ export function useHudGestures<T extends HTMLElement>(
     };
 
     const handlePointerUp = (event: PointerEvent) => {
-      const stored = pointersRef.current.get(event.pointerId);
+      const stored = pointerSet.get(event.pointerId);
       if (!stored) return;
 
       const released: PointerState = {
@@ -102,7 +107,7 @@ export function useHudGestures<T extends HTMLElement>(
         time: performance.now(),
       };
 
-      if (pointersRef.current.size === 1 && swipeOriginRef.current && onSwipe) {
+      if (pointerSet.size === 1 && swipeOriginRef.current && onSwipe) {
         const dx = released.x - swipeOriginRef.current.x;
         const dy = released.y - swipeOriginRef.current.y;
         const distance = Math.hypot(dx, dy);
@@ -114,7 +119,7 @@ export function useHudGestures<T extends HTMLElement>(
         }
       }
 
-      if (pointersRef.current.size === 1 && onTap) {
+      if (pointerSet.size === 1 && onTap) {
         const now = performance.now();
         const double = now - lastTapRef.current <= thresholds.doubleTapMs;
         if (!double) {
@@ -130,8 +135,8 @@ export function useHudGestures<T extends HTMLElement>(
       }
 
       element.releasePointerCapture(event.pointerId);
-      pointersRef.current.delete(event.pointerId);
-      if (pointersRef.current.size === 0) {
+      pointerSet.delete(event.pointerId);
+      if (pointerSet.size === 0) {
         swipeOriginRef.current = null;
       }
     };
@@ -140,8 +145,8 @@ export function useHudGestures<T extends HTMLElement>(
       if (element.hasPointerCapture(event.pointerId)) {
         element.releasePointerCapture(event.pointerId);
       }
-      pointersRef.current.delete(event.pointerId);
-      if (pointersRef.current.size === 0) {
+      pointerSet.delete(event.pointerId);
+      if (pointerSet.size === 0) {
         swipeOriginRef.current = null;
       }
     };
@@ -156,7 +161,7 @@ export function useHudGestures<T extends HTMLElement>(
       element.removeEventListener('pointermove', handlePointerMove);
       element.removeEventListener('pointerup', handlePointerUp);
       element.removeEventListener('pointercancel', handlePointerCancel);
-      pointersRef.current.clear();
+      pointerSet.clear();
       swipeOriginRef.current = null;
     };
   }, [enabled, thresholds, ref, onPinch, onSwipe, onTap]);

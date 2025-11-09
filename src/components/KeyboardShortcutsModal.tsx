@@ -1,15 +1,11 @@
-import { useState } from 'react';
 import { Command, Search, X } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { useState } from 'react';
+
+import { Kbd } from '@/components/common/Kbd';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Kbd } from '@/components/common/Kbd';
 import { useKeyboard } from '@/contexts/KeyboardContext';
 
 interface KeyboardShortcutsModalProps {
@@ -22,22 +18,30 @@ export function KeyboardShortcutsModal({ open, onOpenChange }: KeyboardShortcuts
   const [search, setSearch] = useState('');
 
   const shortcutsByCategory = {
-    General: shortcuts.filter(s => s.description && ['Open command palette', 'Focus search', 'Close modals'].includes(s.description)),
-    HUD: shortcuts.filter(s => s.description && s.description.toLowerCase().includes('hud')),
+    General: shortcuts.filter(
+      (s) =>
+        s.description &&
+        ['Open command palette', 'Focus search', 'Close modals'].includes(s.description),
+    ),
+    HUD: shortcuts.filter((s) => s.description && s.description.toLowerCase().includes('hud')),
   };
 
-  const filteredShortcuts = Object.entries(shortcutsByCategory).reduce((acc, [category, items]) => {
-    const filtered = items.filter(s => 
-      s.description?.toLowerCase().includes(search.toLowerCase()) ||
-      s.key.toLowerCase().includes(search.toLowerCase())
-    );
-    if (filtered.length > 0) {
-      acc[category] = filtered;
-    }
-    return acc;
-  }, {} as Record<string, typeof shortcuts>);
+  const filteredShortcuts = Object.entries(shortcutsByCategory).reduce(
+    (acc, [category, items]) => {
+      const filtered = items.filter(
+        (s) =>
+          s.description?.toLowerCase().includes(search.toLowerCase()) ||
+          s.key.toLowerCase().includes(search.toLowerCase()),
+      );
+      if (filtered.length > 0) {
+        acc[category] = filtered;
+      }
+      return acc;
+    },
+    {} as Record<string, typeof shortcuts>,
+  );
 
-  const formatShortcut = (shortcut: typeof shortcuts[0]) => {
+  const formatShortcut = (shortcut: (typeof shortcuts)[0]) => {
     const keys = [];
     if (shortcut.ctrl) keys.push('Ctrl');
     if (shortcut.shift) keys.push('Shift');
@@ -95,9 +99,7 @@ export function KeyboardShortcutsModal({ open, onOpenChange }: KeyboardShortcuts
                         key={`${category}-${idx}`}
                         className="flex items-center justify-between rounded-lg border bg-card p-3 hover:bg-accent/50 transition-colors"
                       >
-                        <span className="text-sm text-foreground">
-                          {shortcut.description}
-                        </span>
+                        <span className="text-sm text-foreground">{shortcut.description}</span>
                         <div className="flex gap-1">
                           {formatShortcut(shortcut).map((key, i) => (
                             <Kbd key={i}>{key}</Kbd>

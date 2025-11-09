@@ -1,11 +1,10 @@
 import { Shield } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { KeyboardShortcutsModal } from '@/components/KeyboardShortcutsModal';
-
 import { ComplianceResources, type ComplianceTopic } from '@/components/ComplianceResources';
 import { HudWrapper } from '@/components/hud/HudWrapper';
 import { type TacticalHudOverlayProps } from '@/components/hud/TacticalHudOverlay';
+import { KeyboardShortcutsModal } from '@/components/KeyboardShortcutsModal';
 import { Button } from '@/components/ui/button';
 import { EngagementHubPanel } from '@/modules/engagement/EngagementHubPanel';
 import { EstimatorStudio } from '@/modules/estimate/EstimatorStudio';

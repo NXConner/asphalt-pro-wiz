@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { CustomService } from '@/components/CustomServices';
+import { isSupabaseConfigured } from '@/integrations/supabase/client';
 import {
   calculateDistance,
   calculateProject,
@@ -21,7 +22,6 @@ import {
 } from '@/lib/locations';
 import { logError, logEvent } from '@/lib/logging';
 import { getServiceById } from '@/lib/serviceCatalog';
-import { isSupabaseConfigured } from '@/integrations/supabase/client';
 import { persistEstimateResult } from '@/modules/estimate/persistence';
 
 export type AreaShape = 'rectangle' | 'triangle' | 'circle' | 'drawn' | 'manual' | 'image';
@@ -393,10 +393,10 @@ export function useEstimatorState(): EstimatorState {
     setCustomServices((prev) => [...prev, newService]);
   };
 
-    const handleCalculate = async () => {
-      if (isPersistingEstimate) {
-        return;
-      }
+  const handleCalculate = async () => {
+    if (isPersistingEstimate) {
+      return;
+    }
     if (totalArea <= 0) {
       toast.error('Please add an area measurement');
       return;
@@ -443,73 +443,73 @@ export function useEstimatorState(): EstimatorState {
       })),
     };
 
-      const result = calculateProject(inputs, businessData);
-      setCosts(result.costs);
-      setBreakdown(result.breakdown);
-      setShowResults(true);
+    const result = calculateProject(inputs, businessData);
+    setCosts(result.costs);
+    setBreakdown(result.breakdown);
+    setShowResults(true);
+    setSyncErrorMessage(null);
+
+    const jobKey = makeJobKey(jobName, customerAddress);
+    void setJobStatus(jobKey, 'estimated').then(() => setMapRefreshKey((value) => value + 1));
+
+    try {
+      logEvent('estimate.calculated', {
+        jobName: jobName || 'Job',
+        totalArea,
+        crackLength,
+        includeSealcoating,
+        includeStriping,
+        includeCleaningRepair,
+        numCustomServices: customServices.length,
+        total: result.costs.total,
+      });
+    } catch {}
+
+    if (!isSupabaseConfigured) {
+      setLastSyncedAt(null);
+      setLastSyncedEstimateId(null);
+      return;
+    }
+
+    setIsPersistingEstimate(true);
+    try {
+      const persistResult = await persistEstimateResult({
+        inputs,
+        costs: result.costs,
+        breakdown: result.breakdown,
+        customServices,
+        premium: {
+          edgePushing: premiumEdgePushing,
+          weedKiller: premiumWeedKiller,
+          crackCleaning: premiumCrackCleaning,
+          powerWashing: premiumPowerWashing,
+          debrisRemoval: premiumDebrisRemoval,
+        },
+        job: {
+          name: jobName || 'Mission',
+          address: customerAddress,
+          coords: customerCoords,
+          status: 'estimated',
+          customerName: jobName || undefined,
+          competitor: jobCompetitor || undefined,
+          distance: jobDistance,
+        },
+      });
+
+      const syncedAt = new Date().toISOString();
+      setLastSyncedAt(syncedAt);
+      setLastSyncedEstimateId(persistResult.estimateId ?? null);
       setSyncErrorMessage(null);
-
-      const jobKey = makeJobKey(jobName, customerAddress);
-      void setJobStatus(jobKey, 'estimated').then(() => setMapRefreshKey((value) => value + 1));
-
-      try {
-        logEvent('estimate.calculated', {
-          jobName: jobName || 'Job',
-          totalArea,
-          crackLength,
-          includeSealcoating,
-          includeStriping,
-          includeCleaningRepair,
-          numCustomServices: customServices.length,
-          total: result.costs.total,
-        });
-      } catch {}
-
-      if (!isSupabaseConfigured) {
-        setLastSyncedAt(null);
-        setLastSyncedEstimateId(null);
-        return;
-      }
-
-      setIsPersistingEstimate(true);
-      try {
-        const persistResult = await persistEstimateResult({
-          inputs,
-          costs: result.costs,
-          breakdown: result.breakdown,
-          customServices,
-          premium: {
-            edgePushing: premiumEdgePushing,
-            weedKiller: premiumWeedKiller,
-            crackCleaning: premiumCrackCleaning,
-            powerWashing: premiumPowerWashing,
-            debrisRemoval: premiumDebrisRemoval,
-          },
-          job: {
-            name: jobName || 'Mission',
-            address: customerAddress,
-            coords: customerCoords,
-            status: 'estimated',
-            customerName: jobName || undefined,
-            competitor: jobCompetitor || undefined,
-            distance: jobDistance,
-          },
-        });
-
-        const syncedAt = new Date().toISOString();
-        setLastSyncedAt(syncedAt);
-        setLastSyncedEstimateId(persistResult.estimateId ?? null);
-        setSyncErrorMessage(null);
-        toast.success('Estimate synced to mission records');
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : 'Failed to sync estimate to Supabase.';
-        setSyncErrorMessage(message);
-        toast.error(message);
-        logError(error, { source: 'estimate.persist', jobName });
-      } finally {
-        setIsPersistingEstimate(false);
-      }
+      toast.success('Estimate synced to mission records');
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to sync estimate to Supabase.';
+      setSyncErrorMessage(message);
+      toast.error(message);
+      logError(error, { source: 'estimate.persist', jobName });
+    } finally {
+      setIsPersistingEstimate(false);
+    }
   };
 
   const handlePrint = () => {

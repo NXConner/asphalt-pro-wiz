@@ -1,9 +1,18 @@
 import { motion } from 'framer-motion';
-import { GripVertical, Pin, PinOff, Bookmark, Zap, AlertCircle, Maximize2, Minimize2 } from 'lucide-react';
+import {
+  GripVertical,
+  Pin,
+  PinOff,
+  Bookmark,
+  Zap,
+  AlertCircle,
+  Maximize2,
+  Minimize2,
+} from 'lucide-react';
 import { memo } from 'react';
 
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface HudHeaderProps {
   missionName: string;
@@ -38,12 +47,17 @@ export const HudHeader = memo(function HudHeader({
         <button
           className={cn(
             'touch-none',
-            isPinned ? 'cursor-not-allowed' : 'cursor-grab active:cursor-grabbing'
+            isPinned ? 'cursor-not-allowed' : 'cursor-grab active:cursor-grabbing',
           )}
           aria-label={isPinned ? 'HUD is pinned' : 'Drag to reposition HUD'}
           disabled={isPinned}
         >
-          <GripVertical className={cn('h-5 w-5', isPinned ? 'text-muted-foreground/40' : 'text-muted-foreground')} />
+          <GripVertical
+            className={cn(
+              'h-5 w-5',
+              isPinned ? 'text-muted-foreground/40' : 'text-muted-foreground',
+            )}
+          />
         </button>
       )}
       <div className="flex-1 min-w-0">
@@ -91,11 +105,7 @@ export const HudHeader = memo(function HudHeader({
             className="h-8 w-8 p-0"
             aria-label={isPinned ? 'Unpin HUD' : 'Pin HUD'}
           >
-            {isPinned ? (
-              <Pin className="h-4 w-4 text-primary" />
-            ) : (
-              <PinOff className="h-4 w-4" />
-            )}
+            {isPinned ? <Pin className="h-4 w-4 text-primary" /> : <PinOff className="h-4 w-4" />}
           </Button>
         )}
         <motion.span
@@ -117,11 +127,7 @@ export const HudHeader = memo(function HudHeader({
             className="h-9 w-9 p-0"
             aria-label={isExpanded ? 'Collapse HUD' : 'Expand HUD'}
           >
-            {isExpanded ? (
-              <Minimize2 className="h-4 w-4" />
-            ) : (
-              <Maximize2 className="h-4 w-4" />
-            )}
+            {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </Button>
         )}
       </div>

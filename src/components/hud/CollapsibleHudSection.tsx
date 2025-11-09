@@ -1,11 +1,8 @@
-import { ReactNode, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { ReactNode, useState } from 'react';
+
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 
 interface CollapsibleHudSectionProps {
   title: string;
@@ -40,7 +37,7 @@ export function CollapsibleHudSection({
         <ChevronDown
           className={cn(
             'h-4 w-4 text-muted-foreground transition-transform duration-200',
-            isOpen && 'rotate-180'
+            isOpen && 'rotate-180',
           )}
         />
       </CollapsibleTrigger>

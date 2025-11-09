@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -7,10 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { saveDoc, makeJobKey } from '@/lib/idb';
 import { isSupabaseConfigured } from '@/integrations/supabase/client';
-import { saveEstimateDocument } from '@/modules/estimate/persistence';
+import { saveDoc, makeJobKey } from '@/lib/idb';
 import { logError } from '@/lib/logging';
+import { saveEstimateDocument } from '@/modules/estimate/persistence';
 
 interface DocumentGeneratorProps {
   jobName: string;
@@ -102,42 +101,42 @@ export function DocumentGenerator({ jobName, customerAddress }: DocumentGenerato
     download(blob, `${title}.csv`);
   };
 
-    const saveRecord = async () => {
-      const jobKey = makeJobKey(jobName, customerAddress);
-      await saveDoc(jobKey, title, {
-        docType,
-        clientName,
+  const saveRecord = async () => {
+    const jobKey = makeJobKey(jobName, customerAddress);
+    await saveDoc(jobKey, title, {
+      docType,
+      clientName,
+      customerAddress,
+      schedule,
+      notes,
+      priceSummary,
+      createdAt: new Date().toISOString(),
+    });
+
+    if (!isSupabaseConfigured) {
+      toast.success('Document saved locally');
+      return;
+    }
+
+    try {
+      await saveEstimateDocument({
+        jobName,
         customerAddress,
+        title,
+        docType,
+        htmlContent,
+        markdownContent,
         schedule,
+        clientName,
         notes,
         priceSummary,
-        createdAt: new Date().toISOString(),
       });
-
-      if (!isSupabaseConfigured) {
-        toast.success('Document saved locally');
-        return;
-      }
-
-      try {
-        await saveEstimateDocument({
-          jobName,
-          customerAddress,
-          title,
-          docType,
-          htmlContent,
-          markdownContent,
-          schedule,
-          clientName,
-          notes,
-          priceSummary,
-        });
-        toast.success('Document synced to mission records');
-      } catch (error) {
-        toast.error('Document saved locally, but cloud sync failed');
-        logError(error, { source: 'document.save', title });
-      }
-    };
+      toast.success('Document synced to mission records');
+    } catch (error) {
+      toast.error('Document saved locally, but cloud sync failed');
+      logError(error, { source: 'document.save', title });
+    }
+  };
 
   return (
     <Card>
@@ -167,7 +166,11 @@ export function DocumentGenerator({ jobName, customerAddress }: DocumentGenerato
           </div>
           <div>
             <Label htmlFor="client-name">Client Name</Label>
-            <Input id="client-name" value={clientName} onChange={(e) => setClientName(e.target.value)} />
+            <Input
+              id="client-name"
+              value={clientName}
+              onChange={(e) => setClientName(e.target.value)}
+            />
           </div>
           <div>
             <Label htmlFor="schedule">Schedule</Label>

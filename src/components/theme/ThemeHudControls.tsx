@@ -15,11 +15,14 @@ import {
 } from 'lucide-react';
 import { useRef, useState, type ChangeEvent } from 'react';
 
+import { Kbd } from '@/components/common/Kbd';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { exportHudConfigArchive, importHudConfigArchive } from '@/lib/hudConfigSync';
 import type {
   HudPresetMode,
   HudLayoutPreset,
@@ -34,9 +37,6 @@ import type {
   HudMultiMonitorStrategy,
   ThemePreferences,
 } from '@/lib/theme';
-import { useToast } from '@/hooks/use-toast';
-import { Kbd } from '@/components/common/Kbd';
-import { exportHudConfigArchive, importHudConfigArchive } from '@/lib/hudConfigSync';
 
 interface ThemeHudControlsProps {
   hudOpacity: number;
@@ -147,15 +147,15 @@ export function ThemeHudControls({
   setHudGridSize,
   hudCollisionDetection,
   setHudCollisionDetection,
-    hudAnimationPreset,
-    setHudAnimationPreset,
-    hudGestureSensitivity,
-    setHudGestureSensitivity,
-    hudMultiMonitorStrategy,
-    setHudMultiMonitorStrategy,
-    hudKeyboardNavigation,
-    setHudKeyboardNavigation,
-    hudDisplayLayouts,
+  hudAnimationPreset,
+  setHudAnimationPreset,
+  hudGestureSensitivity,
+  setHudGestureSensitivity,
+  hudMultiMonitorStrategy,
+  setHudMultiMonitorStrategy,
+  hudKeyboardNavigation,
+  setHudKeyboardNavigation,
+  hudDisplayLayouts,
 }: ThemeHudControlsProps) {
   const [localOpacity, setLocalOpacity] = useState(hudOpacity);
   const [localBlur, setLocalBlur] = useState(hudBlur);
@@ -183,29 +183,73 @@ export function ThemeHudControls({
     { mode: 'center', label: 'Center' },
   ];
 
-  const animationPresetOptions: Array<{ id: HudAnimationPresetId; label: string; description: string }> = [
-    { id: 'deploy', label: 'Deploy', description: 'Heroic slide-in for mission-critical overlays.' },
+  const animationPresetOptions: Array<{
+    id: HudAnimationPresetId;
+    label: string;
+    description: string;
+  }> = [
+    {
+      id: 'deploy',
+      label: 'Deploy',
+      description: 'Heroic slide-in for mission-critical overlays.',
+    },
     { id: 'patrol', label: 'Patrol', description: 'Gliding cadence for long-running monitoring.' },
-    { id: 'stealth', label: 'Stealth', description: 'Minimal motion honoring reduced-motion settings.' },
+    {
+      id: 'stealth',
+      label: 'Stealth',
+      description: 'Minimal motion honoring reduced-motion settings.',
+    },
     { id: 'recon', label: 'Recon', description: 'Energetic sweep for tactical scouting.' },
     { id: 'command', label: 'Command', description: 'Authority pulse with subtle glow accents.' },
   ];
 
-  const gestureSensitivityOptions: Array<{ id: HudGestureSensitivity; label: string; description: string }> = [
-    { id: 'conservative', label: 'Conservative', description: 'Higher thresholds to avoid accidental drags.' },
+  const gestureSensitivityOptions: Array<{
+    id: HudGestureSensitivity;
+    label: string;
+    description: string;
+  }> = [
+    {
+      id: 'conservative',
+      label: 'Conservative',
+      description: 'Higher thresholds to avoid accidental drags.',
+    },
     { id: 'standard', label: 'Standard', description: 'Balanced touch experience for most crews.' },
-    { id: 'aggressive', label: 'Aggressive', description: 'Responsive pinch and swipe for gloves or stylus.' },
+    {
+      id: 'aggressive',
+      label: 'Aggressive',
+      description: 'Responsive pinch and swipe for gloves or stylus.',
+    },
   ];
 
-  const multiMonitorOptions: Array<{ id: HudMultiMonitorStrategy; label: string; description: string }> = [
-    { id: 'auto', label: 'Adaptive', description: 'Clamp to active viewport; recover when switching screens.' },
-    { id: 'persist-latest', label: 'Persist Latest', description: 'Reuse most recent layout if display not recognized.' },
-    { id: 'single', label: 'Single Display', description: 'Ignore additional displays; use base viewport only.' },
+  const multiMonitorOptions: Array<{
+    id: HudMultiMonitorStrategy;
+    label: string;
+    description: string;
+  }> = [
+    {
+      id: 'auto',
+      label: 'Adaptive',
+      description: 'Clamp to active viewport; recover when switching screens.',
+    },
+    {
+      id: 'persist-latest',
+      label: 'Persist Latest',
+      description: 'Reuse most recent layout if display not recognized.',
+    },
+    {
+      id: 'single',
+      label: 'Single Display',
+      description: 'Ignore additional displays; use base viewport only.',
+    },
   ];
 
   const handleSaveLayout = () => {
     if (!layoutName.trim()) {
-      toast({ title: 'Enter a name', description: 'Please enter a name for the layout', variant: 'destructive' });
+      toast({
+        title: 'Enter a name',
+        description: 'Please enter a name for the layout',
+        variant: 'destructive',
+      });
       return;
     }
     onSaveLayout(layoutName.trim());
@@ -215,7 +259,11 @@ export function ThemeHudControls({
 
   const handleSaveProfile = () => {
     if (!profileName.trim()) {
-      toast({ title: 'Enter a name', description: 'Please enter a name for the profile', variant: 'destructive' });
+      toast({
+        title: 'Enter a name',
+        description: 'Please enter a name for the profile',
+        variant: 'destructive',
+      });
       return;
     }
     onSaveProfile(profileName.trim());
@@ -233,7 +281,9 @@ export function ThemeHudControls({
       });
       toast({
         title: 'HUD configuration exported',
-        description: includeLayouts ? 'Display layouts included for each monitor.' : 'Exported without layout snapshots.',
+        description: includeLayouts
+          ? 'Display layouts included for each monitor.'
+          : 'Exported without layout snapshots.',
       });
     } catch (error) {
       toast({
@@ -318,7 +368,9 @@ export function ThemeHudControls({
                 <Label htmlFor="hud-opacity" className="text-sm font-medium text-foreground/90">
                   Panel Opacity
                 </Label>
-                <span className="font-mono text-xs text-muted-foreground">{Math.round(localOpacity * 100)}%</span>
+                <span className="font-mono text-xs text-muted-foreground">
+                  {Math.round(localOpacity * 100)}%
+                </span>
               </div>
               <Slider
                 id="hud-opacity"
@@ -340,7 +392,9 @@ export function ThemeHudControls({
                 <Label htmlFor="hud-blur" className="text-sm font-medium text-foreground/90">
                   Backdrop Blur
                 </Label>
-                <span className="font-mono text-xs text-muted-foreground">{Math.round(localBlur)}px</span>
+                <span className="font-mono text-xs text-muted-foreground">
+                  {Math.round(localBlur)}px
+                </span>
               </div>
               <Slider
                 id="hud-blur"
@@ -364,10 +418,10 @@ export function ThemeHudControls({
                   Enable Animations
                 </Label>
               </div>
-              <Switch 
-                id="hud-animations" 
-                checked={hudAnimationsEnabled} 
-                onCheckedChange={onHudAnimationsEnabledChange} 
+              <Switch
+                id="hud-animations"
+                checked={hudAnimationsEnabled}
+                onCheckedChange={onHudAnimationsEnabledChange}
               />
             </div>
 
@@ -440,11 +494,7 @@ export function ThemeHudControls({
                   Pin Panel
                 </Label>
               </div>
-              <Switch 
-                id="hud-pinned" 
-                checked={hudPinned} 
-                onCheckedChange={onHudPinnedChange} 
-              />
+              <Switch id="hud-pinned" checked={hudPinned} onCheckedChange={onHudPinnedChange} />
             </div>
 
             <div className="space-y-3 pt-3 border-t border-border/30">
@@ -492,7 +542,10 @@ export function ThemeHudControls({
                         size="sm"
                         onClick={() => {
                           onDeleteLayout(layout.name);
-                          toast({ title: 'Layout deleted', description: `"${layout.name}" removed` });
+                          toast({
+                            title: 'Layout deleted',
+                            description: `"${layout.name}" removed`,
+                          });
                         }}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -503,154 +556,183 @@ export function ThemeHudControls({
               </div>
             )}
 
-              <div className="space-y-3 pt-3 border-t border-border/30">
-                <Label className="text-sm font-medium text-foreground/90">Transition Preset</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {(['smooth', 'instant', 'bouncy', 'slow'] as const).map((preset) => (
-                    <Button
-                      key={preset}
-                      type="button"
-                      variant={hudTransitionPreset === preset ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setHudTransitionPreset(preset)}
-                      className="capitalize"
-                    >
-                      {preset}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-3 pt-3 border-t border-border/30">
-                <div className="flex items-center gap-3">
-                  <Zap className="h-4 w-4 text-primary" />
-                  <Label className="text-sm font-medium text-foreground/90">Animation Preset</Label>
-                </div>
-                <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-                  {animationPresetOptions.map((preset) => (
-                    <Button
-                      key={preset.id}
-                      type="button"
-                      size="sm"
-                      variant={hudAnimationPreset === preset.id ? 'default' : 'outline'}
-                      onClick={() => setHudAnimationPreset(preset.id)}
-                      className="text-left"
-                    >
-                      <span className="block text-xs font-semibold uppercase tracking-wide">{preset.label}</span>
-                      <span className="block text-[0.7rem] text-muted-foreground">{preset.description}</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-3 pt-3 border-t border-border/30">
-                <div className="flex items-center gap-3">
-                  <MousePointer2 className="h-4 w-4 text-primary" />
-                  <Label className="text-sm font-medium text-foreground/90">Gesture Sensitivity</Label>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {gestureSensitivityOptions.map((option) => (
-                    <Button
-                      key={option.id}
-                      type="button"
-                      size="sm"
-                      variant={hudGestureSensitivity === option.id ? 'default' : 'outline'}
-                      onClick={() => setHudGestureSensitivity(option.id)}
-                      className="flex flex-col gap-0.5 text-left"
-                    >
-                      <span className="text-xs font-semibold uppercase tracking-wide">{option.label}</span>
-                      <span className="text-[0.65rem] text-muted-foreground">{option.description}</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-3 pt-3 border-t border-border/30">
-                <div className="flex items-center gap-3">
-                  <MonitorSmartphone className="h-4 w-4 text-primary" />
-                  <Label className="text-sm font-medium text-foreground/90">Multi-Monitor Strategy</Label>
-                </div>
-                <div className="grid gap-2 md:grid-cols-3">
-                  {multiMonitorOptions.map((option) => (
-                    <Button
-                      key={option.id}
-                      type="button"
-                      size="sm"
-                      variant={hudMultiMonitorStrategy === option.id ? 'default' : 'outline'}
-                      onClick={() => setHudMultiMonitorStrategy(option.id)}
-                      className="flex flex-col gap-0.5 text-left"
-                    >
-                      <span className="text-xs font-semibold uppercase tracking-wide">{option.label}</span>
-                      <span className="text-[0.65rem] text-muted-foreground">{option.description}</span>
-                    </Button>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Layout snapshots stored: <span className="font-semibold">{layoutCount}</span>
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between rounded-lg border border-border/40 bg-card/30 p-3">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
-                    <Keyboard className="h-4 w-4 text-primary" />
-                    <Label htmlFor="hud-keyboard-navigation" className="text-sm font-medium text-foreground/90">
-                      Keyboard Navigation
-                    </Label>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Focus the HUD and nudge with <Kbd>Arrow Keys</Kbd>. Hold <Kbd>Shift</Kbd> for larger steps.
-                  </p>
-                </div>
-                <Switch
-                  id="hud-keyboard-navigation"
-                  checked={hudKeyboardNavigation}
-                  onCheckedChange={(checked) => setHudKeyboardNavigation(checked)}
-                />
-              </div>
-
-              <div className="space-y-3 pt-3 border-t border-border/30">
-                <div className="flex items-center gap-3">
-                  <Download className="h-4 w-4 text-primary" />
-                  <Label className="text-sm font-medium text-foreground/90">Export / Import Configuration</Label>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button type="button" size="sm" variant="outline" onClick={handleExportConfig} disabled={isExporting}>
-                    <Download className="mr-2 h-4 w-4" />
-                    {isExporting ? 'Exporting…' : 'Export HUD'}
-                  </Button>
+            <div className="space-y-3 pt-3 border-t border-border/30">
+              <Label className="text-sm font-medium text-foreground/90">Transition Preset</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {(['smooth', 'instant', 'bouncy', 'slow'] as const).map((preset) => (
                   <Button
+                    key={preset}
+                    type="button"
+                    variant={hudTransitionPreset === preset ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setHudTransitionPreset(preset)}
+                    className="capitalize"
+                  >
+                    {preset}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-3 border-t border-border/30">
+              <div className="flex items-center gap-3">
+                <Zap className="h-4 w-4 text-primary" />
+                <Label className="text-sm font-medium text-foreground/90">Animation Preset</Label>
+              </div>
+              <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+                {animationPresetOptions.map((preset) => (
+                  <Button
+                    key={preset.id}
                     type="button"
                     size="sm"
-                    variant="outline"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isImporting}
+                    variant={hudAnimationPreset === preset.id ? 'default' : 'outline'}
+                    onClick={() => setHudAnimationPreset(preset.id)}
+                    className="text-left"
                   >
-                    <Upload className="mr-2 h-4 w-4" />
-                    {isImporting ? 'Importing…' : 'Import HUD'}
+                    <span className="block text-xs font-semibold uppercase tracking-wide">
+                      {preset.label}
+                    </span>
+                    <span className="block text-[0.7rem] text-muted-foreground">
+                      {preset.description}
+                    </span>
                   </Button>
-                  <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/20 px-3 py-1.5">
-                    <Switch
-                      id="hud-include-layouts"
-                      checked={includeLayouts}
-                      onCheckedChange={(checked) => setIncludeLayouts(checked)}
-                    />
-                    <Label htmlFor="hud-include-layouts" className="text-xs text-muted-foreground">
-                      Include layouts ({layoutCount})
-                    </Label>
-                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-3 border-t border-border/30">
+              <div className="flex items-center gap-3">
+                <MousePointer2 className="h-4 w-4 text-primary" />
+                <Label className="text-sm font-medium text-foreground/90">
+                  Gesture Sensitivity
+                </Label>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {gestureSensitivityOptions.map((option) => (
+                  <Button
+                    key={option.id}
+                    type="button"
+                    size="sm"
+                    variant={hudGestureSensitivity === option.id ? 'default' : 'outline'}
+                    onClick={() => setHudGestureSensitivity(option.id)}
+                    className="flex flex-col gap-0.5 text-left"
+                  >
+                    <span className="text-xs font-semibold uppercase tracking-wide">
+                      {option.label}
+                    </span>
+                    <span className="text-[0.65rem] text-muted-foreground">
+                      {option.description}
+                    </span>
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-3 border-t border-border/30">
+              <div className="flex items-center gap-3">
+                <MonitorSmartphone className="h-4 w-4 text-primary" />
+                <Label className="text-sm font-medium text-foreground/90">
+                  Multi-Monitor Strategy
+                </Label>
+              </div>
+              <div className="grid gap-2 md:grid-cols-3">
+                {multiMonitorOptions.map((option) => (
+                  <Button
+                    key={option.id}
+                    type="button"
+                    size="sm"
+                    variant={hudMultiMonitorStrategy === option.id ? 'default' : 'outline'}
+                    onClick={() => setHudMultiMonitorStrategy(option.id)}
+                    className="flex flex-col gap-0.5 text-left"
+                  >
+                    <span className="text-xs font-semibold uppercase tracking-wide">
+                      {option.label}
+                    </span>
+                    <span className="text-[0.65rem] text-muted-foreground">
+                      {option.description}
+                    </span>
+                  </Button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Layout snapshots stored: <span className="font-semibold">{layoutCount}</span>
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-border/40 bg-card/30 p-3">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <Keyboard className="h-4 w-4 text-primary" />
+                  <Label
+                    htmlFor="hud-keyboard-navigation"
+                    className="text-sm font-medium text-foreground/90"
+                  >
+                    Keyboard Navigation
+                  </Label>
                 </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="application/json"
-                  className="hidden"
-                  onChange={handleImportConfig}
-                />
                 <p className="text-xs text-muted-foreground">
-                  Export safely archives HUD animation, gestures, and display layouts for reuse across crews.
+                  Focus the HUD and nudge with <Kbd>Arrow Keys</Kbd>. Hold <Kbd>Shift</Kbd> for
+                  larger steps.
                 </p>
               </div>
+              <Switch
+                id="hud-keyboard-navigation"
+                checked={hudKeyboardNavigation}
+                onCheckedChange={(checked) => setHudKeyboardNavigation(checked)}
+              />
+            </div>
+
+            <div className="space-y-3 pt-3 border-t border-border/30">
+              <div className="flex items-center gap-3">
+                <Download className="h-4 w-4 text-primary" />
+                <Label className="text-sm font-medium text-foreground/90">
+                  Export / Import Configuration
+                </Label>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={handleExportConfig}
+                  disabled={isExporting}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  {isExporting ? 'Exporting…' : 'Export HUD'}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isImporting}
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  {isImporting ? 'Importing…' : 'Import HUD'}
+                </Button>
+                <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/20 px-3 py-1.5">
+                  <Switch
+                    id="hud-include-layouts"
+                    checked={includeLayouts}
+                    onCheckedChange={(checked) => setIncludeLayouts(checked)}
+                  />
+                  <Label htmlFor="hud-include-layouts" className="text-xs text-muted-foreground">
+                    Include layouts ({layoutCount})
+                  </Label>
+                </div>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/json"
+                className="hidden"
+                onChange={handleImportConfig}
+              />
+              <p className="text-xs text-muted-foreground">
+                Export safely archives HUD animation, gestures, and display layouts for reuse across
+                crews.
+              </p>
+            </div>
 
             <div className="space-y-3 pt-3 border-t border-border/30">
               <Label className="text-sm font-medium text-foreground/90">Theme Variant</Label>
@@ -674,11 +756,7 @@ export function ThemeHudControls({
               <Label htmlFor="hud-mini-mode" className="text-sm font-medium text-foreground/90">
                 Mini Mode
               </Label>
-              <Switch
-                id="hud-mini-mode"
-                checked={hudMiniMode}
-                onCheckedChange={setHudMiniMode}
-              />
+              <Switch id="hud-mini-mode" checked={hudMiniMode} onCheckedChange={setHudMiniMode} />
             </div>
 
             <div className="space-y-3 pt-3 border-t border-border/30">
@@ -686,15 +764,14 @@ export function ThemeHudControls({
                 <Label htmlFor="hud-auto-hide" className="text-sm font-medium text-foreground/90">
                   Auto-Hide
                 </Label>
-                <Switch
-                  id="hud-auto-hide"
-                  checked={hudAutoHide}
-                  onCheckedChange={setHudAutoHide}
-                />
+                <Switch id="hud-auto-hide" checked={hudAutoHide} onCheckedChange={setHudAutoHide} />
               </div>
               {hudAutoHide && (
                 <div className="space-y-2">
-                  <Label htmlFor="hud-auto-hide-delay" className="text-sm font-medium text-muted-foreground">
+                  <Label
+                    htmlFor="hud-auto-hide-delay"
+                    className="text-sm font-medium text-muted-foreground"
+                  >
                     Delay: {hudAutoHideDelay}ms
                   </Label>
                   <Slider
@@ -726,7 +803,10 @@ export function ThemeHudControls({
               </div>
               {hudProximityEffect && (
                 <div className="space-y-2">
-                  <Label htmlFor="hud-proximity-distance" className="text-sm font-medium text-muted-foreground">
+                  <Label
+                    htmlFor="hud-proximity-distance"
+                    className="text-sm font-medium text-muted-foreground"
+                  >
                     Distance: {hudProximityDistance}px
                   </Label>
                   <Slider
@@ -763,7 +843,10 @@ export function ThemeHudControls({
             </div>
 
             <div className="flex items-center justify-between rounded-lg border border-border/40 bg-card/30 p-3">
-              <Label htmlFor="hud-quick-shortcuts" className="text-sm font-medium text-foreground/90">
+              <Label
+                htmlFor="hud-quick-shortcuts"
+                className="text-sm font-medium text-foreground/90"
+              >
                 Quick Shortcuts
               </Label>
               <Switch
@@ -776,7 +859,9 @@ export function ThemeHudControls({
             <div className="space-y-3 pt-3 border-t border-border/30">
               <div className="flex items-center gap-3">
                 <Layers className="h-4 w-4 text-primary" />
-                <Label className="text-sm font-medium text-foreground/90">Configuration Profiles</Label>
+                <Label className="text-sm font-medium text-foreground/90">
+                  Configuration Profiles
+                </Label>
               </div>
               <div className="flex gap-2">
                 <Input
@@ -818,7 +903,10 @@ export function ThemeHudControls({
                         size="sm"
                         onClick={() => {
                           onDeleteProfile(profile.name);
-                          toast({ title: 'Profile deleted', description: `"${profile.name}" removed` });
+                          toast({
+                            title: 'Profile deleted',
+                            description: `"${profile.name}" removed`,
+                          });
                         }}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -842,17 +930,16 @@ export function ThemeHudControls({
                   </Label>
                   <p className="text-xs text-muted-foreground">Snap to grid when dragging</p>
                 </div>
-                <Switch
-                  id="hud-grid-snap"
-                  checked={hudGridSnap}
-                  onCheckedChange={setHudGridSnap}
-                />
+                <Switch id="hud-grid-snap" checked={hudGridSnap} onCheckedChange={setHudGridSnap} />
               </div>
-              
+
               {hudGridSnap && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="hud-grid-size" className="text-sm font-medium text-foreground/90">
+                    <Label
+                      htmlFor="hud-grid-size"
+                      className="text-sm font-medium text-foreground/90"
+                    >
                       Grid Size: {hudGridSize}px
                     </Label>
                   </div>
@@ -866,7 +953,7 @@ export function ThemeHudControls({
                   />
                 </div>
               )}
-              
+
               <div className="flex items-center justify-between rounded-lg border border-border/40 bg-card/30 p-3">
                 <div className="space-y-0.5">
                   <Label htmlFor="hud-collision" className="text-sm font-medium text-foreground/90">
