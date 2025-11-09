@@ -37,6 +37,7 @@ export default function Portal() {
 
   return (
     <div className="container max-w-4xl mx-auto p-6">
+      <h1 className="sr-only">Customer Portal</h1>
       <Card>
         <CardHeader>
           <CardTitle>Customer Portal</CardTitle>
