@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Pavement Performance Suite – Edge Functions API",
-    "version": "0.2.0",
-    "description": "Documented endpoints for Supabase Edge Functions that power PPS AI proxying and observability beacons.",
+    "version": "0.3.0",
+    "description": "OpenAPI specification for Supabase Edge Functions that power PPS AI proxying and observability beacons. Generated via swagger-jsdoc.",
     "contact": {
       "name": "Pavement Performance Suite",
       "url": "https://github.com/continue-repo"
@@ -42,7 +42,7 @@
           "AI"
         ],
         "summary": "Proxy Gemini API calls",
-        "description": "Routes chat, image, and embedding requests to Google Gemini models while keeping API keys server-side.",
+        "description": "Routes chat, image, and embedding requests to Google Gemini models while keeping API keys on the server. Requires a Supabase JWT (anon or service) supplied as `Authorization: Bearer <token>`.",
         "operationId": "GeminiProxy",
         "security": [
           {
@@ -63,10 +63,9 @@
                     "action": "chat",
                     "contents": [
                       {
-                        "role": "user",
                         "parts": [
                           {
-                            "text": "Summarize sealcoating steps"
+                            "text": "Summarize sealcoating steps for a 25,000 sq ft church campus."
                           }
                         ]
                       }
@@ -96,7 +95,17 @@
             }
           },
           "400": {
-            "description": "Unsupported action or malformed body"
+            "description": "Unsupported action or malformed body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing Authorization header"
           },
           "405": {
             "description": "Method not allowed"
@@ -113,7 +122,7 @@
           "Observability"
         ],
         "summary": "Ingest client log beacons",
-        "description": "Receives structured telemetry events from the PPS frontend for centralized logging and later fan-out.",
+        "description": "Receives structured telemetry events from the Pavement Performance Suite web client for centralized logging and incident roll-up. Supports single objects or batches up to 50 entries.",
         "operationId": "LogBeacon",
         "security": [
           {
@@ -126,6 +135,32 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/LogBeaconPayload"
+              },
+              "examples": {
+                "single": {
+                  "summary": "Single telemetry event",
+                  "value": {
+                    "event": "lovable.asset_load_error",
+                    "level": "error",
+                    "assetUrl": "https://preview.example.com/static/logo.png",
+                    "pageUrl": "https://preview.example.com/dashboard",
+                    "reason": "Failed to load resource"
+                  }
+                },
+                "batch": {
+                  "summary": "Batch payload",
+                  "value": [
+                    {
+                      "event": "mission.scheduler_loaded",
+                      "level": "info"
+                    },
+                    {
+                      "event": "lovable.asset_recovered",
+                      "level": "warn",
+                      "message": "Recovered after retry"
+                    }
+                  ]
+                }
               }
             }
           }
@@ -136,19 +171,20 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ingested": {
-                      "type": "integer",
-                      "description": "Number of events successfully persisted."
-                    }
-                  }
+                  "$ref": "#/components/schemas/LogBeaconResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "Invalid JSON payload or validation failure"
+            "description": "Invalid JSON payload or validation failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "401": {
             "description": "Missing or invalid Supabase JWT"
@@ -316,6 +352,52 @@
             "maxItems": 50
           }
         ]
+      },
+      "LogBeaconResponse": {
+        "type": "object",
+        "properties": {
+          "ingested": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of events successfully persisted."
+          }
+        },
+        "required": [
+          "ingested"
+        ],
+        "additionalProperties": false
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Human-readable error message."
+          },
+          "details": {
+            "description": "Optional validation or diagnostic details.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": true
       }
     }
   }

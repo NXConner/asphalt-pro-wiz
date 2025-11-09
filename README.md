@@ -229,7 +229,7 @@ npm run android:gradle:debug
 ### Release Checklist
 
 1. `npm run security:scan`
-2. `npm run openapi:generate`
+2. `npm run openapi:generate` (parses Supabase Edge Function annotations and refreshes `docs/swagger.json`)
 3. `npm run test:e2e`
 4. Run load smoke (`k6-observability`, `k6-estimate`, or `artillery`)
 5. Update `CHANGELOG.md`

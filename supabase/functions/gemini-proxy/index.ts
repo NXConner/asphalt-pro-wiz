@@ -1,6 +1,59 @@
 // Supabase Edge Function: Gemini Proxy with Authentication & Validation
 // Deploy with `supabase functions deploy gemini-proxy` and set secret GEMINI_API_KEY
 
+/**
+ * @openapi
+ * /gemini-proxy:
+ *   post:
+ *     tags:
+ *       - AI
+ *     summary: Proxy Gemini API calls
+ *     description: >
+ *       Routes chat, image, and embedding requests to Google Gemini models while keeping API keys
+ *       on the server. Requires a Supabase JWT (anon or service) supplied as `Authorization: Bearer <token>`.
+ *     operationId: GeminiProxy
+ *     security:
+ *       - supabaseAnonKey: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         'application/json':
+ *           schema:
+ *             $ref: '#/components/schemas/GeminiProxyRequest'
+ *           examples:
+ *             chat:
+ *               summary: Chat prompt
+ *               value:
+ *                 action: chat
+ *                 contents:
+ *                   - parts:
+ *                       - text: Summarize sealcoating steps for a 25,000 sq ft church campus.
+ *             embed:
+ *               summary: Embedding request
+ *               value:
+ *                 action: embed
+ *                 text: Church lot resurfacing quote
+ *     responses:
+ *       '200':
+ *         description: Gemini response payload
+ *         content:
+ *           'application/json':
+ *             schema:
+ *               $ref: '#/components/schemas/GeminiProxyResponse'
+ *       '400':
+ *         description: Unsupported action or malformed body
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '401':
+ *         description: Missing Authorization header
+ *       '405':
+ *         description: Method not allowed
+ *       '500':
+ *         description: Upstream error or missing API key
+ */
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
