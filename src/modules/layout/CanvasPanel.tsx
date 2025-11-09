@@ -163,7 +163,6 @@ export function CanvasPanel({
                 onClick={toggleCollapse}
                 aria-expanded={!collapsed}
                 aria-controls={bodyId}
-                className="bg-white/10 text-slate-100 hover:bg-white/20"
               >
                 {collapsed ? (
                   <Maximize2 className="h-4 w-4" aria-hidden />

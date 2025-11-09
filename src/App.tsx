@@ -104,15 +104,17 @@ const App = () => {
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
-      document.documentElement.dataset.routerBase = baseName;
+      document.documentElement.dataset.routerBase = routerBase;
     }
     if (typeof window !== 'undefined') {
-      (window as typeof window & { __PPS_ROUTER_BASE?: string }).__PPS_ROUTER_BASE = baseName;
+      (window as typeof window & { __PPS_ROUTER_BASE?: string }).__PPS_ROUTER_BASE = routerBase;
       // Debug: trace base routing
-      try { console.debug('[App] Router base set', { baseName, path: window.location.pathname }); } catch {}
+      try {
+        console.debug('[App] Router base set', { baseName: routerBase, path: window.location.pathname });
+      } catch {}
     }
-    logEvent('lovable.routing.base', { baseName });
-  }, [baseName]);
+    logEvent('lovable.routing.base', { baseName: routerBase });
+  }, [baseName, routerBase]);
 
   return (
     <ErrorBoundary>
@@ -144,21 +146,18 @@ const App = () => {
                                   </div>
                                 }
                               >
-                                  <Routes>
+                                <Routes>
                                     <Route path="/auth" element={<Auth />} />
                                     <Route path="/health" element={<Health />} />
                                     <Route
                                       path="/"
                                       element={
-                                        isPreviewEnv ? (
-                                          <PreviewSafe />
-                                        ) : (
-                                          <Guard>
-                                            <Index />
-                                          </Guard>
-                                        )
+                                        <Guard>
+                                          <Index />
+                                        </Guard>
                                       }
                                     />
+                                    <Route path="/preview-safe" element={<PreviewSafe />} />
                                     <Route
                                       path="/command-center"
                                       element={

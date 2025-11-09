@@ -169,7 +169,6 @@ export default function CommandCenter() {
             <Button
               asChild
               variant="secondary"
-              className="bg-white/10 text-slate-50 hover:bg-white/20"
             >
               <Link to="/">Return to Operations Canvas</Link>
             </Button>
