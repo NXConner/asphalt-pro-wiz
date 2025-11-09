@@ -5,11 +5,27 @@ import { componentTagger } from 'lovable-tagger';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+import { sanitizeViteBase } from './src/lib/routing/basePath';
+
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  // Ensure assets resolve under sub-path previews (e.g., /preview/xyz)
-  // Use relative base in production to avoid absolute /assets paths breaking behind proxies
-  base: mode === 'development' ? '/' : process.env.VITE_BASE_PATH || './',
+export default defineConfig(({ mode }) => {
+  const rawBase =
+    process.env.VITE_BASE_PATH ??
+    process.env.BASE_PATH ??
+    process.env.VERCEL_PUBLIC_BASE_PATH ??
+    undefined;
+  const resolvedBase = sanitizeViteBase(rawBase);
+
+  if (rawBase && resolvedBase !== rawBase && mode !== 'development') {
+    console.warn(
+      `[vite] Adjusted VITE_BASE_PATH from "${rawBase}" to "${resolvedBase}" to keep Lovable previews healthy.`,
+    );
+  }
+
+  return {
+    // Ensure assets resolve under sub-path previews (e.g., /preview/xyz)
+    // Use relative base in production to avoid absolute /assets paths breaking behind proxies
+    base: mode === 'development' ? '/' : resolvedBase,
   server: {
     // Bind on IPv4 for Lovable proxy compatibility and enforce port 8080
     host: true,
@@ -102,5 +118,6 @@ export default defineConfig(({ mode }) => ({
     },
     // Keep warnings meaningful while allowing split vendor chunks
     chunkSizeWarningLimit: 900,
-  },
-}));
+    },
+  };
+});

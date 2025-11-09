@@ -2,9 +2,10 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 
 import App from './App.tsx';
-
 import './index.css';
+
 import { logEvent, logVital, setLogContext } from '@/lib/logging';
+import { isLovableHost } from '@/lib/routing/basePath';
 import { applyThemePreferences, loadThemePreferences } from '@/lib/theme';
 
 // Apply saved theme asap
@@ -31,8 +32,8 @@ createRoot(rootElement).render(<App />);
 
 // Preview cache bust (Lovable hosts only) - run once per session
 try {
-  const hostname = window.location?.hostname || '';
-  const onLovableHost = /(^|\.)lovable(?:project\.com|\.app|\.dev)$/.test(hostname);
+    const hostname = window.location?.hostname || '';
+    const onLovableHost = isLovableHost(hostname);
   const clearedFlag = 'preview-cache-cleared-v1';
   if (onLovableHost && !sessionStorage.getItem(clearedFlag)) {
     sessionStorage.setItem(clearedFlag, '1');
