@@ -137,6 +137,20 @@ const fallbackBase = (): string => {
 
 let CACHED_BASE: string | undefined;
 
+const ensureBaseForLocation = (base?: string): string => {
+  if (!base || base === '/') return '/';
+  try {
+    if (typeof window === 'undefined') return base;
+    const pathname = (window as Window).location?.pathname || '/';
+    if (pathname === base || pathname.startsWith(`${base}/`)) {
+      return base;
+    }
+    return '/';
+  } catch {
+    return base;
+  }
+};
+
 export const getRouterBaseName = (): string => {
   if (CACHED_BASE) return CACHED_BASE;
   
@@ -147,9 +161,10 @@ export const getRouterBaseName = (): string => {
     fallbackBase(),
   ];
   
-  const base = candidates.find((b) => b && b !== '/') || '/';
-  CACHED_BASE = base;
-  return base;
+  const selected = candidates.find((b) => b && b !== '/') || '/';
+  const safe = ensureBaseForLocation(selected);
+  CACHED_BASE = safe;
+  return safe;
 };
 
 export const subscribeToLovableConfig = (listener: (basePath: string) => void): (() => void) => {

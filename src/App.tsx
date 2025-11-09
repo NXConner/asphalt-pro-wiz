@@ -38,7 +38,7 @@ const CommandCenter = lazy(() => import('./pages/CommandCenter'));
 const Auth = lazy(() => import('./pages/Auth'));
 const AdminPanel = lazy(() => import('@/components/AdminPanel'));
 import Health from './pages/Health';
-import PreviewSafe from './pages/PreviewSafe';
+
 const queryClient = new QueryClient();
 
 function RouteTracker() {
@@ -154,7 +154,7 @@ const App = () => {
                                         </Guard>
                                       }
                                     />
-                                    <Route path="/preview-safe" element={<PreviewSafe />} />
+                                    
                                     <Route
                                       path="/command-center"
                                       element={
