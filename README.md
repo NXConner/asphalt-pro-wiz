@@ -174,6 +174,17 @@ npx k6 run scripts/load/k6-observability.js
 
 Sends synthetic `lovable.asset_*` telemetry into the Supabase Edge Function to validate ingestion latency, dedupe, and incident rollups. Tune intensity with `STAGE_MULTIPLIER` and export JSON summaries via `--summary-export`.
 
+### k6 Gemini Proxy Assist
+
+```bash
+GEMINI_PROXY_URL=https://your-project.supabase.co/functions/v1/gemini-proxy \
+GEMINI_PROXY_TOKEN=SUPABASE_SERVICE_OR_ANON_JWT \
+GEMINI_PROMPT="Summarize church sealcoating scope best practices." \
+npx k6 run scripts/load/k6-gemini-proxy.js
+```
+
+Validates the authenticated Gemini chat proxy that powers scope recommendations. Monitors `gemini_chat_duration` and enforces `gemini_chat_success` > 95%.
+
 ### k6 Mission Sweep
 
 ```bash

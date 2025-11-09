@@ -25,6 +25,23 @@ Environment knobs:
 
 > Tip: Combine with Supabase Edge Function logs to confirm the incidents table and telemetry roll-ups remain healthy under pressure.
 
+## k6 – Gemini Proxy Chat Assist
+
+```bash
+GEMINI_PROXY_URL=https://YOUR_SUPABASE_URL/functions/v1/gemini-proxy \
+GEMINI_PROXY_TOKEN=SUPABASE_SERVICE_OR_ANON_JWT \
+GEMINI_PROMPT="Summarize church sealcoating scope best practices." \
+npx k6 run scripts/load/k6-gemini-proxy.js
+```
+
+This scenario mirrors real AI scope assist bursts:
+
+- Exercises the authenticated `gemini-proxy` Supabase Edge Function.
+- Sends repeat chat prompts with configurable prose (`GEMINI_PROMPT`).
+- Tracks `gemini_chat_duration` trend and success rate (`gemini_chat_success`) with a p95 < 1.2 s threshold.
+
+> Tip: Start with low ramp values, then scale `maxVUs` or adjust the staged target to validate rate limiting and external API quotas.
+
 ## k6 – mission scheduler smoke + ramp
 
 ```bash
