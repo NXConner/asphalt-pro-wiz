@@ -1,4 +1,3 @@
-// @ts-nocheck - This file uses window/document with typeof guards for SSR compatibility
 import { runtimeEnv } from '../runtimeEnv';
 
 const LOVABLE_HOST_REGEX = /(^|\.)lovable(?:project\.com|\.app|\.dev)$/i;
@@ -88,7 +87,8 @@ const resolveMetaBasePath = (): string | undefined => {
   if (typeof document === 'undefined') return undefined;
   for (const name of candidateMetaTags) {
     const value =
-      (document as Document).querySelector(`meta[name="${name}"]`)?.getAttribute?.('content') ?? undefined;
+      (document as Document).querySelector(`meta[name="${name}"]`)?.getAttribute?.('content') ??
+      undefined;
     const normalized = normalizeBaseCandidate(value);
     if (normalized && normalized !== '/') {
       return normalized;
@@ -173,7 +173,7 @@ export const subscribeToLovableConfig = (listener: (basePath: string) => void): 
 export const isLovableHost = (hostname?: string): boolean => {
   const subject =
     hostname ??
-    (typeof window !== 'undefined' ? (window as Window).location?.hostname ?? '' : '');
+    (typeof window !== 'undefined' ? ((window as Window).location?.hostname ?? '') : '');
   return LOVABLE_HOST_REGEX.test(subject);
 };
 
