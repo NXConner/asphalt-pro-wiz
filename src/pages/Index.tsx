@@ -1,5 +1,4 @@
 import { Shield } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ComplianceResources, type ComplianceTopic } from '@/components/ComplianceResources';

@@ -19,11 +19,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { listJobs, type SavedJob } from '@/lib/idb';
 import type { CrewMember, MissionTaskPriority, MissionTaskStatus } from '@/modules/scheduler/types';
-import type {
-  CrewMember,
-  MissionTaskPriority,
-  MissionTaskStatus,
-} from '@/modules/scheduler/types';
 
 interface MissionTaskDraft {
   jobName: string;

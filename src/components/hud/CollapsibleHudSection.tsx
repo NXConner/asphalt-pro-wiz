@@ -2,11 +2,6 @@ import { ChevronDown } from 'lucide-react';
 import { ReactNode, useState } from 'react';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 
 interface CollapsibleHudSectionProps {
