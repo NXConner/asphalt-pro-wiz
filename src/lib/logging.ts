@@ -54,10 +54,10 @@ function getEnvironment(): string {
 }
 
 const OBSERVABILITY_ENABLED = resolveBooleanFlag(
-  getRuntimeEnv().VITE_FLAG_OBSERVABILITY ??
+  (getRuntimeEnv().VITE_FLAG_OBSERVABILITY ??
     getRuntimeEnv().FLAG_OBSERVABILITY ??
     getRuntimeEnv().PPS_FLAG_OBSERVABILITY ??
-    1,
+    1) as BooleanLike,
   true,
 );
 
@@ -156,7 +156,7 @@ export function logEvent(
         : "offline"
       : undefined;
 
-  const payload = {
+  const payload: Record<string, unknown> = {
     ts: new Date().toISOString(),
     level,
     event,
@@ -172,7 +172,7 @@ export function logEvent(
     ...data,
   };
 
-  if (pageUrl !== undefined && payload.url === undefined) {
+  if (pageUrl !== undefined && !('url' in payload)) {
     payload.url = pageUrl;
   }
 

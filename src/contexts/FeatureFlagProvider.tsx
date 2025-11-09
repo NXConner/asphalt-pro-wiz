@@ -41,7 +41,15 @@ async function resolvePrimaryOrgId(userId: string): Promise<string | null> {
       .order('joined_at', { ascending: true })
       .limit(1);
     if (error) throw error;
-    return data?.[0]?.org_id ?? null;
+    if (Array.isArray(data) && data.length > 0) {
+      const row = data[0];
+      if (!row) return null;
+      if (typeof row !== 'object') return null;
+      if (!('org_id' in row)) return null;
+      if (row.org_id === null) return null;
+      return String(row.org_id);
+    }
+    return null;
   } catch {
     return null;
   }
@@ -118,16 +126,43 @@ export function FeatureFlagProvider({ children }: { children: ReactNode }) {
         overrides[flagId] = value;
       };
 
-      for (const row of featureFlagsRes.data ?? []) {
-        assignOverride(row?.id, row?.default_enabled);
+      const featureFlagsData = Array.isArray(featureFlagsRes.data) ? featureFlagsRes.data : [];
+      for (const row of featureFlagsData) {
+        if (!row) continue;
+        if (typeof row !== 'object') continue;
+        if (!('id' in row)) continue;
+        if (!('default_enabled' in row)) continue;
+        const id = row.id;
+        const enabled = row.default_enabled;
+        if (id !== null) {
+          assignOverride(String(id), enabled);
+        }
       }
 
-      for (const row of orgFlagsRes.data ?? []) {
-        assignOverride(row?.flag_id, row?.enabled);
+      const orgFlagsData = Array.isArray(orgFlagsRes.data) ? orgFlagsRes.data : [];
+      for (const row of orgFlagsData) {
+        if (!row) continue;
+        if (typeof row !== 'object') continue;
+        if (!('flag_id' in row)) continue;
+        if (!('enabled' in row)) continue;
+        const flagId = row.flag_id;
+        const enabled = row.enabled;
+        if (flagId !== null) {
+          assignOverride(String(flagId), enabled);
+        }
       }
 
-      for (const row of userFlagsRes.data ?? []) {
-        assignOverride(row?.flag_id, row?.enabled);
+      const userFlagsData = Array.isArray(userFlagsRes.data) ? userFlagsRes.data : [];
+      for (const row of userFlagsData) {
+        if (!row) continue;
+        if (typeof row !== 'object') continue;
+        if (!('flag_id' in row)) continue;
+        if (!('enabled' in row)) continue;
+        const flagId = row.flag_id;
+        const enabled = row.enabled;
+        if (flagId !== null) {
+          assignOverride(String(flagId), enabled);
+        }
       }
 
       clearRemoteFlags();

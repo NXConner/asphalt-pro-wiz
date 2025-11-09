@@ -96,9 +96,12 @@ async function fetchPreviewAssetIncidents({ limit }: FetchOptions) {
     throw errors[0]!;
   }
 
+  const incidents = Array.isArray(incidentsRes.data) ? (incidentsRes.data as unknown as PreviewAssetIncident[]) : [];
+  const summary = Array.isArray(summaryRes.data) ? (summaryRes.data as unknown as PreviewAssetIncidentSummary[]) : [];
+
   return {
-    incidents: (incidentsRes.data ?? []) as PreviewAssetIncident[],
-    summary: (summaryRes.data ?? []) as PreviewAssetIncidentSummary[],
+    incidents,
+    summary,
   };
 }
 
@@ -188,5 +191,5 @@ export function usePreviewAssetIncidents(
   return {
     ...query,
     data: value,
-  };
+  } as UseQueryResult<PreviewAssetIncidentsResult>;
 }
