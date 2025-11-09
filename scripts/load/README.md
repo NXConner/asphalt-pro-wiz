@@ -2,6 +2,29 @@
 
 The project ships with k6 and Artillery scenarios that exercise the public entry points and mission-control surfaces of Pavement Performance Suite.
 
+## k6 – observability beacon ingestion
+
+```bash
+# Default targets local Supabase edge function (http://localhost:54321)
+LOG_BEACON_URL=https://YOUR_SUPABASE_URL/functions/v1/log-beacon \
+LOG_BEACON_TOKEN=YOUR_JWT_OR_ANON_KEY \
+npx k6 run scripts/load/k6-observability.js
+```
+
+This profile exercises the `log-beacon` Supabase Function with synthetic `lovable.asset_*` events:
+
+- Ramps to ~25 virtual users (configurable via `STAGE_MULTIPLIER`)
+- Tracks ingestion latency (`log_beacon.ingest_duration`) and validation failures
+- Generates unique sessions/device IDs to mimic browser telemetry flood conditions
+
+Environment knobs:
+
+- `LOG_BEACON_URL` – fully qualified edge function endpoint.
+- `LOG_BEACON_TOKEN` – JWT/anon key used for authorization.
+- `STAGE_MULTIPLIER` – scale virtual user counts & stage durations.
+
+> Tip: Combine with Supabase Edge Function logs to confirm the incidents table and telemetry roll-ups remain healthy under pressure.
+
 ## k6 – mission scheduler smoke + ramp
 
 ```bash
@@ -45,7 +68,8 @@ The Artillery scenario performs the same sequence (`/auth`, `/`, `/command-cente
 
 ## Operational Guidance
 
-- Run the k6 plan during performance tuning or before major releases.
+- Run the k6 plans during performance tuning or before major releases.
+- Export k6 summaries (`--summary-export`) and attach to CI artefacts for trend analysis.
 - Surface results in CI (GitHub Actions, etc.) using `--summary-export` and upload the artefacts.
 - For authenticated flows, supply a session cookie via `BASE_HEADERS` (see k6 docs) once Supabase auth automation is available.
 - Combine with the Playwright scheduler e2e (`npm run test:e2e -- scheduler`) to validate end-to-end readiness post load.
