@@ -86,6 +86,9 @@ npm run test:e2e -- --debug
 
 # Generate test report
 npm run test:e2e -- --reporter=html
+
+# Run Lovable preview smoke (builds bundle + serves preview-smoke harness)
+npm run test:preview
 ```
 
 ### Load Tests

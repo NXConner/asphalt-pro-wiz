@@ -1,4 +1,11 @@
-import { THEME_PRESETS, getThemePreset, type ThemeNameFromTokens } from '@/lib/designSystem';
+import {
+  THEME_PRESETS,
+  getThemePreset,
+  listThemePresets,
+  type ThemeCategory,
+  type ThemeNameFromTokens,
+  type ThemePresetMeta,
+} from '@/lib/designSystem';
 import {
   getDefaultWallpaperAsset,
   getWallpaperAssetById,
@@ -79,6 +86,8 @@ export interface ThemePreferences {
   name: ThemeName;
   primaryHue: number;
   useHueOverride: boolean;
+  accentHue: number;
+  useAccentOverride: boolean;
   wallpaperId: string | null;
   wallpaperSource: WallpaperSource | null;
   wallpaperDataUrl: string;
@@ -130,15 +139,44 @@ export type ThemeWallpaperSelection =
 
 const STORAGE_KEY = 'pps:theme';
 const DEFAULT_THEME_NAME: ThemeName = 'division-agent';
+const DEFAULT_THEME_PRESET = getThemePreset(DEFAULT_THEME_NAME);
+
+const normalizeHue = (value: number): number => {
+  if (!Number.isFinite(value)) return 0;
+  const mod = value % 360;
+  return mod < 0 ? Math.round(mod + 360) : Math.round(mod);
+};
+
+const extractHue = (token: string | undefined, fallback: number): number => {
+  if (!token) return fallback;
+  const match = token.trim().match(/^(-?\d+(\.\d+)?)/);
+  if (!match) return fallback;
+  const parsed = Number.parseFloat(match[1] ?? `${fallback}`);
+  return Number.isFinite(parsed) ? normalizeHue(parsed) : fallback;
+};
+
+const DEFAULT_PRIMARY_HUE = extractHue(DEFAULT_THEME_PRESET.tokens['--primary'], 210);
+const DEFAULT_ACCENT_HUE = extractHue(
+  DEFAULT_THEME_PRESET.tokens['--accent'],
+  extractHue(DEFAULT_THEME_PRESET.tokens['--primary'], 210),
+);
+
+const formatHueColor = (hue: number, saturation = 92, lightness = 58): string =>
+  `${normalizeHue(hue)} ${saturation}% ${lightness}%`;
+
+const formatForegroundColor = (hue: number): string => `${normalizeHue(hue)} 16% 96%`;
+
 const DISPLAY_LAYOUT_RETENTION = 8;
 
 const createDefaults = (): ThemePreferences => {
   const fallback = getDefaultWallpaperAsset();
-  return {
-    mode: 'dark',
-    name: DEFAULT_THEME_NAME,
-    primaryHue: 210,
-    useHueOverride: false,
+    return {
+      mode: 'dark',
+      name: DEFAULT_THEME_NAME,
+      primaryHue: DEFAULT_PRIMARY_HUE,
+      useHueOverride: false,
+      accentHue: DEFAULT_ACCENT_HUE,
+      useAccentOverride: false,
     wallpaperId: fallback.id,
     wallpaperSource: fallback.source,
     wallpaperDataUrl: fallback.dataUrl,
@@ -180,10 +218,16 @@ const createDefaults = (): ThemePreferences => {
 };
 
 const coerceWallpaper = (prefs: ThemePreferences): ThemePreferences => {
-  if (!prefs.wallpaperId) {
+  let normalized: ThemePreferences = {
+    ...prefs,
+    primaryHue: Number.isFinite(prefs.primaryHue) ? normalizeHue(prefs.primaryHue) : DEFAULT_PRIMARY_HUE,
+    accentHue: Number.isFinite(prefs.accentHue) ? normalizeHue(prefs.accentHue) : DEFAULT_ACCENT_HUE,
+  };
+
+  if (!normalized.wallpaperId) {
     const fallback = getDefaultWallpaperAsset();
     return {
-      ...prefs,
+      ...normalized,
       wallpaperId: fallback.id,
       wallpaperSource: fallback.source,
       wallpaperDataUrl: fallback.dataUrl,
@@ -191,24 +235,25 @@ const coerceWallpaper = (prefs: ThemePreferences): ThemePreferences => {
       wallpaperDescription: fallback.description,
     };
   }
-  const asset = getWallpaperAssetById(prefs.wallpaperId);
-  if (!asset) {
+  let resolvedAsset = getWallpaperAssetById(normalized.wallpaperId);
+  if (!resolvedAsset) {
     const fallback = getDefaultWallpaperAsset();
-    return {
-      ...prefs,
+    normalized = {
+      ...normalized,
       wallpaperId: fallback.id,
       wallpaperSource: fallback.source,
       wallpaperDataUrl: fallback.dataUrl,
       wallpaperName: fallback.name,
       wallpaperDescription: fallback.description,
     };
+    resolvedAsset = fallback;
   }
   return {
-    ...prefs,
-    wallpaperSource: asset.source,
-    wallpaperDataUrl: asset.dataUrl,
-    wallpaperName: prefs.wallpaperName ?? asset.name,
-    wallpaperDescription: prefs.wallpaperDescription ?? asset.description,
+    ...normalized,
+    wallpaperSource: resolvedAsset.source,
+    wallpaperDataUrl: resolvedAsset.dataUrl,
+    wallpaperName: normalized.wallpaperName ?? resolvedAsset.name,
+    wallpaperDescription: normalized.wallpaperDescription ?? resolvedAsset.description,
   };
 };
 
@@ -276,17 +321,43 @@ export function applyThemePreferences(prefs: ThemePreferences): void {
     root.classList.add('reduce-motion');
   }
 
-  if (resolved.useHueOverride && Number.isFinite(resolved.primaryHue)) {
-    root.style.setProperty('--primary', `${resolved.primaryHue} 100% 50%`);
-    root.style.setProperty('--primary-foreground', `${resolved.primaryHue} 10% 95%`);
-  } else {
-    if (tokens['--primary']) {
-      root.style.setProperty('--primary', tokens['--primary']);
+    if (resolved.useHueOverride && Number.isFinite(resolved.primaryHue)) {
+      const primary = formatHueColor(resolved.primaryHue, 92, 56);
+      root.style.setProperty('--primary', primary);
+      root.style.setProperty('--primary-hover', primary);
+      root.style.setProperty('--primary-foreground', formatForegroundColor(resolved.primaryHue));
+    } else {
+      if (tokens['--primary']) {
+        root.style.setProperty('--primary', tokens['--primary']);
+      }
+      if (tokens['--primary-hover']) {
+        root.style.setProperty('--primary-hover', tokens['--primary-hover']);
+      } else if (tokens['--primary']) {
+        root.style.setProperty('--primary-hover', tokens['--primary']);
+      }
+      if (tokens['--primary-foreground']) {
+        root.style.setProperty('--primary-foreground', tokens['--primary-foreground']);
+      }
     }
-    if (tokens['--primary-foreground']) {
-      root.style.setProperty('--primary-foreground', tokens['--primary-foreground']);
+
+    if (resolved.useAccentOverride && Number.isFinite(resolved.accentHue)) {
+      const accent = formatHueColor(resolved.accentHue, 90, 62);
+      root.style.setProperty('--accent', accent);
+      root.style.setProperty('--accent-hover', accent);
+      root.style.setProperty('--accent-foreground', formatForegroundColor(resolved.accentHue));
+    } else {
+      if (tokens['--accent']) {
+        root.style.setProperty('--accent', tokens['--accent']);
+      }
+      if (tokens['--accent-hover']) {
+        root.style.setProperty('--accent-hover', tokens['--accent-hover']);
+      } else if (tokens['--accent']) {
+        root.style.setProperty('--accent-hover', tokens['--accent']);
+      }
+      if (tokens['--accent-foreground']) {
+        root.style.setProperty('--accent-foreground', tokens['--accent-foreground']);
+      }
     }
-  }
 
   const wallpaperValue = resolveWallpaperValue(resolved);
   if (wallpaperValue) {
@@ -327,7 +398,7 @@ export function setPrimaryHue(hue: number): void {
   const prefs = loadThemePreferences();
   const next = coerceWallpaper({
     ...prefs,
-    primaryHue: Math.max(0, Math.min(360, Math.round(hue))),
+    primaryHue: normalizeHue(hue),
     useHueOverride: true,
   });
   saveThemePreferences(next);
@@ -337,6 +408,24 @@ export function setPrimaryHue(hue: number): void {
 export function setUseHueOverride(enabled: boolean): void {
   const prefs = loadThemePreferences();
   const next = coerceWallpaper({ ...prefs, useHueOverride: enabled });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setAccentHue(hue: number): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({
+    ...prefs,
+    accentHue: normalizeHue(hue),
+    useAccentOverride: true,
+  });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setUseAccentOverride(enabled: boolean): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({ ...prefs, useAccentOverride: enabled });
   saveThemePreferences(next);
   applyThemePreferences(next);
 }
@@ -429,6 +518,61 @@ export function setHighContrastMode(enabled: boolean): void {
   const next = coerceWallpaper({ ...prefs, highContrast: enabled });
   saveThemePreferences(next);
   applyThemePreferences(next);
+}
+
+export interface RandomizePaletteOptions {
+  category?: ThemeCategory | 'all';
+  syncWallpaper?: boolean;
+  allowHighContrast?: boolean;
+}
+
+export function randomizeMissionPalette(
+  options?: RandomizePaletteOptions,
+): ThemePresetMeta | null {
+  const category =
+    options?.category && options.category !== 'all' ? (options.category as ThemeCategory) : undefined;
+  const presets = listThemePresets(category);
+  if (presets.length === 0) {
+    return null;
+  }
+
+  const preset = presets[Math.floor(Math.random() * presets.length)];
+  const prefs = loadThemePreferences();
+  const primaryHue = extractHue(preset.tokens['--primary'], prefs.primaryHue ?? DEFAULT_PRIMARY_HUE);
+  const accentHue = extractHue(preset.tokens['--accent'], prefs.accentHue ?? DEFAULT_ACCENT_HUE);
+
+  const highContrastEnabled =
+    options?.allowHighContrast === false
+      ? Boolean(prefs.highContrast)
+      : Math.random() < 0.18;
+
+  let next: ThemePreferences = {
+    ...prefs,
+    name: preset.id,
+    useHueOverride: false,
+    primaryHue,
+    useAccentOverride: false,
+    accentHue,
+    highContrast: highContrastEnabled,
+  };
+
+  if (options?.syncWallpaper !== false && preset.recommendedWallpaperId) {
+    const wallpaper =
+      getWallpaperAssetById(preset.recommendedWallpaperId) ?? getDefaultWallpaperAsset();
+    next = {
+      ...next,
+      wallpaperId: wallpaper.id,
+      wallpaperSource: wallpaper.source,
+      wallpaperDataUrl: wallpaper.dataUrl,
+      wallpaperName: wallpaper.name,
+      wallpaperDescription: wallpaper.description,
+    };
+  }
+
+  const coerced = coerceWallpaper(next);
+  saveThemePreferences(coerced);
+  applyThemePreferences(coerced);
+  return preset;
 }
 
 export function setHudOpacity(opacity: number): void {

@@ -20,6 +20,8 @@ scripts/install_dependencies.sh
 
 # Copy environment variables
 cp .env.example .env
+# Populate `.env` with your real secrets (use Supabase Secrets/Doppler) then audit
+npm run check:env
 
 # Start development server
 npm run dev
@@ -73,8 +75,15 @@ npm run typecheck
 
 This project uses Husky for git hooks:
 
-- **pre-commit**: Runs lint-staged, `npm run lint`, `npm run typecheck`, and `npm run test:unit -- --run`
+- **pre-commit**: Runs `npm run check:env`, lint-staged, `npm run lint`, `npm run typecheck`, and `npm run test:unit -- --run`
 - **commit-msg**: Validates commit message format (Conventional Commits)
+
+### Branching Strategy
+
+- `main`: production-ready, auto-deployed once CI passes.
+- `develop`: integration branch for the next release; feature branches merge here.
+- `feature/<scope>` / `hotfix/<scope>`: short-lived branches rebased on `develop`.
+- Create `release/vX.Y.Z` during stabilization windows to freeze scope.
 
 ## Code Standards
 

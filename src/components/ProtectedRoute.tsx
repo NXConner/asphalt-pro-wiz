@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner } from './common/LoadingSpinner';
 
 import { useAuthContext } from '@/contexts/AuthContext';
+import { isLovablePreviewRuntime } from '@/lib/routing/basePath';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -14,13 +15,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const navigate = useNavigate();
 
   // Detect Lovable preview environment or hosted sandbox to keep preview unblocked
-  const isPreviewEnv =
-    typeof window !== 'undefined' &&
-    (
-      !!(window as any).__LOVABLE__ ||
-      !!(window as any).lovable ||
-      /(^|\.)lovable(?:project\.com|\.app|\.dev)$/.test(window.location.hostname)
-    );
+  const isPreviewEnv = isLovablePreviewRuntime();
   // Only redirect to /auth when the backend is configured and not in Lovable preview.
   useEffect(() => {
     if (!loading && isConfigured && !isPreviewEnv && !isAuthenticated) {
