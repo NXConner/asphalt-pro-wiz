@@ -2,7 +2,7 @@
 
 ## Edge Functions
 
-The Supabase Edge Functions that power PPS are documented in `docs/swagger.json`. Regenerate the OpenAPI specification after changes with:
+The Supabase Edge Functions that power PPS are documented in `docs/swagger.json`. Each function includes an `@openapi` doc block—keep those annotations in sync with code changes, then regenerate the specification with:
 
 ```bash
 npm run openapi:generate
@@ -11,31 +11,31 @@ npm run openapi:generate
 ### `POST /gemini-proxy`
 
 - **Purpose**: Safely proxy chat, image, and embedding requests to Google Gemini models without exposing the upstream API key.
-- **Authentication**: Provide the Supabase anon/service key via the `apikey` header (e.g. `apikey: $SUPABASE_ANON_KEY`). For server-to-server calls you may also send `Authorization: Bearer <service_token>`.
+- **Authentication**: Provide a Supabase JWT via `Authorization: Bearer <token>`. Browser clients may continue to send the anon key in the `apikey` header, but server-to-server calls should favour bearer tokens.
 - **Request Body**
   - `action` _(string, required)_: One of `chat`, `image`, `embed`.
   - `contents` _(array)_: Gemini content blocks for `chat` and `image` actions.
   - `text` _(string)_: Text to embed when `action` is `embed`.
 - **Responses**
   - `200`: `{ text: string }` for chat/image, `{ embedding: { values: number[] } }` for embed requests.
-  - `400/405/500`: Error details if the payload is malformed, method is not allowed, or Gemini upstream errors.
+  - `400/401/405/500`: Error details if validation fails, auth is missing, the method is not allowed, or Gemini upstream error occurs.
 
 **Example**
 
 ```bash
 curl -X POST "$SUPABASE_URL/functions/v1/gemini-proxy" \
   -H "Content-Type: application/json" \
-  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE" \
   -d '{
     "action": "chat",
-    "contents": [{ "role": "user", "parts": [{ "text": "Summarize sealcoating prep" }] }]
+    "contents": [{ "parts": [{ "text": "Summarize sealcoating prep" }] }]
   }'
 ```
 
 ### `POST /log-beacon`
 
 - **Purpose**: Capture client-side telemetry and observability beacons for centralized analysis.
-- **Authentication**: Same as above (`apikey` header or bearer token).
+- **Authentication**: Supabase JWT (`Authorization: Bearer <token>`) _or_ anon/service key in the `apikey` header.
 - **Request Body**
   - `event` _(string, required)_: Event name (e.g. `mission_scheduler.conflict`).
   - `level` _(string)_: Optional log level (`debug`, `info`, `warn`, `error`).
@@ -43,14 +43,14 @@ curl -X POST "$SUPABASE_URL/functions/v1/gemini-proxy" \
   - `timestamp` _(ISO string)_: Optional client timestamp.
 - **Responses**
   - `200`: Beacon accepted.
-  - `400/405`: Invalid payload or method.
+  - `400/401/405/500`: Invalid payload, missing auth, disallowed method, or Supabase persistence failure.
 
 **Example**
 
 ```bash
 curl -X POST "$SUPABASE_URL/functions/v1/log-beacon" \
   -H "Content-Type: application/json" \
-  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE" \
   -d '{
     "event": "mission_scheduler.conflict",
     "level": "warn",
@@ -58,6 +58,35 @@ curl -X POST "$SUPABASE_URL/functions/v1/log-beacon" \
   }'
 ```
 
+### `POST /supplier-intel`
+
+- **Purpose**: Aggregate supplier pricing snapshots, surface best offers per material, and optionally generate a Gemini-authored summary for estimators and schedulers.
+- **Authentication**: Supabase JWT via `Authorization: Bearer <token>` (anon tokens issued to authenticated frontend users are accepted).
+- **Request Body** _(optional unless stated)_:
+  - `orgId` _(uuid)_: Override the auto-resolved organisation context.
+  - `materials` _(string[], max 12)_: Restrict the response to specific materials.
+  - `radiusMiles` _(number)_: Filter suppliers by coverage radius.
+  - `includeAiSummary` _(boolean, default `true`)_: Skip Gemini summarisation when set to `false`.
+  - `jobLocation` _(object)_: Optional `{ lat, lng }` for future geospatial weighting.
+- **Responses**
+  - `200`: `SupplierIntelResponse` with `insights`, `bestOffers`, and optional `aiSummary`.
+  - `400`: Unable to resolve organisation context or unsupported filter combination.
+  - `401`: Missing/invalid Supabase JWT.
+  - `422`: Payload failed schema validation.
+  - `500`: Unexpected error computing insights or contacting Gemini.
+
+**Example**
+
+```bash
+curl -X POST "$SUPABASE_URL/functions/v1/supplier-intel" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE" \
+  -d '{
+    "materials": ["Acrylic Sealer", "Crack Filler"],
+    "radiusMiles": 75,
+    "includeAiSummary": false
+  }'
+```
 ---
 
 ## Hooks

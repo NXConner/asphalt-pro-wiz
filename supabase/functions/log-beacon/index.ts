@@ -153,6 +153,47 @@ function computeIncidentHash(entry: z.infer<typeof logEventSchema>): string | nu
   return `pps_${Math.abs(hash).toString(16)}`;
 }
 
+/**
+ * @openapi
+ * /log-beacon:
+ *   post:
+ *     tags:
+ *       - Observability
+ *     summary: Ingest client log beacons
+ *     description: |
+ *       Receives structured telemetry events from the Pavement Performance Suite web client.
+ *       Accepts either a single event object or an array of up to 50 events and persists them into
+ *       observability tables for later analytics and incident response.
+ *     operationId: postLogBeacon
+ *     security:
+ *       - supabaseBearer: []
+ *       - supabaseAnonKey: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LogBeaconPayload'
+ *     responses:
+ *       '200':
+ *         description: Beacon accepted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ingested:
+ *                   type: integer
+ *                   description: Number of events successfully persisted.
+ *       '400':
+ *         description: Invalid JSON payload or validation failure
+ *       '401':
+ *         description: Missing or invalid Supabase JWT
+ *       '405':
+ *         description: Method not allowed
+ *       '500':
+ *         description: Supabase persistence failure or service misconfiguration
+ */
 serve(async (req) => {
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method Not Allowed" }), {

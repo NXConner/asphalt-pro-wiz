@@ -251,6 +251,43 @@ async function generateAiSummary(
   return null;
 }
 
+/**
+ * @openapi
+ * /supplier-intel:
+ *   post:
+ *     tags:
+ *       - Intelligence
+ *     summary: Generate supplier pricing intelligence
+ *     description: |
+ *       Aggregates recent supplier pricing snapshots, computes best offers per material,
+ *       and optionally produces a Gemini-authored summary to guide estimators and schedulers.
+ *       Requires a Supabase JWT in the `Authorization` header; the service resolves the caller's
+ *       organization automatically when `orgId` is not supplied.
+ *     operationId: postSupplierIntel
+ *     security:
+ *       - supabaseBearer: []
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SupplierIntelRequest'
+ *     responses:
+ *       '200':
+ *         description: Supplier intelligence generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SupplierIntelResponse'
+ *       '400':
+ *         description: Missing org context or invalid radius/material filter
+ *       '401':
+ *         description: Missing or invalid Supabase JWT
+ *       '422':
+ *         description: Request validation failed
+ *       '500':
+ *         description: Unexpected error while computing insights or contacting Gemini
+ */
 serve(async (req) => {
   if (req.method !== "POST") {
     return errorResponse("Method Not Allowed", 405);
