@@ -41,15 +41,12 @@ async function resolvePrimaryOrgId(userId: string): Promise<string | null> {
       .order('joined_at', { ascending: true })
       .limit(1);
     if (error) throw error;
-    if (Array.isArray(data) && data.length > 0) {
-      const row = data[0];
-      if (!row) return null;
-      if (typeof row !== 'object') return null;
-      if (!('org_id' in row)) return null;
-      if (row.org_id === null) return null;
-      return String(row.org_id);
-    }
-    return null;
+    if (!Array.isArray(data) || data.length === 0) return null;
+    const row = data[0] as unknown as Record<string, unknown> | null;
+    if (!row) return null;
+    const orgId = row['org_id'];
+    if (!orgId) return null;
+    return String(orgId);
   } catch {
     return null;
   }
@@ -127,40 +124,34 @@ export function FeatureFlagProvider({ children }: { children: ReactNode }) {
       };
 
       const featureFlagsData = Array.isArray(featureFlagsRes.data) ? featureFlagsRes.data : [];
-      for (const row of featureFlagsData) {
+      for (const item of featureFlagsData) {
+        const row = item as unknown as Record<string, unknown> | null;
         if (!row) continue;
-        if (typeof row !== 'object') continue;
-        if (!('id' in row)) continue;
-        if (!('default_enabled' in row)) continue;
-        const id = row.id;
-        const enabled = row.default_enabled;
-        if (id !== null) {
+        const id = row['id'];
+        const enabled = row['default_enabled'];
+        if (id != null) {
           assignOverride(String(id), enabled);
         }
       }
 
       const orgFlagsData = Array.isArray(orgFlagsRes.data) ? orgFlagsRes.data : [];
-      for (const row of orgFlagsData) {
+      for (const item of orgFlagsData) {
+        const row = item as unknown as Record<string, unknown> | null;
         if (!row) continue;
-        if (typeof row !== 'object') continue;
-        if (!('flag_id' in row)) continue;
-        if (!('enabled' in row)) continue;
-        const flagId = row.flag_id;
-        const enabled = row.enabled;
-        if (flagId !== null) {
+        const flagId = row['flag_id'];
+        const enabled = row['enabled'];
+        if (flagId != null) {
           assignOverride(String(flagId), enabled);
         }
       }
 
       const userFlagsData = Array.isArray(userFlagsRes.data) ? userFlagsRes.data : [];
-      for (const row of userFlagsData) {
+      for (const item of userFlagsData) {
+        const row = item as unknown as Record<string, unknown> | null;
         if (!row) continue;
-        if (typeof row !== 'object') continue;
-        if (!('flag_id' in row)) continue;
-        if (!('enabled' in row)) continue;
-        const flagId = row.flag_id;
-        const enabled = row.enabled;
-        if (flagId !== null) {
+        const flagId = row['flag_id'];
+        const enabled = row['enabled'];
+        if (flagId != null) {
           assignOverride(String(flagId), enabled);
         }
       }
