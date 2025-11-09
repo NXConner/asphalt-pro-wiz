@@ -15,10 +15,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   // Detect Lovable preview environment or hosted sandbox to keep preview unblocked
   const isPreviewEnv =
-    typeof window !== 'undefined' && (
+    typeof window !== 'undefined' &&
+    (
       !!(window as any).__LOVABLE__ ||
       !!(window as any).lovable ||
-      /(^|\.)lovableproject\.com$/.test(window.location.hostname)
+      /(^|\.)lovable(?:project\.com|\.app|\.dev)$/.test(window.location.hostname)
     );
   // Only redirect to /auth when the backend is configured and not in Lovable preview.
   useEffect(() => {
