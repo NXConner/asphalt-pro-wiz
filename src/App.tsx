@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState, Fragment } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { toast as sonnerToast } from 'sonner';
 
@@ -27,7 +27,7 @@ import { I18nProvider } from '@/lib/i18n';
 import { logEvent } from '@/lib/logging';
 import { initializeMonitoring } from '@/lib/monitoring';
 import { installLovableAssetMonitoring } from '@/lib/monitoring/lovableAssets';
-import { getRouterBaseName, subscribeToLovableConfig } from '@/lib/routing/basePath';
+import { getRouterBaseName, subscribeToLovableConfig, isLovablePreviewRuntime } from '@/lib/routing/basePath';
 
 // Route-level code splitting for faster initial load
 const Index = lazy(() => import('./pages/Index'));
@@ -97,6 +97,9 @@ const App = () => {
   useEffect(() => subscribeToLovableConfig(setBaseName), []);
   useEffect(() => installLovableAssetMonitoring(), []);
 
+  const isPreviewEnv = isLovablePreviewRuntime();
+  const Guard: React.ComponentType<{ children: React.ReactNode }> = isPreviewEnv ? Fragment : ProtectedRoute;
+
   useEffect(() => {
     if (typeof document !== 'undefined') {
       document.documentElement.dataset.routerBase = baseName;
@@ -139,48 +142,48 @@ const App = () => {
                                   </div>
                                 }
                               >
-                                <Routes>
-                                  <Route path="/auth" element={<Auth />} />
-                                  <Route
-                                    path="/"
-                                    element={
-                                      <ProtectedRoute>
-                                        <Index />
-                                      </ProtectedRoute>
-                                    }
-                                  />
-                                  <Route
-                                    path="/command-center"
-                                    element={
-                                      <ProtectedRoute>
-                                        <CommandCenter />
-                                      </ProtectedRoute>
-                                    }
-                                  />
-                                  <Route
-                                    path="/admin"
-                                    element={
-                                      <ProtectedRoute>
-                                        <AdminPanel />
-                                      </ProtectedRoute>
-                                    }
-                                  />
-                                  <Route
-                                    path="/service/:serviceId"
-                                    element={
-                                      <ProtectedRoute>
-                                        <PremiumServiceDetails />
-                                      </ProtectedRoute>
-                                    }
-                                  />
-                                  <Route
-                                    path="/portal"
-                                    element={
-                                      <ProtectedRoute>
-                                        <Portal />
-                                      </ProtectedRoute>
-                                    }
-                                  />
+                                  <Routes>
+                                    <Route path="/auth" element={<Auth />} />
+                                    <Route
+                                      path="/"
+                                      element={
+                                        <Guard>
+                                          <Index />
+                                        </Guard>
+                                      }
+                                    />
+                                    <Route
+                                      path="/command-center"
+                                      element={
+                                        <Guard>
+                                          <CommandCenter />
+                                        </Guard>
+                                      }
+                                    />
+                                    <Route
+                                      path="/admin"
+                                      element={
+                                        <Guard>
+                                          <AdminPanel />
+                                        </Guard>
+                                      }
+                                    />
+                                    <Route
+                                      path="/service/:serviceId"
+                                      element={
+                                        <Guard>
+                                          <PremiumServiceDetails />
+                                        </Guard>
+                                      }
+                                    />
+                                    <Route
+                                      path="/portal"
+                                      element={
+                                        <Guard>
+                                          <Portal />
+                                        </Guard>
+                                      }
+                                    />
                                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                                   <Route path="*" element={<NotFound />} />
                                 </Routes>
