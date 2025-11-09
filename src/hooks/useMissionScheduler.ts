@@ -108,7 +108,7 @@ const DEFAULT_CAPACITY = 3; // Two full-time + one part-time crew members
 
 function generateFallbackUuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
-    const rand = Math.random() * 16 | 0;
+    const rand = (Math.random() * 16) | 0;
     const value = char === 'x' ? rand : (rand & 0x3) | 0x8;
     return value.toString(16);
   });
@@ -550,7 +550,10 @@ export interface MissionSchedulerHook {
   updateBlackout: (window: BlackoutWindow) => void;
   removeBlackout: (blackoutId: string) => void;
   setCapacityPerShift: (capacity: number) => void;
-  importBlackoutsFromICS: (icsContent: string, options?: WorshipImportOptions) => WorshipImportResult;
+  importBlackoutsFromICS: (
+    icsContent: string,
+    options?: WorshipImportOptions,
+  ) => WorshipImportResult;
 }
 
 export function useMissionScheduler(): MissionSchedulerHook {

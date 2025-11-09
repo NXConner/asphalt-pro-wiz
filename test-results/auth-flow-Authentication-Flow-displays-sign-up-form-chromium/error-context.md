@@ -4,63 +4,43 @@
 - generic [ref=e2]:
   - link "Skip to main content" [ref=e3] [cursor=pointer]:
     - /url: "#main-content"
-  - alert [ref=e4]:
-    - heading "Supabase configuration required" [level=5] [ref=e5]:
-      - img [ref=e6]
-      - text: Supabase configuration required
-    - generic [ref=e9]:
-      - paragraph [ref=e10]: "Supabase environment not configured: set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY (or VITE_SUPABASE_ANON_KEY) before starting the app."
-      - paragraph [ref=e11]:
-        - text: Copy
-        - code [ref=e12]: .env.example
-        - text: to
-        - code [ref=e13]: .env
-        - text: ", provide the Supabase URL and browser key tied to your Virginia and North Carolina deployments, then refresh the running dev server so the new environment variables load."
-      - paragraph [ref=e14]:
-        - text: "Required keys:"
-        - code [ref=e15]: VITE_SUPABASE_URL
-        - text: ","
-        - code [ref=e16]: VITE_SUPABASE_PUBLISHABLE_KEY
-        - text: (or
-        - code [ref=e17]: VITE_SUPABASE_ANON_KEY
-        - text: ).
   - region "Notifications (F8)":
     - list
   - region "Notifications alt+T"
-  - generic [ref=e18]:
-    - generic [ref=e19]:
-      - generic [ref=e20]:
-        - heading "Accessibility Checker" [level=2] [ref=e21]:
-          - img [ref=e22]
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - heading "Accessibility Checker" [level=2] [ref=e7]:
+          - img [ref=e8]
           - text: Accessibility Checker
-        - button "×" [ref=e25] [cursor=pointer]:
-          - generic [ref=e27]: ×
-      - paragraph [ref=e28]: Development tool - scans for a11y issues
-    - generic [ref=e29]:
-      - button "Scan Page" [ref=e30] [cursor=pointer]:
-        - generic [ref=e32]: Scan Page
-      - generic [ref=e33]:
-        - img [ref=e34]
-        - paragraph [ref=e37]: No issues found. Click "Scan Page" to check.
-  - generic [ref=e39]:
-    - generic [ref=e40]:
-      - heading "Welcome" [level=2] [ref=e41]
-      - paragraph [ref=e42]: Sign in to your account or create a new one
-    - generic [ref=e44]:
-      - tablist [ref=e45]:
-        - tab "Sign In" [ref=e46] [cursor=pointer]
-        - tab "Sign Up" [active] [selected] [ref=e47] [cursor=pointer]
-      - tabpanel "Sign Up" [ref=e48]:
-        - generic [ref=e49]:
-          - generic [ref=e50]:
+        - button "×" [ref=e11] [cursor=pointer]:
+          - generic [ref=e13]: ×
+      - paragraph [ref=e14]: Development tool - scans for a11y issues
+    - generic [ref=e15]:
+      - button "Scan Page" [ref=e16] [cursor=pointer]:
+        - generic [ref=e18]: Scan Page
+      - generic [ref=e19]:
+        - img [ref=e20]
+        - paragraph [ref=e23]: No issues found. Click "Scan Page" to check.
+  - generic [ref=e25]:
+    - generic [ref=e26]:
+      - heading "Welcome" [level=2] [ref=e27]
+      - paragraph [ref=e28]: Sign in to your account or create a new one
+    - generic [ref=e30]:
+      - tablist [ref=e31]:
+        - tab "Sign In" [ref=e32] [cursor=pointer]
+        - tab "Sign Up" [active] [selected] [ref=e33] [cursor=pointer]
+      - tabpanel "Sign Up" [ref=e34]:
+        - generic [ref=e35]:
+          - generic [ref=e36]:
             - text: Email
-            - textbox "Email" [ref=e51]:
+            - textbox "Email" [ref=e37]:
               - /placeholder: you@example.com
-          - generic [ref=e52]:
+          - generic [ref=e38]:
             - text: Password
-            - textbox "Password" [ref=e53]:
+            - textbox "Password" [ref=e39]:
               - /placeholder: ••••••••
-            - paragraph [ref=e54]: Must be at least 6 characters
-          - button "Create Account" [ref=e55] [cursor=pointer]:
-            - generic [ref=e57]: Create Account
+            - paragraph [ref=e40]: Must be at least 6 characters
+          - button "Create Account" [ref=e41] [cursor=pointer]:
+            - generic [ref=e43]: Create Account
 ```

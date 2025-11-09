@@ -51,7 +51,10 @@ export interface TacticalHudOverlayProps {
   className?: string;
 }
 
-const watcherTone: Record<NonNullable<TacticalHudOverlayProps['watchers']>[number]['tone'], string> = {
+const watcherTone: Record<
+  NonNullable<TacticalHudOverlayProps['watchers']>[number]['tone'],
+  string
+> = {
   ok: 'text-success',
   warn: 'text-warning',
   critical: 'text-destructive',
@@ -63,25 +66,24 @@ const riskTone: Record<'low' | 'medium' | 'high', string> = {
   high: 'text-destructive',
 };
 
-const isNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
+const isNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
 
-export const TacticalHudOverlay = memo(function TacticalHudOverlay(
-  {
-    missionName,
-    missionStatus,
-    missionPhase,
-    totalAreaSqFt,
-    totalCost,
-    travelMiles,
-    coordinates,
-    scheduleWindow,
-    lastUpdatedIso,
-    environment,
-    flags,
-    watchers,
-    className,
-  }: TacticalHudOverlayProps,
-) {
+export const TacticalHudOverlay = memo(function TacticalHudOverlay({
+  missionName,
+  missionStatus,
+  missionPhase,
+  totalAreaSqFt,
+  totalCost,
+  travelMiles,
+  coordinates,
+  scheduleWindow,
+  lastUpdatedIso,
+  environment,
+  flags,
+  watchers,
+  className,
+}: TacticalHudOverlayProps) {
   const {
     preferences,
     setHudPosition,
@@ -109,8 +111,10 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
   const [isExpanded, setIsExpanded] = useState(!isMobile);
   const [isVisible, setIsVisible] = useState(true);
   const [proximityScale, setProximityScale] = useState(1);
-    const [, setMousePosition] = useState({ x: 0, y: 0 });
-  const [alerts, setAlerts] = useState<Array<{ id: string; message: string; type: 'info' | 'warning' | 'error' }>>([]);
+  const [, setMousePosition] = useState({ x: 0, y: 0 });
+  const [alerts, setAlerts] = useState<
+    Array<{ id: string; message: string; type: 'info' | 'warning' | 'error' }>
+  >([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
   const clampPosition = useCallback(
@@ -129,32 +133,35 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
     },
     [preferences.hudMiniMode, preferences.hudSize.height, preferences.hudSize.width],
   );
-  
+
   // Alert system
-  const triggerAlert = useCallback((message: string, type: 'info' | 'warning' | 'error' = 'info') => {
-    const id = Math.random().toString(36).substr(2, 9);
-    setAlerts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setAlerts(prev => prev.filter(a => a.id !== id));
-    }, 5000);
-  }, []);
-  
-    useEffect(() => {
-      const handleResize = () => {
-        if (!isMobile) {
-          setHudMultiMonitorStrategy(preferences.hudMultiMonitorStrategy);
-        }
-        if (preferences.hudLayoutPreset !== 'custom' && !isMobile) {
-          window.dispatchEvent(new CustomEvent('hudLayoutUpdate'));
-        }
-      };
-    
+  const triggerAlert = useCallback(
+    (message: string, type: 'info' | 'warning' | 'error' = 'info') => {
+      const id = Math.random().toString(36).substr(2, 9);
+      setAlerts((prev) => [...prev, { id, message, type }]);
+      setTimeout(() => {
+        setAlerts((prev) => prev.filter((a) => a.id !== id));
+      }, 5000);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (!isMobile) {
+        setHudMultiMonitorStrategy(preferences.hudMultiMonitorStrategy);
+      }
+      if (preferences.hudLayoutPreset !== 'custom' && !isMobile) {
+        window.dispatchEvent(new CustomEvent('hudLayoutUpdate'));
+      }
+    };
+
     const handleLayoutShortcut = (e: CustomEvent<string>) => {
       if (e.detail) {
         setHudLayoutPreset(e.detail as any);
       }
     };
-    
+
     const handleProfileShortcut = (e: CustomEvent<number>) => {
       const profileIndex = e.detail;
       const profile = preferences.hudProfiles[profileIndex];
@@ -164,28 +171,54 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
         triggerAlert(`Loaded profile: ${profile.name}`, 'info');
       }
     };
-    
-      const handleHudNudge = (event: CustomEvent<{ dx?: number; dy?: number; magnitude?: number }>) => {
-        if (preferences.hudPinned) return;
-        const detail = event.detail ?? {};
-        const stepBase = Math.max(10, preferences.hudGridSize) * (detail.magnitude ?? 1);
-        const base = preferences.hudPosition ?? { x: 0, y: 0 };
-        const next = clampPosition(base.x + (detail.dx ?? 0) * stepBase, base.y + (detail.dy ?? 0) * stepBase);
-        if (next.x !== base.x || next.y !== base.y) {
-          setHudPosition(next);
-        }
-      };
 
-      window.addEventListener('resize', handleResize);
+    const handleHudNudge = (
+      event: CustomEvent<{ dx?: number; dy?: number; magnitude?: number }>,
+    ) => {
+      if (preferences.hudPinned) return;
+      const detail = event.detail ?? {};
+      const stepBase = Math.max(10, preferences.hudGridSize) * (detail.magnitude ?? 1);
+      const base = preferences.hudPosition ?? { x: 0, y: 0 };
+      const next = clampPosition(
+        base.x + (detail.dx ?? 0) * stepBase,
+        base.y + (detail.dy ?? 0) * stepBase,
+      );
+      if (next.x !== base.x || next.y !== base.y) {
+        setHudPosition(next);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
     window.addEventListener('setHudLayout', handleLayoutShortcut as EventListener);
     window.addEventListener('loadHudProfile', handleProfileShortcut as EventListener);
-      window.addEventListener('nudgeHud', handleHudNudge as EventListener);
-      return () => {
-        window.removeEventListener('resize', handleResize);
-        window.removeEventListener('setHudLayout', handleLayoutShortcut as EventListener);
-        window.removeEventListener('loadHudProfile', handleProfileShortcut as EventListener);
-        window.removeEventListener('nudgeHud', handleHudNudge as EventListener);
+    window.addEventListener('nudgeHud', handleHudNudge as EventListener);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('setHudLayout', handleLayoutShortcut as EventListener);
+      window.removeEventListener('loadHudProfile', handleProfileShortcut as EventListener);
+      window.removeEventListener('nudgeHud', handleHudNudge as EventListener);
     };
+  }, [
+    preferences.hudLayoutPreset,
+    preferences.hudProfiles,
+    preferences.hudMultiMonitorStrategy,
+    preferences.hudPinned,
+    isMobile,
+    setHudLayoutPreset,
+    setHudMultiMonitorStrategy,
+    clampPosition,
+    preferences.hudGridSize,
+    preferences.hudPosition,
+    setHudPosition,
+    triggerAlert,
+  ]);
+
+  useEffect(() => {
+    if (!isMobile) {
+      setHudMultiMonitorStrategy(preferences.hudMultiMonitorStrategy);
+    }
+  }, [isMobile, preferences.hudMultiMonitorStrategy, setHudMultiMonitorStrategy]);
+
     }, [
       preferences.hudLayoutPreset,
       preferences.hudProfiles,
@@ -208,10 +241,12 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
     }, [isMobile, preferences.hudMultiMonitorStrategy, setHudMultiMonitorStrategy]);
   
   const formattedCost = typeof totalCost === 'number' ? currencyFormatter.format(totalCost) : '—';
-  const formattedArea = totalAreaSqFt > 0 ? `${numberFormatter.format(totalAreaSqFt)} sq ft` : 'Awaiting draw';
-  const formattedTravel = typeof travelMiles === 'number' && travelMiles > 0
-    ? `${numberFormatter.format(travelMiles)} mi RT`
-    : 'Pending capture';
+  const formattedArea =
+    totalAreaSqFt > 0 ? `${numberFormatter.format(totalAreaSqFt)} sq ft` : 'Awaiting draw';
+  const formattedTravel =
+    typeof travelMiles === 'number' && travelMiles > 0
+      ? `${numberFormatter.format(travelMiles)} mi RT`
+      : 'Pending capture';
 
   const formattedCoords = coordinates
     ? `${coordinates[0].toFixed(5)}, ${coordinates[1].toFixed(5)}`
@@ -223,7 +258,9 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
       )}`
     : 'Not scheduled';
 
-  const updatedLabel = lastUpdatedIso ? shortDateFormatter.format(new Date(lastUpdatedIso)) : 'live';
+  const updatedLabel = lastUpdatedIso
+    ? shortDateFormatter.format(new Date(lastUpdatedIso))
+    : 'live';
 
   const missionGlyph = missionStatus.toUpperCase();
 
@@ -259,16 +296,16 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
 
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
-      
+
       const rect = containerRef.current?.getBoundingClientRect();
       if (!rect) return;
-      
+
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
       const distance = Math.sqrt(
-        Math.pow(e.clientX - centerX, 2) + Math.pow(e.clientY - centerY, 2)
+        Math.pow(e.clientX - centerX, 2) + Math.pow(e.clientY - centerY, 2),
       );
-      
+
       if (distance < preferences.hudProximityDistance) {
         const scale = 1 + (1 - distance / preferences.hudProximityDistance) * 0.05;
         setProximityScale(scale);
@@ -282,19 +319,22 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
   }, [preferences.hudProximityEffect, preferences.hudProximityDistance, isMobile]);
 
   // Quick shortcuts
-  const handleQuickAction = useCallback((action: string) => {
-    switch (action) {
-      case 'bookmark':
-        triggerAlert('Location bookmarked', 'info');
-        break;
-      case 'refresh':
-        triggerAlert('Data refreshed', 'info');
-        break;
-      case 'alert':
-        triggerAlert('Alert triggered', 'warning');
-        break;
-    }
-  }, [triggerAlert]);
+  const handleQuickAction = useCallback(
+    (action: string) => {
+      switch (action) {
+        case 'bookmark':
+          triggerAlert('Location bookmarked', 'info');
+          break;
+        case 'refresh':
+          triggerAlert('Data refreshed', 'info');
+          break;
+        case 'alert':
+          triggerAlert('Alert triggered', 'warning');
+          break;
+      }
+    },
+    [triggerAlert],
+  );
 
   const handlePinch = useCallback(
     (scaleDelta: number) => {
@@ -345,7 +385,10 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
           break;
       }
 
-      if (shouldUpdatePosition && (nextPosition.x !== basePosition.x || nextPosition.y !== basePosition.y)) {
+      if (
+        shouldUpdatePosition &&
+        (nextPosition.x !== basePosition.x || nextPosition.y !== basePosition.y)
+      ) {
         setHudPosition(nextPosition);
       }
     },
@@ -478,80 +521,108 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
     },
   }[preferences.hudThemeVariant];
 
-    return (
-      <motion.div
-        ref={containerRef}
-        role="region"
-        tabIndex={0}
-        aria-label="Mission heads-up display"
-        data-hud-animation={preferences.hudAnimationPreset}
-        initial={{
-          ...containerInitial,
-          opacity: isNumber(containerInitialRecord.opacity) ? (containerInitialRecord.opacity as number) : 0,
-          x: isMobile ? 0 : isNumber(containerInitialRecord.x) ? (containerInitialRecord.x as number) : 20,
-          y: isMobile ? 20 : isNumber(containerInitialRecord.y) ? (containerInitialRecord.y as number) : 0,
-        }}
-        animate={{
-          ...containerAnimate,
-          opacity: isVisible ? 1 : 0.2,
-          x: preferences.hudPosition?.x ?? 0,
-          y: preferences.hudPosition?.y ?? 0,
-          width: isMobile ? '100%' : preferences.hudMiniMode ? '280px' : `${preferences.hudSize.width}px`,
-          height: isMobile ? (isExpanded ? '85vh' : 80) : preferences.hudMiniMode ? 'auto' : `${preferences.hudSize.height}px`,
-          scale: isVisible
-            ? preferences.hudProximityEffect
-              ? proximityScale
-              : isNumber(containerAnimateRecord.scale)
-                ? (containerAnimateRecord.scale as number)
-                : 1
-            : 0.95,
-        }}
-        exit={{
-          ...containerExit,
-          opacity: isNumber(containerExitRecord.opacity) ? (containerExitRecord.opacity as number) : 0,
-          x: isMobile ? 0 : isNumber(containerExitRecord.x) ? (containerExitRecord.x as number) : 20,
-          y: isMobile ? 20 : isNumber(containerExitRecord.y) ? (containerExitRecord.y as number) : 0,
-        }}
-        transition={containerTransition as any}
-        drag={!isMobile && !preferences.hudPinned}
-        dragMomentum={false}
-        dragElastic={0.1}
-        dragConstraints={{
-          top: 0,
-          left: 0,
-          right:
-            typeof window !== 'undefined'
-              ? Math.max(0, window.innerWidth - (preferences.hudMiniMode ? 280 : preferences.hudSize.width))
-              : 0,
-          bottom:
-            typeof window !== 'undefined'
-              ? Math.max(0, window.innerHeight - (preferences.hudMiniMode ? 200 : preferences.hudSize.height))
-              : 0,
-        }}
-        onDragEnd={(_, info) => {
-          if (!isMobile && !preferences.hudPinned) {
-            let newX = info.point.x;
-            let newY = info.point.y;
+  return (
+    <motion.div
+      ref={containerRef}
+      role="region"
+      tabIndex={0}
+      aria-label="Mission heads-up display"
+      data-hud-animation={preferences.hudAnimationPreset}
+      initial={{
+        ...containerInitial,
+        opacity: isNumber(containerInitialRecord.opacity)
+          ? (containerInitialRecord.opacity as number)
+          : 0,
+        x: isMobile
+          ? 0
+          : isNumber(containerInitialRecord.x)
+            ? (containerInitialRecord.x as number)
+            : 20,
+        y: isMobile
+          ? 20
+          : isNumber(containerInitialRecord.y)
+            ? (containerInitialRecord.y as number)
+            : 0,
+      }}
+      animate={{
+        ...containerAnimate,
+        opacity: isVisible ? 1 : 0.2,
+        x: preferences.hudPosition?.x ?? 0,
+        y: preferences.hudPosition?.y ?? 0,
+        width: isMobile
+          ? '100%'
+          : preferences.hudMiniMode
+            ? '280px'
+            : `${preferences.hudSize.width}px`,
+        height: isMobile
+          ? isExpanded
+            ? '85vh'
+            : 80
+          : preferences.hudMiniMode
+            ? 'auto'
+            : `${preferences.hudSize.height}px`,
+        scale: isVisible
+          ? preferences.hudProximityEffect
+            ? proximityScale
+            : isNumber(containerAnimateRecord.scale)
+              ? (containerAnimateRecord.scale as number)
+              : 1
+          : 0.95,
+      }}
+      exit={{
+        ...containerExit,
+        opacity: isNumber(containerExitRecord.opacity)
+          ? (containerExitRecord.opacity as number)
+          : 0,
+        x: isMobile ? 0 : isNumber(containerExitRecord.x) ? (containerExitRecord.x as number) : 20,
+        y: isMobile ? 20 : isNumber(containerExitRecord.y) ? (containerExitRecord.y as number) : 0,
+      }}
+      transition={containerTransition as any}
+      drag={!isMobile && !preferences.hudPinned}
+      dragMomentum={false}
+      dragElastic={0.1}
+      dragConstraints={{
+        top: 0,
+        left: 0,
+        right:
+          typeof window !== 'undefined'
+            ? Math.max(
+                0,
+                window.innerWidth - (preferences.hudMiniMode ? 280 : preferences.hudSize.width),
+              )
+            : 0,
+        bottom:
+          typeof window !== 'undefined'
+            ? Math.max(
+                0,
+                window.innerHeight - (preferences.hudMiniMode ? 200 : preferences.hudSize.height),
+              )
+            : 0,
+      }}
+      onDragEnd={(_, info) => {
+        if (!isMobile && !preferences.hudPinned) {
+          let newX = info.point.x;
+          let newY = info.point.y;
 
-            if (preferences.hudGridSnap) {
-              const gridSize = preferences.hudGridSize;
-              newX = Math.round(newX / gridSize) * gridSize;
-              newY = Math.round(newY / gridSize) * gridSize;
-            }
+          if (preferences.hudGridSnap) {
+            const gridSize = preferences.hudGridSize;
+            newX = Math.round(newX / gridSize) * gridSize;
+            newY = Math.round(newY / gridSize) * gridSize;
+          }
 
-            const nextPosition = clampPosition(newX, newY);
-            const basePosition = preferences.hudPosition ?? { x: 0, y: 0 };
-            if (nextPosition.x !== basePosition.x || nextPosition.y !== basePosition.y) {
-              setHudPosition(nextPosition);
-            }
+          const nextPosition = clampPosition(newX, newY);
+          const basePosition = preferences.hudPosition ?? { x: 0, y: 0 };
+          if (nextPosition.x !== basePosition.x || nextPosition.y !== basePosition.y) {
+            setHudPosition(nextPosition);
           }
-        }}
-        onFocus={() => {
-          if (preferences.hudAutoHide && !isMobile) {
-            resetHideTimer();
-          }
-        }}
-        onMouseEnter={() => {
+        }
+      }}
+      onFocus={() => {
+        if (preferences.hudAutoHide && !isMobile) {
+          resetHideTimer();
+        }
+      }}
+      onMouseEnter={() => {
         if (preferences.hudAutoHide && !isMobile) {
           resetHideTimer();
         }
@@ -562,17 +633,17 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
         }
       }}
       className={cn(
-          'pointer-events-auto fixed z-[60] flex flex-col overflow-hidden shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/60',
-        isMobile
-          ? 'bottom-0 left-0 right-0 rounded-t-3xl border-t border-x'
-          : 'rounded-2xl border',
+        'pointer-events-auto fixed z-[60] flex flex-col overflow-hidden shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/60',
+        isMobile ? 'bottom-0 left-0 right-0 rounded-t-3xl border-t border-x' : 'rounded-2xl border',
         themeVariantStyles.border,
         className,
       )}
       style={{
         backdropFilter: themeVariantStyles.backdropFilter,
         backgroundColor: themeVariantStyles.backgroundColor,
-        transition: preferences.hudAnimationsEnabled ? 'backdrop-filter 0.3s ease, background-color 0.3s ease' : 'none',
+        transition: preferences.hudAnimationsEnabled
+          ? 'backdrop-filter 0.3s ease, background-color 0.3s ease'
+          : 'none',
       }}
     >
       {/* Header */}

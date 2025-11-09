@@ -5,8 +5,8 @@ This folder documents how to connect the Pavement Performance Suite to a product
 ## Doppler
 
 1. Create a Doppler project (e.g., `pavement-performance-suite`).
-2. Populate project secrets matching the keys in `.env.example` (`VITE_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, etc.).
-3. Copy `config/secrets/doppler.yaml.example` to `config/secrets/doppler.yaml` and update the project/config names. The manifest maps Doppler secrets into the runtime environment:
+  2. Populate project secrets matching the keys in `.env.example` (`VITE_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, etc.). Set `CONFIG_STRICT_MODE=true` to enforce runtime validation (see `src/lib/config.ts`).
+  3. Copy `config/secrets/doppler.yaml.example` to `config/secrets/doppler.yaml` and update the project/config names. The manifest maps Doppler secrets into the runtime environment:
 
    ```yaml
    # config/secrets/doppler.yaml
@@ -42,7 +42,7 @@ This folder documents how to connect the Pavement Performance Suite to a product
     }
     ```
 
-3. Copy `vault.env.template` to `vault.env`, fill in your Vault address/token, then source it to render a `.env.runtime` file via the included script:
+  3. Copy `vault.env.template` to `vault.env`, fill in your Vault address/token, then source it to render a `.env.runtime` file via the included script. Vault integrations should export `CONFIG_STRICT_MODE=true` to enable runtime validation:
 
    ```bash
     vault kv get -format=json kv/pavement-performance-suite \

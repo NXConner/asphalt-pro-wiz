@@ -73,21 +73,18 @@ export const HudFullContent = memo(function HudFullContent({
       </CollapsibleHudSection>
 
       {/* Telemetry */}
-      <CollapsibleHudSection 
-        title="Mission Telemetry" 
-        defaultOpen={!isMobile}
-      >
+      <CollapsibleHudSection title="Mission Telemetry" defaultOpen={!isMobile}>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Updated {updatedLabel}</span>
-            {missionPhase && (
-              <span className="text-xs text-muted-foreground">{missionPhase}</span>
-            )}
+            {missionPhase && <span className="text-xs text-muted-foreground">{missionPhase}</span>}
           </div>
 
           {environment && (
             <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border/40 bg-muted/20 px-3 py-2 text-xs">
-              <span className="text-[0.58rem] text-muted-foreground uppercase tracking-wider">SITE CONDITIONS</span>
+              <span className="text-[0.58rem] text-muted-foreground uppercase tracking-wider">
+                SITE CONDITIONS
+              </span>
               {typeof environment.tempF === 'number' && (
                 <span className="text-foreground/85">{environment.tempF.toFixed(0)}°F</span>
               )}
@@ -95,7 +92,9 @@ export const HudFullContent = memo(function HudFullContent({
                 <span className="text-foreground/70">{environment.conditions}</span>
               )}
               {environment.riskLevel && (
-                <span className={cn('uppercase tracking-[0.35em]', riskTone[environment.riskLevel])}>
+                <span
+                  className={cn('uppercase tracking-[0.35em]', riskTone[environment.riskLevel])}
+                >
                   {environment.riskLevel} risk
                 </span>
               )}
@@ -110,7 +109,12 @@ export const HudFullContent = memo(function HudFullContent({
                   className="flex items-center justify-between rounded-xl border border-border/40 bg-muted/20 px-3 py-2"
                 >
                   <span className="text-xs text-muted-foreground">{watcher.label}</span>
-                  <span className={cn('text-sm uppercase tracking-[0.35em]', watcher.tone ? watcherTone[watcher.tone] : 'text-foreground')}>
+                  <span
+                    className={cn(
+                      'text-sm uppercase tracking-[0.35em]',
+                      watcher.tone ? watcherTone[watcher.tone] : 'text-foreground',
+                    )}
+                  >
                     {watcher.value}
                   </span>
                 </div>
@@ -137,7 +141,9 @@ export const HudFullContent = memo(function HudFullContent({
                 <span
                   className={cn(
                     'inline-block h-2.5 w-2.5 rounded-full',
-                    flag.active ? 'bg-success shadow-[0_0_12px_hsl(var(--success)/0.6)]' : 'bg-muted-foreground',
+                    flag.active
+                      ? 'bg-success shadow-[0_0_12px_hsl(var(--success)/0.6)]'
+                      : 'bg-muted-foreground',
                   )}
                 />
                 {flag.label}
@@ -182,7 +188,9 @@ function OverlayCallout({ label, value, icon }: OverlayCalloutProps) {
   return (
     <article className="flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/20 px-3 py-2.5">
       <div>
-        <span className="text-[0.58rem] text-muted-foreground uppercase tracking-wider">{label}</span>
+        <span className="text-[0.58rem] text-muted-foreground uppercase tracking-wider">
+          {label}
+        </span>
         <p className="text-sm text-foreground/85 font-mono">{value}</p>
       </div>
       {icon && <span className="text-accent/80">{icon}</span>}

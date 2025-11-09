@@ -11,7 +11,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ROLE_LABELS, useIsAdmin } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
-import type { ProfileRow, RoleName, RoleRow, UserRoleRow } from '@/integrations/supabase/types-helpers';
+import type {
+  ProfileRow,
+  RoleName,
+  RoleRow,
+  UserRoleRow,
+} from '@/integrations/supabase/types-helpers';
 
 interface UserWithRoles {
   id: string;
@@ -26,7 +31,7 @@ const AVAILABLE_ROLE_ORDER: RoleName[] = [
   'Field Crew Lead',
   'Estimator',
   'Administrator',
-  'Super Administrator'
+  'Super Administrator',
 ];
 
 export function AdminPanel() {
@@ -38,11 +43,11 @@ export function AdminPanel() {
     queryKey: ['roles-all'],
     queryFn: async () => {
       // Return available roles directly from the enum
-      return AVAILABLE_ROLE_ORDER.map(role => ({
+      return AVAILABLE_ROLE_ORDER.map((role) => ({
         id: role,
         role: role,
         user_id: '',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       }));
     },
     enabled: isAdmin && !roleLoading,
@@ -84,19 +89,35 @@ export function AdminPanel() {
   });
 
   const toggleRoleMutation = useMutation({
-    mutationFn: async ({ userId, roleName, enable }: { userId: string; roleName: RoleName; enable: boolean }) => {
+    mutationFn: async ({
+      userId,
+      roleName,
+      enable,
+    }: {
+      userId: string;
+      roleName: RoleName;
+      enable: boolean;
+    }) => {
       if (enable) {
-        const { error } = await supabase.from('user_roles').insert({ user_id: userId, role: roleName });
+        const { error } = await supabase
+          .from('user_roles')
+          .insert({ user_id: userId, role: roleName });
         if (error && !error.message.includes('duplicate')) throw error;
       } else {
-        const { error } = await supabase.from('user_roles').delete().eq('user_id', userId).eq('role', roleName);
+        const { error } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', userId)
+          .eq('role', roleName);
         if (error) throw error;
       }
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       queryClient.invalidateQueries({ queryKey: ['user-roles', variables.userId] });
-      toast.success(`${ROLE_LABELS[variables.roleName]} ${variables.enable ? 'granted' : 'revoked'}`);
+      toast.success(
+        `${ROLE_LABELS[variables.roleName]} ${variables.enable ? 'granted' : 'revoked'}`,
+      );
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : 'Failed to update roles');
@@ -105,7 +126,9 @@ export function AdminPanel() {
 
   const grantRoleByEmail = (roleName: RoleName, action: 'grant' | 'revoke') => {
     if (!emailLookup.trim()) return;
-    const target = users.find((user) => user.email?.toLowerCase() === emailLookup.trim().toLowerCase());
+    const target = users.find(
+      (user) => user.email?.toLowerCase() === emailLookup.trim().toLowerCase(),
+    );
     if (!target) {
       toast.error('User not found');
       return;
@@ -210,7 +233,10 @@ export function AdminPanel() {
                           <Badge variant="outline">No roles</Badge>
                         ) : (
                           user.roles.map((role) => (
-                            <Badge key={role} variant={role === 'Super Administrator' ? 'default' : 'secondary'}>
+                            <Badge
+                              key={role}
+                              variant={role === 'Super Administrator' ? 'default' : 'secondary'}
+                            >
                               {ROLE_LABELS[role]}
                             </Badge>
                           ))

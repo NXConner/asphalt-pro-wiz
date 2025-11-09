@@ -105,14 +105,15 @@ export function MissionSchedulerPanel({ coords }: MissionSchedulerPanelProps) {
           <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="text-sm">
               <div>
-                <span className="font-semibold text-foreground">{taskCount}</span>{' '}
-                scheduled missions
+                <span className="font-semibold text-foreground">{taskCount}</span> scheduled
+                missions
               </div>
               <div>
                 <span className="font-semibold text-foreground">{crewCount}</span> active crews
               </div>
               <div>
-                <span className="font-semibold text-foreground">{blackoutCount}</span> blackout windows
+                <span className="font-semibold text-foreground">{blackoutCount}</span> blackout
+                windows
               </div>
             </div>
             <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
@@ -160,18 +161,18 @@ export function MissionSchedulerPanel({ coords }: MissionSchedulerPanelProps) {
         <WeatherAdvisor coords={coords} />
       </div>
     );
-    }, [
-      blackoutCount,
-      coords,
-      crewCount,
-      handleIcsFileChange,
-      icsImporting,
-      icsSummary,
-      schedulerReady,
-      supabaseEnabled,
-      taskCount,
-      weekStart,
-    ]);
+  }, [
+    blackoutCount,
+    coords,
+    crewCount,
+    handleIcsFileChange,
+    icsImporting,
+    icsSummary,
+    schedulerReady,
+    supabaseEnabled,
+    taskCount,
+    weekStart,
+  ]);
 
   return (
     <div className="space-y-6">
