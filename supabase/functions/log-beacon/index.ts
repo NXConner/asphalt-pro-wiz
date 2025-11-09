@@ -1,6 +1,15 @@
-// Supabase Edge Function: Log Beacon with Structured Persistence
-// Deploy with: supabase functions deploy log-beacon
-// Accepts POST JSON payloads (single or batch up to 50) and persists to telemetry tables
+/**
+ * Supabase Edge Function: Log Beacon with Structured Persistence.
+ *
+ * Deploy with: `supabase functions deploy log-beacon`
+ *
+ * Accepts POST JSON payloads (single or batch up to 50) and persists structured telemetry into:
+ * - `system_telemetry` (general event log)
+ * - `telemetry_events` (analytics stream)
+ * - `preview_asset_incidents` (Lovable preview asset health)
+ *
+ * Authentication: Supabase JWT (anon/service). Returns `{ ingested: number }` on success.
+ */
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";

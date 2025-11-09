@@ -105,18 +105,35 @@ const spec = {
           'Receives structured telemetry events from the PPS frontend for centralized logging and later fan-out.',
         operationId: 'LogBeacon',
         security: [{ supabaseAnonKey: [] }],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/LogBeaconPayload' },
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/LogBeaconPayload' },
+              },
             },
           },
-        },
         responses: {
-          '200': { description: 'Beacon accepted' },
-          '400': { description: 'Invalid JSON payload' },
+            '200': {
+              description: 'Beacon accepted',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      ingested: {
+                        type: 'integer',
+                        description: 'Number of events successfully persisted.',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            '400': { description: 'Invalid JSON payload or validation failure' },
           '405': { description: 'Method not allowed' },
+            '401': { description: 'Missing or invalid Supabase JWT' },
+            '500': { description: 'Persistence failure while writing telemetry rows' },
         },
       },
     },
@@ -172,33 +189,87 @@ const spec = {
         },
         additionalProperties: true,
       },
-      LogBeaconPayload: {
-        type: 'object',
-        description: 'Structured client telemetry with arbitrary metadata',
-        properties: {
-          event: {
-            type: 'string',
-            description: 'Event name (e.g. mission_scheduler.conflict)',
+        LogEvent: {
+          type: 'object',
+          description: 'Telemetry event emitted by the PPS web client.',
+          properties: {
+            event: {
+              type: 'string',
+              description: 'Event name (e.g. lovable.asset_load_error)',
+            },
+            level: {
+              type: 'string',
+              description: 'Severity level',
+              enum: ['debug', 'info', 'warn', 'error'],
+              default: 'info',
+            },
+            message: {
+              type: 'string',
+              description: 'Human readable diagnostic message',
+            },
+            reason: {
+              type: 'string',
+              description: 'Optional rejection reason or exception message',
+            },
+            timestamp: {
+              type: 'string',
+              description: 'Client provided timestamp (ISO-8601 or epoch milliseconds)',
+            },
+            sessionId: {
+              type: 'string',
+              description: 'Session identifier allocated by the client logger',
+            },
+            deviceId: {
+              type: 'string',
+              description: 'Device identifier allocated by the client logger',
+            },
+            environment: {
+              type: 'string',
+              description: 'Environment tag (development, production, loadtest, etc.)',
+            },
+            pageUrl: {
+              type: 'string',
+              format: 'uri',
+              description: 'Page URL where the issue occurred',
+            },
+            url: {
+              type: 'string',
+              format: 'uri',
+              description: 'Deprecated alias for pageUrl (supported for backward compatibility)',
+            },
+            assetUrl: {
+              type: 'string',
+              format: 'uri',
+              description: 'Failed asset URL for lovable.asset_* events',
+            },
+            assetTag: {
+              type: 'string',
+              description: 'DOM tag name for the asset (img, script, link, etc.)',
+            },
+            userAgent: {
+              type: 'string',
+              description: 'User agent string captured server-side if provided',
+            },
+            metadata: {
+              type: 'object',
+              description: 'Arbitrary metadata supplied by the client',
+              additionalProperties: true,
+            },
           },
-          level: {
-            type: 'string',
-            description: 'Log level',
-            enum: ['debug', 'info', 'warn', 'error'],
-            default: 'info',
-          },
-          context: {
-            type: 'object',
-            description: 'Arbitrary contextual fields',
-            additionalProperties: true,
-          },
-          timestamp: {
-            type: 'string',
-            format: 'date-time',
-            description: 'ISO-8601 timestamp from client (optional)',
-          },
+          required: ['event'],
+          additionalProperties: true,
         },
-        required: ['event'],
-        additionalProperties: true,
+        LogBeaconPayload: {
+          anyOf: [
+            { $ref: '#/components/schemas/LogEvent' },
+            {
+              type: 'array',
+              description: 'Batch of telemetry events submitted in a single beacon.',
+              items: { $ref: '#/components/schemas/LogEvent' },
+              minItems: 1,
+              maxItems: 50,
+            },
+          ],
       },
     },
   },
