@@ -73,7 +73,12 @@ export function useEstimatorScenarios(options: UseEstimatorScenariosOptions): Sc
     (preset?: Partial<ScenarioPlan>) => {
       setScenarios((prev) => [
         ...prev,
-        createScenario(simulate, preset ?? { name: 'Alt Quote', overrides: {} }),
+        createScenario(
+          simulate,
+          { overrides: {}, ...(preset ?? { name: 'Alt Quote' }) } as Partial<ScenarioPlan> & {
+            overrides: ScenarioOverrides;
+          },
+        ),
       ]);
     },
     [simulate],

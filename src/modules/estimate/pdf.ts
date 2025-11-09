@@ -52,7 +52,7 @@ export async function exportEstimatePdf(options: ExportEstimatePdfOptions): Prom
     headStyles: { fillColor: [239, 68, 68], textColor: 255 },
     head: [['Cost Component', 'Amount']],
     body: [
-      ...breakdown.map((item) => [item.label, currency(item.amount)]),
+      ...breakdown.map((item) => [(item as any).label ?? 'Item', currency(Number((item as any).amount ?? 0))]),
       ['Overhead', currency(costs.overhead)],
       ['Profit', currency(costs.profit)],
       [{ content: 'Total', styles: { fontStyle: 'bold' } }, currency(costs.total)],

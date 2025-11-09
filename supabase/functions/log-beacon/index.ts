@@ -365,7 +365,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("[log-beacon] Failed to persist telemetry", error);
     return new Response(
-      JSON.stringify({ error: "Failed to persist telemetry payload", details: String(error?.message ?? error) }),
+      JSON.stringify({ error: "Failed to persist telemetry payload", details: (typeof error === 'object' && error && 'message' in (error as any)) ? String((error as any).message) : String(error) }),
       {
         status: 500,
         headers: DEFAULT_CONTENT_TYPE,

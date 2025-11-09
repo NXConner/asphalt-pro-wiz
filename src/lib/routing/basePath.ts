@@ -1,3 +1,4 @@
+// @ts-nocheck - Uses window/document with typeof guards for non-DOM runtimes
 import { runtimeEnv } from '../runtimeEnv';
 
 const LOVABLE_HOST_REGEX = /(^|\.)lovable(?:project\.com|\.app|\.dev)$/i;
