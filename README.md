@@ -106,6 +106,7 @@ npm run seed
   - **Mapping & Weather**: `VITE_GOOGLE_MAPS_API_KEY`, `VITE_OPENWEATHER_API_KEY`, `VITE_MAPBOX_TOKEN`, `VITE_AIR_QUALITY_API_KEY`.
   - **HUD Sync & Export**: `VITE_HUD_DEFAULT_ANIMATION_PRESET`, `VITE_HUD_ANIMATION_PRESETS_PATH`, `VITE_HUD_GESTURE_SENSITIVITY`, `VITE_HUD_MULTI_MONITOR_STRATEGY`, `VITE_HUD_CONFIG_EXPORT_FORMAT`, `VITE_HUD_CONFIG_EXPORT_ENDPOINT`, plus secrets `HUD_CONFIG_EXPORT_SIGNING_KEY`, `HUD_CONFIG_EXPORT_ENCRYPTION_KEY`, `HUD_CONFIG_EXPORT_BUCKET`.
   - **Developer tooling**: `GITHUB_TOKEN` for ingest scripts.
+- **Secrets provider**: Set `SECRET_PROVIDER` to `env` (default), `doppler`, `vault`, or `aws-secrets-manager`. The runtime helper `src/config/secrets.ts` reads this value and fails fast if required secrets are missing or the provider is unconfigured.
 - Secrets automation templates live in `config/secrets/` for Doppler, Vault, and AWS Secrets Manager pipelines.
 - Never commit real secrets. Use Supabase Edge Secrets or your chosen secret manager for runtime credentials.
 - Run `npm run check:env` locally (non-strict) and `npm run check:env -- --strict` in CI to gate deployments; failures block Lovable preview regressions (e.g., absolute `VITE_BASE_PATH`).
@@ -134,6 +135,7 @@ npm run seed
 - Scripts:
   - `npm run security:scan` (npm audit + Snyk)
   - `npm run security:report` (JSON audit snapshot)
+- Secret resolution is centralised in `src/config/secrets.ts`, which normalises environment values and surfaces actionable errors when a managed provider (`SECRET_PROVIDER=doppler|vault|aws-secrets-manager`) is enabled without configuration. See `config/secrets/README.md` for provider-specific bootstrapping.
   - GitHub Actions pipeline (`.github/workflows/main.yml`) runs CodeQL SAST, dependency scans, and tests per push.
 - Secrets management patterns documented in `docs/SECRETS_AND_CONFIG.md` with Doppler/Vault/AWS sample configs.
 - Virginia contractor compliance workflows, invoicing expectations, and retention policies detailed in `docs/PRODUCTION_READINESS.md` and `docs/SECURITY_REMEDIATION_GUIDE.md`.

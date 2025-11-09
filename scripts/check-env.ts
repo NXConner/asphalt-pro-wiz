@@ -143,6 +143,36 @@ const checks: EnvCheck[] = [
     },
   },
   {
+    key: 'SECRET_PROVIDER',
+    description: 'Secret manager provider identifier (env|doppler|vault|aws-secrets-manager)',
+    required: false,
+    category: 'secrets',
+    validate: (value) => {
+      if (!value) return [];
+      const normalized = value.trim().toLowerCase();
+      const allowed = ['env', 'doppler', 'vault', 'aws', 'aws-secrets', 'aws-secretsmanager', 'aws-secrets-manager'];
+      if (!allowed.includes(normalized)) {
+        return [
+          {
+            key: 'SECRET_PROVIDER',
+            message: `Unrecognised secret provider "${value}". Supported values: env, doppler, vault, aws-secrets-manager.`,
+            severity: 'warn',
+          },
+        ];
+      }
+      if (normalized !== 'env') {
+        return [
+          {
+            key: 'SECRET_PROVIDER',
+            message: `Secrets will be resolved via ${normalized}. Ensure config/secrets guidance is followed.`,
+            severity: 'info',
+          },
+        ];
+      }
+      return [];
+    },
+  },
+  {
     key: 'DATABASE_URL',
     description: 'PostgreSQL connection string for migrations and scripts',
     required: false,

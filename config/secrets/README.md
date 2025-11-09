@@ -2,10 +2,16 @@
 
 This folder documents how to connect the Pavement Performance Suite to a production-grade secrets manager. The application expects configuration values to be surfaced as environment variables, mirroring the keys in `.env.example`. Include the HUD sync secrets introduced in Phase 2 (`HUD_CONFIG_EXPORT_SIGNING_KEY`, `HUD_CONFIG_EXPORT_ENCRYPTION_KEY`, `HUD_CONFIG_EXPORT_BUCKET`) whenever you provision environments.
 
+## Runtime integration
+
+- Set `SECRET_PROVIDER` in your environment (`env`, `doppler`, `vault`, or `aws-secrets-manager`). The helper at `src/config/secrets.ts` reads this flag, normalises provider names, and throws actionable errors when required secrets are missing.
+- Backend utilities (`scripts/check-env`, Supabase functions, CLI tooling) call `getSecret`/`requireSecret` to retrieve sensitive values. When `SECRET_PROVIDER` is not `env`, the helper reminds you to run the provider-specific bootstrap steps below.
+- For local development, keep `SECRET_PROVIDER=env` and populate `.env` directly. For staging/production, switch to a managed provider and follow the relevant template.
+
 ## Doppler
 
 1. Create a Doppler project (e.g., `pavement-performance-suite`).
-  2. Populate project secrets matching the keys in `.env.example` (`VITE_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, etc.). Set `CONFIG_STRICT_MODE=true` to enforce runtime validation (see `src/lib/config.ts`).
+2. Populate project secrets matching the keys in `.env.example` (`VITE_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, etc.).
   3. Copy `config/secrets/doppler.yaml.example` to `config/secrets/doppler.yaml` and update the project/config names. The manifest maps Doppler secrets into the runtime environment:
 
    ```yaml
