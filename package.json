@@ -14,6 +14,8 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "preview:serve": "vite preview --host --port 4173",
+    "test:preview": "npm run build && npx playwright install --with-deps chromium && VITE_LOVABLE_BASE_PATH=/preview/smoke SECRET_PROVIDER=env playwright test --config playwright.preview.config.ts",
     "audit": "npm audit --audit-level=high",
     "audit:fix": "npm audit fix --audit-level=high || true",
     "snyk:test": "snyk test || true",

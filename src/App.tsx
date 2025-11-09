@@ -23,6 +23,7 @@ import { PerformanceProvider } from '@/contexts/PerformanceContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { trackPageView } from '@/lib/analytics';
 import { I18nProvider } from '@/lib/i18n';
+import { logEvent } from '@/lib/logging';
 import { initializeMonitoring } from '@/lib/monitoring';
 import { getRouterBaseName, subscribeToLovableConfig } from '@/lib/routing/basePath';
 
@@ -92,6 +93,16 @@ const App = () => {
   const [baseName, setBaseName] = useState(getRouterBaseName);
 
   useEffect(() => subscribeToLovableConfig(setBaseName), []);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.dataset.routerBase = baseName;
+    }
+    if (typeof window !== 'undefined') {
+      (window as typeof window & { __PPS_ROUTER_BASE?: string }).__PPS_ROUTER_BASE = baseName;
+    }
+    logEvent('lovable.routing.base', { baseName });
+  }, [baseName]);
 
   return (
     <ErrorBoundary>

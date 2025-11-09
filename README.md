@@ -152,6 +152,7 @@ npm run seed
 | Unit | `npm run test:unit -- --run` | Vitest; coverage thresholds 85%/85%/70% configured |
 | Integration | `npm run test -- --run` | Module-level suites under `tests/` |
 | E2E | `npm run test:e2e` | Playwright specs (`e2e/`) |
+| Preview Smoke | `npm run test:preview` | Builds production bundle and runs the Playwright harness at `preview-smoke.html` to verify Lovable base detection |
 | Accessibility | `npm run test:unit -- --run` | Uses `vitest-axe` assertions |
 | Security | `npm run security:scan` | npm audit + Snyk |
 | Load | see [Load & Performance Testing](#load--performance-testing) | k6 + Artillery packs |

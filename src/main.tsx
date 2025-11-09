@@ -34,53 +34,58 @@ createRoot(rootElement).render(<App />);
 try {
     const hostname = window.location?.hostname || '';
     const onLovableHost = isLovableHost(hostname);
-  const clearedFlag = 'preview-cache-cleared-v1';
-  if (onLovableHost && !sessionStorage.getItem(clearedFlag)) {
-    sessionStorage.setItem(clearedFlag, '1');
+    const clearedFlag = 'preview-cache-cleared-v1';
+    if (onLovableHost && !sessionStorage.getItem(clearedFlag)) {
+      sessionStorage.setItem(clearedFlag, '1');
 
-    // Clear Supabase auth caches (localStorage keys start with 'sb-')
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (!key) continue;
-        if (key.startsWith('sb-') || key.includes('supabase')) {
-          localStorage.removeItem(key);
-        }
-      }
-    } catch {}
+      (async () => {
+        // Clear Supabase auth caches (localStorage keys start with 'sb-')
+        try {
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (!key) continue;
+            if (key.startsWith('sb-') || key.includes('supabase')) {
+              localStorage.removeItem(key);
+            }
+          }
+        } catch {}
 
-    // Unregister service workers
-    try {
-      if ('serviceWorker' in navigator) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        regs.forEach((r) => r.unregister());
-      }
-    } catch {}
+        // Unregister service workers
+        try {
+          if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            regs.forEach((r) => r.unregister());
+          }
+        } catch {}
 
-    // Clear Cache Storage
-    try {
-      if ('caches' in window) {
-        const keys = await caches.keys();
-        await Promise.all(keys.map((k) => caches.delete(k)));
-      }
-    } catch {}
+        // Clear Cache Storage
+        try {
+          if ('caches' in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map((k) => caches.delete(k)));
+          }
+        } catch {}
 
-    // Best-effort IndexedDB cleanup (not supported in all browsers)
-    try {
-      const anyIndexedDB: any = indexedDB as any;
-      if (anyIndexedDB?.databases) {
-        const dbs = await anyIndexedDB.databases();
-        await Promise.all(
-          (dbs || [])
-            .filter((d: any) => d?.name && /supabase|pps|vite|workbox/i.test(d.name))
-            .map((d: any) => new Promise<void>((res) => {
-              const req = indexedDB.deleteDatabase(d.name!);
-              req.onsuccess = req.onerror = req.onblocked = () => res();
-            })),
-        );
-      }
-    } catch {}
-  }
+        // Best-effort IndexedDB cleanup (not supported in all browsers)
+        try {
+          const anyIndexedDB: any = indexedDB as any;
+          if (anyIndexedDB?.databases) {
+            const dbs = await anyIndexedDB.databases();
+            await Promise.all(
+              (dbs || [])
+                .filter((d: any) => d?.name && /supabase|pps|vite|workbox/i.test(d.name))
+                .map(
+                  (d: any) =>
+                    new Promise<void>((res) => {
+                      const req = indexedDB.deleteDatabase(d.name!);
+                      req.onsuccess = req.onerror = req.onblocked = () => res();
+                    }),
+                ),
+            );
+          }
+        } catch {}
+      })().catch(() => {});
+    }
 } catch {}
 
 
