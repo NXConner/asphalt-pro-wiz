@@ -93,14 +93,14 @@ const App = () => {
     };
   }, []);
 
-  const [baseName, setBaseName] = useState(getRouterBaseName);
+    const [baseName, setBaseName] = useState(getRouterBaseName);
 
-  useEffect(() => subscribeToLovableConfig(setBaseName), []);
-  useEffect(() => installLovableAssetMonitoring(), []);
+    useEffect(() => subscribeToLovableConfig(setBaseName), []);
+    useEffect(() => installLovableAssetMonitoring(), []);
 
-  const isPreviewEnv = isLovablePreviewRuntime();
-  const Guard: React.ComponentType<{ children: React.ReactNode }> = isPreviewEnv ? Fragment : ProtectedRoute;
-  const routerBase = isPreviewEnv ? '/' : baseName;
+    const isPreviewEnv = isLovablePreviewRuntime();
+    const Guard: React.ComponentType<{ children: React.ReactNode }> = isPreviewEnv ? Fragment : ProtectedRoute;
+    const routerBase = baseName || '/';
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
