@@ -24,7 +24,17 @@ interface EnvCheck {
   key: string;
   description: string;
   required: boolean;
-  category: 'routing' | 'supabase' | 'secrets' | 'observability' | 'ai' | 'external' | 'feature-flags' | 'tooling' | 'meta';
+  category:
+    | 'routing'
+    | 'supabase'
+    | 'secrets'
+    | 'observability'
+    | 'ai'
+    | 'external'
+    | 'feature-flags'
+    | 'tooling'
+    | 'meta'
+    | 'hud';
   validate?: (value: string | undefined, context: AuditContext) => CheckResult[];
 }
 
@@ -93,6 +103,44 @@ const checks: EnvCheck[] = [
     description: 'Canonical URL for generated links',
     required: true,
     category: 'routing',
+  },
+  {
+    key: 'VITE_ENABLE_WEB_VITALS',
+    description: 'Enable web vitals instrumentation (true/false)',
+    required: true,
+    category: 'observability',
+  },
+  {
+    key: 'VITE_ENABLE_FEATURE_TELEMETRY',
+    description: 'Enable feature telemetry payloads',
+    required: true,
+    category: 'observability',
+  },
+  {
+    key: 'VITE_OBSERVABILITY_EXPORTER_URL',
+    description: 'HTTP exporter endpoint for observability payload forwarding',
+    required: true,
+    category: 'observability',
+  },
+  {
+    key: 'VITE_OBSERVABILITY_SAMPLE_RATE',
+    description: 'Sample rate for observability events (0-1)',
+    required: true,
+    category: 'observability',
+  },
+  {
+    key: 'OTEL_EXPORTER_OTLP_ENDPOINT',
+    description: 'OTel collector endpoint for metrics/log export',
+    required: false,
+    category: 'observability',
+    validate: (value, ctx) => missingInStrict(value, ctx, 'OTEL_EXPORTER_OTLP_ENDPOINT'),
+  },
+  {
+    key: 'OTEL_EXPORTER_OTLP_PROTOCOL',
+    description: 'OTel exporter protocol (grpc|http|protobuf)',
+    required: false,
+    category: 'observability',
+    validate: (value, ctx) => missingInStrict(value, ctx, 'OTEL_EXPORTER_OTLP_PROTOCOL'),
   },
   {
     key: 'VITE_SUPABASE_URL',
@@ -180,6 +228,13 @@ const checks: EnvCheck[] = [
     validate: (value, ctx) => missingInStrict(value, ctx, 'DATABASE_URL'),
   },
   {
+    key: 'ADMIN_EMAIL',
+    description: 'Primary administrator email for onboarding flows',
+    required: false,
+    category: 'meta',
+    validate: (value, ctx) => missingInStrict(value, ctx, 'ADMIN_EMAIL'),
+  },
+  {
     key: 'VITE_LOG_BEACON_URL',
     description: 'Observability beacon endpoint',
     required: true,
@@ -235,10 +290,102 @@ const checks: EnvCheck[] = [
     category: 'feature-flags',
   },
   {
+    key: 'VITE_FLAG_HUD_MULTI_MONITOR',
+    description: 'Enable HUD multi-monitor orchestration',
+    required: true,
+    category: 'feature-flags',
+  },
+  {
+    key: 'VITE_FLAG_HUD_GESTURES',
+    description: 'Enable HUD gesture controls',
+    required: true,
+    category: 'feature-flags',
+  },
+  {
+    key: 'VITE_FLAG_HUD_KEYBOARD_NAV',
+    description: 'Enable HUD keyboard navigation shortcuts',
+    required: true,
+    category: 'feature-flags',
+  },
+  {
+    key: 'VITE_FLAG_HUD_ANIMATIONS',
+    description: 'Enable HUD animation system',
+    required: true,
+    category: 'feature-flags',
+  },
+  {
+    key: 'VITE_FLAG_HUD_CONFIG_SYNC',
+    description: 'Enable HUD config sync/export workflows',
+    required: true,
+    category: 'feature-flags',
+  },
+  {
     key: 'GITHUB_TOKEN',
     description: 'Token used by ingestion scripts (optional locally)',
     required: false,
     category: 'tooling',
+  },
+  {
+    key: 'VITE_HUD_DEFAULT_ANIMATION_PRESET',
+    description: 'Default HUD animation preset identifier',
+    required: false,
+    category: 'hud',
+    validate: (value, ctx) => missingInStrict(value, ctx, 'VITE_HUD_DEFAULT_ANIMATION_PRESET'),
+  },
+  {
+    key: 'VITE_HUD_ANIMATION_PRESETS_PATH',
+    description: 'Path to HUD animation presets JSON',
+    required: false,
+    category: 'hud',
+    validate: (value, ctx) => missingInStrict(value, ctx, 'VITE_HUD_ANIMATION_PRESETS_PATH'),
+  },
+  {
+    key: 'VITE_HUD_GESTURE_SENSITIVITY',
+    description: 'HUD gesture sensitivity tuning (conservative|standard|aggressive)',
+    required: false,
+    category: 'hud',
+    validate: (value, ctx) => missingInStrict(value, ctx, 'VITE_HUD_GESTURE_SENSITIVITY'),
+  },
+  {
+    key: 'VITE_HUD_MULTI_MONITOR_STRATEGY',
+    description: 'HUD multi-monitor strategy (auto|single|persist-latest)',
+    required: false,
+    category: 'hud',
+    validate: (value, ctx) => missingInStrict(value, ctx, 'VITE_HUD_MULTI_MONITOR_STRATEGY'),
+  },
+  {
+    key: 'VITE_HUD_CONFIG_EXPORT_FORMAT',
+    description: 'HUD configuration export format (json|yaml)',
+    required: false,
+    category: 'hud',
+    validate: (value, ctx) => missingInStrict(value, ctx, 'VITE_HUD_CONFIG_EXPORT_FORMAT'),
+  },
+  {
+    key: 'VITE_HUD_CONFIG_EXPORT_ENDPOINT',
+    description: 'Optional endpoint to push HUD archives to (Supabase Edge/S3)',
+    required: false,
+    category: 'hud',
+  },
+  {
+    key: 'HUD_CONFIG_EXPORT_SIGNING_KEY',
+    description: 'Signing key used to authenticate HUD exports',
+    required: false,
+    category: 'secrets',
+    validate: (value, ctx) => missingInStrict(value, ctx, 'HUD_CONFIG_EXPORT_SIGNING_KEY'),
+  },
+  {
+    key: 'HUD_CONFIG_EXPORT_ENCRYPTION_KEY',
+    description: 'Encryption key securing HUD archive payloads',
+    required: false,
+    category: 'secrets',
+    validate: (value, ctx) => missingInStrict(value, ctx, 'HUD_CONFIG_EXPORT_ENCRYPTION_KEY'),
+  },
+  {
+    key: 'HUD_CONFIG_EXPORT_BUCKET',
+    description: 'Object storage bucket for HUD configuration archives',
+    required: false,
+    category: 'secrets',
+    validate: (value, ctx) => missingInStrict(value, ctx, 'HUD_CONFIG_EXPORT_BUCKET'),
   },
 ];
 

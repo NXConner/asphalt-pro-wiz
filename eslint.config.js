@@ -45,8 +45,11 @@ export default tseslint.config(
         "@typescript-eslint/no-require-imports": "off",
         "no-empty": ["error", { allowEmptyCatch: true }],
         "jsx-a11y/no-autofocus": ["error", { ignoreNonDOM: true }],
-        "jsx-a11y/no-static-element-interactions": "warn",
-        "jsx-a11y/media-has-caption": "warn",
+        "jsx-a11y/media-has-caption": "error",
+        "jsx-a11y/no-noninteractive-tabindex": "error",
+        "jsx-a11y/alt-text": "error",
+        "jsx-a11y/aria-roles": "error",
+        "jsx-a11y/prefer-tag-over-role": "warn",
         "import/order": [
           "warn",
           {

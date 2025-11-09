@@ -11,6 +11,63 @@
  * Authentication: Supabase JWT (anon/service). Returns `{ ingested: number }` on success.
  */
 
+/**
+ * @openapi
+ * /log-beacon:
+ *   post:
+ *     tags:
+ *       - Observability
+ *     summary: Ingest client log beacons
+ *     description: >
+ *       Receives structured telemetry events from the Pavement Performance Suite web client for centralized logging
+ *       and incident roll-up. Supports single objects or batches up to 50 entries.
+ *     operationId: LogBeacon
+ *     security:
+ *       - supabaseAnonKey: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         'application/json':
+ *           schema:
+ *             $ref: '#/components/schemas/LogBeaconPayload'
+ *           examples:
+ *             single:
+ *               summary: Single telemetry event
+ *               value:
+ *                 event: lovable.asset_load_error
+ *                 level: error
+ *                 assetUrl: https://preview.example.com/static/logo.png
+ *                 pageUrl: https://preview.example.com/dashboard
+ *                 reason: Failed to load resource
+ *             batch:
+ *               summary: Batch payload
+ *               value:
+ *                 - event: mission.scheduler_loaded
+ *                   level: info
+ *                 - event: lovable.asset_recovered
+ *                   level: warn
+ *                   message: Recovered after retry
+ *     responses:
+ *       '200':
+ *         description: Beacon accepted
+ *         content:
+ *           'application/json':
+ *             schema:
+ *               $ref: '#/components/schemas/LogBeaconResponse'
+ *       '400':
+ *         description: Invalid JSON payload or validation failure
+ *         content:
+ *           'application/json':
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '401':
+ *         description: Missing or invalid Supabase JWT
+ *       '405':
+ *         description: Method not allowed
+ *       '500':
+ *         description: Persistence failure while writing telemetry rows
+ */
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.8";

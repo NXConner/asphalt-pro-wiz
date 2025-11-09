@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 
 const toneByCategory: Record<ThemeCategory, HoloCardProps['tone']> = {
   division: 'aurora',
+  operations: 'dusk',
   legacy: 'citadel',
   liturgical: 'chapel',
   campus: 'ember',
@@ -48,9 +49,9 @@ export function ThemeShowcase({ limitPerGroup = 3 }: ThemeShowcaseProps) {
           >
             <Sparkles className="h-4 w-4" aria-hidden="true" /> Live Theme Gallery
           </h2>
-          <p className="text-xs text-slate-300/70">
-            Explore curated Division, liturgical, and campus palettes. Apply instantly to preview
-            mission dashboards with real data.
+            <p className="text-xs text-slate-300/70">
+              Explore curated Division, mission operations, liturgical, and campus palettes. Apply
+              instantly to preview mission dashboards with real data.
           </p>
         </div>
         <Badge
