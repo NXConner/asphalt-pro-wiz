@@ -2,8 +2,8 @@ import { forwardRef } from 'react';
 
 import { TacticalOverlay } from './TacticalOverlay';
 
-import { cn } from '@/lib/utils';
 import type { TacticalTone } from '@/lib/tacticalTone';
+import { cn } from '@/lib/utils';
 
 interface TacticalCardProps extends React.HTMLAttributes<HTMLDivElement> {
   heading?: string;

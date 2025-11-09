@@ -1,5 +1,4 @@
 import { supabase } from '@/integrations/supabase/client';
-
 import type { SupplierIntelRequest, SupplierIntelResponse } from '@/modules/estimate/supplier/types';
 
 function pruneUndefined<T extends Record<string, unknown>>(payload: T): Partial<T> {

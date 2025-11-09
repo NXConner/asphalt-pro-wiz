@@ -4,13 +4,13 @@ export default function PreviewSafe() {
   const [info, setInfo] = useState({ base: '/', path: '/', host: '' });
   useEffect(() => {
     try {
-      setInfo({
+      const snapshot = {
         base: document?.documentElement?.dataset?.routerBase || '/',
         path: window.location.pathname + window.location.search,
         host: window.location.host,
-      });
-      // eslint-disable-next-line no-console
-      console.info('[PreviewSafe] rendering', { info: { ...info } });
+      };
+      setInfo(snapshot);
+      console.info('[PreviewSafe] rendering', { info: snapshot });
     } catch {}
   }, []);
 
@@ -38,9 +38,15 @@ export default function PreviewSafe() {
         </div>
 
         <nav className="flex items-center justify-center gap-4 text-sm">
-          <a className="underline underline-offset-4" href="/health">/health</a>
-          <a className="underline underline-offset-4" href="/command-center">/command-center</a>
-          <a className="underline underline-offset-4" href="/">/</a>
+          <a className="underline underline-offset-4" href="/health">
+            /health
+          </a>
+          <a className="underline underline-offset-4" href="/command-center">
+            /command-center
+          </a>
+          <a className="underline underline-offset-4" href="/">
+            /
+          </a>
         </nav>
       </section>
     </main>

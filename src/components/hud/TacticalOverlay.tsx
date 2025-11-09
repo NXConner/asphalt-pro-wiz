@@ -5,8 +5,8 @@ import { CanvasGrid } from './CanvasGrid';
 import { CornerBrackets, type CornerBracketsProps } from './CornerBrackets';
 import { ScanLines, type ScanLinesProps } from './ScanLines';
 
-import { cn } from '@/lib/utils';
 import { resolveTacticalTone, type TacticalTone } from '@/lib/tacticalTone';
+import { cn } from '@/lib/utils';
 
 export interface TacticalOverlayProps {
   children?: ReactNode;

@@ -1,8 +1,8 @@
 import { forwardRef } from 'react';
 
 import { TacticalOverlay } from '@/components/hud/TacticalOverlay';
-import { cn } from '@/lib/utils';
 import type { TacticalTone } from '@/lib/tacticalTone';
+import { cn } from '@/lib/utils';
 
 type DivisionCardVariant = 'default' | 'command' | 'intel' | 'alert';
 

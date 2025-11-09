@@ -1,7 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Suspense, lazy, useEffect, useState, Fragment } from 'react';
+import { Fragment, Suspense, lazy, useEffect, useState } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { toast as sonnerToast } from 'sonner';
+
+import Health from './pages/Health';
 
 import { SkipLink } from '@/components/A11y/SkipLink';
 import { AccessibilityChecker } from '@/components/AccessibilityChecker/AccessibilityChecker';
@@ -17,8 +19,8 @@ import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { FeatureFlagProvider } from '@/contexts/FeatureFlagProvider';
 import { ErrorProvider } from '@/contexts/ErrorContext';
+import { FeatureFlagProvider } from '@/contexts/FeatureFlagProvider';
 import { KeyboardProvider } from '@/contexts/KeyboardContext';
 import { PerformanceProvider } from '@/contexts/PerformanceContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
@@ -27,7 +29,11 @@ import { I18nProvider } from '@/lib/i18n';
 import { logEvent } from '@/lib/logging';
 import { initializeMonitoring } from '@/lib/monitoring';
 import { installLovableAssetMonitoring } from '@/lib/monitoring/lovableAssets';
-import { getRouterBaseName, subscribeToLovableConfig, isLovablePreviewRuntime } from '@/lib/routing/basePath';
+import {
+  getRouterBaseName,
+  subscribeToLovableConfig,
+  isLovablePreviewRuntime,
+} from '@/lib/routing/basePath';
 
 // Route-level code splitting for faster initial load
 const Index = lazy(() => import('./pages/Index'));
@@ -37,7 +43,6 @@ const Portal = lazy(() => import('./pages/Portal/Portal'));
 const CommandCenter = lazy(() => import('./pages/CommandCenter'));
 const Auth = lazy(() => import('./pages/Auth'));
 const AdminPanel = lazy(() => import('@/components/AdminPanel'));
-import Health from './pages/Health';
 
 const queryClient = new QueryClient();
 
@@ -93,12 +98,14 @@ const App = () => {
     };
   }, []);
 
-    const [routerBase] = useState(getRouterBaseName);
+  const [routerBase] = useState(getRouterBaseName);
 
-    useEffect(() => installLovableAssetMonitoring(), []);
+  useEffect(() => installLovableAssetMonitoring(), []);
 
-    const isPreviewEnv = isLovablePreviewRuntime();
-    const Guard: React.ComponentType<{ children: React.ReactNode }> = isPreviewEnv ? Fragment : ProtectedRoute;
+  const isPreviewEnv = isLovablePreviewRuntime();
+  const Guard: React.ComponentType<{ children: React.ReactNode }> = isPreviewEnv
+    ? Fragment
+    : ProtectedRoute;
 
   useEffect(() => {
     // Keep diagnostic sync only (no Router remount)
@@ -118,86 +125,85 @@ const App = () => {
       <ErrorRecovery>
         <PerformanceProvider>
           <ThemeProvider>
-              <AuthProvider>
-                <FeatureFlagProvider>
-                  <ErrorProvider>
-                    <KeyboardProvider>
-                      <I18nProvider>
-                        <QueryClientProvider client={queryClient}>
-                          <TooltipProvider>
-                            <SkipLink />
-                            <SupabaseConfigBanner />
-                            <MobileOptimizations />
-                            <Toaster />
-                            <Sonner />
-                            <BrowserRouter key="router" basename={routerBase}>
-                              <CommandPalette />
-                              {process.env.NODE_ENV === 'development' && <AccessibilityChecker />}
-                              <RouteTracker />
-                              <OfflineIndicator />
-                              <Suspense
-                                fallback={
-                                  <div className="p-6">
-                                    <Skeleton className="mb-4 h-6 w-1/3" />
-                                    <Skeleton className="h-96 w-full" />
-                                  </div>
-                                }
-                              >
-                                <Routes>
-                                    <Route path="/auth" element={<Auth />} />
-                                    <Route path="/health" element={<Health />} />
-                                    <Route
-                                      path="/"
-                                      element={
-                                        <Guard>
-                                          <Index />
-                                        </Guard>
-                                      }
-                                    />
-                                    
-                                    <Route
-                                      path="/command-center"
-                                      element={
-                                        <Guard>
-                                          <CommandCenter />
-                                        </Guard>
-                                      }
-                                    />
-                                    <Route
-                                      path="/admin"
-                                      element={
-                                        <Guard>
-                                          <AdminPanel />
-                                        </Guard>
-                                      }
-                                    />
-                                    <Route
-                                      path="/service/:serviceId"
-                                      element={
-                                        <Guard>
-                                          <PremiumServiceDetails />
-                                        </Guard>
-                                      }
-                                    />
-                                    <Route
-                                      path="/portal"
-                                      element={
-                                        <Guard>
-                                          <Portal />
-                                        </Guard>
-                                      }
-                                    />
-                                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                                  <Route path="*" element={<NotFound />} />
-                                </Routes>
-                              </Suspense>
-                            </BrowserRouter>
-                          </TooltipProvider>
-                        </QueryClientProvider>
-                      </I18nProvider>
-                    </KeyboardProvider>
-                  </ErrorProvider>
-                </FeatureFlagProvider>
+            <AuthProvider>
+              <FeatureFlagProvider>
+                <ErrorProvider>
+                  <KeyboardProvider>
+                    <I18nProvider>
+                      <QueryClientProvider client={queryClient}>
+                        <TooltipProvider>
+                          <SkipLink />
+                          <SupabaseConfigBanner />
+                          <MobileOptimizations />
+                          <Toaster />
+                          <Sonner />
+                          <BrowserRouter key="router" basename={routerBase}>
+                            <CommandPalette />
+                            {process.env.NODE_ENV === 'development' && <AccessibilityChecker />}
+                            <RouteTracker />
+                            <OfflineIndicator />
+                            <Suspense
+                              fallback={
+                                <div className="p-6">
+                                  <Skeleton className="mb-4 h-6 w-1/3" />
+                                  <Skeleton className="h-96 w-full" />
+                                </div>
+                              }
+                            >
+                              <Routes>
+                                <Route path="/auth" element={<Auth />} />
+                                <Route path="/health" element={<Health />} />
+                                <Route
+                                  path="/"
+                                  element={
+                                    <Guard>
+                                      <Index />
+                                    </Guard>
+                                  }
+                                />
+                                <Route
+                                  path="/command-center"
+                                  element={
+                                    <Guard>
+                                      <CommandCenter />
+                                    </Guard>
+                                  }
+                                />
+                                <Route
+                                  path="/admin"
+                                  element={
+                                    <Guard>
+                                      <AdminPanel />
+                                    </Guard>
+                                  }
+                                />
+                                <Route
+                                  path="/service/:serviceId"
+                                  element={
+                                    <Guard>
+                                      <PremiumServiceDetails />
+                                    </Guard>
+                                  }
+                                />
+                                <Route
+                                  path="/portal"
+                                  element={
+                                    <Guard>
+                                      <Portal />
+                                    </Guard>
+                                  }
+                                />
+                                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                                <Route path="*" element={<NotFound />} />
+                              </Routes>
+                            </Suspense>
+                          </BrowserRouter>
+                        </TooltipProvider>
+                      </QueryClientProvider>
+                    </I18nProvider>
+                  </KeyboardProvider>
+                </ErrorProvider>
+              </FeatureFlagProvider>
             </AuthProvider>
           </ThemeProvider>
         </PerformanceProvider>

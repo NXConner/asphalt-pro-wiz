@@ -6,8 +6,8 @@ import { ParticleBackground, ScanOverlay } from '@/components/hud';
 import { TacticalOverlay } from '@/components/hud/TacticalOverlay';
 import { Button } from '@/components/ui/button';
 import type { ParticlePresetKey } from '@/design';
-import { cn } from '@/lib/utils';
 import type { TacticalTone } from '@/lib/tacticalTone';
+import { cn } from '@/lib/utils';
 
 export type CanvasTone = 'dusk' | 'aurora' | 'ember' | 'lagoon';
 
