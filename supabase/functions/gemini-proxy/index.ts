@@ -126,6 +126,54 @@ async function handleEmbed(text: string, apiKey: string): Promise<Response> {
   });
 }
 
+/**
+ * @openapi
+ * /gemini-proxy:
+ *   post:
+ *     tags:
+ *       - AI
+ *     summary: Proxy Gemini API requests
+ *     description: |
+ *       Routes chat, image, and embedding requests to Google Gemini models while keeping API keys server-side.
+ *       Requires a Supabase JWT (anon key or service role) present in the `Authorization` header.
+ *     operationId: postGeminiProxy
+ *     security:
+ *       - supabaseBearer: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/GeminiProxyRequest'
+ *           examples:
+ *             chat:
+ *               summary: Chat prompt
+ *               value:
+ *                 action: chat
+ *                 contents:
+ *                   - parts:
+ *                       - text: "Summarize sealcoating steps for a church parking lot"
+ *             embed:
+ *               summary: Generate text embeddings
+ *               value:
+ *                 action: embed
+ *                 text: "Crack sealing crew checklist"
+ *     responses:
+ *       '200':
+ *         description: Gemini response payload
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/GeminiProxyResponse'
+ *       '400':
+ *         description: Validation failed or unsupported action
+ *       '401':
+ *         description: Missing or invalid Supabase JWT
+ *       '405':
+ *         description: Method not allowed
+ *       '500':
+ *         description: Upstream Gemini error or missing API key
+ */
 serve(async (req) => {
   if (req.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
   

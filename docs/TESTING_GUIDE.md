@@ -102,11 +102,16 @@ BASE_URL=http://localhost:5173 npx k6 run scripts/load/k6-estimate.js
 # Optional: scale intensity (multiplies virtual user targets)
 STAGE_MULTIPLIER=3 BASE_URL=https://preview.app.example npx k6 run scripts/load/k6-estimate.js
 
+# Enable the supplier-intel edge function checks
+SUPPLIER_INTEL_TOKEN=$(cat service_role_jwt.txt) \
+SUPPLIER_ORG_ID=d3b5a945-4fd3-4f0c-a2b8-1fbd65cb91ad \
+npx k6 run scripts/load/k6-estimate.js
+
 # Artillery quick pulse (respects BASE_URL if provided)
 npx artillery run scripts/load/artillery.yml
 ```
 
-The k6 scenario ramps traffic up to ~20 req/s (scaled by `STAGE_MULTIPLIER`) and enforces latency/availability thresholds while checking `/auth`, `/`, `/command-center`, and `/robots.txt`. Artillery provides a lighter-weight CI smoke that hits the same surfaces.
+The k6 scenario ramps traffic up to ~20 req/s (scaled by `STAGE_MULTIPLIER`) and enforces latency/availability thresholds while checking `/auth`, `/`, `/command-center`, and `/robots.txt`. When `SUPPLIER_INTEL_TOKEN` is provided, the plan also stresses the `supplier-intel` Supabase Function using the configured org/material payload. Artillery provides a lighter-weight CI smoke that hits the public surfaces only.
 
 ---
 

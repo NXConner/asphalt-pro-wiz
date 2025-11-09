@@ -12,7 +12,7 @@ import {
   type Costs,
   type ProjectInputs,
 } from '@/lib/calculations';
-import { isEnabled, setFlag, type FeatureFlag } from '@/lib/flags';
+import { isEnabled, logFeatureFlagToggle, setFlag, type FeatureFlag } from '@/lib/flags';
 import { makeJobKey, setJobStatus, upsertJob, type JobStatus } from '@/lib/idb';
 import {
   BUSINESS_ADDRESS,
@@ -608,26 +608,28 @@ export function useEstimatorState(): EstimatorState {
     window.print();
   };
 
-  const setOwnerMode = (enabled: boolean) => {
-    setOwnerModeInternal(enabled);
-    setFlag('ownerMode', enabled);
-    setFlagVersion((version) => version + 1);
-    try {
-      logEvent('flags.ownerMode_toggled', { enabled });
-    } catch {}
-  };
+    const setOwnerMode = (enabled: boolean) => {
+      setOwnerModeInternal(enabled);
+      setFlag('ownerMode', enabled);
+      setFlagVersion((version) => version + 1);
+      logFeatureFlagToggle('ownerMode', enabled, {
+        surface: 'estimator.ownerMode',
+        source: 'local',
+      });
+    };
 
-  const toggleFeatureFlag = (flag: FeatureFlag, enabled: boolean) => {
-    if (flag === 'ownerMode') {
-      setOwnerMode(enabled);
-      return;
-    }
-    setFlag(flag, enabled);
-    setFlagVersion((version) => version + 1);
-    try {
-      logEvent('flags.toggle', { flag, enabled });
-    } catch {}
-  };
+    const toggleFeatureFlag = (flag: FeatureFlag, enabled: boolean) => {
+      if (flag === 'ownerMode') {
+        setOwnerMode(enabled);
+        return;
+      }
+      setFlag(flag, enabled);
+      setFlagVersion((version) => version + 1);
+      logFeatureFlagToggle(flag, enabled, {
+        surface: 'estimator.feature_toggle',
+        source: 'local',
+      });
+    };
 
   const featureFlagValues = useMemo(
     () => ({

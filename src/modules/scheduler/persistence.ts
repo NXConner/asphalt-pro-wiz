@@ -229,7 +229,9 @@ export async function upsertBlackout(window: BlackoutWindow) {
       created_by: userId ?? undefined,
     };
 
-    const { error } = await (supabase as any).from('crew_blackouts').insert(payload);
+      const { error } = await (supabase as any)
+        .from('crew_blackouts')
+        .upsert(payload, { onConflict: 'id' });
     if (error) throw error;
 
     logEvent('scheduler.blackout_synced', { blackoutId: window.id, mode: 'upsert' });

@@ -3,6 +3,7 @@ import { forwardRef } from 'react';
 import { TacticalOverlay } from './TacticalOverlay';
 
 import { cn } from '@/lib/utils';
+import type { TacticalTone } from '@/lib/tacticalTone';
 
 interface TacticalCardProps extends React.HTMLAttributes<HTMLDivElement> {
   heading?: string;
@@ -11,6 +12,7 @@ interface TacticalCardProps extends React.HTMLAttributes<HTMLDivElement> {
   accent?: 'ember' | 'aurora' | 'lagoon' | 'dusk';
   scan?: boolean;
   compact?: boolean;
+  tone?: TacticalTone;
 }
 
 export const TacticalCard = forwardRef<HTMLDivElement, TacticalCardProps>(
@@ -24,34 +26,27 @@ export const TacticalCard = forwardRef<HTMLDivElement, TacticalCardProps>(
       accent = 'dusk',
       scan = true,
       compact = false,
+      tone,
       ...props
     },
     ref,
   ) => {
-    const accentColorMap: Record<TacticalCardProps['accent'], string> = {
-      ember: 'rgba(255,115,85,0.88)',
-      aurora: 'rgba(56,235,214,0.88)',
-      lagoon: 'rgba(114,159,255,0.88)',
-      dusk: 'rgba(255,176,72,0.88)',
+    const toneByAccent: Record<NonNullable<TacticalCardProps['accent']>, TacticalTone> = {
+      ember: 'ember',
+      aurora: 'aurora',
+      lagoon: 'lagoon',
+      dusk: 'dusk',
     };
-    const accentColor = accentColorMap[accent];
-
-    const backgroundTintMap: Record<TacticalCardProps['accent'], string> = {
-      ember: 'rgba(35,12,6,0.84)',
-      aurora: 'rgba(6,24,26,0.82)',
-      lagoon: 'rgba(10,16,32,0.82)',
-      dusk: 'rgba(24,18,8,0.84)',
-    };
+    const resolvedTone = tone ?? toneByAccent[accent] ?? 'neutral';
 
     return (
       <div ref={ref} className={cn('relative', className)} {...props}>
         <TacticalOverlay
           className="h-full w-full"
-          accentColor={accentColor}
-          backgroundTint={backgroundTintMap[accent]}
+          tone={resolvedTone}
           showScanLines={scan}
           scanLinesProps={{ opacity: scan ? 0.5 : 0, speedMs: 3000 }}
-          cornerProps={{ size: compact ? 34 : 42, thickness: 2.2, accentColor }}
+          cornerProps={{ size: compact ? 34 : 42, thickness: 2.2 }}
           gridDensity={88}
           gridOpacity={0.22}
         >

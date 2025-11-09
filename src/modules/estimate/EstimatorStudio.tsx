@@ -79,6 +79,8 @@ export function EstimatorStudio({ estimator }: EstimatorStudioProps) {
             options={estimator.options}
             cracks={estimator.cracks}
             logistics={estimator.logistics}
+            job={estimator.job}
+            featureFlags={estimator.featureFlags}
             onNext={nextStep}
             onBack={previousStep}
           />

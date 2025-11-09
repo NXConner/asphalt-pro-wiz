@@ -16,10 +16,12 @@ import {
   getFlags,
   getRemoteOverrides,
   isKnownFeatureFlag,
+  logFeatureFlagAuditSnapshot,
+  logFeatureFlagRemoteOverrideApplied,
+  logFeatureFlagSync,
   setRemoteFlags,
   type FeatureFlag,
-} from '@/lib/flags';
-import { logEvent } from '@/lib/logging';
+} from '@/lib/featureFlags';
 
 interface FeatureFlagContextValue {
   flags: Record<FeatureFlag, boolean>;
@@ -88,104 +90,116 @@ export function FeatureFlagProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    setState((prev) => ({
-      ...prev,
-      isLoading: true,
-      error: null,
-    }));
-
-    try {
-      logEvent('flags.remote_sync_started', { userId: user.id });
-      const orgId = await resolvePrimaryOrgId(user.id);
-
-      const [featureFlagsRes, orgFlagsRes, userFlagsRes] = await Promise.all([
-        supabase.from('feature_flags' as any).select('id, default_enabled'),
-        orgId
-          ? supabase
-              .from('org_feature_flags' as any)
-              .select('flag_id, enabled')
-              .eq('org_id', orgId)
-          : Promise.resolve({ data: [], error: null }),
-        supabase
-          .from('user_feature_flags' as any)
-          .select('flag_id, enabled')
-          .eq('user_id', user.id),
-      ]);
-
-      const errors = [featureFlagsRes.error, orgFlagsRes.error, userFlagsRes.error].filter(Boolean);
-      if (errors.length > 0) {
-        throw errors[0]!;
-      }
-
-      const overrides: Partial<Record<FeatureFlag, boolean>> = {};
-      const assignOverride = (flagId: string | null | undefined, value: unknown) => {
-        if (!flagId || !isKnownFeatureFlag(flagId) || typeof value !== 'boolean') return;
-        overrides[flagId] = value;
-      };
-
-      const featureFlagsData = Array.isArray(featureFlagsRes.data) ? featureFlagsRes.data : [];
-      for (const item of featureFlagsData) {
-        const row = item as unknown as Record<string, unknown> | null;
-        if (!row) continue;
-        const id = row['id'];
-        const enabled = row['default_enabled'];
-        if (id != null) {
-          assignOverride(String(id), enabled);
-        }
-      }
-
-      const orgFlagsData = Array.isArray(orgFlagsRes.data) ? orgFlagsRes.data : [];
-      for (const item of orgFlagsData) {
-        const row = item as unknown as Record<string, unknown> | null;
-        if (!row) continue;
-        const flagId = row['flag_id'];
-        const enabled = row['enabled'];
-        if (flagId != null) {
-          assignOverride(String(flagId), enabled);
-        }
-      }
-
-      const userFlagsData = Array.isArray(userFlagsRes.data) ? userFlagsRes.data : [];
-      for (const item of userFlagsData) {
-        const row = item as unknown as Record<string, unknown> | null;
-        if (!row) continue;
-        const flagId = row['flag_id'];
-        const enabled = row['enabled'];
-        if (flagId != null) {
-          assignOverride(String(flagId), enabled);
-        }
-      }
-
-      clearRemoteFlags();
-      setRemoteFlags(overrides);
-
-      logEvent('flags.remote_sync_success', {
-        userId: user.id,
-        orgId,
-        overrides: overrides,
-      });
-
-      setState({
-        flags: getFlags(),
-        remoteOverrides: getRemoteOverrides(),
-        isLoading: false,
-        error: null,
-        lastSyncedAt: new Date().toISOString(),
-      });
-    } catch (error) {
-      logEvent(
-        'flags.remote_sync_failed',
-        {
-          message: error instanceof Error ? error.message : String(error),
-        },
-        'error',
-      );
       setState((prev) => ({
         ...prev,
-        isLoading: false,
-        error: error instanceof Error ? error : new Error(String(error)),
+        isLoading: true,
+        error: null,
       }));
-    }
+
+      try {
+        logFeatureFlagSync('started', { userId: user.id });
+        const orgId = await resolvePrimaryOrgId(user.id);
+
+        const [featureFlagsRes, orgFlagsRes, userFlagsRes] = await Promise.all([
+          supabase.from('feature_flags' as any).select('id, default_enabled'),
+          orgId
+            ? supabase
+                .from('org_feature_flags' as any)
+                .select('flag_id, enabled')
+                .eq('org_id', orgId)
+            : Promise.resolve({ data: [], error: null }),
+          supabase
+            .from('user_feature_flags' as any)
+            .select('flag_id, enabled')
+            .eq('user_id', user.id),
+        ]);
+
+        const errors = [featureFlagsRes.error, orgFlagsRes.error, userFlagsRes.error].filter(Boolean);
+        if (errors.length > 0) {
+          throw errors[0]!;
+        }
+
+        const overrides: Partial<Record<FeatureFlag, boolean>> = {};
+        const assignOverride = (flagId: string | null | undefined, value: unknown) => {
+          if (!flagId || !isKnownFeatureFlag(flagId) || typeof value !== 'boolean') return;
+          overrides[flagId] = value;
+        };
+
+        const featureFlagsData = Array.isArray(featureFlagsRes.data) ? featureFlagsRes.data : [];
+        for (const item of featureFlagsData) {
+          const row = item as unknown as Record<string, unknown> | null;
+          if (!row) continue;
+          const id = row['id'];
+          const enabled = row['default_enabled'];
+          if (id != null) {
+            assignOverride(String(id), enabled);
+          }
+        }
+
+        const orgFlagsData = Array.isArray(orgFlagsRes.data) ? orgFlagsRes.data : [];
+        for (const item of orgFlagsData) {
+          const row = item as unknown as Record<string, unknown> | null;
+          if (!row) continue;
+          const flagId = row['flag_id'];
+          const enabled = row['enabled'];
+          if (flagId != null) {
+            assignOverride(String(flagId), enabled);
+          }
+        }
+
+        const userFlagsData = Array.isArray(userFlagsRes.data) ? userFlagsRes.data : [];
+        for (const item of userFlagsData) {
+          const row = item as unknown as Record<string, unknown> | null;
+          if (!row) continue;
+          const flagId = row['flag_id'];
+          const enabled = row['enabled'];
+          if (flagId != null) {
+            assignOverride(String(flagId), enabled);
+          }
+        }
+
+        const overrideCount = Object.keys(overrides).length;
+
+        clearRemoteFlags();
+        setRemoteFlags(overrides);
+        logFeatureFlagRemoteOverrideApplied(overrides, {
+          userId: user.id,
+          orgId,
+          overrideCount,
+        });
+
+        logFeatureFlagSync('success', {
+          userId: user.id,
+          orgId,
+          overrideCount,
+          remoteSource: 'supabase',
+        });
+
+        logFeatureFlagAuditSnapshot({
+          userId: user.id,
+          orgId,
+          overrideCount,
+          syncSource: 'supabase',
+        });
+
+        setState({
+          flags: getFlags(),
+          remoteOverrides: getRemoteOverrides(),
+          isLoading: false,
+          error: null,
+          lastSyncedAt: new Date().toISOString(),
+        });
+      } catch (error) {
+        logFeatureFlagSync('failed', {
+          userId: user?.id ?? null,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: error instanceof Error ? error : new Error(String(error)),
+        }));
+      }
   }, [authConfigured, isAuthenticated, user]);
 
   useEffect(() => {

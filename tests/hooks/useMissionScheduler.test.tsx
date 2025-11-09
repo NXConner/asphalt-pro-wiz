@@ -139,4 +139,71 @@ describe('useMissionScheduler', () => {
     expect(latest?.capacityPerShift).toBe(2);
     expect(latest?.conflicts.some((conflict) => conflict.type === 'capacity')).toBe(true);
   });
+
+    test('imports worship calendar merging overlaps and reporting conflicts', () => {
+      if (!latest) throw new Error('scheduler not ready');
+      let scheduler = latest;
+
+      act(() => {
+        scheduler.addBlackout({
+          title: 'Existing Worship',
+          start: new Date('2025-01-05T13:00:00Z').toISOString(),
+          end: new Date('2025-01-05T17:00:00Z').toISOString(),
+        });
+        scheduler.addTask({
+          jobName: 'Midweek Milling',
+          site: 'North Lot',
+          start: new Date('2025-01-07T12:30:00Z').toISOString(),
+          end: new Date('2025-01-07T14:30:00Z').toISOString(),
+          crewRequired: 2,
+          crewAssignedIds: [],
+          status: 'scheduled',
+          priority: 'standard',
+          accessibilityImpact: 'parking',
+          notes: '',
+        });
+      });
+      scheduler = latest!;
+
+      const icsPayload = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'BEGIN:VEVENT',
+        'DTSTART:20250105T120000Z',
+        'DTEND:20250105T180000Z',
+        'SUMMARY:Sunday Worship Extended',
+        'END:VEVENT',
+        'BEGIN:VEVENT',
+        'DTSTART:20250107T120000Z',
+        'DTEND:20250107T150000Z',
+        'SUMMARY:Midweek Worship Gathering',
+        'END:VEVENT',
+        'END:VCALENDAR',
+      ].join('\n');
+
+      let result: ReturnType<typeof scheduler.importBlackoutsFromICS> | null = null;
+      act(() => {
+        result = scheduler.importBlackoutsFromICS(icsPayload);
+      });
+      act(() => {});
+      scheduler = latest!;
+
+      expect(result).not.toBeNull();
+      expect(result?.merged).toBe(1);
+      expect(result?.created).toBe(1);
+      expect(result?.conflicts.length).toBeGreaterThanOrEqual(1);
+      expect(
+        result?.conflicts.some((conflict) => conflict.type === 'blackout_overlap'),
+      ).toBe(true);
+      expect(result?.conflicts.some((conflict) => conflict.type === 'task_overlap')).toBe(true);
+      expect(scheduler.blackouts.length).toBeGreaterThanOrEqual(2);
+
+      const exportIcs = scheduler.exportBlackoutsToICS({
+        calendarName: 'Exported',
+        organization: 'Test Org',
+      });
+      expect(exportIcs).toContain('BEGIN:VEVENT');
+      expect(exportIcs).toContain('SUMMARY:Existing Worship');
+      expect(exportIcs).toContain('SUMMARY:Midweek Worship Gathering');
+    });
 });

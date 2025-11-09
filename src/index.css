@@ -171,6 +171,57 @@
   }
 }
 
+.tactical-pulse-ring {
+  position: relative;
+  display: block;
+  width: 220px;
+  height: 220px;
+  border-radius: 9999px;
+  border: 1px solid hsla(var(--accent, 206 92% 55%) / 0.35);
+  box-shadow: 0 0 32px hsla(var(--accent, 206 92% 55%) / 0.45);
+  animation: tactical-pulse 4s ease-out infinite;
+}
+
+.tactical-pulse-ring::after {
+  content: "";
+  position: absolute;
+  inset: -25%;
+  border-radius: inherit;
+  border: 1px solid hsla(var(--accent, 206 92% 55%) / 0.18);
+  opacity: 0;
+  animation: tactical-pulse-wave 4s ease-out infinite;
+}
+
+@keyframes tactical-pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.65;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.65;
+  }
+}
+
+@keyframes tactical-pulse-wave {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  70% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
 .animate-scanline {
   animation: scanline 8s linear infinite;
 }
