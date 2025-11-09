@@ -64,11 +64,14 @@ cd pavement-performance-suite
 
 # 2. Configure environment (populate with *real* secrets)
 cp .env.example .env
+#    Edit `.env` or `.env.local` with production-ready secrets from your manager
+npm run check:env
 
 # 3. Install dependencies (PowerShell equivalent available)
 scripts/install_dependencies.sh
 #  --skip-playwright   # avoid browser downloads in CI containers
 #  --skip-husky        # disable git hooks for read-only runners
+# PowerShell: pwsh -File scripts/install_dependencies.ps1
 
 # 4. Start dev server (refresh running preview if already launched)
 npm run dev
@@ -105,6 +108,8 @@ npm run seed
   - **Developer tooling**: `GITHUB_TOKEN` for ingest scripts.
 - Secrets automation templates live in `config/secrets/` for Doppler, Vault, and AWS Secrets Manager pipelines.
 - Never commit real secrets. Use Supabase Edge Secrets or your chosen secret manager for runtime credentials.
+- Run `npm run check:env` locally (non-strict) and `npm run check:env -- --strict` in CI to gate deployments; failures block Lovable preview regressions (e.g., absolute `VITE_BASE_PATH`).
+- Keep `VITE_BASE_PATH` set to `./` for production builds to ensure Lovable previews resolve nested asset paths. Let Lovable auto-detect `VITE_LOVABLE_BASE_PATH`.
 - Supabase bootstrapping, RLS, and seed workflows are documented in `docs/UNIFIED_SUPABASE_GUIDE.md`.
 
 ---
@@ -217,7 +222,11 @@ npm run android:gradle:debug
 
 ## Contribution & Developer Experience
 
-- Branch naming: `feature/<scope>` or `hotfix/<scope>`.
+- Branching strategy:
+  - `main`: production-ready, auto-deploy after CI success.
+  - `develop`: integration branch for the next release cut; merge feature branches here.
+  - `feature/<scope>` or `hotfix/<scope>`: short-lived branches; rebase on `develop` before PR.
+  - Use release branches (`release/vX.Y.Z`) for stabilization windows when needed.
 - Conventional Commits enforced via Husky + Commitlint.
 - Generator scripts (`scripts/openapi`, `scripts/ingest`, planned `scripts/generate`) keep new modules consistent.
 - Provide risk/rollback notes in PR template (`.github/pull_request_template.md`) and keep docs in sync.
