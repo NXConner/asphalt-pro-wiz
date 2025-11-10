@@ -26,10 +26,12 @@
    - Enhanced `esbuildOptions` for proper JSX handling
 
 2. **Chunking Strategy (Updated):**
-   - **All React, React-DOM, scheduler, and ALL @radix-ui packages are now in the same `react-vendor` chunk**
+   - **All React, React-DOM, scheduler, ALL @radix-ui packages, AND cmdk are now in the same `react-vendor` chunk**
    - This ensures React is always available when Radix UI components try to use `React.createContext`
    - Previous approach of separate chunks caused timing issues where Radix loaded before React
-   - The `react-vendor` chunk is now larger (~588KB) but guarantees React availability
+   - `cmdk` (command palette) depends on Radix UI, so it must also be in the same chunk
+   - The `react-vendor` chunk is now larger (~628KB) but guarantees React availability
+   - **No separate `radix` chunk is created anymore** - everything is bundled together
 
 **Files Modified:**
 - `vite.config.ts` - Enhanced chunking and dependency optimization
@@ -41,6 +43,17 @@
 - ✅ ESLint: PASSING (0 errors, 0 warnings)
 - ✅ TypeScript: PASSING (0 errors)
 - ✅ Chunking: Proper dependency ordering established
+- ✅ No separate `radix` chunk - all Radix UI components in `react-vendor` chunk
+
+## Important Notes
+
+**If you still see the error after this fix:**
+1. **Clear browser cache** - The error might be from a cached old build
+2. **Hard refresh** - Press `Ctrl+Shift+R` (Windows/Linux) or `Cmd+Shift+R` (Mac)
+3. **Clear service worker** - If using PWA, unregister the service worker
+4. **Wait for deployment** - If using a CDN or hosting service, wait for the new build to be deployed
+
+The build now creates a single `react-vendor` chunk (~628KB) containing React, React-DOM, all Radix UI packages, and cmdk. This ensures React is always available when Radix UI components initialize.
 
 ## Technical Details
 
