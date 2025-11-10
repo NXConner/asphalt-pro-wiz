@@ -59,6 +59,10 @@ export default defineConfig(({ mode }) => {
             icons: [{ src: '/favicon.ico', sizes: '64x64 32x32 24x24 16x16', type: 'image/x-icon' }],
           },
           workbox: {
+            // Aggressive cache invalidation for JS chunks to prevent old builds from being served
+            cleanupOutdatedCaches: true,
+            skipWaiting: true,
+            clientsClaim: true,
             navigateFallbackDenylist: [/^\/api\//],
             runtimeCaching: [
               {
