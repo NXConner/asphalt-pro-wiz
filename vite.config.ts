@@ -107,12 +107,34 @@ export default defineConfig(({ mode }) => {
         'react',
         'react-dom',
         'react/jsx-runtime',
+        // Include all Radix UI packages that use React context
         '@radix-ui/react-dropdown-menu',
         '@radix-ui/react-dialog',
         '@radix-ui/react-select',
         '@radix-ui/react-context-menu',
         '@radix-ui/react-popover',
         '@radix-ui/react-tooltip',
+        '@radix-ui/react-accordion',
+        '@radix-ui/react-alert-dialog',
+        '@radix-ui/react-avatar',
+        '@radix-ui/react-checkbox',
+        '@radix-ui/react-collapsible',
+        '@radix-ui/react-label',
+        '@radix-ui/react-menubar',
+        '@radix-ui/react-navigation-menu',
+        '@radix-ui/react-progress',
+        '@radix-ui/react-radio-group',
+        '@radix-ui/react-scroll-area',
+        '@radix-ui/react-separator',
+        '@radix-ui/react-slider',
+        '@radix-ui/react-slot',
+        '@radix-ui/react-switch',
+        '@radix-ui/react-tabs',
+        '@radix-ui/react-toast',
+        '@radix-ui/react-toggle',
+        '@radix-ui/react-toggle-group',
+        // cmdk depends on Radix UI, so include it too
+        'cmdk',
       ],
       exclude: [],
       // Force pre-bundling to ensure React is available
@@ -131,15 +153,16 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks(id: string) {
             if (id.includes('node_modules')) {
-              // Put React, React-DOM, scheduler, and ALL Radix UI components in the same chunk
+              // Put React, React-DOM, scheduler, ALL Radix UI components, and cmdk in the same chunk
               // This ensures React is always available when Radix UI tries to use createContext
+              // cmdk depends on Radix UI, so it must also be in the same chunk
               if (id.includes('react') || 
                   id.includes('react-dom') || 
                   id.includes('scheduler') ||
-                  id.includes('@radix-ui')) {
+                  id.includes('@radix-ui') ||
+                  id.includes('cmdk')) {
                 return 'react-vendor';
               }
-              if (id.includes('cmdk')) return 'radix';
               if (id.includes('react-router')) return 'router';
               if (id.includes('@tanstack')) return 'query';
               if (id.includes('leaflet')) return 'leaflet';
