@@ -143,7 +143,7 @@ async function resolveOrgId(userId: string, explicitOrgId?: string | null): Prom
 async function fetchInsights(orgId: string, materials: string[] | undefined): Promise<SupplierPriceInsight[]> {
   if (!supabase) return [];
   let query = supabase
-    .from<SupplierPriceInsight>("supplier_price_insights")
+    .from("supplier_price_insights")
     .select("*")
     .eq("org_id", orgId);
   if (materials && materials.length > 0) {
@@ -163,7 +163,7 @@ async function fetchHistory(orgId: string, materials: string[] | undefined): Pro
   if (!supabase) return [];
   const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
   let query = supabase
-    .from<SupplierPriceHistoryRow>("supplier_pricing_snapshots")
+    .from("supplier_pricing_snapshots")
     .select("supplier_id, material_type, unit_price, currency, effective_date")
     .eq("org_id", orgId)
     .gte("effective_date", since);
@@ -333,7 +333,7 @@ serve(async (req) => {
   try {
     if (!materials || materials.length === 0) {
       const distinctQuery = await supabase
-        .from<SupplierPriceInsight>("supplier_price_insights")
+        .from("supplier_price_insights")
         .select("material_type")
         .eq("org_id", orgId)
         .limit(8);

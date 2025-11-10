@@ -16,8 +16,8 @@ type LovableWindow = Window & {
 };
 
 const lovables = (): LovableGlobal => {
-  if (typeof window === 'undefined') return undefined;
-  const win: LovableWindow = window as LovableWindow;
+  if (typeof globalThis === 'undefined' || typeof globalThis.window === 'undefined') return undefined;
+  const win = globalThis.window as LovableWindow;
   return win.__LOVABLE__ ?? win.lovable ?? undefined;
 };
 
@@ -42,8 +42,8 @@ const normalizeBaseCandidate = (candidate?: string | null): string | undefined =
   if (trimmed === '/') return '/';
   try {
     const origin =
-      typeof window !== 'undefined' && (window as Window).location?.origin
-        ? (window as Window).location.origin
+      typeof globalThis !== 'undefined' && typeof globalThis.window !== 'undefined' && globalThis.window.location?.origin
+        ? globalThis.window.location.origin
         : 'http://localhost';
     const url = new URL(trimmed, origin);
     return url.pathname.replace(/\/?index\.html$/, '').replace(/\/+$/, '') || '/';
@@ -56,8 +56,8 @@ const normalizeBaseCandidate = (candidate?: string | null): string | undefined =
 };
 
 const resolveBaseFromLocation = (): string | undefined => {
-  if (typeof window === 'undefined') return undefined;
-  const { pathname } = (window as Window).location ?? { pathname: '/' };
+  if (typeof globalThis === 'undefined' || typeof globalThis.window === 'undefined') return undefined;
+  const { pathname } = globalThis.window.location ?? { pathname: '/' };
   const path = pathname.replace(/\/?index\.html$/, '');
   if (!path || path === '/') return '/';
 
@@ -86,10 +86,10 @@ const resolveBaseFromLocation = (): string | undefined => {
 const candidateMetaTags = ['lovable:base-path', 'lovable-base-path', 'lovable:path'];
 
 const resolveMetaBasePath = (): string | undefined => {
-  if (typeof document === 'undefined') return undefined;
+  if (typeof globalThis === 'undefined' || typeof globalThis.document === 'undefined') return undefined;
   for (const name of candidateMetaTags) {
     const value =
-      (document as Document).querySelector(`meta[name="${name}"]`)?.getAttribute?.('content') ??
+      globalThis.document.querySelector(`meta[name="${name}"]`)?.getAttribute?.('content') ??
       undefined;
     const normalized = normalizeBaseCandidate(value);
     if (normalized && normalized !== '/') {
@@ -141,8 +141,8 @@ let CACHED_BASE: string | undefined;
 const ensureBaseForLocation = (base?: string): string => {
   if (!base || base === '/') return '/';
   try {
-    if (typeof window === 'undefined') return base;
-    const pathname = (window as Window).location?.pathname || '/';
+    if (typeof globalThis === 'undefined' || typeof globalThis.window === 'undefined') return base;
+    const pathname = globalThis.window.location?.pathname || '/';
     if (pathname === '/' || pathname === '') {
       return base;
     }
@@ -170,8 +170,8 @@ export const getRouterBaseName = (): string => {
 };
 
 export const subscribeToLovableConfig = (listener: (basePath: string) => void): (() => void) => {
-  if (typeof window === 'undefined') return () => {};
-  const win = window as Window;
+  if (typeof globalThis === 'undefined' || typeof globalThis.window === 'undefined') return () => {};
+  const win = globalThis.window;
   const emit = () => listener(getRouterBaseName());
   emit();
 
@@ -195,13 +195,13 @@ export const subscribeToLovableConfig = (listener: (basePath: string) => void): 
 export const isLovableHost = (hostname?: string): boolean => {
   const subject =
     hostname ??
-    (typeof window !== 'undefined' ? ((window as Window).location?.hostname ?? '') : '');
+    (typeof globalThis !== 'undefined' && typeof globalThis.window !== 'undefined' ? (globalThis.window.location?.hostname ?? '') : '');
   return LOVABLE_HOST_REGEX.test(subject);
 };
 
 export const isLovablePreviewRuntime = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  const anyWindow = window as Window & {
+  if (typeof globalThis === 'undefined' || typeof globalThis.window === 'undefined') return false;
+  const anyWindow = globalThis.window as Window & {
     __LOVABLE__?: unknown;
     lovable?: unknown;
   };
