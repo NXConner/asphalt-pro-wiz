@@ -106,14 +106,12 @@ interface ThemeContextValue {
   saveHudProfile: (name: string) => void;
   loadHudProfile: (name: string) => void;
   deleteHudProfile: (name: string) => void;
-<<<<<<< HEAD
-    setHudGridSnap: (enabled: boolean) => void;
-    setHudGridSize: (size: number) => void;
-    setHudCollisionDetection: (enabled: boolean) => void;
-    setHudZoom: (zoom: number) => void;
-    reset: () => void;
+  setHudGridSnap: (enabled: boolean) => void;
+  setHudGridSize: (size: number) => void;
+  setHudCollisionDetection: (enabled: boolean) => void;
+  setHudZoom: (zoom: number) => void;
+  reset: () => void;
   randomizePalette: (options?: RandomizePaletteOptions) => void;
->>>>>>> b50a1960cad6d2dfecfbfa24a748ff5db39afef6
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
@@ -325,7 +323,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       persistHudCollisionDetection(enabled);
       syncPreferences();
     },
-<<<<<<< HEAD
     setHudZoom: (zoom) => {
       persistHudZoom(zoom);
       syncPreferences();
@@ -337,8 +334,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     randomizePalette: (options) => {
       executeRandomizePalette(options);
       syncPreferences();
-      },
->>>>>>> b50a1960cad6d2dfecfbfa24a748ff5db39afef6
+    },
   };
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
