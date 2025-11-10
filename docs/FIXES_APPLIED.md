@@ -45,15 +45,25 @@
 - ✅ Chunking: Proper dependency ordering established
 - ✅ No separate `radix` chunk - all Radix UI components in `react-vendor` chunk
 
+### 3. Recharts Circular Dependency Error
+**Issue:** `Uncaught ReferenceError: Cannot access 'T' before initialization` in `charts-BhSLOjVu.js`
+
+**Root Cause:** Recharts has circular dependencies that cause initialization order issues when split into a separate chunk.
+
+**Fix:** Bundled recharts with React in the `react-vendor` chunk to ensure proper initialization order.
+
+**Files Modified:**
+- `vite.config.ts` - Moved recharts to react-vendor chunk, added to optimizeDeps
+
 ## Important Notes
 
-**If you still see the error after this fix:**
+**If you still see errors after these fixes:**
 1. **Clear browser cache** - The error might be from a cached old build
 2. **Hard refresh** - Press `Ctrl+Shift+R` (Windows/Linux) or `Cmd+Shift+R` (Mac)
 3. **Clear service worker** - If using PWA, unregister the service worker
 4. **Wait for deployment** - If using a CDN or hosting service, wait for the new build to be deployed
 
-The build now creates a single `react-vendor` chunk (~628KB) containing React, React-DOM, all Radix UI packages, and cmdk. This ensures React is always available when Radix UI components initialize.
+The build now creates a single `react-vendor` chunk (~983KB) containing React, React-DOM, all Radix UI packages, cmdk, and recharts. This ensures proper initialization order and prevents circular dependency errors.
 
 ## Technical Details
 
