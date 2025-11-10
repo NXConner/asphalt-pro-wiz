@@ -80,6 +80,28 @@ export default defineConfig(({ mode }) => ({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    // Force deduplication of React to prevent multiple instances
+    dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
+  },
+  // Optimize dependencies to prevent duplicate React instances
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-select',
+      '@radix-ui/react-context-menu',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-tooltip',
+    ],
+    exclude: [],
+    // Force pre-bundling to ensure React is available
+    esbuildOptions: {
+      // Ensure React is treated as external and properly resolved
+      jsx: 'automatic',
+    },
   },
   // Improve chunking to reduce initial bundle size and address chunk warnings
   build: {
@@ -87,10 +109,17 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks(id: string) {
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('scheduler')) return 'react-vendor';
+            // Put React, React-DOM, scheduler, and ALL Radix UI components in the same chunk
+            // This ensures React is always available when Radix UI tries to use createContext
+            if (id.includes('react') || 
+                id.includes('react-dom') || 
+                id.includes('scheduler') ||
+                id.includes('@radix-ui')) {
+              return 'react-vendor';
+            }
+            if (id.includes('cmdk')) return 'radix';
             if (id.includes('react-router')) return 'router';
             if (id.includes('@tanstack')) return 'query';
-            if (id.includes('@radix-ui') || id.includes('cmdk')) return 'radix';
             if (id.includes('leaflet')) return 'leaflet';
             if (id.includes('@react-google-maps')) return 'maps';
             if (id.includes('@supabase')) return 'supabase';
@@ -102,5 +131,10 @@ export default defineConfig(({ mode }) => ({
     },
     // Keep warnings meaningful while allowing split vendor chunks
     chunkSizeWarningLimit: 900,
+    // Ensure commonjs dependencies are properly handled
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true,
+    },
   },
 }));

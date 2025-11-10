@@ -37,6 +37,7 @@ import {
     setHudGestureSensitivity as persistHudGestureSensitivity,
     setHudMultiMonitorStrategy as persistHudMultiMonitorStrategy,
     setHudKeyboardNavigation as persistHudKeyboardNavigation,
+    setHudZoom as persistHudZoom,
   saveHudProfile as persistSaveHudProfile,
   loadHudProfile as persistLoadHudProfile,
   deleteHudProfile as persistDeleteHudProfile,
@@ -99,10 +100,11 @@ interface ThemeContextValue {
   saveHudProfile: (name: string) => void;
   loadHudProfile: (name: string) => void;
   deleteHudProfile: (name: string) => void;
-  setHudGridSnap: (enabled: boolean) => void;
-  setHudGridSize: (size: number) => void;
-  setHudCollisionDetection: (enabled: boolean) => void;
-  reset: () => void;
+    setHudGridSnap: (enabled: boolean) => void;
+    setHudGridSize: (size: number) => void;
+    setHudCollisionDetection: (enabled: boolean) => void;
+    setHudZoom: (zoom: number) => void;
+    reset: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
@@ -304,6 +306,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     },
     setHudCollisionDetection: (enabled) => {
       persistHudCollisionDetection(enabled);
+      syncPreferences();
+    },
+    setHudZoom: (zoom) => {
+      persistHudZoom(zoom);
       syncPreferences();
     },
     reset: () => {

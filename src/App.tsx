@@ -134,18 +134,37 @@ const detectLovableBasePath = (): string | undefined => {
 };
 
 const deriveBaseName = (): string => {
-  const envAny = (import.meta as any)?.env ?? {};
+  // Check if we're in Lovable.dev preview environment
+  const isLovablePreview = typeof window !== 'undefined' && (
+    window.location.hostname.includes('lovable.dev') ||
+    window.location.hostname.includes('lovable.app') ||
+    window.location.pathname.includes('/preview/')
+  );
+
+  // For Lovable.dev, always use relative base path
+  if (isLovablePreview) {
+    const pathname = window.location.pathname;
+    // Extract preview path if present (e.g., /preview/abc123/)
+    const previewMatch = pathname.match(/^(\/preview\/[^/]+)/);
+    if (previewMatch) {
+      return previewMatch[1];
+    }
+    // Fallback to root for lovable.dev
+    return '/';
+  }
+
+  const envAny = import.meta.env as Record<string, string | undefined>;
   const locationDerivedRaw = resolveBaseFromLocation();
   const locationDerived = normalizeBaseCandidate(locationDerivedRaw);
   const skipRootWhenNested = locationDerived && locationDerived !== '/' ? '/' : undefined;
 
   const envCandidates = [
-    envAny.VITE_LOVABLE_BASE_PATH as string | undefined,
-    envAny.LOVABLE_BASE_PATH as string | undefined,
-    envAny.VITE_BASE_NAME as string | undefined,
-    envAny.VITE_BASE_PATH as string | undefined,
-    envAny.VITE_BASE_URL as string | undefined,
-    envAny.BASE_URL as string | undefined,
+    envAny.VITE_LOVABLE_BASE_PATH,
+    envAny.LOVABLE_BASE_PATH,
+    envAny.VITE_BASE_NAME,
+    envAny.VITE_BASE_PATH,
+    envAny.VITE_BASE_URL,
+    envAny.BASE_URL,
   ];
   const doc = typeof document !== 'undefined' ? document : undefined;
   const candidates: Array<string | null | undefined> = [

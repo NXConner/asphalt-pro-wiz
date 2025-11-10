@@ -116,6 +116,7 @@ export interface ThemePreferences {
   hudMultiMonitorStrategy: HudMultiMonitorStrategy;
   hudDisplayLayouts: Record<string, SavedHudDisplayLayout>;
   hudKeyboardNavigation: boolean;
+  hudZoom: number;
 }
 
 export type ThemeWallpaperSelection =
@@ -176,6 +177,7 @@ const createDefaults = (): ThemePreferences => {
     hudMultiMonitorStrategy: 'auto',
     hudDisplayLayouts: {},
     hudKeyboardNavigation: true,
+    hudZoom: 1.0,
   };
 };
 
@@ -709,6 +711,16 @@ export function setHudMultiMonitorStrategy(strategy: HudMultiMonitorStrategy): v
 export function setHudKeyboardNavigation(enabled: boolean): void {
   const prefs = loadThemePreferences();
   const next = coerceWallpaper({ ...prefs, hudKeyboardNavigation: enabled });
+  saveThemePreferences(next);
+  applyThemePreferences(next);
+}
+
+export function setHudZoom(zoom: number): void {
+  const prefs = loadThemePreferences();
+  const next = coerceWallpaper({
+    ...prefs,
+    hudZoom: Math.max(0.5, Math.min(2.0, zoom)),
+  });
   saveThemePreferences(next);
   applyThemePreferences(next);
 }

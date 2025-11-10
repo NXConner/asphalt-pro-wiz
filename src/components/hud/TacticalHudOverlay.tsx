@@ -2,10 +2,13 @@ import { motion } from 'framer-motion';
 import { memo, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
 import { HudAlerts } from './HudAlerts';
+import { HudAnimationTimeline } from './HudAnimationTimeline';
 import { HudFooter } from './HudFooter';
 import { HudFullContent } from './HudFullContent';
 import { HudHeader } from './HudHeader';
+import { HudLayoutTemplates } from './HudLayoutTemplates';
 import { HudMiniContent } from './HudMiniContent';
+import { HudZoomControls } from './HudZoomControls';
 
 import { useTheme } from '@/contexts/ThemeContext';
 import { resolveHudAnimationPreset } from '@/design';
@@ -90,6 +93,7 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
     setHudLayoutPreset,
     setHudMiniMode,
     setHudMultiMonitorStrategy,
+    setHudZoom,
   } = useTheme();
   const animationPreset = useMemo(
     () => resolveHudAnimationPreset(preferences.hudAnimationPreset),
@@ -573,22 +577,51 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
         backdropFilter: themeVariantStyles.backdropFilter,
         backgroundColor: themeVariantStyles.backgroundColor,
         transition: preferences.hudAnimationsEnabled ? 'backdrop-filter 0.3s ease, background-color 0.3s ease' : 'none',
+        transform: `scale(${preferences.hudZoom ?? 1.0})`,
+        transformOrigin: 'top right',
       }}
     >
       {/* Header */}
-      <HudHeader
-        missionName={missionName}
-        missionGlyph={missionGlyph}
-        isMobile={isMobile}
-        isPinned={preferences.hudPinned}
-        isExpanded={isExpanded}
-        showQuickShortcuts={preferences.hudQuickShortcuts}
-        accentMotion={accentMotion}
-        accentTransition={accentTransition}
-        onTogglePin={() => setHudPinned(!preferences.hudPinned)}
-        onToggleExpand={() => setIsExpanded(!isExpanded)}
-        onQuickAction={handleQuickAction}
-      />
+      <div className="flex items-center gap-2 border-b border-border/30 p-2">
+        <div className="flex-1">
+          <HudHeader
+            missionName={missionName}
+            missionGlyph={missionGlyph}
+            isMobile={isMobile}
+            isPinned={preferences.hudPinned}
+            isExpanded={isExpanded}
+            showQuickShortcuts={preferences.hudQuickShortcuts}
+            accentMotion={accentMotion}
+            accentTransition={accentTransition}
+            onTogglePin={() => setHudPinned(!preferences.hudPinned)}
+            onToggleExpand={() => setIsExpanded(!isExpanded)}
+            onQuickAction={handleQuickAction}
+          />
+        </div>
+        {!isMobile && (
+          <div className="flex items-center gap-2">
+            <HudLayoutTemplates
+              currentPreset={preferences.hudLayoutPreset}
+              onTemplateSelect={(template) => {
+                setHudLayoutPreset(template.preset);
+                setHudPosition(template.position);
+                setHudSize(template.size);
+                setHudPinned(template.pinned);
+                setHudMiniMode(template.miniMode);
+                triggerAlert(`Applied template: ${template.name}`, 'info');
+              }}
+            />
+            <HudZoomControls
+              zoom={preferences.hudZoom ?? 1.0}
+              onZoomChange={setHudZoom}
+              onReset={() => {
+                setHudZoom(1.0);
+                triggerAlert('Zoom reset', 'info');
+              }}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Alerts */}
       <HudAlerts
@@ -606,6 +639,26 @@ export const TacticalHudOverlay = memo(function TacticalHudOverlay(
           animate={panelMotion.animate as any}
           transition={panelTransition as any}
         >
+          {preferences.hudAnimationsEnabled && !isMobile && (
+            <HudAnimationTimeline
+              duration={5000}
+              keyframes={[
+                { time: 0, label: 'Start', value: 0 },
+                { time: 25, label: 'Fade In', value: 1 },
+                { time: 50, label: 'Content', value: 1 },
+                { time: 75, label: 'Fade Out', value: 0.5 },
+                { time: 100, label: 'End', value: 0 },
+              ]}
+              isPlaying={false}
+              currentTime={0}
+              onPlay={() => triggerAlert('Animation playing', 'info')}
+              onPause={() => triggerAlert('Animation paused', 'info')}
+              onSeek={(time) => {
+                // Handle seek if needed
+              }}
+              onReset={() => triggerAlert('Animation reset', 'info')}
+            />
+          )}
           {preferences.hudMiniMode ? (
             <HudMiniContent
               formattedCost={formattedCost}
