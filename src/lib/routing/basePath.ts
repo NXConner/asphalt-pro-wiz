@@ -10,14 +10,46 @@ type LovableGlobal =
     }
   | undefined;
 
-type LovableWindow = Window & {
+type LovableWindow = {
   __LOVABLE__?: LovableGlobal;
   lovable?: { basePath?: string };
+  location?: { origin?: string; pathname?: string; hostname?: string };
+  addEventListener?: (event: string, handler: any) => void;
+  removeEventListener?: (event: string, handler: any) => void;
+  setInterval?: (callback: () => void, ms: number) => number;
+  clearInterval?: (id: number) => void;
+};
+
+// Safe browser API access
+const hasWindow = (): boolean => {
+  try {
+    return typeof (globalThis as any).window !== 'undefined';
+  } catch {
+    return false;
+  }
+};
+
+const hasDocument = (): boolean => {
+  try {
+    return typeof (globalThis as any).document !== 'undefined';
+  } catch {
+    return false;
+  }
+};
+
+const getGlobalWindow = (): LovableWindow | undefined => {
+  if (!hasWindow()) return undefined;
+  return (globalThis as any).window as LovableWindow;
+};
+
+const getGlobalDocument = (): any => {
+  if (!hasDocument()) return undefined;
+  return (globalThis as any).document;
 };
 
 const lovables = (): LovableGlobal => {
-  if (typeof globalThis === 'undefined' || typeof globalThis.window === 'undefined') return undefined;
-  const win = globalThis.window as LovableWindow;
+  const win = getGlobalWindow();
+  if (!win) return undefined;
   return win.__LOVABLE__ ?? win.lovable ?? undefined;
 };
 
@@ -41,10 +73,8 @@ const normalizeBaseCandidate = (candidate?: string | null): string | undefined =
   if (trimmed === '.' || trimmed === './') return '/';
   if (trimmed === '/') return '/';
   try {
-    const origin =
-      typeof globalThis !== 'undefined' && typeof globalThis.window !== 'undefined' && globalThis.window.location?.origin
-        ? globalThis.window.location.origin
-        : 'http://localhost';
+    const win = getGlobalWindow();
+    const origin = win?.location?.origin ?? 'http://localhost';
     const url = new URL(trimmed, origin);
     return url.pathname.replace(/\/?index\.html$/, '').replace(/\/+$/, '') || '/';
   } catch {
@@ -56,9 +86,10 @@ const normalizeBaseCandidate = (candidate?: string | null): string | undefined =
 };
 
 const resolveBaseFromLocation = (): string | undefined => {
-  if (typeof globalThis === 'undefined' || typeof globalThis.window === 'undefined') return undefined;
-  const { pathname } = globalThis.window.location ?? { pathname: '/' };
-  const path = pathname.replace(/\/?index\.html$/, '');
+  const win = getGlobalWindow();
+  if (!win) return undefined;
+  const { pathname } = win.location ?? { pathname: '/' };
+  const path = pathname?.replace(/\/?index\.html$/, '') || '/';
   if (!path || path === '/') return '/';
 
   const anchors = [
@@ -86,11 +117,10 @@ const resolveBaseFromLocation = (): string | undefined => {
 const candidateMetaTags = ['lovable:base-path', 'lovable-base-path', 'lovable:path'];
 
 const resolveMetaBasePath = (): string | undefined => {
-  if (typeof globalThis === 'undefined' || typeof globalThis.document === 'undefined') return undefined;
+  const doc = getGlobalDocument();
+  if (!doc) return undefined;
   for (const name of candidateMetaTags) {
-    const value =
-      globalThis.document.querySelector(`meta[name="${name}"]`)?.getAttribute?.('content') ??
-      undefined;
+    const value = doc.querySelector?.(`meta[name="${name}"]`)?.getAttribute?.('content') ?? undefined;
     const normalized = normalizeBaseCandidate(value);
     if (normalized && normalized !== '/') {
       return normalized;
@@ -141,8 +171,9 @@ let CACHED_BASE: string | undefined;
 const ensureBaseForLocation = (base?: string): string => {
   if (!base || base === '/') return '/';
   try {
-    if (typeof globalThis === 'undefined' || typeof globalThis.window === 'undefined') return base;
-    const pathname = globalThis.window.location?.pathname || '/';
+    const win = getGlobalWindow();
+    if (!win) return base;
+    const pathname = win.location?.pathname || '/';
     if (pathname === '/' || pathname === '') {
       return base;
     }
@@ -170,42 +201,40 @@ export const getRouterBaseName = (): string => {
 };
 
 export const subscribeToLovableConfig = (listener: (basePath: string) => void): (() => void) => {
-  if (typeof globalThis === 'undefined' || typeof globalThis.window === 'undefined') return () => {};
-  const win = globalThis.window;
+  const win = getGlobalWindow();
+  if (!win) return () => {};
   const emit = () => listener(getRouterBaseName());
   emit();
 
   const handler = () => emit();
-  win.addEventListener('lovable:config', handler as any);
+  win.addEventListener?.('lovable:config', handler);
 
-  const interval = win.setInterval(() => {
+  const interval: number | undefined = win.setInterval?.(() => {
     const base = resolveLovableGlobalBase();
-    if (base) {
+    if (base && interval !== undefined) {
       emit();
-      win.clearInterval(interval);
+      win.clearInterval?.(interval);
     }
   }, 200);
 
   return () => {
-    win.removeEventListener('lovable:config', handler as any);
-    win.clearInterval(interval);
+    win.removeEventListener?.('lovable:config', handler);
+    if (typeof interval === 'number') {
+      win.clearInterval?.(interval);
+    }
   };
 };
 
 export const isLovableHost = (hostname?: string): boolean => {
-  const subject =
-    hostname ??
-    (typeof globalThis !== 'undefined' && typeof globalThis.window !== 'undefined' ? (globalThis.window.location?.hostname ?? '') : '');
+  const win = getGlobalWindow();
+  const subject = hostname ?? (win?.location?.hostname ?? '');
   return LOVABLE_HOST_REGEX.test(subject);
 };
 
 export const isLovablePreviewRuntime = (): boolean => {
-  if (typeof globalThis === 'undefined' || typeof globalThis.window === 'undefined') return false;
-  const anyWindow = globalThis.window as Window & {
-    __LOVABLE__?: unknown;
-    lovable?: unknown;
-  };
-  return Boolean(anyWindow.__LOVABLE__ || anyWindow.lovable || isLovableHost());
+  const win = getGlobalWindow();
+  if (!win) return false;
+  return Boolean(win.__LOVABLE__ || win.lovable || isLovableHost());
 };
 
 export const sanitizeViteBase = (candidate?: string | null): string => {
