@@ -135,6 +135,8 @@ export default defineConfig(({ mode }) => {
         '@radix-ui/react-toggle-group',
         // cmdk depends on Radix UI, so include it too
         'cmdk',
+        // Pre-bundle recharts to avoid circular dependency issues
+        'recharts',
       ],
       exclude: [],
       // Force pre-bundling to ensure React is available
@@ -168,7 +170,11 @@ export default defineConfig(({ mode }) => {
               if (id.includes('leaflet')) return 'leaflet';
               if (id.includes('@react-google-maps')) return 'maps';
               if (id.includes('@supabase')) return 'supabase';
-              if (id.includes('recharts')) return 'charts';
+              // Recharts has circular dependencies, bundle it with React to ensure proper initialization
+              if (id.includes('recharts')) {
+                // Recharts depends on React, so include it in react-vendor to avoid initialization issues
+                return 'react-vendor';
+              }
               if (id.includes('date-fns')) return 'date';
             }
           },
