@@ -1,8 +1,13 @@
 import { formatDistanceToNow } from 'date-fns';
 import { Calculator, Loader2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 import { CustomServices } from '@/components/CustomServices';
 import { Button } from '@/components/ui/button';
+import { ComplianceChecklist } from '@/modules/estimate/components/ComplianceChecklist';
+import { ProfitSensitivityChart } from '@/modules/estimate/components/ProfitSensitivityChart';
+import { ScenarioPlanner } from '@/modules/estimate/components/ScenarioPlanner';
+import { useEstimatorScenarios } from '@/modules/estimate/useEstimatorScenarios';
 import type { EstimatorState } from '@/modules/estimate/useEstimatorState';
 
 interface ReviewStepProps {
@@ -12,6 +17,11 @@ interface ReviewStepProps {
   customServices: EstimatorState['customServices'];
   calculation: EstimatorState['calculation'];
   cracks: EstimatorState['cracks'];
+  options: EstimatorState['options'];
+  premium: EstimatorState['premium'];
+  logistics: EstimatorState['logistics'];
+  business: EstimatorState['business'];
+  job: EstimatorState['job'];
   onBack: () => void;
 }
 
@@ -22,8 +32,68 @@ export function ReviewStep({
   customServices,
   calculation,
   cracks,
+  options,
+  premium,
+  logistics,
+  business,
+  job,
   onBack,
 }: ReviewStepProps) {
+  const [isExporting, setIsExporting] = useState(false);
+  const primaryScenarioSignature = useMemo(
+    () =>
+      JSON.stringify({
+        totalArea: areas.total,
+        numCoats: materials.numCoats,
+        includeStriping: options.includeStriping,
+        includeSealcoating: options.includeSealcoating,
+        includeCleaningRepair: options.includeCleaningRepair,
+        premiumPowerWashing: premium.powerWashing,
+        profitPercent: business.data.profitPercent,
+        overheadPercent: business.data.overheadPercent,
+        oilSpots: logistics.oilSpots,
+        prepHours: logistics.prepHours,
+        polymerAdded: materials.polymerAdded,
+      }),
+    [
+      areas.total,
+      materials.numCoats,
+      options.includeStriping,
+      options.includeSealcoating,
+      options.includeCleaningRepair,
+      premium.powerWashing,
+      business.data.profitPercent,
+      business.data.overheadPercent,
+      logistics.oilSpots,
+      logistics.prepHours,
+      materials.polymerAdded,
+    ],
+  );
+
+  const scenarioManager = useEstimatorScenarios({
+    simulate: calculation.simulate,
+    baselineSignature: primaryScenarioSignature,
+  });
+
+  const primaryScenario =
+    scenarioManager.scenarios.find((scenario) => scenario.isPrimary) ??
+    scenarioManager.scenarios[0] ??
+    null;
+
+  const exportScenario = primaryScenario?.computation ?? scenarioManager.baseline;
+
+  const handleExportPdf = async () => {
+    setIsExporting(true);
+    try {
+      await calculation.exportPdf({
+        scenarioName: primaryScenario?.name ?? 'Primary Scenario',
+        computation: exportScenario,
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <>
       <section className="space-y-4">
@@ -45,25 +115,26 @@ export function ReviewStep({
         />
       </section>
 
-      <section className="rounded-2xl border border-white/15 bg-white/5 p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-50">Readiness Summary</h3>
-            <ul className="mt-2 space-y-1 text-sm text-slate-200/80">
-              <li>
-                • {areas.total.toFixed(1)} sq ft across {areas.items.length} area segments
-              </li>
-              <li>
-                • {striping.lines} lines, {striping.handicap} handicap stalls,{' '}
-                {striping.arrowsLarge + striping.arrowsSmall} arrow markings
-              </li>
-              <li>
-                • {materials.numCoats} coat plan ·{' '}
-                {materials.sandAdded ? 'Sand Additive' : 'No Sand'} ·{' '}
-                {materials.polymerAdded ? 'Fast-dry polymer' : 'Standard dry time'}
-              </li>
-            </ul>
-          </div>
+        <section className="rounded-2xl border border-white/15 bg-white/5 p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-50">Readiness Summary</h3>
+              <ul className="mt-2 space-y-1 text-sm text-slate-200/80">
+                <li>
+                  • {areas.total.toFixed(1)} sq ft across {areas.items.length} area segments
+                </li>
+                <li>
+                  • {striping.lines} lines, {striping.handicap} handicap stalls,{' '}
+                  {striping.arrowsLarge + striping.arrowsSmall} arrow markings
+                </li>
+                <li>
+                  • {materials.numCoats} coat plan ·{' '}
+                  {materials.sandAdded ? 'Sand Additive' : 'No Sand'} ·{' '}
+                  {materials.polymerAdded ? 'Fast-dry polymer' : 'Standard dry time'}
+                </li>
+                <li>• Travel window {job.distance.toFixed(1)} miles round trip</li>
+              </ul>
+            </div>
           <div className="flex flex-col items-end gap-2">
             <span className="text-xs uppercase tracking-[0.3em] text-slate-200/60">
               Estimated Total
@@ -138,6 +209,16 @@ export function ReviewStep({
           </div>
       </div>
 
+        <div className="grid gap-6 lg:grid-cols-2">
+          <ScenarioPlanner manager={scenarioManager} />
+          <ProfitSensitivityChart
+            baselineId={primaryScenario?.id ?? scenarioManager.scenarios[0]?.id ?? 'baseline'}
+            scenarios={scenarioManager.scenarios}
+          />
+        </div>
+
+        <ComplianceChecklist issues={scenarioManager.baseline.compliance.issues} />
+
       <div className="flex items-center justify-between">
         <Button variant="ghost" className="text-slate-200" onClick={onBack}>
           Back to Striping
@@ -151,6 +232,15 @@ export function ReviewStep({
         >
           Print Proposal Snapshot
         </Button>
+          <Button
+            type="button"
+            className="bg-emerald-500/90 text-white hover:bg-emerald-500"
+            onClick={() => void handleExportPdf()}
+            disabled={isExporting}
+          >
+            {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Export Proposal PDF
+          </Button>
       </div>
     </>
   );

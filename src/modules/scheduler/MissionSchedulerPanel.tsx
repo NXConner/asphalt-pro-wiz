@@ -1,5 +1,5 @@
 import { startOfWeek } from 'date-fns';
-import { Cloud, CloudOff, Upload } from 'lucide-react';
+import { Cloud, CloudOff, Download, Upload } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { logEvent } from '@/lib/logging';
 import { schedulerSyncAvailable } from '@/modules/scheduler/persistence';
 
 interface MissionSchedulerPanelProps {
@@ -47,24 +48,53 @@ export function MissionSchedulerPanel({ coords }: MissionSchedulerPanelProps) {
         return;
       }
 
-      setIcsImporting(true);
-      try {
-        const text = await file.text();
-        const result = scheduler.importBlackoutsFromICS(text);
-        setIcsSummary(
-          `Imported ${result.totalEvents} worship events • ${result.created} new • ${result.updated} refreshed`,
-        );
-      } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : 'Failed to import worship calendar file.',
-        );
-      } finally {
-        setIcsImporting(false);
-        event.target.value = '';
-      }
+        setIcsImporting(true);
+        try {
+          const text = await file.text();
+          const result = scheduler.importBlackoutsFromICS(text);
+          const summaryParts = [`${result.created} new`, `${result.updated} refreshed`];
+          if (result.merged) summaryParts.push(`${result.merged} merged`);
+          if (result.conflicts.length) summaryParts.push(`${result.conflicts.length} conflicts`);
+          setIcsSummary(
+            `Imported ${result.totalEvents} worship events • ${summaryParts.join(' • ')}`,
+          );
+        } catch (error) {
+          toast.error(
+            error instanceof Error ? error.message : 'Failed to import worship calendar file.',
+          );
+        } finally {
+          setIcsImporting(false);
+          event.target.value = '';
+        }
     },
     [scheduler, schedulerReady],
   );
+
+  const handleIcsExport = useCallback(() => {
+    if (!schedulerReady) {
+      toast.error('Mission scheduler is still loading. Please try again in a moment.');
+      return;
+    }
+    if (blackoutCount === 0) {
+      toast.info('No blackout windows available to export.');
+      return;
+    }
+    const ics = scheduler.exportBlackoutsToICS({
+      calendarName: 'Worship Blackouts',
+      organization: 'Pavement Performance Suite',
+    });
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `worship-blackouts-${new Date().toISOString().slice(0, 10)}.ics`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    toast.success('Worship blackout calendar exported.');
+    try {
+      logEvent('scheduler.blackout_exported', { blackoutCount });
+    } catch {}
+  }, [blackoutCount, scheduler, schedulerReady]);
 
   const panelContent = useMemo(() => {
     if (!schedulerReady) {
@@ -105,14 +135,15 @@ export function MissionSchedulerPanel({ coords }: MissionSchedulerPanelProps) {
           <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="text-sm">
               <div>
-                <span className="font-semibold text-foreground">{taskCount}</span>{' '}
-                scheduled missions
+                <span className="font-semibold text-foreground">{taskCount}</span> scheduled
+                missions
               </div>
               <div>
                 <span className="font-semibold text-foreground">{crewCount}</span> active crews
               </div>
               <div>
-                <span className="font-semibold text-foreground">{blackoutCount}</span> blackout windows
+                <span className="font-semibold text-foreground">{blackoutCount}</span> blackout
+                windows
               </div>
             </div>
             <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
@@ -137,6 +168,16 @@ export function MissionSchedulerPanel({ coords }: MissionSchedulerPanelProps) {
               >
                 <Upload className="mr-2 h-4 w-4" />
                 {icsImporting ? 'Importing…' : 'Import Worship Calendar (.ics)'}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleIcsExport}
+                disabled={!schedulerReady || blackoutCount === 0}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export Worship Calendar (.ics)
               </Button>
               <span className="text-xs text-muted-foreground">
                 {icsSummary ??
@@ -164,6 +205,7 @@ export function MissionSchedulerPanel({ coords }: MissionSchedulerPanelProps) {
       blackoutCount,
       coords,
       crewCount,
+      handleIcsExport,
       handleIcsFileChange,
       icsImporting,
       icsSummary,

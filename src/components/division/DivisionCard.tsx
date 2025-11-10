@@ -1,18 +1,16 @@
 import { forwardRef } from 'react';
 
+import { TacticalOverlay } from '@/components/hud/TacticalOverlay';
+import type { TacticalTone } from '@/lib/tacticalTone';
 import { cn } from '@/lib/utils';
 
 type DivisionCardVariant = 'default' | 'command' | 'intel' | 'alert';
 
-const VARIANT_STYLE: Record<DivisionCardVariant, string> = {
-  default:
-    'border-white/12 bg-slate-950/55 before:bg-[radial-gradient(circle_at_top,_rgba(128,200,255,0.12),transparent_55%)]',
-  command:
-    'border-cyan-400/35 bg-slate-950/65 before:bg-[radial-gradient(circle_at_top,_rgba(34,197,252,0.22),transparent_60%)]',
-  intel:
-    'border-emerald-400/35 bg-slate-950/60 before:bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.2),transparent_60%)]',
-  alert:
-    'border-rose-400/40 bg-[#160b12]/80 before:bg-[radial-gradient(circle_at_top,_rgba(248,113,113,0.28),transparent_60%)]',
+const VARIANT_TONE: Record<DivisionCardVariant, TacticalTone> = {
+  default: 'neutral',
+  command: 'accent',
+  intel: 'intel',
+  alert: 'alert',
 };
 
 export interface DivisionCardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -21,21 +19,33 @@ export interface DivisionCardProps extends React.HTMLAttributes<HTMLDivElement> 
 }
 
 export const DivisionCard = forwardRef<HTMLDivElement, DivisionCardProps>(
-  ({ variant = 'default', subdued = false, className, children, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(
-        'group relative overflow-hidden rounded-[28px] border px-6 py-6 shadow-[0_32px_120px_rgba(3,6,16,0.45)] transition-transform duration-500 hover:-translate-y-1 hover:shadow-[0_42px_160px_rgba(3,6,16,0.6)]',
-        VARIANT_STYLE[variant],
-        subdued ? 'opacity-85' : 'opacity-100',
-        'before:absolute before:inset-[-20%] before:-z-10 before:opacity-70 before:transition-opacity before:duration-500 group-hover:before:opacity-90',
-        className,
-      )}
-      {...props}
-    >
-      <div className="relative z-10 flex flex-col gap-5">{children}</div>
-    </div>
-  ),
+  ({ variant = 'default', subdued = false, className, children, ...props }, ref) => {
+    const tone = VARIANT_TONE[variant] ?? 'neutral';
+    return (
+      <div ref={ref} className={cn('group relative', className)} {...props}>
+        <TacticalOverlay
+          tone={tone}
+          className={cn(
+            'rounded-[28px] border border-white/12 px-6 py-6 shadow-[0_32px_120px_rgba(3,6,16,0.45)] transition-transform duration-500 hover:-translate-y-1 hover:shadow-[0_42px_160px_rgba(3,6,16,0.6)]',
+            subdued ? 'opacity-85' : 'opacity-100',
+          )}
+          gridDensity={tone === 'alert' ? 88 : tone === 'intel' ? 76 : 92}
+          scanLinesProps={{
+            speedMs: tone === 'alert' ? 2800 : 3600,
+            density: tone === 'alert' ? 84 : 72,
+          }}
+          cornerProps={{
+            size: 40,
+            thickness: 1.9,
+            glow: tone !== 'neutral',
+            pulseDelayMs: 210,
+          }}
+        >
+          <div className="relative z-10 flex flex-col gap-5">{children}</div>
+        </TacticalOverlay>
+      </div>
+    );
+  },
 );
 DivisionCard.displayName = 'DivisionCard';
 

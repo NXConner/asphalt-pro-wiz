@@ -9,6 +9,7 @@ import { ThemeMissionPresets } from '@/components/theme/ThemeMissionPresets';
 import { ThemePreview } from '@/components/theme/ThemePreview';
 import { ThemeShowcase } from '@/components/theme/ThemeShowcase';
 import { ThemeWallpaperManager } from '@/components/theme/ThemeWallpaperManager';
+import { ThemeWallpaperSynth } from '@/components/theme/ThemeWallpaperSynth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -23,7 +24,9 @@ export function ThemeCustomizer() {
     setMode,
     setTheme,
     setPrimaryHue,
+    setAccentHue,
     setUseHueOverride,
+    setUseAccentOverride,
     setRadius,
     setWallpaper,
     setWallpaperOpacity,
@@ -59,6 +62,7 @@ export function ThemeCustomizer() {
     setHudGestureSensitivity,
     setHudMultiMonitorStrategy,
     setHudKeyboardNavigation,
+    randomizePalette,
     reset,
   } = useTheme();
   const { builtin, custom, addWallpaper, removeWallpaper, getById } = useWallpaperLibrary();
@@ -66,6 +70,7 @@ export function ThemeCustomizer() {
   const themeGroups = useMemo(() => groupThemePresets(), []);
 
   const [localHue, setLocalHue] = useState(preferences.primaryHue);
+  const [localAccentHue, setLocalAccentHue] = useState(preferences.accentHue);
   const [localRadius, setLocalRadius] = useState(preferences.radius);
   const [localOpacity, setLocalOpacity] = useState(preferences.wallpaperOpacity);
   const [localBlur, setLocalBlur] = useState(preferences.wallpaperBlur);
@@ -77,6 +82,7 @@ export function ThemeCustomizer() {
 
   useEffect(() => {
     setLocalHue(preferences.primaryHue);
+    setLocalAccentHue(preferences.accentHue);
     setLocalRadius(preferences.radius);
     setLocalOpacity(preferences.wallpaperOpacity);
     setLocalBlur(preferences.wallpaperBlur);
@@ -150,6 +156,36 @@ export function ThemeCustomizer() {
     [getById, handleWallpaperSelect, preferences.wallpaperId, removeWallpaper],
   );
 
+  const handleWallpaperSynthesize = useCallback(
+    async ({
+      name,
+      gradient,
+      tone,
+      description,
+    }: {
+      name: string;
+      gradient: string;
+      tone: Parameters<typeof addWallpaper>[0]['accentTone'];
+      description?: string;
+    }) => {
+      const asset = addWallpaper({
+        name,
+        dataUrl: gradient,
+        accentTone: tone,
+        description:
+          description ??
+          `Command Center synthesized ${tone} gradient generated ${new Date().toLocaleDateString()}`,
+      });
+      handleWallpaperSelect({
+        id: asset.id,
+        source: asset.source,
+        name: asset.name,
+        description: asset.description,
+      });
+    },
+    [addWallpaper, handleWallpaperSelect],
+  );
+
   const handleReset = useCallback(() => {
     reset();
   }, [reset]);
@@ -164,6 +200,15 @@ export function ThemeCustomizer() {
     setHudBlur(value);
   }, [setHudBlur]);
 
+  const handleAccentHueChange = useCallback((value: number) => {
+    setLocalAccentHue(value);
+    setAccentHue(value);
+  }, [setAccentHue]);
+
+  const handleRandomizePalette = useCallback(() => {
+    randomizePalette();
+  }, [randomizePalette]);
+
   return (
     <Card className="border border-white/10 bg-slate-950/60 shadow-[0_40px_120px_rgba(8,12,24,0.6)] backdrop-blur-xl">
       <CardHeader>
@@ -176,61 +221,66 @@ export function ThemeCustomizer() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-10">
-        <ThemePreview />
+          <ThemePreview />
 
-        <ThemeShowcase limitPerGroup={3} />
+          <ThemeShowcase limitPerGroup={3} />
 
-        <ThemeMissionPresets
-          groups={themeGroups}
-          activeTheme={preferences.name}
-          mode={preferences.mode}
-          onModeChange={setMode}
-          onSelectPreset={handlePresetSelect}
-        />
-
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <ThemeHueControls
-            useHueOverride={preferences.useHueOverride}
-            hue={localHue}
-            radius={localRadius}
-            highContrast={Boolean(preferences.highContrast)}
-            onToggleHueOverride={setUseHueOverride}
-            onHueChange={(value) => {
-              setLocalHue(value);
-              setPrimaryHue(value);
-            }}
-            onRadiusChange={(value) => {
-              setLocalRadius(value);
-              setRadius(value);
-            }}
-            onToggleHighContrast={setHighContrast}
+          <ThemeMissionPresets
+            groups={themeGroups}
+            activeTheme={preferences.name}
+            mode={preferences.mode}
+            onModeChange={setMode}
+            onSelectPreset={handlePresetSelect}
           />
-          <ThemeHudControls
-            hudOpacity={localHudOpacity}
-            hudBlur={localHudBlur}
-            showHud={preferences.showHud}
-            hudPreset={preferences.hudPreset}
-            hudAnimationsEnabled={preferences.hudAnimationsEnabled}
-            hudLayoutPreset={preferences.hudLayoutPreset}
-            hudSize={preferences.hudSize}
-            hudPinned={preferences.hudPinned}
-            savedLayouts={preferences.savedLayouts}
-            onHudOpacityChange={handleHudOpacityChange}
-            onHudBlurChange={handleHudBlurChange}
-            onShowHudChange={setShowHud}
-            onHudPresetChange={setHudPreset}
-            onHudAnimationsEnabledChange={setHudAnimationsEnabled}
-            onHudLayoutPresetChange={setHudLayoutPreset}
-            onHudSizeChange={setHudSize}
-            onHudPinnedChange={setHudPinned}
-            onSaveLayout={saveCustomLayout}
-            onLoadLayout={loadCustomLayout}
-            onDeleteLayout={deleteCustomLayout}
-            hudTransitionPreset={preferences.hudTransitionPreset}
-            setHudTransitionPreset={setHudTransitionPreset}
-            hudMiniMode={preferences.hudMiniMode}
-            setHudMiniMode={setHudMiniMode}
-            hudAutoHide={preferences.hudAutoHide}
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <ThemeHueControls
+              useHueOverride={preferences.useHueOverride}
+              useAccentOverride={Boolean(preferences.useAccentOverride)}
+              hue={localHue}
+              accentHue={localAccentHue}
+              radius={localRadius}
+              highContrast={Boolean(preferences.highContrast)}
+              onToggleHueOverride={setUseHueOverride}
+              onHueChange={(value) => {
+                setLocalHue(value);
+                setPrimaryHue(value);
+              }}
+              onToggleAccentOverride={setUseAccentOverride}
+              onAccentHueChange={handleAccentHueChange}
+              onRadiusChange={(value) => {
+                setLocalRadius(value);
+                setRadius(value);
+              }}
+              onToggleHighContrast={setHighContrast}
+              onRandomizePalette={handleRandomizePalette}
+            />
+            <ThemeHudControls
+              hudOpacity={localHudOpacity}
+              hudBlur={localHudBlur}
+              showHud={preferences.showHud}
+              hudPreset={preferences.hudPreset}
+              hudAnimationsEnabled={preferences.hudAnimationsEnabled}
+              hudLayoutPreset={preferences.hudLayoutPreset}
+              hudSize={preferences.hudSize}
+              hudPinned={preferences.hudPinned}
+              savedLayouts={preferences.savedLayouts}
+              onHudOpacityChange={handleHudOpacityChange}
+              onHudBlurChange={handleHudBlurChange}
+              onShowHudChange={setShowHud}
+              onHudPresetChange={setHudPreset}
+              onHudAnimationsEnabledChange={setHudAnimationsEnabled}
+              onHudLayoutPresetChange={setHudLayoutPreset}
+              onHudSizeChange={setHudSize}
+              onHudPinnedChange={setHudPinned}
+              onSaveLayout={saveCustomLayout}
+              onLoadLayout={loadCustomLayout}
+              onDeleteLayout={deleteCustomLayout}
+              hudTransitionPreset={preferences.hudTransitionPreset}
+              setHudTransitionPreset={setHudTransitionPreset}
+              hudMiniMode={preferences.hudMiniMode}
+              setHudMiniMode={setHudMiniMode}
+              hudAutoHide={preferences.hudAutoHide}
               setHudAutoHide={setHudAutoHide}
               hudAutoHideDelay={preferences.hudAutoHideDelay}
               setHudAutoHideDelay={setHudAutoHideDelay}
@@ -254,42 +304,43 @@ export function ThemeCustomizer() {
               setHudGridSize={setHudGridSize}
               hudCollisionDetection={preferences.hudCollisionDetection}
               setHudCollisionDetection={setHudCollisionDetection}
-            hudAnimationPreset={preferences.hudAnimationPreset}
-            setHudAnimationPreset={setHudAnimationPreset}
-            hudGestureSensitivity={preferences.hudGestureSensitivity}
-            setHudGestureSensitivity={setHudGestureSensitivity}
-            hudMultiMonitorStrategy={preferences.hudMultiMonitorStrategy}
-            setHudMultiMonitorStrategy={setHudMultiMonitorStrategy}
-            hudKeyboardNavigation={preferences.hudKeyboardNavigation}
-            setHudKeyboardNavigation={setHudKeyboardNavigation}
-            hudDisplayLayouts={preferences.hudDisplayLayouts}
+              hudAnimationPreset={preferences.hudAnimationPreset}
+              setHudAnimationPreset={setHudAnimationPreset}
+              hudGestureSensitivity={preferences.hudGestureSensitivity}
+              setHudGestureSensitivity={setHudGestureSensitivity}
+              hudMultiMonitorStrategy={preferences.hudMultiMonitorStrategy}
+              setHudMultiMonitorStrategy={setHudMultiMonitorStrategy}
+              hudKeyboardNavigation={preferences.hudKeyboardNavigation}
+              setHudKeyboardNavigation={setHudKeyboardNavigation}
+              hudDisplayLayouts={preferences.hudDisplayLayouts}
             />
-          <ThemeWallpaperManager
-            builtin={builtin}
-            custom={custom}
-            activeWallpaperId={activeWallpaperId}
-            opacity={localOpacity}
-            blur={localBlur}
-            onSelect={(asset) =>
-              handleWallpaperSelect({
-                id: asset.id,
-                source: asset.source,
-                name: asset.name,
-                description: asset.description,
-              })
-            }
-            onUpload={handleWallpaperUpload}
-            onRemove={handleWallpaperRemove}
-            onOpacityChange={(value) => {
-              setLocalOpacity(value);
-              setWallpaperOpacity(value);
-            }}
-            onBlurChange={(value) => {
-              setLocalBlur(value);
-              setWallpaperBlur(value);
-            }}
-          />
-        </div>
+            <ThemeWallpaperManager
+              builtin={builtin}
+              custom={custom}
+              activeWallpaperId={activeWallpaperId}
+              opacity={localOpacity}
+              blur={localBlur}
+              onSelect={(asset) =>
+                handleWallpaperSelect({
+                  id: asset.id,
+                  source: asset.source,
+                  name: asset.name,
+                  description: asset.description,
+                })
+              }
+              onUpload={handleWallpaperUpload}
+              onRemove={handleWallpaperRemove}
+              onOpacityChange={(value) => {
+                setLocalOpacity(value);
+                setWallpaperOpacity(value);
+              }}
+              onBlurChange={(value) => {
+                setLocalBlur(value);
+                setWallpaperBlur(value);
+              }}
+            />
+            <ThemeWallpaperSynth onCreate={handleWallpaperSynthesize} />
+          </div>
 
         <ThemeDesignTokensPanel
           spacing={Object.entries(DESIGN_SYSTEM.spacing)}

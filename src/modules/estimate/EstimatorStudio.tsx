@@ -79,6 +79,8 @@ export function EstimatorStudio({ estimator }: EstimatorStudioProps) {
             options={estimator.options}
             cracks={estimator.cracks}
             logistics={estimator.logistics}
+            job={estimator.job}
+            featureFlags={estimator.featureFlags}
             onNext={nextStep}
             onBack={previousStep}
           />
@@ -101,6 +103,11 @@ export function EstimatorStudio({ estimator }: EstimatorStudioProps) {
             customServices={estimator.customServices}
             calculation={estimator.calculation}
             cracks={estimator.cracks}
+              options={estimator.options}
+              premium={estimator.premium}
+              logistics={estimator.logistics}
+              business={estimator.business}
+              job={estimator.job}
             onBack={previousStep}
           />
         </TabsContent>

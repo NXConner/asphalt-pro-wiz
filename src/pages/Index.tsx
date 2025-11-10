@@ -179,57 +179,37 @@ const Index = memo(() => {
               summary={summary}
             />
           }
-          missionControl={<MissionControlPanel estimator={estimator} />}
-          estimatorStudio={<EstimatorStudio estimator={estimator} />}
-          insightTower={<InsightTowerPanel estimator={estimator} />}
-          engagementHub={
-            <div className="space-y-5">
-              <EngagementHubPanel estimator={estimator} />
-              <CanvasPanel
-                title="Regulatory Toolkit"
-                subtitle="Jump into ADA, VDOT, and NC DOT resources before finalizing proposals."
-                eyebrow="Compliance"
-                tone="ember"
-                action={
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    className="border-white/20 bg-white/10 text-slate-50 hover:bg-white/20"
-                    onClick={() => openCompliance(complianceTopic)}
-                  >
-                    <Shield className="mr-2 h-4 w-4" /> Open Library
-                  </Button>
-                }
-              >
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="border-white/20 bg-white/5 text-slate-100/90 hover:bg-white/15"
-                    onClick={() => openCompliance('striping')}
-                  >
-                    ADA & Striping
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="border-white/20 bg-white/5 text-slate-100/90 hover:bg-white/15"
-                    onClick={() => openCompliance('sealcoating')}
-                  >
-                    Sealcoat Specs
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="border-white/20 bg-white/5 text-slate-100/90 hover:bg-white/15"
-                    onClick={() => openCompliance('crackfilling')}
-                  >
-                    Crack Filling SOP
-                  </Button>
-                </div>
-              </CanvasPanel>
-            </div>
-          }
+            missionControl={<MissionControlPanel estimator={estimator} />}
+            estimatorStudio={<EstimatorStudio estimator={estimator} />}
+            insightTower={<InsightTowerPanel estimator={estimator} />}
+            engagementHub={
+              <div className="space-y-5">
+                <EngagementHubPanel estimator={estimator} />
+                <CanvasPanel
+                  title="Regulatory Toolkit"
+                  subtitle="Jump into ADA, VDOT, and NC DOT resources before finalizing proposals."
+                  eyebrow="Compliance"
+                  tone="ember"
+                  action={
+                    <Button type="button" variant="command" onClick={() => openCompliance(complianceTopic)}>
+                      <Shield className="mr-2 h-4 w-4" /> Open Library
+                    </Button>
+                  }
+                >
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="button" variant="outline" size="sm" onClick={() => openCompliance('striping')}>
+                      ADA & Striping
+                    </Button>
+                    <Button type="button" variant="outline" onClick={() => openCompliance('sealcoating')}>
+                      Sealcoat Specs
+                    </Button>
+                    <Button type="button" variant="outline" onClick={() => openCompliance('crackfilling')}>
+                      Crack Filling SOP
+                    </Button>
+                  </div>
+                </CanvasPanel>
+              </div>
+            }
           footer={
             <span>
               Mission control tailored for small crews serving church campuses. Refresh your dev
