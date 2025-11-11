@@ -35,6 +35,8 @@ interface FeatureFlagContextValue {
 const FeatureFlagContext = createContext<FeatureFlagContextValue | undefined>(undefined);
 
 async function resolvePrimaryOrgId(userId: string): Promise<string | null> {
+  if (!isSupabaseConfigured()) return null;
+  
   try {
     const { data, error } = await supabase
       .from('user_org_memberships' as any)
@@ -42,7 +44,17 @@ async function resolvePrimaryOrgId(userId: string): Promise<string | null> {
       .eq('user_id', userId)
       .order('joined_at', { ascending: true })
       .limit(1);
-    if (error) throw error;
+    
+    // Handle 404 errors gracefully (table doesn't exist)
+    if (error) {
+      const code = error?.code || error?.status || '';
+      if (code === 'PGRST116' || code === '42P01' || String(code).includes('404')) {
+        // Table doesn't exist - expected in development
+        return null;
+      }
+      throw error;
+    }
+    
     if (!Array.isArray(data) || data.length === 0) return null;
     const row = data[0] as unknown as Record<string, unknown> | null;
     if (!row) return null;

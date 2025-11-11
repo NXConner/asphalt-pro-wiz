@@ -198,19 +198,25 @@ export function logEvent(
     // Only try beacon if URL is configured and not pointing to localhost (which may not be running)
     const beaconUrl = (import.meta as any)?.env?.VITE_LOG_BEACON_URL;
     if (beaconUrl && typeof navigator !== "undefined" && "sendBeacon" in navigator) {
-      const url = beaconUrl as string;
+      const url = String(beaconUrl).trim();
+      if (!url) return; // Skip if empty
+      
       // Skip localhost beacon URLs in development (expected to fail if server isn't running)
-      const isLocalhost = url.includes('localhost') || url.includes('127.0.0.1');
-      if (!isLocalhost || !isDev()) {
-        try {
-          const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
-          navigator.sendBeacon(url, blob);
-        } catch (error) {
-          // Silently ignore beacon errors (expected when server isn't running)
-          if (!isDev()) {
-            console.warn(`${LOG_PREFIX} beacon send failed`, error);
-          }
-        }
+      const isLocalhost = url.includes('localhost') || url.includes('127.0.0.1') || url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1');
+      
+      // In development, completely skip localhost beacons to avoid console noise
+      if (isDev() && isLocalhost) {
+        return; // Don't attempt localhost beacons in development
+      }
+      
+      // Only attempt beacon for non-localhost URLs or in production
+      try {
+        const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+        navigator.sendBeacon(url, blob);
+        // Note: Browser will log network errors in console, but we avoid making unnecessary requests
+      } catch (error) {
+        // Silently ignore beacon errors (expected when server isn't running)
+        // Browser will log network errors, but we won't add to the noise
       }
     }
 
