@@ -98,7 +98,8 @@ const App = () => {
     };
   }, []);
 
-  const [routerBase] = useState(getRouterBaseName);
+  // Dynamically get router base to ensure it matches current location
+  const [routerBase, setRouterBase] = useState(() => getRouterBaseName());
 
   useEffect(() => installLovableAssetMonitoring(), []);
 
@@ -108,8 +109,19 @@ const App = () => {
     : ProtectedRoute;
 
   useEffect(() => {
-    // Keep diagnostic sync only (no Router remount)
-    return subscribeToLovableConfig((next) => {
+    // Update router base when location changes (for Lovable preview environments)
+    const updateBase = () => {
+      const newBase = getRouterBaseName();
+      if (newBase !== routerBase) {
+        setRouterBase(newBase);
+      }
+    };
+    
+    // Check immediately
+    updateBase();
+    
+    // Subscribe to changes and update router base
+    const unsubscribe = subscribeToLovableConfig((next) => {
       if (typeof document !== 'undefined') {
         document.documentElement.dataset.routerBase = next;
       }
@@ -117,8 +129,15 @@ const App = () => {
         (window as typeof window & { __PPS_ROUTER_BASE?: string }).__PPS_ROUTER_BASE = next;
       }
       logEvent('lovable.routing.base', { baseName: next });
+      
+      // Update router base if it changed
+      if (next !== routerBase) {
+        setRouterBase(next);
+      }
     });
-  }, []);
+    
+    return unsubscribe;
+  }, [routerBase]);
 
   return (
     <ErrorBoundary>
