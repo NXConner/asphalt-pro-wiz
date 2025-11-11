@@ -124,13 +124,27 @@ function dispatchToSupabase(payload: Record<string, unknown>) {
   try {
     const event = typeof payload.event === "string" ? payload.event : "";
     if (!shouldShipToSupabase(event)) return;
-    void supabase.functions.invoke(OBSERVABILITY_FUNCTION, { body: payload }).catch((error) => {
+    if (!isSupabaseConfigured()) return;
+    
+    void supabase.functions.invoke(OBSERVABILITY_FUNCTION, { body: payload }).catch((error: unknown) => {
+      // Silently ignore CORS errors and network failures in development
+      // These are expected when Supabase functions aren't configured for localhost
       if (isDev()) {
-        console.warn(`${LOG_PREFIX} failed to send observability payload`, error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const isExpectedError = 
+          errorMessage.includes('CORS') ||
+          errorMessage.includes('Failed to fetch') ||
+          errorMessage.includes('NetworkError') ||
+          errorMessage.includes('ERR_FAILED');
+        
+        if (!isExpectedError) {
+          console.warn(`${LOG_PREFIX} failed to send observability payload`, error);
+        }
       }
     });
   } catch (error) {
-    if (isDev()) {
+    // Silently ignore errors in development (expected when services aren't configured)
+    if (!isDev()) {
       console.warn(`${LOG_PREFIX} dispatchToSupabase error`, error);
     }
   }
@@ -181,10 +195,23 @@ export function logEvent(
       console.log(`${LOG_PREFIX} ${event}`, payload);
     }
 
+    // Only try beacon if URL is configured and not pointing to localhost (which may not be running)
     const beaconUrl = (import.meta as any)?.env?.VITE_LOG_BEACON_URL;
     if (beaconUrl && typeof navigator !== "undefined" && "sendBeacon" in navigator) {
-      const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
-      navigator.sendBeacon(beaconUrl as string, blob);
+      const url = beaconUrl as string;
+      // Skip localhost beacon URLs in development (expected to fail if server isn't running)
+      const isLocalhost = url.includes('localhost') || url.includes('127.0.0.1');
+      if (!isLocalhost || !isDev()) {
+        try {
+          const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+          navigator.sendBeacon(url, blob);
+        } catch (error) {
+          // Silently ignore beacon errors (expected when server isn't running)
+          if (!isDev()) {
+            console.warn(`${LOG_PREFIX} beacon send failed`, error);
+          }
+        }
+      }
     }
 
     dispatchToSupabase(payload);

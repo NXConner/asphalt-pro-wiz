@@ -114,9 +114,33 @@ export function FeatureFlagProvider({ children }: { children: ReactNode }) {
             .eq('user_id', user.id),
         ]);
 
+        // Handle 404 errors gracefully (expected when tables don't exist yet)
         const errors = [featureFlagsRes.error, orgFlagsRes.error, userFlagsRes.error].filter(Boolean);
-        if (errors.length > 0) {
-          throw errors[0]!;
+        const non404Errors = errors.filter((err: any) => {
+          const code = err?.code || err?.status || '';
+          return code !== 'PGRST116' && code !== '42P01' && !String(code).includes('404');
+        });
+        
+        if (non404Errors.length > 0) {
+          throw non404Errors[0]!;
+        }
+        
+        // If all errors are 404s, treat as if tables don't exist (use defaults)
+        if (errors.length > 0 && errors.length === [featureFlagsRes.error, orgFlagsRes.error, userFlagsRes.error].filter(Boolean).length) {
+          // All queries returned 404 - tables likely don't exist, use defaults
+          setState((prev) => ({
+            ...prev,
+            isLoading: false,
+            error: null,
+            flags: {},
+          }));
+          // Don't log 404 errors as failures - tables just don't exist yet (expected in development)
+          logFeatureFlagSync('failed', { 
+            userId: user.id, 
+            reason: 'tables_not_found',
+            silent: true, // Suppress console logging for expected failures
+          });
+          return;
         }
 
         const overrides: Partial<Record<FeatureFlag, boolean>> = {};

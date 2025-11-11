@@ -13,7 +13,14 @@ export function MobileOptimizations() {
       try {
         await StatusBar.setStyle({ style: Style.Light });
       } catch (error) {
-        console.log('Status bar not available:', error);
+        // Silently ignore status bar errors on web (expected - plugin not implemented on web)
+        // Only log in development if it's an unexpected error
+        if (process.env.NODE_ENV === 'development') {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          if (!errorMessage.includes('not implemented on web')) {
+            console.debug('Status bar configuration:', error);
+          }
+        }
       }
     };
 

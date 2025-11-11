@@ -51,7 +51,15 @@ export function logFeatureFlagSync(
   phase: 'started' | 'success' | 'failed',
   metadata?: Record<string, unknown>,
 ): void {
-  const level = phase === 'failed' ? 'error' : 'info';
+  // Skip logging if silent flag is set (for expected failures like missing tables)
+  if (metadata?.silent === true) {
+    return;
+  }
+  
+  // Use 'info' level for expected failures (like tables_not_found), 'error' for unexpected
+  const level = phase === 'failed' 
+    ? (metadata?.reason === 'tables_not_found' ? 'info' : 'error')
+    : 'info';
   const event = `${TELEMETRY_NAMESPACE}.remote_sync.${phase}`;
   logEvent(event, metadata, level);
 }
