@@ -4,6 +4,13 @@ import { useEffect } from 'react';
 
 import { useToast } from '@/hooks/use-toast';
 
+function isDev(): boolean {
+  return (
+    (typeof import.meta !== 'undefined' && (import.meta as any)?.env?.MODE === 'development') ||
+    (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development')
+  );
+}
+
 export function MobileOptimizations() {
   const { toast } = useToast();
 
@@ -14,13 +21,7 @@ export function MobileOptimizations() {
         await StatusBar.setStyle({ style: Style.Light });
       } catch (error) {
         // Silently ignore status bar errors on web (expected - plugin not implemented on web)
-        // Only log in development if it's an unexpected error
-        if (process.env.NODE_ENV === 'development') {
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          if (!errorMessage.includes('not implemented on web')) {
-            console.debug('Status bar configuration:', error);
-          }
-        }
+        // The error is expected and doesn't need to be logged
       }
     };
 

@@ -201,15 +201,19 @@ export function logEvent(
       const url = String(beaconUrl).trim();
       if (!url) return; // Skip if empty
       
-      // Skip localhost beacon URLs in development (expected to fail if server isn't running)
-      const isLocalhost = url.includes('localhost') || url.includes('127.0.0.1') || url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1');
+      // Skip localhost beacon URLs when running on localhost (expected to fail if server isn't running)
+      const isLocalhostUrl = url.includes('localhost') || url.includes('127.0.0.1') || url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1');
+      const isRunningOnLocalhost = typeof window !== 'undefined' && 
+        (window.location.hostname === 'localhost' || 
+         window.location.hostname === '127.0.0.1' ||
+         window.location.hostname === '');
       
-      // In development, completely skip localhost beacons to avoid console noise
-      if (isDev() && isLocalhost) {
-        return; // Don't attempt localhost beacons in development
+      // Skip localhost beacons when running on localhost to avoid console noise
+      if (isLocalhostUrl && isRunningOnLocalhost) {
+        return; // Don't attempt localhost beacons when running locally
       }
       
-      // Only attempt beacon for non-localhost URLs or in production
+      // Only attempt beacon for non-localhost URLs or when not running locally
       try {
         const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
         navigator.sendBeacon(url, blob);
