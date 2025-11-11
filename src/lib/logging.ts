@@ -197,31 +197,34 @@ export function logEvent(
 
     // Only try beacon if URL is configured and not pointing to localhost (which may not be running)
     const beaconUrl = (import.meta as any)?.env?.VITE_LOG_BEACON_URL;
-    if (beaconUrl && typeof navigator !== "undefined" && "sendBeacon" in navigator) {
-      const url = String(beaconUrl).trim();
-      if (!url) return; // Skip if empty
-      
-      // Skip ALL localhost beacon URLs - they're not useful in production and cause errors in development
-      // Localhost beacons should only be used in local development with a running server
-      const isLocalhostUrl = url.includes('localhost') || 
-                            url.includes('127.0.0.1') || 
-                            url.startsWith('http://localhost') || 
-                            url.startsWith('http://127.0.0.1') ||
-                            /^https?:\/\/(localhost|127\.0\.0\.1)/.test(url);
-      
-      if (isLocalhostUrl) {
-        return; // Never attempt localhost beacons - they cause connection refused errors
-      }
-      
-      // Only attempt beacon for non-localhost URLs
-      try {
-        const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
-        navigator.sendBeacon(url, blob);
-        // Note: Browser will log network errors in console, but we avoid making unnecessary requests
-      } catch (error) {
-        // Silently ignore beacon errors (expected when server isn't running)
-        // Browser will log network errors, but we won't add to the noise
-      }
+    if (!beaconUrl || typeof navigator === "undefined" || !("sendBeacon" in navigator)) {
+      return; // Skip if no beacon URL or sendBeacon not available
+    }
+    
+    const url = String(beaconUrl).trim();
+    if (!url) return; // Skip if empty
+    
+    // Skip ALL localhost beacon URLs - they're not useful in production and cause errors in development
+    // Localhost beacons should only be used in local development with a running server
+    // Check multiple patterns to catch all localhost variations
+    const normalizedUrl = url.toLowerCase();
+    const isLocalhostUrl = normalizedUrl.includes('localhost') || 
+                          normalizedUrl.includes('127.0.0.1') || 
+                          normalizedUrl.includes('::1') ||
+                          /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])/.test(normalizedUrl);
+    
+    if (isLocalhostUrl) {
+      return; // Never attempt localhost beacons - they cause connection refused errors
+    }
+    
+    // Only attempt beacon for non-localhost URLs
+    try {
+      const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+      navigator.sendBeacon(url, blob);
+      // Note: Browser will log network errors in console, but we avoid making unnecessary requests
+    } catch (error) {
+      // Silently ignore beacon errors (expected when server isn't running)
+      // Browser will log network errors, but we won't add to the noise
     }
 
     dispatchToSupabase(payload);

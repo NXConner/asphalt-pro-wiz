@@ -17,19 +17,18 @@ export function MobileOptimizations() {
   useEffect(() => {
     // Configure status bar - only on native platforms (not web)
     const configureStatusBar = async () => {
-      // Check if we're on a native platform before attempting to use Capacitor plugins
-      const isNative = typeof window !== 'undefined' && 
-        (window as any).Capacitor?.getPlatform() !== 'web';
-      
-      if (!isNative) {
-        // Skip status bar configuration on web - plugin not implemented
-        return;
-      }
-
       try {
+        // Check if we're on a native platform before attempting to use Capacitor plugins
+        const { Capacitor } = await import('@capacitor/core');
+        if (!Capacitor.isNativePlatform()) {
+          // Skip status bar configuration on web - plugin not implemented
+          return;
+        }
+
         await StatusBar.setStyle({ style: Style.Light });
       } catch (error) {
-        // Silently ignore status bar errors (expected on some platforms)
+        // Silently ignore status bar errors (expected on web and some platforms)
+        // If Capacitor import fails or platform check fails, we're likely on web
       }
     };
 
