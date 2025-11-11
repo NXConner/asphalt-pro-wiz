@@ -202,16 +202,24 @@ export function logEvent(
     }
     
     const url = String(beaconUrl).trim();
-    if (!url) return; // Skip if empty
+    if (!url || url === 'undefined' || url === 'null') return; // Skip if empty or invalid
     
     // Skip ALL localhost beacon URLs - they're not useful in production and cause errors in development
     // Localhost beacons should only be used in local development with a running server
-    // Check multiple patterns to catch all localhost variations
-    const normalizedUrl = url.toLowerCase();
-    const isLocalhostUrl = normalizedUrl.includes('localhost') || 
-                          normalizedUrl.includes('127.0.0.1') || 
-                          normalizedUrl.includes('::1') ||
-                          /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])/.test(normalizedUrl);
+    // Check multiple patterns to catch all localhost variations (case-insensitive)
+    const normalizedUrl = url.toLowerCase().trim();
+    
+    // Comprehensive localhost detection
+    const isLocalhostUrl = 
+      normalizedUrl.includes('localhost') || 
+      normalizedUrl.includes('127.0.0.1') || 
+      normalizedUrl.includes('::1') ||
+      normalizedUrl.includes('[::1]') ||
+      normalizedUrl.startsWith('http://localhost') ||
+      normalizedUrl.startsWith('http://127.0.0.1') ||
+      normalizedUrl.startsWith('https://localhost') ||
+      normalizedUrl.startsWith('https://127.0.0.1') ||
+      /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\]|::1)(:|\/|$)/.test(normalizedUrl);
     
     if (isLocalhostUrl) {
       return; // Never attempt localhost beacons - they cause connection refused errors
@@ -220,8 +228,11 @@ export function logEvent(
     // Only attempt beacon for non-localhost URLs
     try {
       const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
-      navigator.sendBeacon(url, blob);
-      // Note: Browser will log network errors in console, but we avoid making unnecessary requests
+      const sent = navigator.sendBeacon(url, blob);
+      // sendBeacon returns false if it couldn't queue the request, but we can't prevent browser console errors
+      if (!sent && isDev()) {
+        // Beacon was rejected - likely CORS or network issue, but don't log to avoid noise
+      }
     } catch (error) {
       // Silently ignore beacon errors (expected when server isn't running)
       // Browser will log network errors, but we won't add to the noise
