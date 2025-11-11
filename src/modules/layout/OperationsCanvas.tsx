@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 
 import type { CanvasWallpaper } from './wallpapers';
 
@@ -16,7 +16,7 @@ interface OperationsCanvasProps {
   hudOverlay?: ReactNode;
 }
 
-export function OperationsCanvas({
+const OperationsCanvasComponent = ({
   wallpaper,
   header,
   missionControl,
@@ -25,7 +25,7 @@ export function OperationsCanvas({
   engagementHub,
   footer,
   hudOverlay,
-}: OperationsCanvasProps) {
+}: OperationsCanvasProps) => {
   return (
     <div
       className="relative min-h-screen w-full overflow-hidden text-slate-50"
@@ -45,19 +45,21 @@ export function OperationsCanvas({
       />
       <CanvasGrid density={80} className="opacity-[var(--hud-grid-opacity)]" />
       {hudOverlay}
-      <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col gap-6 px-4 pb-12 pt-12 sm:px-8 lg:px-10">
+      <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col gap-4 px-4 pb-8 pt-8 sm:px-6 sm:gap-5 sm:pb-10 sm:pt-10 lg:px-8 lg:gap-6 lg:pb-12 lg:pt-12">
         {/* Hidden h1 for SEO and accessibility */}
         <h1 className="sr-only">Pavement Performance Suite - Asphalt Maintenance Estimating</h1>
         {header}
-        <main className="grid grid-cols-1 gap-5 xl:grid-cols-12 xl:gap-6">
-          {/* Mission Control - First and full width on mobile, then left column */}
-          <div className="xl:col-span-12">
+        <main className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-5 xl:gap-6">
+          {/* Mission Control - First and full width, optimized for performance */}
+          <div className="lg:col-span-12">
             {missionControl}
           </div>
-          <div className="flex flex-col gap-5 xl:col-span-7">
+          {/* Left column - Estimator Studio */}
+          <div className="flex flex-col gap-4 lg:col-span-7 xl:col-span-7">
             {estimatorStudio}
           </div>
-          <div className="flex flex-col gap-5 xl:col-span-5">
+          {/* Right column - Insight Tower and Engagement Hub */}
+          <div className="flex flex-col gap-4 lg:col-span-5 xl:col-span-5">
             {insightTower}
             {engagementHub}
           </div>
@@ -66,4 +68,6 @@ export function OperationsCanvas({
       </div>
     </div>
   );
-}
+};
+
+export const OperationsCanvas = memo(OperationsCanvasComponent);

@@ -45,9 +45,9 @@ export const MissionControlPanel = memo(function MissionControlPanel({ estimator
         </span>
       }
     >
-      <section className="grid gap-4 lg:grid-cols-3">
-        <div className="space-y-3 lg:col-span-2">
-          <div className="grid gap-3 sm:grid-cols-2">
+      <section className="grid gap-3 lg:grid-cols-3 lg:gap-4">
+        <div className="space-y-2 lg:col-span-2 lg:space-y-3">
+          <div className="grid gap-2 sm:grid-cols-2 sm:gap-3">
             <fieldset>
               <Label
                 htmlFor="jobName"
@@ -79,7 +79,7 @@ export const MissionControlPanel = memo(function MissionControlPanel({ estimator
               />
             </fieldset>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-2 sm:grid-cols-3 sm:gap-3">
             <fieldset>
               <Label
                 htmlFor="jobStatus"
@@ -142,7 +142,7 @@ export const MissionControlPanel = memo(function MissionControlPanel({ estimator
             </fieldset>
           </div>
         </div>
-        <aside className="grid gap-3">
+        <aside className="grid gap-2 lg:gap-3">
           <DataStat
             icon={<Building2 className="h-4 w-4" />}
             label="Business Home Base"
@@ -165,10 +165,10 @@ export const MissionControlPanel = memo(function MissionControlPanel({ estimator
       </section>
       <Suspense
         fallback={
-          <Skeleton className="h-[420px] w-full rounded-3xl border border-white/10 bg-white/10" />
+          <Skeleton className="h-[360px] w-full rounded-2xl border border-white/10 bg-white/10 sm:h-[400px] lg:h-[420px]" />
         }
       >
-        <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-xl">
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-xl lg:rounded-3xl">
           <MapComponent
             customerAddress={job.address}
             onAddressUpdate={job.handleAddressUpdate}
@@ -181,7 +181,7 @@ export const MissionControlPanel = memo(function MissionControlPanel({ estimator
       <Suspense fallback={null}>
         <DivisionMapInterface />
       </Suspense>
-      <footer className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+      <footer className="grid gap-2 sm:grid-cols-2 sm:gap-3 md:grid-cols-3">
         <InfoChip icon={<MapPin className="h-4 w-4" />} label="Site Coordinates">
           {job.coords
             ? `${job.coords[0].toFixed(5)}, ${job.coords[1].toFixed(5)}`

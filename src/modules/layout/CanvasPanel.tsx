@@ -1,5 +1,5 @@
 import { Maximize2, Minimize2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { ParticleBackground, ScanOverlay } from '@/components/hud';
@@ -62,7 +62,7 @@ interface CanvasPanelProps {
   onCollapseChange?: (collapsed: boolean) => void;
 }
 
-export function CanvasPanel({
+const CanvasPanelComponent = ({
   title,
   subtitle,
   eyebrow,
@@ -76,7 +76,7 @@ export function CanvasPanel({
   defaultCollapsed = false,
   collapseId,
   onCollapseChange,
-}: CanvasPanelProps) {
+}: CanvasPanelProps) => {
   const collapseKey = useMemo(() => {
     if (!collapsible) return null;
     if (collapseId) return `pps:panel:${collapseId}`;
@@ -144,8 +144,8 @@ export function CanvasPanel({
             className="pointer-events-none absolute inset-0 opacity-35 mix-blend-screen"
           />
           <ScanOverlay className="pointer-events-none absolute inset-0 opacity-25" color="rgba(255,128,0,0.18)" />
-          <div className="relative z-10 flex flex-col gap-6 p-6 sm:p-9">
-            <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+          <div className="relative z-10 flex flex-col gap-4 p-4 sm:gap-5 sm:p-6 lg:gap-6 lg:p-8">
+            <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4 lg:gap-6">
               <div className="flex-1 space-y-1">
                 {eyebrow ? (
                   <span className="font-semibold uppercase tracking-[0.5em] text-[0.65rem] text-slate-200/60">
@@ -193,7 +193,7 @@ export function CanvasPanel({
               id={bodyId}
               hidden={collapsible && collapsed}
               aria-hidden={collapsible && collapsed}
-              className="space-y-6 text-sm leading-relaxed text-slate-100/90 sm:text-base"
+              className="space-y-4 text-sm leading-relaxed text-slate-100/90 sm:space-y-5 sm:text-base"
             >
               {collapsible && collapsed ? null : children}
             </div>
@@ -201,4 +201,6 @@ export function CanvasPanel({
         </TacticalOverlay>
       </section>
     );
-}
+};
+
+export const CanvasPanel = memo(CanvasPanelComponent);
