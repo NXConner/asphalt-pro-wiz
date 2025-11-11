@@ -9,7 +9,7 @@ interface ParticleBackgroundProps {
   densityMultiplier?: number;
 }
 
-const MAX_PARTICLES = 64;
+const MAX_PARTICLES = 32; // Reduced from 64 for better performance
 
 const ParticleBackgroundComponent = ({
   preset = 'ember',
@@ -18,8 +18,12 @@ const ParticleBackgroundComponent = ({
 }: ParticleBackgroundProps) => {
   const { color, secondary, speed, density } = PARTICLE_PRESETS[preset];
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const lastFrameTimeRef = useRef<number>(0);
+  const isVisibleRef = useRef(true);
+  
   const particles = useMemo(() => {
-    const count = Math.min(MAX_PARTICLES, Math.round(density * densityMultiplier));
+    const count = Math.min(MAX_PARTICLES, Math.round(density * densityMultiplier * 0.5)); // Reduced density
     return Array.from({ length: count }).map(() => ({
       x: Math.random(),
       y: Math.random(),
@@ -32,14 +36,31 @@ const ParticleBackgroundComponent = ({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true }); // Optimize context
     if (!ctx) return;
 
-    let animationFrame: number;
+    // Throttle animation to ~30fps for better performance
+    const TARGET_FPS = 30;
+    const FRAME_INTERVAL = 1000 / TARGET_FPS;
 
-    const render = () => {
+    const render = (currentTime: number) => {
+      // Throttle frames
+      if (currentTime - lastFrameTimeRef.current < FRAME_INTERVAL) {
+        animationFrameRef.current = requestAnimationFrame(render);
+        return;
+      }
+      lastFrameTimeRef.current = currentTime;
+
+      // Pause animation when tab is not visible
+      if (document.hidden) {
+        animationFrameRef.current = requestAnimationFrame(render);
+        return;
+      }
+
       const { width, height } = canvas;
       ctx.clearRect(0, 0, width, height);
+      
+      // Batch operations for better performance
       particles.forEach((particle) => {
         particle.y -= particle.v;
         if (particle.y < -0.1) {
@@ -61,7 +82,7 @@ const ParticleBackgroundComponent = ({
         ctx.arc(particle.x * width, particle.y * height, particle.r * 8, 0, Math.PI * 2);
         ctx.fill();
       });
-      animationFrame = requestAnimationFrame(render);
+      animationFrameRef.current = requestAnimationFrame(render);
     };
 
     const resize = () => {
@@ -72,12 +93,30 @@ const ParticleBackgroundComponent = ({
     };
 
     resize();
-    render();
+    animationFrameRef.current = requestAnimationFrame(render);
 
-    window.addEventListener('resize', resize);
+    // Throttle resize handler
+    let resizeTimeout: NodeJS.Timeout;
+    const throttledResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(resize, 150);
+    };
+
+    window.addEventListener('resize', throttledResize);
+    
+    // Pause when tab is hidden
+    const handleVisibilityChange = () => {
+      isVisibleRef.current = !document.hidden;
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
     return () => {
-      window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animationFrame);
+      window.removeEventListener('resize', throttledResize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearTimeout(resizeTimeout);
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
     };
   }, [color, secondary, particles]);
 

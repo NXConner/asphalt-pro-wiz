@@ -1,5 +1,5 @@
 import { Shield } from 'lucide-react';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, memo, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ComplianceResources, type ComplianceTopic } from '@/components/ComplianceResources';
 import { HudWrapper } from '@/components/hud/HudWrapper';
@@ -7,14 +7,16 @@ import { type TacticalHudOverlayProps } from '@/components/hud/TacticalHudOverla
 import { KeyboardShortcutsModal } from '@/components/KeyboardShortcutsModal';
 import { Button } from '@/components/ui/button';
 import { EngagementHubPanel } from '@/modules/engagement/EngagementHubPanel';
-import { EstimatorStudio } from '@/modules/estimate/EstimatorStudio';
 import { useEstimatorState } from '@/modules/estimate/useEstimatorState';
-import { InsightTowerPanel } from '@/modules/insights/InsightTowerPanel';
 import { CanvasPanel } from '@/modules/layout/CanvasPanel';
 import { OperationsCanvas } from '@/modules/layout/OperationsCanvas';
 import { OperationsHeader } from '@/modules/layout/OperationsHeader';
 import { DEFAULT_WALLPAPER, getNextWallpaper, getWallpaperById } from '@/modules/layout/wallpapers';
 import { MissionControlPanel } from '@/modules/mission-control/MissionControlPanel';
+
+// Lazy load heavy components for better initial load performance
+const EstimatorStudio = lazy(() => import('@/modules/estimate/EstimatorStudio').then(m => ({ default: m.EstimatorStudio })));
+const InsightTowerPanel = lazy(() => import('@/modules/insights/InsightTowerPanel').then(m => ({ default: m.InsightTowerPanel })));
 
 /**
  * Main Index page component - Optimized with memo and callbacks
@@ -141,8 +143,13 @@ const Index = memo(() => {
 
   const [lastUpdatedIso, setLastUpdatedIso] = useState(() => new Date().toISOString());
 
+  // Debounce lastUpdatedIso updates to reduce re-renders
   useEffect(() => {
-    setLastUpdatedIso(new Date().toISOString());
+    const timeoutId = setTimeout(() => {
+      setLastUpdatedIso(new Date().toISOString());
+    }, 100); // Small delay to batch updates
+    
+    return () => clearTimeout(timeoutId);
   }, [
     estimator.job.mapRefreshKey,
     estimator.calculation.costs?.total,
@@ -180,8 +187,16 @@ const Index = memo(() => {
             />
           }
             missionControl={<MissionControlPanel estimator={estimator} />}
-            estimatorStudio={<EstimatorStudio estimator={estimator} />}
-            insightTower={<InsightTowerPanel estimator={estimator} />}
+            estimatorStudio={
+              <Suspense fallback={<div className="h-96 animate-pulse rounded-3xl bg-white/5" />}>
+                <EstimatorStudio estimator={estimator} />
+              </Suspense>
+            }
+            insightTower={
+              <Suspense fallback={<div className="h-64 animate-pulse rounded-3xl bg-white/5" />}>
+                <InsightTowerPanel estimator={estimator} />
+              </Suspense>
+            }
             engagementHub={
               <div className="space-y-5">
                 <EngagementHubPanel estimator={estimator} />
