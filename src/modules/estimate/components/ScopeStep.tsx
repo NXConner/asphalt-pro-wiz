@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { VirtualList } from '@/components/VirtualList/VirtualList';
 import { generateChat } from '@/lib/gemini';
 import type { EstimatorState } from '@/modules/estimate/useEstimatorState';
 
@@ -25,6 +26,8 @@ interface ScopeStepProps {
   featureFlags: EstimatorState['featureFlags'];
   onNext: () => void;
 }
+
+const AREA_ROW_HEIGHT = 168;
 
 export function ScopeStep({ areas, options, featureFlags, onNext }: ScopeStepProps) {
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
@@ -132,51 +135,78 @@ export function ScopeStep({ areas, options, featureFlags, onNext }: ScopeStepPro
           </div>
         </header>
 
-        <div className="grid gap-3">
-          <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="flex-1 min-w-[180px]">
-              <Label htmlFor="manualArea" className="text-xs uppercase tracking-widest text-slate-200/60">
-                Quick Manual Area (sq ft)
-              </Label>
-              <Input
-                id="manualArea"
-                type="number"
-                value={areas.manualInput}
-                onChange={(event) => areas.setManualInput(event.target.value)}
-                placeholder="e.g. 1450"
-                className="mt-1 bg-white/10 text-slate-50"
-                aria-label="Enter area in square feet"
-              />
-            </div>
-            <Button
-              type="button"
-              className="h-10 border border-white/20 bg-orange-500/80 px-4 font-semibold text-white hover:bg-orange-500"
-              onClick={areas.addManual}
-              aria-label="Add area segment"
-            >
-              Add Segment
-            </Button>
-          </div>
-
-          {areas.items.length > 0 ? (
-            <div className="grid gap-3">
-              {areas.items.map((item) => (
-                <AreaSection
-                  key={item.id}
-                  shape={item.shape}
-                  initialArea={item.area}
-                  onChange={(value) => areas.update(item.id, value)}
-                  onRemove={() => areas.remove(item.id)}
+          <div className="grid gap-3">
+            <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div className="min-w-[180px] flex-1">
+                <Label
+                  htmlFor="manualArea"
+                  className="text-xs uppercase tracking-widest text-slate-200/60"
+                >
+                  Quick Manual Area (sq ft)
+                </Label>
+                <Input
+                  id="manualArea"
+                  type="number"
+                  value={areas.manualInput}
+                  onChange={(event) => areas.setManualInput(event.target.value)}
+                  placeholder="e.g. 1450"
+                  className="mt-1 bg-white/10 text-slate-50"
+                  aria-label="Enter area in square feet"
                 />
-              ))}
+              </div>
+              <Button
+                type="button"
+                className="h-10 border border-white/20 bg-orange-500/80 px-4 font-semibold text-white hover:bg-orange-500"
+                onClick={areas.addManual}
+                aria-label="Add area segment"
+              >
+                Add Segment
+              </Button>
             </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-white/20 bg-white/5 p-6 text-sm text-slate-200/80">
-              No segments yet. Use the quick add controls above or trace directly on the Mission
-              Control map.
-            </div>
-          )}
-        </div>
+
+            {areas.items.length > 0 ? (
+              <>
+                {areas.items.length > 8 ? (
+                  <div className="rounded-2xl border border-white/15 bg-white/5 p-2">
+                    <VirtualList
+                      items={areas.items}
+                      itemHeight={AREA_ROW_HEIGHT}
+                      containerHeight={Math.min(areas.items.length, 6) * AREA_ROW_HEIGHT}
+                      overscan={4}
+                      className="max-h-[520px]"
+                      renderItem={(item) => (
+                        <div className="px-1 py-1.5">
+                          <AreaSection
+                            shape={item.shape}
+                            initialArea={item.area}
+                            onChange={(value) => areas.update(item.id, value)}
+                            onRemove={() => areas.remove(item.id)}
+                          />
+                        </div>
+                      )}
+                    />
+                  </div>
+                ) : (
+                  <div className="grid gap-3">
+                    {areas.items.map((item) => (
+                      <AreaSection
+                        key={item.id}
+                        shape={item.shape}
+                        initialArea={item.area}
+                        onChange={(value) => areas.update(item.id, value)}
+                        onRemove={() => areas.remove(item.id)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-white/20 bg-white/5 p-6 text-sm text-slate-200/80">
+                No segments yet. Use the quick add controls above or trace directly on the Mission
+                Control map.
+              </div>
+            )}
+          </div>
 
           {aiSuggestion ? (
             <Alert className="border-purple-500/60 bg-purple-500/10 text-slate-100">

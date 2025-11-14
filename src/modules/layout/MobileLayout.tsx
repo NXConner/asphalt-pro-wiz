@@ -1,9 +1,9 @@
-import { memo, useState, type ReactNode } from 'react';
 import { DollarSign, Layers } from 'lucide-react';
+import { memo, useState, type ReactNode } from 'react';
 
+import { cn } from '@/lib/utils';
 import { BottomSheet } from '@/modules/navigation/BottomSheet';
 import { MobileNav } from '@/modules/navigation/MobileNav';
-import { cn } from '@/lib/utils';
 
 interface MobileLayoutProps {
   header: ReactNode;

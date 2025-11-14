@@ -1,6 +1,7 @@
-import { useRef, CSSProperties, memo } from 'react';
+import { CSSProperties, memo } from 'react';
 
 import { useVirtualScroll } from '@/hooks/useVirtualScroll';
+import { cn } from '@/lib/utils';
 
 interface VirtualListProps<T> {
   items: T[];
@@ -23,8 +24,7 @@ function VirtualListInner<T>({
   overscan = 3,
   className = '',
 }: VirtualListProps<T>) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { virtualItems, totalHeight } = useVirtualScroll(items.length, {
+  const { virtualItems, totalHeight, scrollRef } = useVirtualScroll(items.length, {
     itemHeight,
     containerHeight,
     overscan,
@@ -32,8 +32,10 @@ function VirtualListInner<T>({
 
   return (
     <div
-      ref={containerRef}
-      className={`relative overflow-auto ${className}`}
+      ref={(node) => {
+        scrollRef.current = node;
+      }}
+      className={cn('relative overflow-auto', className)}
       style={{ height: containerHeight }}
     >
       <div style={{ height: totalHeight, position: 'relative' }}>

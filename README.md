@@ -112,7 +112,7 @@ npm run seed
 - Never commit real secrets. Use Supabase Edge Secrets or your chosen secret manager for runtime credentials.
 - Run `npm run check:env` locally (non-strict) and `npm run check:env -- --strict` in CI to gate deployments; failures block Lovable preview regressions (e.g., absolute `VITE_BASE_PATH`).
 - Keep `VITE_BASE_PATH` set to `./` for production builds to ensure Lovable previews resolve nested asset paths. Let Lovable auto-detect `VITE_LOVABLE_BASE_PATH`.
-- Supabase bootstrapping, RLS, and seed workflows are documented in `docs/UNIFIED_SUPABASE_GUIDE.md`.
+  - Supabase bootstrapping, RLS, and seed workflows are documented in `docs/UNIFIED_SUPABASE_GUIDE.md` and the detailed migration/seed map in `docs/SUPABASE_SCHEMA.md`.
 
 ---
 
@@ -220,6 +220,8 @@ docker compose down -v
 
 > **Quality gate:** The Docker build stage runs `npm run lint`, `npm run typecheck`, and `npm run test:unit -- --run` before bundling, failing fast on regressions.
 
+> Need a hot-reload setup instead? Pair `docker-compose.yml` with `docker-compose.dev.yml` (see `docs/CONTAINERIZATION.md`) to spin up the Vite dev server alongside Postgres + Otel in one command.
+
 ### Android
 
 ```bash
@@ -273,10 +275,12 @@ Full roadmap and phased analysis live in `docs/PHASE_1_ANALYSIS.md`, `docs/PHASE
 ## Reference Docs
 
 - Supabase & security: `docs/UNIFIED_SUPABASE_GUIDE.md`, `docs/SECURITY_REMEDIATION_GUIDE.md`, `docs/RLS_SECURITY.md`
+- Supabase schema tooling: `docs/SUPABASE_SCHEMA.md`, `docs/ADMIN_SETUP.md`
 - Mission scheduler & UX: `docs/DIVISION_UI_TRANSFORMATION.md`, `docs/MOBILE_GUIDE.md`
 - Testing & quality: `docs/TESTING_GUIDE.md`, `scripts/load/README.md`
 - API & integrations: `docs/API_REFERENCE.md`, `docs/INTEGRATIONS_GUIDE.md`
-- Deployment & operations: `docs/DEPLOYMENT.md`, `docs/PRODUCTION_READINESS.md`
+- Deployment & operations: `docs/DEPLOYMENT.md`, `docs/PRODUCTION_READINESS.md`, `docs/CONTAINERIZATION.md`
+- UI foundations: `docs/DESIGN_SYSTEM.md`
 
 ---
 

@@ -15,8 +15,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { JobStatus } from '@/lib/idb';
 import type { EstimatorState } from '@/modules/estimate/useEstimatorState';
 import { CanvasPanel } from '@/modules/layout/CanvasPanel';
+import { MissionMapIntel } from '@/modules/mission-control/MissionMapIntel';
 const MapComponent = lazy(() => import('@/components/Map'));
-const DivisionMapInterface = lazy(() => import('@/modules/mission-control/division-map/DivisionMapInterface').then(m => ({ default: m.DivisionMapInterface })));
+const DivisionMapInterface = lazy(() => import('@/modules/mission-control/division-map/DivisionMapInterface').then((m) => ({ default: m.DivisionMapInterface })));
 
 const JOB_STATUS_OPTIONS: { value: JobStatus; label: string }[] = [
   { value: 'need_estimate', label: 'Needs Estimate' },
@@ -181,6 +182,9 @@ export const MissionControlPanel = memo(function MissionControlPanel({ estimator
       <Suspense fallback={null}>
         <DivisionMapInterface />
       </Suspense>
+        {estimator.featureFlags.isEnabled('tacticalMapV2') ? (
+          <MissionMapIntel estimator={estimator} />
+        ) : null}
       <footer className="grid gap-2 sm:grid-cols-2 sm:gap-3 md:grid-cols-3">
         <InfoChip icon={<MapPin className="h-4 w-4" />} label="Site Coordinates">
           {job.coords

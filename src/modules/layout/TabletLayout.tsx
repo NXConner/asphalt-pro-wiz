@@ -1,7 +1,8 @@
 import { memo, type ReactNode } from 'react';
 
-import { PriorityCard } from '@/components/ui/priority-card';
 import type { CanvasWallpaper } from './wallpapers';
+
+import { PriorityCard } from '@/components/ui/priority-card';
 
 interface TabletLayoutProps {
   wallpaper: CanvasWallpaper;

@@ -13,6 +13,7 @@ import { ThemeWallpaperSynth } from '@/components/theme/ThemeWallpaperSynth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useImageOptimization } from '@/hooks/useImageOptimization';
 import { DESIGN_SYSTEM, groupThemePresets } from '@/lib/designSystem';
 import type { ThemeName } from '@/lib/theme';
 import { useWallpaperLibrary } from '@/modules/layout/wallpaperLibrary';
@@ -56,16 +57,17 @@ export function ThemeCustomizer() {
     loadHudProfile,
     deleteHudProfile,
     setHudGridSnap,
-    setHudGridSize,
-    setHudCollisionDetection,
-    setHudAnimationPreset,
-    setHudGestureSensitivity,
-    setHudMultiMonitorStrategy,
-    setHudKeyboardNavigation,
-    randomizePalette,
-    reset,
-  } = useTheme();
-  const { builtin, custom, addWallpaper, removeWallpaper, getById } = useWallpaperLibrary();
+      setHudGridSize,
+      setHudCollisionDetection,
+      setHudAnimationPreset,
+      setHudGestureSensitivity,
+      setHudMultiMonitorStrategy,
+      setHudKeyboardNavigation,
+      randomizePalette,
+      reset,
+    } = useTheme();
+    const { optimizeImage } = useImageOptimization();
+    const { builtin, custom, addWallpaper, removeWallpaper, getById } = useWallpaperLibrary();
 
   const themeGroups = useMemo(() => groupThemePresets(), []);
 
@@ -113,32 +115,38 @@ export function ThemeCustomizer() {
     [setWallpaper],
   );
 
-  const handleWallpaperUpload = useCallback(
-    async ({
-      file,
-      name,
-      tone,
-    }: {
-      file: File;
-      name?: string;
-      tone: Parameters<typeof addWallpaper>[0]['accentTone'];
-    }) => {
-      const dataUrl = await toDataUrl(file);
-      const asset = addWallpaper({
-        name: name ?? file.name,
-        dataUrl,
-        accentTone: tone,
-        description: 'Custom wallpaper upload',
-      });
-      handleWallpaperSelect({
-        id: asset.id,
-        source: asset.source,
-        name: asset.name,
-        description: asset.description,
-      });
-    },
-    [addWallpaper, handleWallpaperSelect],
-  );
+    const handleWallpaperUpload = useCallback(
+      async ({
+        file,
+        name,
+        tone,
+      }: {
+        file: File;
+        name?: string;
+        tone: Parameters<typeof addWallpaper>[0]['accentTone'];
+      }) => {
+        const optimizedBlob = await optimizeImage(file, {
+          maxWidth: 2560,
+          maxHeight: 1440,
+          quality: 0.82,
+          format: 'webp',
+        });
+        const dataUrl = await blobToDataUrl(optimizedBlob);
+        const asset = addWallpaper({
+          name: name ?? file.name,
+          dataUrl,
+          accentTone: tone,
+          description: 'Custom wallpaper upload',
+        });
+        handleWallpaperSelect({
+          id: asset.id,
+          source: asset.source,
+          name: asset.name,
+          description: asset.description,
+        });
+      },
+      [addWallpaper, handleWallpaperSelect, optimizeImage],
+    );
 
   const handleWallpaperRemove = useCallback(
     (id: string) => {
@@ -375,11 +383,11 @@ export function ThemeCustomizer() {
   );
 }
 
-async function toDataUrl(file: File): Promise<string> {
+async function blobToDataUrl(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = (event) => reject(event);
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(blob);
   });
 }
