@@ -20,7 +20,6 @@ import type { CanvasWallpaper } from './wallpapers';
 
 import { RealtimeNotifications } from '@/components/RealtimeNotifications';
 import { TelemetrySignal } from '@/components/telemetry';
-import { ThemeCommandCenter } from '@/components/ThemeCommandCenter';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -320,7 +319,6 @@ export const OperationsHeader = memo(function OperationsHeader({
             </>
           )}
         </Button>
-        <ThemeCommandCenter />
         <UserPresence />
         <RealtimeNotifications />
         <ThemeToggle />

@@ -1,11 +1,13 @@
 import { memo, type ReactNode } from 'react';
 
+import type { CommandLayoutMode } from './layoutModes';
 import type { CanvasWallpaper } from './wallpapers';
 
 import { PriorityCard } from '@/components/ui/priority-card';
 
 interface TabletLayoutProps {
   wallpaper: CanvasWallpaper;
+  layoutMode: CommandLayoutMode;
   header: ReactNode;
   missionControl: ReactNode;
   estimator: ReactNode;
@@ -15,12 +17,70 @@ interface TabletLayoutProps {
 
 export const TabletLayout = memo(function TabletLayout({
   wallpaper,
+  layoutMode,
   header,
   missionControl,
   estimator,
   insights,
   engagement,
 }: TabletLayoutProps) {
+  const renderLayout = () => {
+    if (layoutMode === 'timeline') {
+      return (
+        <>
+          <PriorityCard title="Mission Control" priority="high">
+            {missionControl}
+          </PriorityCard>
+          <PriorityCard title="Insight Tower" priority="medium">
+            {insights}
+          </PriorityCard>
+          <PriorityCard title="Estimator Studio" priority="critical">
+            {estimator}
+          </PriorityCard>
+          <PriorityCard title="Engagement Hub" priority="low" collapsible defaultExpanded={false}>
+            {engagement}
+          </PriorityCard>
+        </>
+      );
+    }
+
+    if (layoutMode === 'immersive') {
+      return (
+        <>
+          <div className="rounded-[24px] border border-white/10 bg-black/40 p-1">
+            {missionControl}
+          </div>
+          <PriorityCard title="Estimator Studio" priority="critical">
+            {estimator}
+          </PriorityCard>
+          <PriorityCard title="Insight Tower" priority="medium">
+            {insights}
+          </PriorityCard>
+          <div className="rounded-[24px] border border-white/10 bg-slate-950/60 p-1">
+            {engagement}
+          </div>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <PriorityCard title="Mission Control" priority="high">
+          {missionControl}
+        </PriorityCard>
+        <PriorityCard title="Estimator Studio" priority="critical">
+          {estimator}
+        </PriorityCard>
+        <PriorityCard title="Insight Tower" priority="medium">
+          {insights}
+        </PriorityCard>
+        <PriorityCard title="Engagement Hub" priority="low" collapsible defaultExpanded={false}>
+          {engagement}
+        </PriorityCard>
+      </>
+    );
+  };
+
   return (
     <div
       className="relative min-h-screen w-full overflow-auto text-foreground"
@@ -34,28 +94,7 @@ export const TabletLayout = memo(function TabletLayout({
         {/* Header */}
         <div className="mb-4">{header}</div>
 
-        {/* Stacked Panels with Priority */}
-        <div className="space-y-4">
-          {/* Mission Control - High Priority */}
-          <PriorityCard title="Mission Control" priority="high" collapsible defaultExpanded>
-            {missionControl}
-          </PriorityCard>
-
-          {/* Estimator - Critical Priority */}
-          <PriorityCard title="Estimator Studio" priority="critical">
-            {estimator}
-          </PriorityCard>
-
-          {/* Insights - Medium Priority */}
-          <PriorityCard title="Insight Tower" priority="medium" collapsible defaultExpanded>
-            {insights}
-          </PriorityCard>
-
-          {/* Engagement - Low Priority */}
-          <PriorityCard title="Engagement Hub" priority="low" collapsible defaultExpanded={false}>
-            {engagement}
-          </PriorityCard>
-        </div>
+        <div className="space-y-4">{renderLayout()}</div>
       </div>
     </div>
   );

@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useImageOptimization } from '@/hooks/useImageOptimization';
+import { blobToDataUrl } from '@/lib/blob';
 import { DESIGN_SYSTEM, groupThemePresets } from '@/lib/designSystem';
 import type { ThemeName } from '@/lib/theme';
 import { useWallpaperLibrary } from '@/modules/layout/wallpaperLibrary';
@@ -131,7 +132,7 @@ export function ThemeCustomizer() {
           quality: 0.82,
           format: 'webp',
         });
-        const dataUrl = await blobToDataUrl(optimizedBlob);
+          const dataUrl = await blobToDataUrl(optimizedBlob);
         const asset = addWallpaper({
           name: name ?? file.name,
           dataUrl,
@@ -381,13 +382,4 @@ export function ThemeCustomizer() {
       </CardContent>
     </Card>
   );
-}
-
-async function blobToDataUrl(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (event) => reject(event);
-    reader.readAsDataURL(blob);
-  });
 }
