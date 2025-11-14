@@ -74,8 +74,9 @@ This folder documents how to connect the Pavement Performance Suite to a product
 
    ```bash
    export $(aws secretsmanager get-secret-value \
-     --secret-id pavement/performance-suite/prod \
-     --query SecretString --output text | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
+      --secret-id pavement/performance-suite/prod \
+      --query SecretString --output text \
+      | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
    ```
 
 3. Start the application (`npm run dev`, Docker container, etc.) using the exported environment variables.
@@ -84,4 +85,5 @@ This folder documents how to connect the Pavement Performance Suite to a product
 
 - Never commit real secrets--only templates and command snippets live in this directory.
 - Ensure CI runners call `npm run security:scan` after secrets are mounted to catch dependency vulnerabilities.
+- Set `SECRET_PROVIDER` to match the active backend (`env`, `doppler`, `vault`, `aws-secrets-manager`) so `src/config/secrets.ts` can warn when required keys are missing.
 - Rotate credentials regularly and update the secret store; the app reads values at runtime, so restarts pick up new secrets automatically.
