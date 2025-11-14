@@ -278,7 +278,8 @@ Full roadmap and phased analysis live in `docs/PHASE_1_ANALYSIS.md`, `docs/PHASE
 - Mission scheduler & UX: `docs/DIVISION_UI_TRANSFORMATION.md`, `docs/MOBILE_GUIDE.md`
 - Testing & quality: `docs/TESTING_GUIDE.md`, `scripts/load/README.md`
 - API & integrations: `docs/API_REFERENCE.md`, `docs/INTEGRATIONS_GUIDE.md`
-- Deployment & operations: `docs/DEPLOYMENT.md`, `docs/PRODUCTION_READINESS.md`
+- Deployment & operations: `docs/DEPLOYMENT.md`, `docs/PRODUCTION_READINESS.md`, `docs/CONTAINERIZATION.md`
+- UI foundations: `docs/DESIGN_SYSTEM.md`
 
 ---
 
