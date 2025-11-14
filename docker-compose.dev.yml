@@ -1,0 +1,67 @@
+version: "3.9"
+
+x-dev-env: &dev_env
+  APP_ENV: ${APP_ENV:-development}
+  NODE_ENV: development
+  VITE_ENVIRONMENT: ${APP_ENV:-development}
+  VITE_BASE_PATH: ${VITE_BASE_PATH:-./}
+  VITE_BASE_NAME: ${VITE_BASE_NAME:-/}
+  VITE_BASE_URL: http://localhost:${DEV_SERVER_PORT:-5173}
+  VITE_APP_VERSION: ${VITE_APP_VERSION:-dev-shell}
+  VITE_ENABLE_WEB_VITALS: ${VITE_ENABLE_WEB_VITALS:-1}
+  VITE_ENABLE_FEATURE_TELEMETRY: ${VITE_ENABLE_FEATURE_TELEMETRY:-1}
+  DATABASE_URL: ${DATABASE_URL:-postgres://postgres:postgres@db:5432/pavement}
+  VITE_FLAG_COMMANDCENTER: ${VITE_FLAG_COMMANDCENTER:-1}
+  VITE_FLAG_PWA: ${VITE_FLAG_PWA:-1}
+  VITE_FLAG_AIASSISTANT: ${VITE_FLAG_AIASSISTANT:-1}
+  VITE_FLAG_IMAGEAREAANALYZER: ${VITE_FLAG_IMAGEAREAANALYZER:-1}
+
+services:
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: tooling
+      args:
+        NODE_VERSION: ${NODE_VERSION:-22-alpine}
+    container_name: pavement-web-dev
+    command: >
+      sh -c "npm install &&
+             npm run dev -- --host 0.0.0.0 --port ${DEV_SERVER_PORT:-5173} --strict-port"
+    working_dir: /workspace
+    environment:
+      <<: *dev_env
+    env_file:
+      - .env
+    ports:
+      - "${DEV_SERVER_PORT:-5173}:5173"
+    volumes:
+      - .:/workspace
+      - dev_node_modules:/workspace/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+      observability:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - pavement
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /workspace/src
+        - action: sync
+          path: ./public
+          target: /workspace/public
+        - action: rebuild
+          path: package-lock.json
+        - action: rebuild
+          path: package.json
+
+volumes:
+  dev_node_modules:
+
+networks:
+  pavement:
+    driver: bridge

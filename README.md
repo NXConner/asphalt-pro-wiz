@@ -220,6 +220,8 @@ docker compose down -v
 
 > **Quality gate:** The Docker build stage runs `npm run lint`, `npm run typecheck`, and `npm run test:unit -- --run` before bundling, failing fast on regressions.
 
+> Need a hot-reload setup instead? Pair `docker-compose.yml` with `docker-compose.dev.yml` (see `docs/CONTAINERIZATION.md`) to spin up the Vite dev server alongside Postgres + Otel in one command.
+
 ### Android
 
 ```bash
