@@ -1,0 +1,80 @@
+import { memo, type ReactNode } from 'react';
+
+import { PriorityCard } from '@/components/ui/priority-card';
+import type { CanvasWallpaper } from './wallpapers';
+
+import { CanvasGrid, ParticleBackground } from '@/components/hud';
+
+interface DesktopLayoutProps {
+  wallpaper: CanvasWallpaper;
+  header: ReactNode;
+  missionControl: ReactNode;
+  estimator: ReactNode;
+  insights: ReactNode;
+  engagement: ReactNode;
+  hudOverlay?: ReactNode;
+}
+
+export const DesktopLayout = memo(function DesktopLayout({
+  wallpaper,
+  header,
+  missionControl,
+  estimator,
+  insights,
+  engagement,
+  hudOverlay,
+}: DesktopLayoutProps) {
+  return (
+    <div
+      className="relative min-h-screen w-full overflow-hidden text-slate-50"
+      style={{ background: wallpaper.gradient }}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(15,23,42,0.78)_0%,_rgba(2,6,23,0.94)_60%)]" />
+      <div
+        className="absolute inset-0 bg-repeat opacity-20"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='720' height='720' viewBox='0 0 720 720' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd' opacity='0.12'%3E%3Cpath d='M0 720h720V0H0z'/%3E%3Cpath d='M360 0v720M0 360h720' stroke='%23ffffff' stroke-opacity='0.08' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E")`,
+        }}
+      />
+      <ParticleBackground
+        preset={wallpaper.particlePreset}
+        densityMultiplier={0.5}
+        className="opacity-35 mix-blend-screen"
+      />
+      <CanvasGrid density={80} className="opacity-[var(--hud-grid-opacity)]" />
+      {hudOverlay}
+
+      <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col gap-4 px-4 pb-8 pt-8 sm:px-6 sm:gap-5 sm:pb-10 sm:pt-10 lg:px-8 lg:gap-6 lg:pb-12 lg:pt-12">
+        <h1 className="sr-only">Pavement Performance Suite - Desktop Command Center</h1>
+
+        {header}
+
+        <main className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-5 xl:gap-6">
+          {/* Mission Control - Full Width, High Priority */}
+          <div className="lg:col-span-12">
+            <PriorityCard title="Mission Control" priority="high" collapsible>
+              {missionControl}
+            </PriorityCard>
+          </div>
+
+          {/* Left Column - Estimator (Critical Priority) */}
+          <div className="lg:col-span-7 xl:col-span-7">
+            <PriorityCard title="Estimator Studio" priority="critical">
+              {estimator}
+            </PriorityCard>
+          </div>
+
+          {/* Right Column - Insights & Engagement */}
+          <div className="flex flex-col gap-4 lg:col-span-5 xl:col-span-5 lg:gap-5">
+            <PriorityCard title="Insight Tower" priority="medium" collapsible>
+              {insights}
+            </PriorityCard>
+            <PriorityCard title="Engagement Hub" priority="low" collapsible>
+              {engagement}
+            </PriorityCard>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+});
