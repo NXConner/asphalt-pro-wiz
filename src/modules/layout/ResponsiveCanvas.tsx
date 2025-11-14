@@ -1,5 +1,6 @@
 import { lazy, memo, Suspense, type ReactNode } from 'react';
 
+import type { CommandLayoutMode } from './layoutModes';
 import type { CanvasWallpaper } from './wallpapers';
 
 import { TacticalLoader } from '@/components/hud';
@@ -17,6 +18,7 @@ const DesktopLayout = lazy(() =>
 
 interface ResponsiveCanvasProps {
   wallpaper: CanvasWallpaper;
+  layoutMode: CommandLayoutMode;
   header: ReactNode;
   missionControl: ReactNode;
   estimator: ReactNode;
@@ -42,6 +44,7 @@ export const ResponsiveCanvas = memo(function ResponsiveCanvas(props: Responsive
     >
       {layout.isMobile && (
         <MobileLayout
+          layoutMode={props.layoutMode}
           header={props.header}
           estimator={props.estimator}
           missionControl={props.missionControl}
@@ -54,6 +57,7 @@ export const ResponsiveCanvas = memo(function ResponsiveCanvas(props: Responsive
       {layout.isTablet && (
         <TabletLayout
           wallpaper={props.wallpaper}
+          layoutMode={props.layoutMode}
           header={props.header}
           missionControl={props.missionControl}
           estimator={props.estimator}
@@ -65,6 +69,7 @@ export const ResponsiveCanvas = memo(function ResponsiveCanvas(props: Responsive
       {layout.isDesktop && (
         <DesktopLayout
           wallpaper={props.wallpaper}
+          layoutMode={props.layoutMode}
           header={props.header}
           missionControl={props.missionControl}
           estimator={props.estimator}

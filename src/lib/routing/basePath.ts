@@ -172,23 +172,20 @@ const ensureBaseForLocation = (base?: string): string => {
   if (!base || base === '/') return '/';
   try {
     const win = getGlobalWindow();
-    if (!win) return '/';
+    if (!win) return base;
     const pathname = win.location?.pathname || '/';
-    
-    // If we're at root, don't use a basename
+
     if (pathname === '/' || pathname === '') {
-      return '/';
+      return base;
     }
-    
-    // Only use the base if the pathname actually starts with it
+
     if (pathname === base || pathname.startsWith(`${base}/`)) {
       return base;
     }
-    
-    // If base doesn't match current location, return root
+
     return '/';
   } catch {
-    return '/';
+    return base;
   }
 };
 

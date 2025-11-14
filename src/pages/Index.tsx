@@ -1,15 +1,22 @@
 import { Shield } from 'lucide-react';
 import { lazy, memo, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 import { ComplianceResources, type ComplianceTopic } from '@/components/ComplianceResources';
 import { PanelErrorBoundary } from '@/components/ErrorBoundary/PanelErrorBoundary';
 import { HudWrapper } from '@/components/hud/HudWrapper';
 import { type TacticalHudOverlayProps } from '@/components/hud/TacticalHudOverlay';
 import { KeyboardShortcutsModal } from '@/components/KeyboardShortcutsModal';
+import { ThemeCommandCenter } from '@/components/ThemeCommandCenter';
 import { Button } from '@/components/ui/button';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useImageOptimization } from '@/hooks/useImageOptimization';
 import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
+import { blobToDataUrl } from '@/lib/blob';
 import { useEstimatorState } from '@/modules/estimate/useEstimatorState';
 import { CanvasPanel } from '@/modules/layout/CanvasPanel';
+import { CommandRibbon } from '@/modules/layout/CommandRibbon';
+import { isCommandLayoutMode, type CommandLayoutMode } from '@/modules/layout/layoutModes';
 import { OperationsHeader } from '@/modules/layout/OperationsHeader';
 import {
   EngagementSkeleton,
@@ -18,6 +25,7 @@ import {
   MissionControlSkeleton,
 } from '@/modules/layout/PanelSkeletons';
 import { ResponsiveCanvas } from '@/modules/layout/ResponsiveCanvas';
+import { useWallpaperLibrary } from '@/modules/layout/wallpaperLibrary';
 import { DEFAULT_WALLPAPER, getNextWallpaper, getWallpaperById } from '@/modules/layout/wallpapers';
 
 // Lazy load heavy components for better initial load performance
@@ -34,17 +42,32 @@ const EngagementHubPanel = lazy(() =>
   })),
 );
 
+const LAYOUT_MODE_STORAGE_KEY = 'pps:layout-mode';
+
 /**
  * Main Index page component - Optimized with memo and callbacks
  */
 const Index = memo(() => {
   const estimator = useEstimatorState();
   const layout = useResponsiveLayout();
+  const { setWallpaper } = useTheme();
+  const { addWallpaper } = useWallpaperLibrary();
+  const { optimizeImage, isProcessing: optimizingWallpaper } = useImageOptimization();
   const [wallpaperId, setWallpaperId] = useState(DEFAULT_WALLPAPER.id);
   const wallpaper = useMemo(() => getWallpaperById(wallpaperId), [wallpaperId]);
   const [complianceOpen, setComplianceOpen] = useState(false);
   const [complianceTopic, setComplianceTopic] = useState<ComplianceTopic>('striping');
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [layoutMode, setLayoutMode] = useState<CommandLayoutMode>('grid');
+  const [uploadingWallpaper, setUploadingWallpaper] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = window.localStorage.getItem(LAYOUT_MODE_STORAGE_KEY);
+    if (stored && isCommandLayoutMode(stored)) {
+      setLayoutMode(stored);
+    }
+  }, []);
 
   const summary = useMemo(
     () => ({
@@ -179,16 +202,66 @@ const Index = memo(() => {
     setWallpaperId(next.id);
   }, [wallpaperId]);
 
+  const handleLayoutModeChange = useCallback((mode: CommandLayoutMode) => {
+    setLayoutMode(mode);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(LAYOUT_MODE_STORAGE_KEY, mode);
+    }
+  }, []);
+
+  const handleWallpaperUpload = useCallback(
+    async (file: File) => {
+      setUploadingWallpaper(true);
+      try {
+        const optimizedBlob = await optimizeImage(file, {
+          maxWidth: 2560,
+          maxHeight: 1440,
+          quality: 0.82,
+          format: 'webp',
+        });
+        const dataUrl = await blobToDataUrl(optimizedBlob);
+        const asset = addWallpaper({
+          name: file.name,
+          dataUrl,
+          accentTone: wallpaper.accentTone,
+          description: `${file.name} upload`,
+        });
+        setWallpaper({
+          id: asset.id,
+          source: asset.source,
+          name: asset.name,
+          description: asset.description,
+        });
+        toast.success('Wallpaper updated', {
+          description: `${asset.name} applied across the HUD`,
+        });
+      } catch (error) {
+        console.error('[Index] Failed to upload wallpaper', error);
+        toast.error('Unable to process wallpaper');
+      } finally {
+        setUploadingWallpaper(false);
+      }
+    },
+    [addWallpaper, optimizeImage, setWallpaper, wallpaper.accentTone],
+  );
+
   const openCompliance = useCallback((topic: ComplianceTopic) => {
     setComplianceTopic(topic);
     setComplianceOpen(true);
   }, []);
 
+  const handleOpenShortcuts = useCallback(() => setShortcutsOpen(true), []);
+
+  const handleOpenCompliancePanel = useCallback(() => {
+    openCompliance('striping');
+  }, [openCompliance]);
+
+  const wallpaperUploadBusy = uploadingWallpaper || optimizingWallpaper;
+
   useEffect(() => {
-    const handleOpenShortcuts = () => setShortcutsOpen(true);
     window.addEventListener('openShortcuts', handleOpenShortcuts);
     return () => window.removeEventListener('openShortcuts', handleOpenShortcuts);
-  }, []);
+  }, [handleOpenShortcuts]);
 
   const hudOverlay = layout.showFullHud ? (
     <HudWrapper
@@ -212,16 +285,34 @@ const Index = memo(() => {
         <h1 className="sr-only">Pavement Performance Suite</h1>
         <ResponsiveCanvas
           wallpaper={wallpaper}
+          layoutMode={layoutMode}
           summary={{
             totalCost: summary.totalCost,
             totalArea: summary.totalArea,
           }}
           header={
-            <OperationsHeader
-              wallpaper={wallpaper}
-              onNextWallpaper={cycleWallpaper}
-              summary={summary}
-            />
+            <div className="space-y-6">
+              <CommandRibbon
+                wallpaper={wallpaper}
+                missionPhase={missionPhase}
+                summary={summary}
+                watchers={hudWatchers}
+                hudFlags={hudFlags}
+                layoutMode={layoutMode}
+                onLayoutModeChange={handleLayoutModeChange}
+                onNextWallpaper={cycleWallpaper}
+                onUploadWallpaper={handleWallpaperUpload}
+                uploadingWallpaper={wallpaperUploadBusy}
+                themeTrigger={<ThemeCommandCenter />}
+                onOpenShortcuts={handleOpenShortcuts}
+                onOpenCompliance={handleOpenCompliancePanel}
+              />
+              <OperationsHeader
+                wallpaper={wallpaper}
+                onNextWallpaper={cycleWallpaper}
+                summary={summary}
+              />
+            </div>
           }
             missionControl={
               <PanelErrorBoundary title="Mission Control">

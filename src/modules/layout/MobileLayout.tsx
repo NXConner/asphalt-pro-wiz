@@ -1,11 +1,13 @@
-import { DollarSign, Layers } from 'lucide-react';
+import { Compass, DollarSign, Layers } from 'lucide-react';
 import { memo, useState, type ReactNode } from 'react';
 
-import { cn } from '@/lib/utils';
+import type { CommandLayoutMode } from './layoutModes';
+
 import { BottomSheet } from '@/modules/navigation/BottomSheet';
 import { MobileNav } from '@/modules/navigation/MobileNav';
 
 interface MobileLayoutProps {
+  layoutMode: CommandLayoutMode;
   header: ReactNode;
   estimator: ReactNode;
   missionControl: ReactNode;
@@ -19,6 +21,7 @@ interface MobileLayoutProps {
 }
 
 export const MobileLayout = memo(function MobileLayout({
+  layoutMode,
   header,
   estimator,
   missionControl,
@@ -49,7 +52,7 @@ export const MobileLayout = memo(function MobileLayout({
       </div>
 
       {/* Quick Stats Bar */}
-      <div className="sticky top-[64px] z-10 border-b border-border bg-primary/10 px-4 py-2">
+      <div className="sticky top-[64px] z-10 border-b border-border bg-primary/10 px-4 py-3">
         <div className="grid grid-cols-2 gap-3">
           <div className="flex items-center gap-2">
             <DollarSign className="h-4 w-4 text-primary" />
@@ -69,6 +72,10 @@ export const MobileLayout = memo(function MobileLayout({
               </p>
             </div>
           </div>
+        </div>
+        <div className="mt-3 flex items-center justify-between rounded-2xl border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-primary">
+          <span>{layoutMode} mode</span>
+          <Compass className="h-4 w-4" />
         </div>
       </div>
 

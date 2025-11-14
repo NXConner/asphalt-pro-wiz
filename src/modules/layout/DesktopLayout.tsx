@@ -1,12 +1,13 @@
 import { memo, type ReactNode } from 'react';
 
+import type { CommandLayoutMode } from './layoutModes';
 import type { CanvasWallpaper } from './wallpapers';
 
 import { CanvasGrid, ParticleBackground } from '@/components/hud';
-import { PriorityCard } from '@/components/ui/priority-card';
 
 interface DesktopLayoutProps {
   wallpaper: CanvasWallpaper;
+  layoutMode: CommandLayoutMode;
   header: ReactNode;
   missionControl: ReactNode;
   estimator: ReactNode;
@@ -17,6 +18,7 @@ interface DesktopLayoutProps {
 
 export const DesktopLayout = memo(function DesktopLayout({
   wallpaper,
+  layoutMode,
   header,
   missionControl,
   estimator,
@@ -24,6 +26,49 @@ export const DesktopLayout = memo(function DesktopLayout({
   engagement,
   hudOverlay,
 }: DesktopLayoutProps) {
+  const renderLayout = () => {
+    if (layoutMode === 'timeline') {
+      return (
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+          <div className="lg:col-span-12 space-y-5">{missionControl}</div>
+          <div className="lg:col-span-7 xl:col-span-8 space-y-5">{estimator}</div>
+          <div className="lg:col-span-5 xl:col-span-4 space-y-5">{insights}</div>
+          <div className="lg:col-span-12">{engagement}</div>
+        </div>
+      );
+    }
+
+    if (layoutMode === 'immersive') {
+      return (
+        <div className="flex flex-col gap-6">
+          <div className="rounded-[32px] border border-white/10 bg-black/40 p-1">
+            {missionControl}
+          </div>
+          <div className="grid gap-5 lg:grid-cols-12">
+            <div className="lg:col-span-8 space-y-5">{estimator}</div>
+            <div className="lg:col-span-4 space-y-5">{insights}</div>
+          </div>
+          <div className="rounded-[28px] border border-white/10 bg-slate-950/50 p-1">
+            {engagement}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+        <div className="lg:col-span-8 xl:col-span-9 space-y-5">
+          {missionControl}
+          {estimator}
+        </div>
+        <div className="lg:col-span-4 xl:col-span-3 space-y-5">
+          {insights}
+          {engagement}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div
       className="relative min-h-screen w-full overflow-hidden text-slate-50"
@@ -44,36 +89,10 @@ export const DesktopLayout = memo(function DesktopLayout({
       <CanvasGrid density={80} className="opacity-[var(--hud-grid-opacity)]" />
       {hudOverlay}
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col gap-4 px-4 pb-8 pt-8 sm:px-6 sm:gap-5 sm:pb-10 sm:pt-10 lg:px-8 lg:gap-6 lg:pb-12 lg:pt-12">
+      <div className="relative z-10 mx-auto flex w-full max-w-[1536px] flex-col gap-6 px-4 pb-10 pt-8 sm:px-6 lg:px-10">
         <h1 className="sr-only">Pavement Performance Suite - Desktop Command Center</h1>
-
         {header}
-
-        <main className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-5 xl:gap-6">
-          {/* Mission Control - Full Width, High Priority */}
-          <div className="lg:col-span-12">
-            <PriorityCard title="Mission Control" priority="high" collapsible>
-              {missionControl}
-            </PriorityCard>
-          </div>
-
-          {/* Left Column - Estimator (Critical Priority) */}
-          <div className="lg:col-span-7 xl:col-span-7">
-            <PriorityCard title="Estimator Studio" priority="critical">
-              {estimator}
-            </PriorityCard>
-          </div>
-
-          {/* Right Column - Insights & Engagement */}
-          <div className="flex flex-col gap-4 lg:col-span-5 xl:col-span-5 lg:gap-5">
-            <PriorityCard title="Insight Tower" priority="medium" collapsible>
-              {insights}
-            </PriorityCard>
-            <PriorityCard title="Engagement Hub" priority="low" collapsible>
-              {engagement}
-            </PriorityCard>
-          </div>
-        </main>
+        <main className="space-y-6">{renderLayout()}</main>
       </div>
     </div>
   );
