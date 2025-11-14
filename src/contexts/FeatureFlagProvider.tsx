@@ -35,7 +35,7 @@ interface FeatureFlagContextValue {
 const FeatureFlagContext = createContext<FeatureFlagContextValue | undefined>(undefined);
 
 async function resolvePrimaryOrgId(userId: string): Promise<string | null> {
-  if (!isSupabaseConfigured()) return null;
+  if (!isSupabaseConfigured) return null;
   
   try {
     const { data, error } = await supabase
@@ -47,7 +47,7 @@ async function resolvePrimaryOrgId(userId: string): Promise<string | null> {
     
     // Handle 404 errors gracefully (table doesn't exist)
     if (error) {
-      const code = error?.code || error?.status || '';
+      const code = error?.code || '';
       if (code === 'PGRST116' || code === '42P01' || String(code).includes('404')) {
         // Table doesn't exist - expected in development
         return null;
@@ -139,12 +139,12 @@ export function FeatureFlagProvider({ children }: { children: ReactNode }) {
         
         // If all errors are 404s, treat as if tables don't exist (use defaults)
         if (errors.length > 0 && errors.length === [featureFlagsRes.error, orgFlagsRes.error, userFlagsRes.error].filter(Boolean).length) {
-          // All queries returned 404 - tables likely don't exist, use defaults
+        // All queries returned 404 - tables likely don't exist, use defaults
           setState((prev) => ({
             ...prev,
             isLoading: false,
             error: null,
-            flags: {},
+            flags: getFlags(),
           }));
           // Don't log 404 errors as failures - tables just don't exist yet (expected in development)
           logFeatureFlagSync('failed', { 

@@ -124,7 +124,7 @@ function dispatchToSupabase(payload: Record<string, unknown>) {
   try {
     const event = typeof payload.event === "string" ? payload.event : "";
     if (!shouldShipToSupabase(event)) return;
-    if (!isSupabaseConfigured()) return;
+    if (!isSupabaseConfigured) return;
     
     void supabase.functions.invoke(OBSERVABILITY_FUNCTION, { body: payload }).catch((error: unknown) => {
       // Silently ignore CORS errors and network failures in development

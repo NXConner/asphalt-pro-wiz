@@ -2,7 +2,7 @@ import { isSupabaseConfigured, supabase } from '@/integrations/supabase/client';
 import { logError } from '@/lib/logging';
 
 export async function getCurrentUserId(): Promise<string | null> {
-  if (!isSupabaseConfigured()) return null;
+  if (!isSupabaseConfigured) return null;
   try {
     const { data, error } = await supabase.auth.getUser();
     if (error) throw error;
@@ -13,7 +13,7 @@ export async function getCurrentUserId(): Promise<string | null> {
 }
 
 export async function resolveOrgId(): Promise<string | null> {
-  if (!isSupabaseConfigured()) return null;
+  if (!isSupabaseConfigured) return null;
   
   try {
     // First try to get from RPC if it exists
