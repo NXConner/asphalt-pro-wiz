@@ -13,11 +13,13 @@ import { useMemo } from 'react';
 import type { Layout } from 'react-grid-layout';
 import GridLayout, { WidthProvider } from 'react-grid-layout';
 
+import type { AccessibilityImpact } from './types';
 import { useMissionSchedulerContext } from './useMissionSchedulerContext';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 const TimelineGrid = WidthProvider(GridLayout);
 
@@ -41,13 +43,30 @@ const statusLabel: Record<string, string> = {
   blocked: 'Blocked',
 };
 
+const impactMeta: Partial<
+  Record<
+    Exclude<AccessibilityImpact, 'none'>,
+    {
+      label: string;
+      className: string;
+    }
+  >
+> = {
+  entrance: { label: 'Entrance', className: 'bg-slate-900/50 text-cyan-200 border-cyan-400/30' },
+  parking: { label: 'Parking', className: 'bg-slate-900/50 text-amber-200 border-amber-400/40' },
+  mobility: { label: 'Mobility', className: 'bg-slate-900/50 text-emerald-200 border-emerald-400/40' },
+  auditorium: { label: 'Auditorium', className: 'bg-slate-900/50 text-violet-200 border-violet-400/40' },
+  walkway: { label: 'Walkway', className: 'bg-slate-900/50 text-orange-200 border-orange-400/40' },
+};
+
 interface MissionTimelineProps {
   weekStart: Date;
   onShiftWeek: (nextStart: Date) => void;
 }
 
 export function MissionTimeline({ weekStart, onShiftWeek }: MissionTimelineProps) {
-  const { tasks, conflicts, rescheduleTask, setTaskStatus } = useMissionSchedulerContext();
+  const { tasks, conflicts, rescheduleTask, setTaskStatus, crewMembers } =
+    useMissionSchedulerContext();
 
   const weekEnd = addDays(weekStart, 7);
   const weeklyTasks = useMemo(
@@ -63,6 +82,11 @@ export function MissionTimeline({ weekStart, onShiftWeek }: MissionTimelineProps
   const conflictIds = useMemo(
     () => new Set(conflicts.flatMap((conflict) => conflict.taskIds)),
     [conflicts],
+  );
+
+  const crewNameById = useMemo(
+    () => new Map(crewMembers.map((member) => [member.id, member.name || member.role])),
+    [crewMembers],
   );
 
   const layout: Layout[] = weeklyTasks.map((task) => {
@@ -199,40 +223,63 @@ export function MissionTimeline({ weekStart, onShiftWeek }: MissionTimelineProps
                           {statusLabel[task.status] ?? task.status}
                         </Badge>
                       </div>
-                      <div className="space-y-2">
-                        <p className="text-[11px] uppercase tracking-[0.25em] text-slate-100/80">
-                          {format(start, 'EEE h:mma')} → {format(end, 'h:mma')}
-                        </p>
-                        {task.notes ? (
-                          <p className="line-clamp-2 text-[11px] text-slate-100/70">{task.notes}</p>
-                        ) : null}
-                      </div>
-                      <div className="mission-timeline-actions flex items-center justify-between gap-2 text-[11px] uppercase tracking-[0.25em]">
-                        <span className="rounded-full bg-white/10 px-3 py-1 text-slate-100/80">
-                          Crew {Math.max(task.crewRequired, task.crewAssignedIds.length)}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          {task.status !== 'completed' ? (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => setTaskStatus(task.id, 'completed')}
+                        <div className="space-y-2">
+                          <p className="text-[11px] uppercase tracking-[0.25em] text-slate-100/80">
+                            {format(start, 'EEE h:mma')} → {format(end, 'h:mma')}
+                          </p>
+                          {task.notes ? (
+                            <p className="line-clamp-2 text-[11px] text-slate-100/70">{task.notes}</p>
+                          ) : null}
+                          {task.crewAssignedIds.length > 0 ? (
+                            <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.3em] text-slate-200/70">
+                              {task.crewAssignedIds.map((crewId) => (
+                                <span
+                                  key={`${task.id}-${crewId}`}
+                                  className="rounded-full border border-white/10 bg-white/10 px-2 py-0.5"
+                                >
+                                  {crewNameById.get(crewId) ?? 'Crew'}
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
+                          {task.accessibilityImpact !== 'none' ? (
+                            <span
+                              className={cn(
+                                'inline-flex w-fit items-center gap-1 rounded-full border px-3 py-0.5 text-[10px] font-semibold uppercase tracking-[0.35em]',
+                                impactMeta[task.accessibilityImpact]?.className ??
+                                  'border-cyan-400/30 bg-cyan-400/10 text-cyan-100',
+                              )}
                             >
-                              Mark Complete
-                            </Button>
-                          ) : (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => setTaskStatus(task.id, 'scheduled')}
-                            >
-                              Reopen
-                            </Button>
-                          )}
+                              ADA {impactMeta[task.accessibilityImpact]?.label ?? task.accessibilityImpact}
+                            </span>
+                          ) : null}
                         </div>
-                      </div>
+                        <div className="mission-timeline-actions flex items-center justify-between gap-2 text-[11px] uppercase tracking-[0.25em]">
+                          <span className="rounded-full bg-white/10 px-3 py-1 text-slate-100/80">
+                            Crew {Math.max(task.crewRequired, task.crewAssignedIds.length)}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            {task.status !== 'completed' ? (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setTaskStatus(task.id, 'completed')}
+                              >
+                                Mark Complete
+                              </Button>
+                            ) : (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setTaskStatus(task.id, 'scheduled')}
+                              >
+                                Reopen
+                              </Button>
+                            )}
+                          </div>
+                        </div>
                     </div>
                     {conflicting ? (
                       <div className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-red-500/60" />
