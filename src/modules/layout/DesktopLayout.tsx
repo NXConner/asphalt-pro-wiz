@@ -1,9 +1,9 @@
 import { memo, type ReactNode } from 'react';
 
-import { PriorityCard } from '@/components/ui/priority-card';
 import type { CanvasWallpaper } from './wallpapers';
 
 import { CanvasGrid, ParticleBackground } from '@/components/hud';
+import { PriorityCard } from '@/components/ui/priority-card';
 
 interface DesktopLayoutProps {
   wallpaper: CanvasWallpaper;

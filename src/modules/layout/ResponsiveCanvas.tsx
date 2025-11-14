@@ -1,9 +1,9 @@
 import { lazy, memo, Suspense, type ReactNode } from 'react';
 
-import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 import type { CanvasWallpaper } from './wallpapers';
 
 import { TacticalLoader } from '@/components/hud';
+import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 
 const MobileLayout = lazy(() =>
   import('./MobileLayout').then((m) => ({ default: m.MobileLayout })),

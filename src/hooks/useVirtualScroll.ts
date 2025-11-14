@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, type MutableRefObject } from 'react';
 
 interface VirtualScrollOptions {
   itemHeight: number;
@@ -10,6 +10,7 @@ interface VirtualScrollResult {
   virtualItems: Array<{ index: number; start: number; end: number }>;
   totalHeight: number;
   scrollToIndex: (index: number) => void;
+  scrollRef: MutableRefObject<HTMLElement | null>;
 }
 
 /**
@@ -18,17 +19,17 @@ interface VirtualScrollResult {
  */
 export function useVirtualScroll(
   itemCount: number,
-  { itemHeight, containerHeight, overscan = 3 }: VirtualScrollOptions
+  { itemHeight, containerHeight, overscan = 3 }: VirtualScrollOptions,
 ): VirtualScrollResult {
   const [scrollTop, setScrollTop] = useState(0);
-  const scrollElementRef = useRef<HTMLElement | null>(null);
+  const scrollRef = useRef<HTMLElement | null>(null);
 
-  const visibleCount = Math.ceil(containerHeight / itemHeight);
+  const visibleCount = Math.max(1, Math.ceil(containerHeight / itemHeight));
   const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
   const endIndex = Math.min(itemCount - 1, startIndex + visibleCount + overscan * 2);
 
-  const virtualItems = [];
-  for (let i = startIndex; i <= endIndex; i++) {
+  const virtualItems: VirtualScrollResult['virtualItems'] = [];
+  for (let i = startIndex; i <= endIndex; i += 1) {
     virtualItems.push({
       index: i,
       start: i * itemHeight,
@@ -45,25 +46,32 @@ export function useVirtualScroll(
 
   const scrollToIndex = useCallback(
     (index: number) => {
-      if (scrollElementRef.current) {
-        const position = index * itemHeight;
-        scrollElementRef.current.scrollTop = position;
-      }
+      const element = scrollRef.current;
+      if (!element) return;
+      element.scrollTo({
+        top: index * itemHeight,
+        behavior: 'smooth',
+      });
     },
-    [itemHeight]
+    [itemHeight],
   );
 
   useEffect(() => {
-    const element = scrollElementRef.current;
+    const element = scrollRef.current;
     if (!element) return;
 
     element.addEventListener('scroll', handleScroll, { passive: true });
     return () => element.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
+  useEffect(() => {
+    setScrollTop((previous) => Math.min(previous, Math.max(totalHeight - containerHeight, 0)));
+  }, [containerHeight, totalHeight]);
+
   return {
     virtualItems,
     totalHeight,
     scrollToIndex,
+    scrollRef,
   };
 }

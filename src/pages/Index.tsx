@@ -2,22 +2,37 @@ import { Shield } from 'lucide-react';
 import { lazy, memo, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ComplianceResources, type ComplianceTopic } from '@/components/ComplianceResources';
+import { PanelErrorBoundary } from '@/components/ErrorBoundary/PanelErrorBoundary';
 import { HudWrapper } from '@/components/hud/HudWrapper';
 import { type TacticalHudOverlayProps } from '@/components/hud/TacticalHudOverlay';
 import { KeyboardShortcutsModal } from '@/components/KeyboardShortcutsModal';
 import { Button } from '@/components/ui/button';
-import { EngagementHubPanel } from '@/modules/engagement/EngagementHubPanel';
+import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 import { useEstimatorState } from '@/modules/estimate/useEstimatorState';
 import { CanvasPanel } from '@/modules/layout/CanvasPanel';
-import { ResponsiveCanvas } from '@/modules/layout/ResponsiveCanvas';
 import { OperationsHeader } from '@/modules/layout/OperationsHeader';
+import {
+  EngagementSkeleton,
+  EstimatorSkeleton,
+  InsightsSkeleton,
+  MissionControlSkeleton,
+} from '@/modules/layout/PanelSkeletons';
+import { ResponsiveCanvas } from '@/modules/layout/ResponsiveCanvas';
 import { DEFAULT_WALLPAPER, getNextWallpaper, getWallpaperById } from '@/modules/layout/wallpapers';
-import { MissionControlPanel } from '@/modules/mission-control/MissionControlPanel';
-import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 
 // Lazy load heavy components for better initial load performance
 const EstimatorStudio = lazy(() => import('@/modules/estimate/EstimatorStudio').then(m => ({ default: m.EstimatorStudio })));
 const InsightTowerPanel = lazy(() => import('@/modules/insights/InsightTowerPanel').then(m => ({ default: m.InsightTowerPanel })));
+const MissionControlPanel = lazy(() =>
+  import('@/modules/mission-control/MissionControlPanel').then((m) => ({
+    default: m.MissionControlPanel,
+  })),
+);
+const EngagementHubPanel = lazy(() =>
+  import('@/modules/engagement/EngagementHubPanel').then((m) => ({
+    default: m.EngagementHubPanel,
+  })),
+);
 
 /**
  * Main Index page component - Optimized with memo and callbacks
@@ -208,45 +223,76 @@ const Index = memo(() => {
               summary={summary}
             />
           }
-          missionControl={<MissionControlPanel estimator={estimator} />}
-          estimator={
-            <Suspense fallback={<div className="h-96 animate-pulse rounded-3xl bg-white/5" />}>
-              <EstimatorStudio estimator={estimator} />
-            </Suspense>
-          }
-          insights={
-            <Suspense fallback={<div className="h-64 animate-pulse rounded-3xl bg-white/5" />}>
-              <InsightTowerPanel estimator={estimator} />
-            </Suspense>
-          }
-          engagement={
-            <div className="space-y-5">
-              <EngagementHubPanel estimator={estimator} />
-              <CanvasPanel
-                title="Regulatory Toolkit"
-                subtitle="Jump into ADA, VDOT, and NC DOT resources before finalizing proposals."
-                eyebrow="Compliance"
-                tone="ember"
-                action={
-                  <Button type="button" variant="command" onClick={() => openCompliance(complianceTopic)}>
-                    <Shield className="mr-2 h-4 w-4" /> Open Library
-                  </Button>
-                }
-              >
-                <div className="flex flex-wrap gap-2">
-                  <Button type="button" variant="outline" size="sm" onClick={() => openCompliance('striping')}>
-                    ADA & Striping
-                  </Button>
-                  <Button type="button" variant="outline" onClick={() => openCompliance('sealcoating')}>
-                    Sealcoat Specs
-                  </Button>
-                  <Button type="button" variant="outline" onClick={() => openCompliance('crackfilling')}>
-                    Crack Filling SOP
-                  </Button>
-                </div>
-              </CanvasPanel>
-            </div>
-          }
+            missionControl={
+              <PanelErrorBoundary title="Mission Control">
+                <Suspense fallback={<MissionControlSkeleton />}>
+                  <MissionControlPanel estimator={estimator} />
+                </Suspense>
+              </PanelErrorBoundary>
+            }
+            estimator={
+              <PanelErrorBoundary title="Estimator Studio">
+                <Suspense fallback={<EstimatorSkeleton />}>
+                  <EstimatorStudio estimator={estimator} />
+                </Suspense>
+              </PanelErrorBoundary>
+            }
+            insights={
+              <PanelErrorBoundary title="Insight Tower">
+                <Suspense fallback={<InsightsSkeleton />}>
+                  <InsightTowerPanel estimator={estimator} />
+                </Suspense>
+              </PanelErrorBoundary>
+            }
+            engagement={
+              <PanelErrorBoundary title="Engagement Hub">
+                <Suspense fallback={<EngagementSkeleton />}>
+                  <div className="space-y-5">
+                    <EngagementHubPanel estimator={estimator} />
+                    <CanvasPanel
+                      title="Regulatory Toolkit"
+                      subtitle="Jump into ADA, VDOT, and NC DOT resources before finalizing proposals."
+                      eyebrow="Compliance"
+                      tone="ember"
+                      action={
+                        <Button
+                          type="button"
+                          variant="command"
+                          onClick={() => openCompliance(complianceTopic)}
+                        >
+                          <Shield className="mr-2 h-4 w-4" /> Open Library
+                        </Button>
+                      }
+                    >
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openCompliance('striping')}
+                        >
+                          ADA & Striping
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => openCompliance('sealcoating')}
+                        >
+                          Sealcoat Specs
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => openCompliance('crackfilling')}
+                        >
+                          Crack Filling SOP
+                        </Button>
+                      </div>
+                    </CanvasPanel>
+                  </div>
+                </Suspense>
+              </PanelErrorBoundary>
+            }
           hudOverlay={hudOverlay}
         />
       </main>

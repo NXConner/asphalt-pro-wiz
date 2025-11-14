@@ -1,5 +1,5 @@
-import { memo, useEffect, useState, type ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { memo, useEffect, useState, type ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -61,7 +61,9 @@ export const BottomSheet = memo(function BottomSheet({
   return (
     <>
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        aria-label="Close bottom sheet"
         className={cn(
           'fixed inset-0 z-40 bg-background/80 backdrop-blur-sm',
           'animate-in fade-in duration-200',

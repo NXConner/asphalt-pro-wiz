@@ -369,13 +369,15 @@ export function ReceiptsPanel({ jobName = '', customerAddress = '' }: ReceiptsPa
               <div key={r.id} className="p-3 border rounded-md">
                 <div className="flex items-start gap-3">
                   <div className="w-20 h-20 bg-muted rounded overflow-hidden flex items-center justify-center">
-                    {isImage ? (
-                      // eslint-disable-next-line jsx-a11y/alt-text
-                      <img
-                        src={URL.createObjectURL(r.blob)}
-                        className="object-cover w-full h-full"
-                      />
-                    ) : (
+                      {isImage ? (
+                        <img
+                          src={URL.createObjectURL(r.blob)}
+                          alt={r.name || 'Receipt preview'}
+                          loading="lazy"
+                          decoding="async"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
                       <FileText className="w-10 h-10 text-muted-foreground" />
                     )}
                   </div>
