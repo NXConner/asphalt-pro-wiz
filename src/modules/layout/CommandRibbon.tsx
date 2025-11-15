@@ -1,4 +1,4 @@
-import { Camera, Gauge, Keyboard, LayoutGrid, Shield, Sparkles, Timeline, UploadCloud } from 'lucide-react';
+import { Activity, Camera, Gauge, Keyboard, LayoutGrid, Shield, Sparkles, UploadCloud } from 'lucide-react';
 import { memo, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 
 import type { CommandLayoutMode } from './layoutModes';
@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 
 const layoutIcons: Record<CommandLayoutMode, typeof LayoutGrid> = {
   grid: LayoutGrid,
-  timeline: Timeline,
+  timeline: Activity,
   immersive: Sparkles,
 };
 

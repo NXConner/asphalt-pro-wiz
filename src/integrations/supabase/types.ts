@@ -3281,9 +3281,11 @@ export type Database = {
         Row: {
           address: string
           area: number | null
+          client_id: string | null
           crack_length: number | null
           created_at: string | null
           id: string
+          job_id: string | null
           labor_cost: number | null
           latitude: number | null
           longitude: number | null
@@ -3301,9 +3303,11 @@ export type Database = {
         Insert: {
           address: string
           area?: number | null
+          client_id?: string | null
           crack_length?: number | null
           created_at?: string | null
           id?: string
+          job_id?: string | null
           labor_cost?: number | null
           latitude?: number | null
           longitude?: number | null
@@ -3321,9 +3325,11 @@ export type Database = {
         Update: {
           address?: string
           area?: number | null
+          client_id?: string | null
           crack_length?: number | null
           created_at?: string | null
           id?: string
+          job_id?: string | null
           labor_cost?: number | null
           latitude?: number | null
           longitude?: number | null
@@ -3338,7 +3344,22 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "job_sites_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_sites_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       job_telemetry: {
         Row: {
@@ -4396,6 +4417,7 @@ export type Database = {
       project_documents: {
         Row: {
           id: string
+          job_id: string | null
           name: string | null
           project_id: string | null
           size: number | null
@@ -4406,6 +4428,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          job_id?: string | null
           name?: string | null
           project_id?: string | null
           size?: number | null
@@ -4416,6 +4439,7 @@ export type Database = {
         }
         Update: {
           id?: string
+          job_id?: string | null
           name?: string | null
           project_id?: string | null
           size?: number | null
@@ -4425,6 +4449,13 @@ export type Database = {
           url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "project_documents_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "project_documents_project_id_fkey"
             columns: ["project_id"]
@@ -4857,6 +4888,126 @@ export type Database = {
         }
         Relationships: []
       }
+      quote_line_items: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string
+          id: string
+          quantity: number
+          quote_id: string
+          unit_price: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description: string
+          id?: string
+          quantity?: number
+          quote_id: string
+          unit_price: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string
+          id?: string
+          quantity?: number
+          quote_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_line_items_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotes: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          expiry_date: string | null
+          id: string
+          issue_date: string
+          job_id: string | null
+          notes: string | null
+          quote_number: string
+          status: string
+          subtotal: number
+          tax_amount: number
+          tax_rate: number
+          terms: string | null
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string
+          job_id?: string | null
+          notes?: string | null
+          quote_number: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          terms?: string | null
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string
+          job_id?: string | null
+          notes?: string | null
+          quote_number?: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          terms?: string | null
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rate_limits: {
         Row: {
           action: string
@@ -5014,6 +5165,24 @@ export type Database = {
         Update: {
           id?: string
           joined_at?: string | null
+          role?: string | null
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      room_members_staging: {
+        Row: {
+          role: string | null
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          role?: string | null
+          room_id: string
+          user_id: string
+        }
+        Update: {
           role?: string | null
           room_id?: string
           user_id?: string
@@ -5315,6 +5484,72 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedules: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          created_by: string | null
+          employee_id: string | null
+          end_time: string
+          estimated_duration: number | null
+          id: string
+          job_id: string | null
+          job_name: string
+          notes: string | null
+          progress: number | null
+          start_time: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string | null
+          end_time: string
+          estimated_duration?: number | null
+          id?: string
+          job_id?: string | null
+          job_name: string
+          notes?: string | null
+          progress?: number | null
+          start_time: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string | null
+          end_time?: string
+          estimated_duration?: number | null
+          id?: string
+          job_id?: string | null
+          job_name?: string
+          notes?: string | null
+          progress?: number | null
+          start_time?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedules_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedules_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
             referencedColumns: ["id"]
           },
         ]
@@ -5656,6 +5891,27 @@ export type Database = {
           proj4text?: string | null
           srid?: number
           srtext?: string | null
+        }
+        Relationships: []
+      }
+      sync_runs: {
+        Row: {
+          file: string
+          id: number
+          imported: number
+          processed_at: string
+        }
+        Insert: {
+          file: string
+          id?: never
+          imported: number
+          processed_at?: string
+        }
+        Update: {
+          file?: string
+          id?: never
+          imported?: number
+          processed_at?: string
         }
         Relationships: []
       }
@@ -6173,21 +6429,32 @@ export type Database = {
           created_at: string
           id: string
           role: Database["public"]["Enums"]["app_role"]
+          role_id: number | null
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
           role: Database["public"]["Enums"]["app_role"]
+          role_id?: number | null
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          role_id?: number | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_settings: {
         Row: {
@@ -6842,6 +7109,15 @@ export type Database = {
           proj4text?: string | null
           srid?: number | null
           srtext?: string | null
+        }
+        Relationships: []
+      }
+      user_roles_v_legacy: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          role: string | null
+          user_id: string | null
         }
         Relationships: []
       }
