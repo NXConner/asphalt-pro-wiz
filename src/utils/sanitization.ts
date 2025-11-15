@@ -29,10 +29,10 @@ export function sanitizeSQL(input: string): string {
  */
 export function sanitizeURL(url: string): string {
   const trimmed = url.trim().toLowerCase();
-  
+
   // Block dangerous protocols
   const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:'];
-  if (dangerousProtocols.some(protocol => trimmed.startsWith(protocol))) {
+  if (dangerousProtocols.some((protocol) => trimmed.startsWith(protocol))) {
     return '';
   }
 
@@ -88,24 +88,24 @@ export function stripHTML(input: string): string {
 /**
  * Sanitize object keys and values recursively
  */
-export function sanitizeObject(obj: any): any {
+export function sanitizeObject<T>(obj: T): T {
   if (typeof obj === 'string') {
-    return sanitizeHTML(obj);
+    return sanitizeHTML(obj) as T;
   }
-  
+
   if (Array.isArray(obj)) {
-    return obj.map(sanitizeObject);
+    return obj.map(sanitizeObject) as T;
   }
-  
+
   if (obj !== null && typeof obj === 'object') {
-    const sanitized: any = {};
+    const sanitized: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj)) {
       const sanitizedKey = sanitizeHTML(key);
       sanitized[sanitizedKey] = sanitizeObject(value);
     }
-    return sanitized;
+    return sanitized as T;
   }
-  
+
   return obj;
 }
 

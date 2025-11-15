@@ -1,6 +1,7 @@
 import { useJsApiLoader, GoogleMap as GMap, DrawingManager, Circle } from '@react-google-maps/api';
 import { memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { TacticalOverlay } from '@/components/hud/TacticalOverlay';
 import { listJobs, type SavedJob } from '@/lib/idb';
 import type { Coordinates } from '@/lib/locations';
 import {
@@ -13,6 +14,7 @@ import {
 } from '@/lib/locations';
 import { loadMapSettings, type TileOverlayConfig, type BaseLayerId } from '@/lib/mapSettings';
 import { fetchRadarFrames, getTileUrlForFrame } from '@/lib/radar';
+import { cn } from '@/lib/utils';
 
 export interface GoogleMapProps {
   onAddressUpdate: (coords: [number, number], address: string) => void;
@@ -21,14 +23,17 @@ export interface GoogleMapProps {
   customerAddress: string;
   refreshKey?: number;
   children?: ReactNode;
+  className?: string;
+  showTacticalOverlay?: boolean;
 }
 
+// Division-inspired status colors with tactical aesthetic
 const statusColor: Record<string, string> = {
-  need_estimate: '#f59e0b',
-  estimated: '#3b82f6',
-  active: '#22c55e',
-  completed: '#6b7280',
-  lost: '#ef4444',
+  need_estimate: '#fb923c', // Orange - reconnaissance phase
+  estimated: '#22d3ee', // Cyan - proposal ready
+  active: '#34d399', // Green - deployment active
+  completed: '#94a3b8', // Slate - mission complete
+  lost: '#f87171', // Red - after action
 };
 
 const containerStyle: google.maps.MapOptions['styles'] | undefined = undefined;
@@ -41,6 +46,8 @@ export const GoogleMap = memo(
     customerAddress,
     refreshKey,
     children,
+    className,
+    showTacticalOverlay = true,
   }: GoogleMapProps) => {
     const settings = loadMapSettings();
     const apiKey = settings.googleApiKey || '';
@@ -320,57 +327,146 @@ export const GoogleMap = memo(
     }
 
     if (!isLoaded) {
-      return <div className="h-[450px] w-full rounded-lg border border-border" />;
+      return (
+        <div
+          className={cn(
+            'relative h-[450px] w-full overflow-hidden rounded-2xl border border-white/10 bg-slate-950/70',
+            className,
+          )}
+        >
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-sm text-slate-200/70">Loading tactical map...</div>
+          </div>
+        </div>
+      );
     }
 
     return (
-      <GMap
-        onLoad={onLoad}
-        onUnmount={onUnmount}
-        onClick={handleClick}
-        mapContainerStyle={{ height: '450px', width: '100%', borderRadius: 8 }}
-        options={{
-          mapTypeId: getMapTypeId(settings.baseLayer),
-          streetViewControl: false,
-          fullscreenControl: true,
-        }}
+      <div
+        className={cn(
+          'relative overflow-hidden rounded-2xl border border-white/10 bg-slate-950/70 shadow-[0_30px_60px_rgba(8,12,24,0.55)] backdrop-blur-xl',
+          className,
+        )}
       >
-        {/* Drawing tools */}
-        <DrawingManager
-          onOverlayComplete={handleOverlayComplete}
+        <GMap
+          onLoad={onLoad}
+          onUnmount={onUnmount}
+          onClick={handleClick}
+          mapContainerStyle={{ height: '450px', width: '100%', borderRadius: 8 }}
           options={{
-            drawingControl: true,
-            drawingControlOptions: {
-              position: google.maps.ControlPosition.TOP_LEFT,
-              drawingModes: [
-                google.maps.drawing.OverlayType.POLYGON,
-                google.maps.drawing.OverlayType.POLYLINE,
-                google.maps.drawing.OverlayType.RECTANGLE,
-              ],
-            },
+            mapTypeId: getMapTypeId(settings.baseLayer),
+            streetViewControl: false,
+            fullscreenControl: true,
+            styles: [
+              {
+                featureType: 'all',
+                elementType: 'geometry',
+                stylers: [{ saturation: -30 }, { lightness: 10 }],
+              },
+              {
+                featureType: 'water',
+                elementType: 'geometry',
+                stylers: [{ color: '#1e293b' }, { saturation: -50 }],
+              },
+              {
+                featureType: 'road',
+                elementType: 'geometry',
+                stylers: [{ color: '#334155' }, { lightness: -10 }],
+              },
+              {
+                featureType: 'poi',
+                elementType: 'labels',
+                stylers: [{ visibility: 'off' }],
+              },
+            ],
           }}
-        />
+        >
+          {/* Drawing tools */}
+          <DrawingManager
+            onOverlayComplete={handleOverlayComplete}
+            options={{
+              drawingControl: true,
+              drawingControlOptions: {
+                position: google.maps.ControlPosition.TOP_LEFT,
+                drawingModes: [
+                  google.maps.drawing.OverlayType.POLYGON,
+                  google.maps.drawing.OverlayType.POLYLINE,
+                  google.maps.drawing.OverlayType.RECTANGLE,
+                ],
+              },
+            }}
+          />
 
-          {/* Job markers */}
+          {/* Job markers with Division styling */}
           {jobs.map((job) =>
             job.coords ? (
               <Circle
                 key={job.id}
                 center={{ lat: (job.coords as any)[0], lng: (job.coords as any)[1] }}
-                radius={3}
+                radius={4}
                 options={{
-                  strokeColor: statusColor[job.status] || '#10b981',
-                  strokeOpacity: 0.9,
-                  strokeWeight: 2,
-                  fillColor: statusColor[job.status] || '#10b981',
-                  fillOpacity: 0.7,
+                  strokeColor: statusColor[job.status] || '#22d3ee',
+                  strokeOpacity: 1,
+                  strokeWeight: 2.5,
+                  fillColor: statusColor[job.status] || '#22d3ee',
+                  fillOpacity: 0.75,
+                  zIndex: 1000,
                 }}
               />
             ) : null,
           )}
           {children}
-      </GMap>
-      );
+        </GMap>
+
+        {/* Tactical HUD Overlay */}
+        {showTacticalOverlay && (
+          <TacticalOverlay
+            className="pointer-events-none absolute inset-0 rounded-2xl"
+            accentColor="rgba(251,146,60,0.85)"
+            backgroundTint="transparent"
+            showGrid
+            gridOpacity={0.15}
+            gridDensity={96}
+            showScanLines
+            scanLinesProps={{ opacity: 0.25, speedMs: 4200, accentColor: 'rgba(251,146,60,0.4)' }}
+            cornerProps={{ size: 28, thickness: 1.5, offset: 6, glow: true, animated: false }}
+            pulse={false}
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/20 to-slate-950/50" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(251,146,60,0.08),transparent_55%)]" />
+          </TacticalOverlay>
+        )}
+
+        {/* Status legend overlay */}
+        {jobs.length > 0 && (
+          <div className="pointer-events-auto absolute bottom-4 left-4 z-10 rounded-xl border border-white/10 bg-slate-950/80 px-3 py-2 backdrop-blur-lg">
+            <div className="space-y-1.5">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-200/70">
+                Mission Status
+              </div>
+              {Object.entries(statusColor).map(([status, color]) => {
+                const count = jobs.filter((j) => j.status === status).length;
+                if (count === 0) return null;
+                return (
+                  <div key={status} className="flex items-center gap-2 text-xs">
+                    <span
+                      className="h-2 w-2 rounded-full"
+                      style={{
+                        backgroundColor: color,
+                        boxShadow: `0 0 8px ${color}88`,
+                      }}
+                    />
+                    <span className="font-mono text-slate-200/80">
+                      {status.replace(/_/g, ' ')}: {count}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    );
   },
 );
 

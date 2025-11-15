@@ -1,5 +1,5 @@
 import { ClipboardList, Compass, FlaskConical, ThermometerSun } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MaterialsStep } from '@/modules/estimate/components/MaterialsStep';
@@ -20,21 +20,26 @@ const STEP_DEFINITIONS = [
   { id: 'review', title: 'Review', icon: <ClipboardList className="h-4 w-4" /> },
 ];
 
-export function EstimatorStudio({ estimator }: EstimatorStudioProps) {
+export const EstimatorStudio = memo(function EstimatorStudio({ estimator }: EstimatorStudioProps) {
   const steps = useMemo(() => STEP_DEFINITIONS, []);
   const [activeStep, setActiveStep] = useState<string>(steps[0]?.id ?? 'scope');
 
-  const goToStep = (stepId: string) => setActiveStep(stepId);
-  const nextStep = () => {
+  const goToStep = useCallback((stepId: string) => setActiveStep(stepId), []);
+  const nextStep = useCallback(() => {
     const index = steps.findIndex((step) => step.id === activeStep);
     const next = steps[Math.min(index + 1, steps.length - 1)].id;
     setActiveStep(next);
-  };
-  const previousStep = () => {
+  }, [steps, activeStep]);
+  const previousStep = useCallback(() => {
     const index = steps.findIndex((step) => step.id === activeStep);
     const prev = steps[Math.max(index - 1, 0)].id;
     setActiveStep(prev);
-  };
+  }, [steps, activeStep]);
+
+  const currentStepIndex = useMemo(
+    () => steps.findIndex((step) => step.id === activeStep) + 1,
+    [steps, activeStep],
+  );
 
   return (
     <CanvasPanel
@@ -44,7 +49,7 @@ export function EstimatorStudio({ estimator }: EstimatorStudioProps) {
       tone="dusk"
       badge={
         <span className="text-xs font-mono uppercase tracking-widest text-orange-100/90">
-          Step {steps.findIndex((step) => step.id === activeStep) + 1} of {steps.length}
+          Step {currentStepIndex} of {steps.length}
         </span>
       }
     >
@@ -107,4 +112,4 @@ export function EstimatorStudio({ estimator }: EstimatorStudioProps) {
       </Tabs>
     </CanvasPanel>
   );
-}
+});

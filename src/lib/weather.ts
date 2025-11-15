@@ -1,4 +1,4 @@
-import { loadMapSettings } from "./mapSettings";
+import { loadMapSettings } from './mapSettings';
 
 export interface CurrentWeather {
   temperatureF: number;
@@ -42,22 +42,38 @@ export async function getWeather(lat: number, lon: number): Promise<WeatherBundl
           temperatureF: data.current.temp,
           windMph: data.current.wind_speed,
           humidityPct: data.current.humidity,
-          precipitationMm: (data.current.rain?.["1h"] || 0) + (data.current.snow?.["1h"] || 0),
+          precipitationMm: (data.current.rain?.['1h'] || 0) + (data.current.snow?.['1h'] || 0),
           precipitationChancePct: data.hourly?.[0]?.pop
             ? Math.round(data.hourly[0].pop * 100)
             : undefined,
           condition: data.current.weather?.[0]?.main,
         };
-        const daily: DailyForecast[] = (data.daily || []).slice(0, 7).map((d: any) => ({
-          date: new Date(d.dt * 1000).toISOString().slice(0, 10),
-          tempMinF: d.temp.min,
-          tempMaxF: d.temp.max,
-          precipitationMm: (d.rain || 0) + (d.snow || 0),
-          precipitationChancePct: d.pop ? Math.round(d.pop * 100) : undefined,
-        }));
+        interface OpenWeatherDaily {
+          dt: number;
+          temp: { min: number; max: number };
+          rain?: number | { '1h'?: number };
+          snow?: number | { '1h'?: number };
+          pop?: number;
+        }
+        interface OpenWeatherHourly {
+          pop?: number;
+        }
+        const daily: DailyForecast[] = (data.daily || []).slice(0, 7).map((d: OpenWeatherDaily) => {
+          const rainValue =
+            typeof d.rain === 'number' ? d.rain : typeof d.rain === 'object' && d.rain ? 0 : 0;
+          const snowValue =
+            typeof d.snow === 'number' ? d.snow : typeof d.snow === 'object' && d.snow ? 0 : 0;
+          return {
+            date: new Date(d.dt * 1000).toISOString().slice(0, 10),
+            tempMinF: d.temp.min,
+            tempMaxF: d.temp.max,
+            precipitationMm: rainValue + snowValue,
+            precipitationChancePct: d.pop ? Math.round(d.pop * 100) : undefined,
+          };
+        });
         const hourlyNext6hPopPct: number[] = (data.hourly || [])
           .slice(0, 6)
-          .map((h: any) => Math.round((h.pop || 0) * 100));
+          .map((h: OpenWeatherHourly) => Math.round((h.pop || 0) * 100));
         return { current, daily, hourlyNext6hPopPct };
       }
     } catch {}
@@ -98,29 +114,29 @@ export function getWorkRecommendations(weather: WeatherBundle): string[] {
 
   // Sealcoating recommendations
   if (today.precipitationMm > 1 || (cur.precipitationChancePct ?? 0) > 40) {
-    out.push("Sealcoating: Postpone due to precipitation risk.");
+    out.push('Sealcoating: Postpone due to precipitation risk.');
   } else if (cur.temperatureF < 50) {
-    out.push("Sealcoating: Caution, low temps may slow curing.");
+    out.push('Sealcoating: Caution, low temps may slow curing.');
   } else if (cur.windMph > 15) {
-    out.push("Sealcoating: Caution, high winds may cause overspray.");
+    out.push('Sealcoating: Caution, high winds may cause overspray.');
   } else {
-    out.push("Sealcoating: Good conditions.");
+    out.push('Sealcoating: Good conditions.');
   }
 
   // Crack repair
   if (today.precipitationMm > 0.5) {
-    out.push("Crack Repair: Moisture likely; ensure cracks are dry before filling.");
+    out.push('Crack Repair: Moisture likely; ensure cracks are dry before filling.');
   } else {
-    out.push("Crack Repair: Favorable if substrate is dry.");
+    out.push('Crack Repair: Favorable if substrate is dry.');
   }
 
   // Line striping
   if ((cur.precipitationChancePct ?? 0) > 30 || today.precipitationMm > 0.5) {
-    out.push("Line Striping: Delay to avoid paint washout.");
+    out.push('Line Striping: Delay to avoid paint washout.');
   } else if (cur.temperatureF < 55) {
-    out.push("Line Striping: Low temperatures may affect adhesion; use fast-dry additive.");
+    out.push('Line Striping: Low temperatures may affect adhesion; use fast-dry additive.');
   } else {
-    out.push("Line Striping: Good to proceed.");
+    out.push('Line Striping: Good to proceed.');
   }
 
   return out;

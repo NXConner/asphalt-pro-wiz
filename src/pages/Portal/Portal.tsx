@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import type { PortalSnapshot } from '@/types';
 
 // Lightweight, read-only portal for customers
 // MVP: enter a code (future), or paste a tokenized estimate snapshot
@@ -13,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 export default function Portal() {
   const [snapshot, setSnapshot] = useState<string>('');
   const [error, setError] = useState<string>('');
-  const [data, setData] = useState<any | null>(null);
+  const [data, setData] = useState<PortalSnapshot | null>(null);
 
   useEffect(() => {
     const url = new URL(location.href);
@@ -24,8 +25,9 @@ export default function Portal() {
         setSnapshot(decoded);
         const json = JSON.parse(decoded);
         setData(json);
-      } catch (e: any) {
-        setError(e?.message || 'Invalid snapshot');
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : 'Invalid snapshot';
+        setError(errorMessage);
       }
     }
   }, []);
@@ -59,8 +61,9 @@ export default function Portal() {
                 try {
                   const json = JSON.parse(snapshot);
                   setData(json);
-                } catch (e: any) {
-                  setError(e?.message || 'Invalid JSON');
+                } catch (e) {
+                  const errorMessage = e instanceof Error ? e.message : 'Invalid JSON';
+                  setError(errorMessage);
                   setData(null);
                 }
               }}
@@ -101,7 +104,7 @@ export default function Portal() {
                 <div>
                   <div className="text-sm font-semibold mb-2">Included Services</div>
                   <div className="space-y-1">
-                    {data.customerItems.map((it: any, idx: number) => (
+                    {data.customerItems.map((it, idx) => (
                       <div key={idx} className="flex justify-between border-b py-2 text-sm">
                         <span>{it.item}</span>
                         <span className="font-medium">{it.value}</span>

@@ -1,5 +1,5 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -14,21 +14,21 @@ export type OpenCVNamespace = typeof globalThis & { cv: any };
 let openCvLoadingPromise: Promise<any> | null = null;
 
 export function loadOpenCv(): Promise<any> {
-  if (typeof window === "undefined")
-    return Promise.reject(new Error("OpenCV requires a browser environment"));
+  if (typeof window === 'undefined')
+    return Promise.reject(new Error('OpenCV requires a browser environment'));
   const w = window as unknown as OpenCVNamespace;
   if (w.cv) return Promise.resolve(w.cv);
   if (openCvLoadingPromise) return openCvLoadingPromise;
 
   openCvLoadingPromise = new Promise((resolve, reject) => {
-    const script = document.createElement("script");
+    const script = document.createElement('script');
     // Use a lightweight, widely mirrored OpenCV.js build. Pinned version for stability.
-    script.src = "https://docs.opencv.org/4.x/opencv.js";
+    script.src = 'https://docs.opencv.org/4.x/opencv.js';
     script.async = true;
     script.onload = () => {
       // Wait until cv is ready
       const checkReady = () => {
-        if (w.cv && typeof w.cv.Mat !== "undefined") {
+        if (w.cv && typeof w.cv.Mat !== 'undefined') {
           resolve(w.cv);
         } else {
           setTimeout(checkReady, 50);
@@ -36,7 +36,7 @@ export function loadOpenCv(): Promise<any> {
       };
       checkReady();
     };
-    script.onerror = () => reject(new Error("Failed to load OpenCV.js"));
+    script.onerror = () => reject(new Error('Failed to load OpenCV.js'));
     document.head.appendChild(script);
   });
 
@@ -47,7 +47,7 @@ export type SegmentationParams = {
   // Preprocessing
   blurKernel?: number; // odd number, default 5
   // Thresholding
-  thresholdMethod?: "otsu" | "adaptive";
+  thresholdMethod?: 'otsu' | 'adaptive';
   adaptiveBlockSize?: number; // odd number, default 31
   adaptiveC?: number; // default 2
   // Morphology
@@ -69,7 +69,7 @@ export async function segmentAsphaltArea(
 ): Promise<SegmentationResult> {
   const cv = await loadOpenCv();
   const blurKernel = params.blurKernel ?? 5;
-  const thresholdMethod = params.thresholdMethod ?? "otsu";
+  const thresholdMethod = params.thresholdMethod ?? 'otsu';
   const adaptiveBlockSize = params.adaptiveBlockSize ?? 31;
   const adaptiveC = params.adaptiveC ?? 2;
   const morphOpen = params.morphOpen ?? 1;
@@ -88,7 +88,7 @@ export async function segmentAsphaltArea(
     const k = Math.max(3, blurKernel | 1);
     cv.GaussianBlur(gray, blurred, new cv.Size(k, k), 0, 0, cv.BORDER_DEFAULT);
 
-    if (thresholdMethod === "adaptive") {
+    if (thresholdMethod === 'adaptive') {
       const b = Math.max(3, adaptiveBlockSize | 1);
       cv.adaptiveThreshold(
         blurred,
@@ -130,16 +130,17 @@ export async function segmentAsphaltArea(
     const pixelCount = cv.countNonZero(mask);
 
     // Convert mask to canvas
-    const maskCanvas = document.createElement("canvas");
+    const maskCanvas = document.createElement('canvas');
     maskCanvas.width = mask.cols;
     maskCanvas.height = mask.rows;
     cv.imshow(maskCanvas, mask);
 
     // Optional debug overlay
-    const debugCanvas = document.createElement("canvas");
+    const debugCanvas = document.createElement('canvas');
     debugCanvas.width = src.cols;
     debugCanvas.height = src.rows;
-    const ctx = debugCanvas.getContext("2d")!;
+    const ctx = debugCanvas.getContext('2d')!;
+
     ctx.drawImage(image as any, 0, 0);
     ctx.globalAlpha = 0.4;
     ctx.drawImage(maskCanvas, 0, 0);

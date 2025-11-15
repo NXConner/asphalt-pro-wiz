@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,12 @@ interface AreaSectionProps {
   onChange: (area: number) => void;
 }
 
-const AreaSection = ({ shape, initialArea = 0, onRemove, onChange }: AreaSectionProps) => {
+const AreaSection = React.memo(function AreaSection({
+  shape,
+  initialArea = 0,
+  onRemove,
+  onChange,
+}: AreaSectionProps) {
   const [values, setValues] = useState({
     length: 0,
     width: 0,
@@ -52,9 +57,20 @@ const AreaSection = ({ shape, initialArea = 0, onRemove, onChange }: AreaSection
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [values, shape, initialArea]);
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = useCallback((field: string, value: string) => {
     setValues((prev) => ({ ...prev, [field]: parseFloat(value) || 0 }));
-  };
+  }, []);
+
+  const handleManualChange = useCallback(
+    (value: string) => {
+      const val = parseFloat(value) || 0;
+      setArea(val);
+      onChange(val);
+    },
+    [onChange],
+  );
+
+  const areaDisplay = useMemo(() => area.toFixed(1), [area]);
 
   return (
     <div className="flex items-center gap-2">
@@ -64,11 +80,7 @@ const AreaSection = ({ shape, initialArea = 0, onRemove, onChange }: AreaSection
             type="number"
             placeholder="Area (sq ft)"
             className="w-2/3"
-            onChange={(e) => {
-              const val = parseFloat(e.target.value) || 0;
-              setArea(val);
-              onChange(val);
-            }}
+            onChange={(e) => handleManualChange(e.target.value)}
           />
         </>
       )}
@@ -119,7 +131,7 @@ const AreaSection = ({ shape, initialArea = 0, onRemove, onChange }: AreaSection
         <span className="text-sm text-muted-foreground px-2">From image analysis:</span>
       )}
       <div className="flex-grow px-3 py-2 bg-muted rounded-md text-center font-medium">
-        {area.toFixed(1)} sq ft
+        {areaDisplay} sq ft
       </div>
       <Button
         variant="ghost"
@@ -131,6 +143,8 @@ const AreaSection = ({ shape, initialArea = 0, onRemove, onChange }: AreaSection
       </Button>
     </div>
   );
-};
+});
+
+AreaSection.displayName = 'AreaSection';
 
 export default AreaSection;

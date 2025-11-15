@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 interface OptimisticUpdateOptions<T> {
   onSuccess?: (result: T) => void;
@@ -13,30 +13,38 @@ export function useOptimistic<T>(initialData: T, options: OptimisticUpdateOption
   const [data, setData] = useState<T>(initialData);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const optionsRef = useRef(options);
+  const dataRef = useRef(data);
+
+  // Update refs when values change
+  optionsRef.current = options;
+  dataRef.current = data;
 
   const update = useCallback(
     async (
       optimisticUpdate: (current: T) => T,
-      serverUpdate: () => Promise<T>
+      serverUpdate: () => Promise<T>,
     ): Promise<boolean> => {
-      const previousData = data;
+      const previousData = dataRef.current;
       setIsUpdating(true);
       setError(null);
 
       try {
         // Apply optimistic update immediately
-        const updatedData = optimisticUpdate(data);
+        const updatedData = optimisticUpdate(dataRef.current);
         setData(updatedData);
+        dataRef.current = updatedData;
 
         // Perform server update
         const result = await serverUpdate();
 
         // Update with server response
         setData(result);
+        dataRef.current = result;
         setIsUpdating(false);
 
-        if (options.onSuccess) {
-          options.onSuccess(result);
+        if (optionsRef.current.onSuccess) {
+          optionsRef.current.onSuccess(result);
         }
 
         return true;
@@ -45,22 +53,26 @@ export function useOptimistic<T>(initialData: T, options: OptimisticUpdateOption
         setError(error);
 
         // Rollback to previous data
-        if (options.rollbackDelay) {
-          setTimeout(() => setData(previousData), options.rollbackDelay);
+        if (optionsRef.current.rollbackDelay) {
+          setTimeout(() => {
+            setData(previousData);
+            dataRef.current = previousData;
+          }, optionsRef.current.rollbackDelay);
         } else {
           setData(previousData);
+          dataRef.current = previousData;
         }
 
         setIsUpdating(false);
 
-        if (options.onError) {
-          options.onError(error);
+        if (optionsRef.current.onError) {
+          optionsRef.current.onError(error);
         }
 
         return false;
       }
     },
-    [data, options]
+    [], // Empty deps - using refs for stable callback
   );
 
   return {

@@ -1,5 +1,5 @@
 import { Building2, MapPin, Ruler, Waypoints } from 'lucide-react';
-import { lazy, Suspense } from 'react';
+import { lazy, memo, Suspense, useMemo } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,8 +31,15 @@ interface MissionControlPanelProps {
   estimator: EstimatorState;
 }
 
-export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
+export const MissionControlPanel = memo(function MissionControlPanel({
+  estimator,
+}: MissionControlPanelProps) {
   const { job, areas, cracks } = estimator;
+
+  const distanceLabel = useMemo(
+    () => (job.distance > 0 ? `${job.distance.toFixed(1)} mi RT to site` : 'Awaiting location'),
+    [job.distance],
+  );
 
   return (
     <CanvasPanel
@@ -42,7 +49,7 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
       tone="aurora"
       action={
         <span className="hidden sm:inline-flex items-center rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-slate-100/80">
-          {job.distance > 0 ? `${job.distance.toFixed(1)} mi RT to site` : 'Awaiting location'}
+          {distanceLabel}
         </span>
       }
     >
@@ -172,15 +179,13 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
           <Skeleton className="h-[420px] w-full rounded-3xl border border-white/10 bg-white/10" />
         }
       >
-        <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-xl">
-          <MapComponent
-            customerAddress={job.address}
-            onAddressUpdate={job.handleAddressUpdate}
-            onAreaDrawn={areas.handleAreaDrawn}
-            onCrackLengthDrawn={cracks.handleCrackLengthDrawn}
-            refreshKey={job.mapRefreshKey}
-          />
-        </div>
+        <MapComponent
+          customerAddress={job.address}
+          onAddressUpdate={job.handleAddressUpdate}
+          onAreaDrawn={areas.handleAreaDrawn}
+          onCrackLengthDrawn={cracks.handleCrackLengthDrawn}
+          refreshKey={job.mapRefreshKey}
+        />
       </Suspense>
       <DivisionMapInterface />
       <footer className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
@@ -198,7 +203,7 @@ export function MissionControlPanel({ estimator }: MissionControlPanelProps) {
       </footer>
     </CanvasPanel>
   );
-}
+});
 
 interface DataStatProps {
   icon: React.ReactNode;

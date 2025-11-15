@@ -20,7 +20,7 @@ export interface TimestampedRecord extends BaseRecord {
 export interface QueryFilter {
   column: string;
   operator: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'in';
-  value: any;
+  value: string | number | boolean | string[] | number[] | null | undefined;
 }
 
 export interface QueryOptions {

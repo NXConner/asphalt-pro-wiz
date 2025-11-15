@@ -1,5 +1,5 @@
 import { Shield } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { ComplianceResources, type ComplianceTopic } from '@/components/ComplianceResources';
 import { TacticalHudOverlay, type TacticalHudOverlayProps } from '@/components/hud';
@@ -133,25 +133,17 @@ const Index = () => {
     }
   }, [estimator.job.status]);
 
-  const lastUpdatedIso = useMemo(
-    () => new Date().toISOString(),
-    [
-      estimator.job.mapRefreshKey,
-      estimator.calculation.costs?.total,
-      estimator.calculation.costs?.profit,
-      estimator.areas.total,
-    ],
-  );
+  const lastUpdatedIso = useMemo(() => new Date().toISOString(), []);
 
-  const cycleWallpaper = () => {
+  const cycleWallpaper = useCallback(() => {
     const next = getNextWallpaper(wallpaperId);
     setWallpaperId(next.id);
-  };
+  }, [wallpaperId]);
 
-  const openCompliance = (topic: ComplianceTopic) => {
+  const openCompliance = useCallback((topic: ComplianceTopic) => {
     setComplianceTopic(topic);
     setComplianceOpen(true);
-  };
+  }, []);
 
   return (
     <>
@@ -223,21 +215,21 @@ const Index = () => {
               server if updates are missing.
             </span>
           }
-            hudOverlay={
-              <TacticalHudOverlay
-                missionName={estimator.job.name || 'Pavement Mission'}
-                missionStatus={estimator.job.status}
-                missionPhase={missionPhase}
-                totalAreaSqFt={estimator.areas.total}
-                totalCost={estimator.calculation.costs?.total ?? null}
-                travelMiles={estimator.job.distance}
-                coordinates={estimator.job.coords}
-                scheduleWindow={null}
-                lastUpdatedIso={lastUpdatedIso}
-                watchers={hudWatchers}
-                flags={hudFlags}
-              />
-            }
+          hudOverlay={
+            <TacticalHudOverlay
+              missionName={estimator.job.name || 'Pavement Mission'}
+              missionStatus={estimator.job.status}
+              missionPhase={missionPhase}
+              totalAreaSqFt={estimator.areas.total}
+              totalCost={estimator.calculation.costs?.total ?? null}
+              travelMiles={estimator.job.distance}
+              coordinates={estimator.job.coords}
+              scheduleWindow={null}
+              lastUpdatedIso={lastUpdatedIso}
+              watchers={hudWatchers}
+              flags={hudFlags}
+            />
+          }
         />
       </main>
       <ComplianceResources
@@ -248,5 +240,7 @@ const Index = () => {
     </>
   );
 };
+
+Index.displayName = 'Index';
 
 export default Index;

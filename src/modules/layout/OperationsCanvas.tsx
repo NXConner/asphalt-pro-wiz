@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 
 import type { CanvasWallpaper } from './wallpapers';
 
-import { CanvasGrid, ParticleBackground } from '@/components/hud';
+import { CanvasGrid, CornerBrackets, ParticleBackground, ScanLines } from '@/components/hud';
 import { cn } from '@/lib/utils';
 
 interface OperationsCanvasProps {
@@ -16,7 +16,7 @@ interface OperationsCanvasProps {
   hudOverlay?: ReactNode;
 }
 
-export function OperationsCanvas({
+export const OperationsCanvas = memo(function OperationsCanvas({
   wallpaper,
   header,
   missionControl,
@@ -44,7 +44,32 @@ export function OperationsCanvas({
         className="opacity-45 mix-blend-screen"
       />
       <CanvasGrid density={110} className="opacity-[var(--hud-grid-opacity)]" />
+      <ScanLines
+        accentColor="rgba(251,146,60,0.15)"
+        density={120}
+        speedMs={8000}
+        opacity={0.2}
+        direction="down"
+        className="pointer-events-none"
+      />
       {hudOverlay}
+      {/* Corner brackets for main canvas */}
+      <CornerBrackets
+        size={48}
+        thickness={2}
+        offset={-12}
+        glow={true}
+        animated={false}
+        className="pointer-events-none absolute left-0 top-0 z-0 opacity-40"
+      />
+      <CornerBrackets
+        size={48}
+        thickness={2}
+        offset={-12}
+        glow={true}
+        animated={false}
+        className="pointer-events-none absolute right-0 top-0 z-0 opacity-40"
+      />
       <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col gap-10 px-4 pb-12 pt-12 sm:px-8 lg:px-12">
         {/* Hidden h1 for SEO and accessibility */}
         <h1 className="sr-only">Pavement Performance Suite - Asphalt Maintenance Estimating</h1>
@@ -63,4 +88,4 @@ export function OperationsCanvas({
       </div>
     </div>
   );
-}
+});

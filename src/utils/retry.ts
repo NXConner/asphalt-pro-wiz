@@ -21,17 +21,14 @@ const DEFAULT_CONFIG: Required<RetryConfig> = {
 /**
  * Execute a function with retry logic and exponential backoff
  */
-export async function withRetry<T>(
-  fn: () => Promise<T>,
-  config: RetryConfig = {}
-): Promise<T> {
+export async function withRetry<T>(fn: () => Promise<T>, config: RetryConfig = {}): Promise<T> {
   const { maxAttempts, initialDelay, maxDelay, backoffMultiplier, shouldRetry } = {
     ...DEFAULT_CONFIG,
     ...config,
   };
 
   let lastError: Error;
-  
+
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await fn();
@@ -49,13 +46,10 @@ export async function withRetry<T>(
       }
 
       // Calculate delay with exponential backoff
-      const delay = Math.min(
-        initialDelay * Math.pow(backoffMultiplier, attempt - 1),
-        maxDelay
-      );
+      const delay = Math.min(initialDelay * Math.pow(backoffMultiplier, attempt - 1), maxDelay);
 
       console.log(`Retry attempt ${attempt}/${maxAttempts} after ${delay}ms`);
-      
+
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
@@ -66,12 +60,11 @@ export async function withRetry<T>(
 /**
  * Create a retry wrapper for a function
  */
-export function createRetryWrapper<T extends (...args: any[]) => Promise<any>>(
+export function createRetryWrapper<T extends (...args: unknown[]) => Promise<unknown>>(
   fn: T,
-  config?: RetryConfig
+  config?: RetryConfig,
 ): T {
-  return ((...args: Parameters<T>) =>
-    withRetry(() => fn(...args), config)) as T;
+  return ((...args: Parameters<T>) => withRetry(() => fn(...args), config)) as T;
 }
 
 /**
@@ -93,8 +86,8 @@ export function isRetryableError(error: Error): boolean {
   }
 
   // Check for HTTP status codes
-  if ('status' in error) {
-    const status = (error as any).status;
+  if ('status' in error && typeof (error as { status?: unknown }).status === 'number') {
+    const status = (error as { status: number }).status;
     return status >= 500 || status === 408 || status === 429;
   }
 
@@ -107,7 +100,7 @@ export function isRetryableError(error: Error): boolean {
 export async function withLinearRetry<T>(
   fn: () => Promise<T>,
   maxAttempts = 3,
-  delay = 1000
+  delay = 1000,
 ): Promise<T> {
   return withRetry(fn, {
     maxAttempts,
@@ -119,10 +112,7 @@ export async function withLinearRetry<T>(
 /**
  * Retry immediately without delay
  */
-export async function withImmediateRetry<T>(
-  fn: () => Promise<T>,
-  maxAttempts = 3
-): Promise<T> {
+export async function withImmediateRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
   return withRetry(fn, {
     maxAttempts,
     initialDelay: 0,

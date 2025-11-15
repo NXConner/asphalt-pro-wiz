@@ -1,4 +1,4 @@
-import { Bell } from 'lucide-react';
+import { Bell, Radio } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
 
 interface Notification {
   id: string;
@@ -89,23 +90,37 @@ export function RealtimeNotifications() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative border-white/10 bg-white/5 hover:bg-white/10 hover:border-orange-400/30 transition-all duration-300"
+        >
+          <Bell className="h-5 w-5 text-slate-200" />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs shadow-[0_0_12px_rgba(248,113,113,0.6)] animate-pulse"
             >
               {unreadCount}
             </Badge>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80" align="end">
+      <PopoverContent className="w-80 border-white/20 bg-slate-950/95 backdrop-blur-xl" align="end">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold">Notifications</h3>
+          <div className="flex items-center gap-2">
+            <Radio className="h-4 w-4 text-orange-400 animate-pulse" />
+            <h3 className="font-semibold text-slate-50 font-mono uppercase tracking-wider text-sm">
+              Live Notifications
+            </h3>
+          </div>
           {unreadCount > 0 && (
-            <Button variant="ghost" size="sm" onClick={markAllAsRead}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={markAllAsRead}
+              className="text-xs text-slate-200/80 hover:text-slate-50"
+            >
               Mark all read
             </Button>
           )}
@@ -119,9 +134,13 @@ export function RealtimeNotifications() {
                 <button
                   key={notification.id}
                   type="button"
-                  className={`w-full text-left p-3 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                    notification.read ? 'bg-background' : 'bg-accent'
-                  }`}
+                  className={cn(
+                    'group relative w-full text-left p-3 rounded-xl border transition-all duration-300',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
+                    notification.read
+                      ? 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                      : 'border-orange-400/30 bg-orange-400/10 hover:border-orange-400/50 hover:bg-orange-400/15 hover:shadow-[0_0_16px_rgba(251,146,60,0.3)]',
+                  )}
                   onClick={() => !notification.read && markAsRead(notification.id)}
                   onKeyDown={(event) => {
                     if ((event.key === 'Enter' || event.key === ' ') && !notification.read) {
@@ -130,19 +149,25 @@ export function RealtimeNotifications() {
                     }
                   }}
                 >
-                  <div className="flex items-start justify-between gap-2">
+                  <span
+                    className="absolute inset-0 bg-[linear-gradient(130deg,rgba(255,255,255,0.1)_10%,transparent_60%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100 rounded-xl"
+                    aria-hidden
+                  />
+                  <div className="relative flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm">{notification.title}</p>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
+                      <p className="font-semibold text-sm text-slate-50 font-mono uppercase tracking-wide">
+                        {notification.title}
+                      </p>
+                      <p className="text-sm text-slate-200/80 line-clamp-2 mt-1">
                         {notification.message}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-slate-200/60 mt-2 font-mono">
                         {new Date(notification.created_at).toLocaleString()}
                       </p>
                     </div>
                     {!notification.read && (
                       <span
-                        className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-1"
+                        className="w-2.5 h-2.5 rounded-full bg-orange-400 flex-shrink-0 mt-1 shadow-[0_0_8px_rgba(251,146,60,0.8)] animate-pulse"
                         aria-hidden
                       />
                     )}

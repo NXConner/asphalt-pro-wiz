@@ -55,8 +55,10 @@ export default function Auth() {
     try {
       await signIn(email, password);
       navigate('/', { replace: true });
-    } catch (err: any) {
-      setError(err?.message || 'Failed to sign in. Please check your credentials.');
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to sign in. Please check your credentials.';
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -72,11 +74,13 @@ export default function Auth() {
     try {
       await signUp(email, password);
       // Success message is shown by the hook
-    } catch (err: any) {
-      if (err?.message?.includes('already registered')) {
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to create account. Please try again.';
+      if (errorMessage.includes('already registered')) {
         setError('This email is already registered. Please sign in instead.');
       } else {
-        setError(err?.message || 'Failed to create account. Please try again.');
+        setError(errorMessage);
       }
     } finally {
       setIsSubmitting(false);

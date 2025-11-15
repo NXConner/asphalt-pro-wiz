@@ -1,5 +1,5 @@
 import { Trash2, Plus } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,7 +29,12 @@ interface CustomServicesProps {
   onChange: (services: CustomService[]) => void;
 }
 
-export function CustomServices({ totalArea, crackLength, value, onChange }: CustomServicesProps) {
+export const CustomServices = React.memo(function CustomServices({
+  totalArea,
+  crackLength,
+  value,
+  onChange,
+}: CustomServicesProps) {
   const [services, setServices] = useState<CustomService[]>(value);
 
   useEffect(() => setServices(value), [value]);
@@ -196,4 +201,4 @@ export function CustomServices({ totalArea, crackLength, value, onChange }: Cust
       </CardContent>
     </Card>
   );
-}
+});

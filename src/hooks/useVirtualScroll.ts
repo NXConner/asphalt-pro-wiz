@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 
 interface VirtualScrollOptions {
   itemHeight: number;
@@ -18,25 +18,28 @@ interface VirtualScrollResult {
  */
 export function useVirtualScroll(
   itemCount: number,
-  { itemHeight, containerHeight, overscan = 3 }: VirtualScrollOptions
+  { itemHeight, containerHeight, overscan = 3 }: VirtualScrollOptions,
 ): VirtualScrollResult {
   const [scrollTop, setScrollTop] = useState(0);
   const scrollElementRef = useRef<HTMLElement | null>(null);
 
-  const visibleCount = Math.ceil(containerHeight / itemHeight);
-  const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
-  const endIndex = Math.min(itemCount - 1, startIndex + visibleCount + overscan * 2);
+  const virtualItems = useMemo(() => {
+    const visibleCount = Math.ceil(containerHeight / itemHeight);
+    const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
+    const endIndex = Math.min(itemCount - 1, startIndex + visibleCount + overscan * 2);
 
-  const virtualItems = [];
-  for (let i = startIndex; i <= endIndex; i++) {
-    virtualItems.push({
-      index: i,
-      start: i * itemHeight,
-      end: (i + 1) * itemHeight,
-    });
-  }
+    const items = [];
+    for (let i = startIndex; i <= endIndex; i++) {
+      items.push({
+        index: i,
+        start: i * itemHeight,
+        end: (i + 1) * itemHeight,
+      });
+    }
+    return items;
+  }, [scrollTop, itemCount, itemHeight, containerHeight, overscan]);
 
-  const totalHeight = itemCount * itemHeight;
+  const totalHeight = useMemo(() => itemCount * itemHeight, [itemCount, itemHeight]);
 
   const handleScroll = useCallback((e: Event) => {
     const target = e.target as HTMLElement;
@@ -50,7 +53,7 @@ export function useVirtualScroll(
         scrollElementRef.current.scrollTop = position;
       }
     },
-    [itemHeight]
+    [itemHeight],
   );
 
   useEffect(() => {

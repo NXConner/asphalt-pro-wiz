@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 
-import { HUD_DURATIONS, HUD_EASING } from '@/design';
+import { divisionDurations, divisionEasing } from '@/design';
 import { cn } from '@/lib/utils';
 
 interface TacticalLoaderProps {
@@ -10,19 +10,31 @@ interface TacticalLoaderProps {
   size?: number;
 }
 
-const TacticalLoaderComponent = ({ className, label = 'Analyzing Data', size = 64 }: TacticalLoaderProps) => (
+const TacticalLoaderComponent = ({
+  className,
+  label = 'Analyzing Data',
+  size = 64,
+}: TacticalLoaderProps) => (
   <div className={cn('flex flex-col items-center gap-3 text-center', className)}>
     <div className="relative">
       <motion.span
         className="block rounded-full border border-orange-400/70"
         style={{ width: size, height: size }}
         animate={{ rotate: 360 }}
-        transition={{ duration: HUD_DURATIONS.deliberate, repeat: Infinity, ease: HUD_EASING.tactical }}
+        transition={{
+          duration: divisionDurations.deliberate,
+          repeat: Infinity,
+          ease: divisionEasing.tactical,
+        }}
       />
       <motion.span
         className="absolute inset-2 rounded-full border border-cyan-400/60"
         animate={{ rotate: -360 }}
-        transition={{ duration: HUD_DURATIONS.standard, repeat: Infinity, ease: HUD_EASING.glide }}
+        transition={{
+          duration: divisionDurations.standard,
+          repeat: Infinity,
+          ease: divisionEasing.glide,
+        }}
       />
       <motion.span
         className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-400"
@@ -35,4 +47,3 @@ const TacticalLoaderComponent = ({ className, label = 'Analyzing Data', size = 6
 );
 
 export const TacticalLoader = memo(TacticalLoaderComponent);
-

@@ -108,11 +108,13 @@ export const contactFormSchema = z.object({
 export const fileUploadSchema = z.object({
   name: z.string().min(1, 'Filename is required'),
   size: z.number().max(10 * 1024 * 1024, 'File size must be less than 10MB'),
-  type: z.string().refine(
-    (type) =>
-      ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'].includes(type),
-    'Invalid file type. Allowed: JPEG, PNG, GIF, WEBP, PDF'
-  ),
+  type: z
+    .string()
+    .refine(
+      (type) =>
+        ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'].includes(type),
+      'Invalid file type. Allowed: JPEG, PNG, GIF, WEBP, PDF',
+    ),
 });
 
 // Password validation with strength requirements
@@ -139,7 +141,7 @@ export const usernameSchema = z
  */
 export function validateData<T extends z.ZodType>(
   schema: T,
-  data: unknown
+  data: unknown,
 ): { success: true; data: z.infer<T> } | { success: false; errors: string[] } {
   const result = schema.safeParse(data);
 
@@ -156,8 +158,10 @@ export function validateData<T extends z.ZodType>(
  */
 export function validateFields<T extends Record<string, z.ZodType>>(
   schemas: T,
-  data: Record<string, unknown>
-): { success: true; data: { [K in keyof T]: z.infer<T[K]> } } | { success: false; errors: Record<string, string[]> } {
+  data: Record<string, unknown>,
+):
+  | { success: true; data: { [K in keyof T]: z.infer<T[K]> } }
+  | { success: false; errors: Record<string, string[]> } {
   const errors: Record<string, string[]> = {};
   const validatedData: Record<string, any> = {};
   let hasErrors = false;
@@ -176,7 +180,8 @@ export function validateFields<T extends Record<string, z.ZodType>>(
     return { success: false, errors: errors as Record<string, string[]> };
   }
 
-  return { success: true, data: validatedData as any };
+  // Type assertion is safe here as validatedData matches the schema
+  return { success: true, data: validatedData as T };
 }
 
 /**
@@ -185,7 +190,7 @@ export function validateFields<T extends Record<string, z.ZodType>>(
 export function createValidatedHandler<T extends z.ZodType>(
   schema: T,
   onSuccess: (data: z.infer<T>) => void | Promise<void>,
-  onError?: (errors: string[]) => void
+  onError?: (errors: string[]) => void,
 ) {
   return async (data: unknown) => {
     const result = validateData(schema, data);

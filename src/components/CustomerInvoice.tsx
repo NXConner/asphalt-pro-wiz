@@ -1,5 +1,5 @@
 import { Printer, Download } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +14,7 @@ interface CustomerInvoiceProps {
   onPrint: () => void;
 }
 
-export function CustomerInvoice({
+export const CustomerInvoice = React.memo(function CustomerInvoice({
   jobName,
   customerAddress,
   costs,
@@ -30,56 +30,67 @@ export function CustomerInvoice({
   });
 
   // Group items for customer-friendly summary
-  const customerBreakdown = breakdown
-    .filter((item) => !item.item.includes('Overhead') && !item.item.includes('Profit'))
-    .map((item) => {
-      if (item.item.startsWith('Sealcoat'))
-        return { item: 'Sealcoating', value: item.value.split('→').pop()?.trim() || item.value };
-      if (item.item === 'Sand')
-        return {
-          item: 'Sealcoating Additives',
-          value: item.value.split('→').pop()?.trim() || item.value,
-        };
-      if (item.item === 'Fast-Dry Additive')
-        return {
-          item: 'Sealcoating Additives',
-          value: item.value.split('→').pop()?.trim() || item.value,
-        };
-      if (item.item === 'Crack Filler' || item.item === 'Propane Tanks')
-        return {
-          item: 'Cleaning & Crack Repair',
-          value: item.value.split('→').pop()?.trim() || item.value,
-        };
-      if (item.item === 'Striping') return { item: 'Parking Lot Striping', value: item.value };
-      if (item.item === 'Oil Spot Primer')
-        return {
-          item: 'Surface Preparation',
-          value: item.value.split('→').pop()?.trim() || item.value,
-        };
-      if (
-        item.item === 'Edge Pushing' ||
-        item.item.startsWith('Weed') ||
-        item.item.startsWith('Professional Crack Cleaning') ||
-        item.item === 'Power Washing' ||
-        item.item === 'Debris Removal'
-      ) {
-        return { item: 'Premium Services', value: item.value };
-      }
-      if (item.item.startsWith('Labor'))
-        return { item: 'Labor', value: item.value.split('→').pop()?.trim() || item.value };
-      if (item.item === 'Fuel Cost') return { item: 'Travel', value: item.value };
-      if (item.item === 'Total Area') return { item: 'Measured Area', value: item.value };
-      return item;
-    })
-    .reduce<Record<string, number>>((acc, cur) => {
-      const numeric = parseFloat(cur.value.replace(/[^0-9.]/g, '')) || 0;
-      acc[cur.item] = (acc[cur.item] || 0) + numeric;
-      return acc;
-    }, {});
+  const customerBreakdown = useMemo(
+    () =>
+      breakdown
+        .filter((item) => !item.item.includes('Overhead') && !item.item.includes('Profit'))
+        .map((item) => {
+          if (item.item.startsWith('Sealcoat'))
+            return {
+              item: 'Sealcoating',
+              value: item.value.split('→').pop()?.trim() || item.value,
+            };
+          if (item.item === 'Sand')
+            return {
+              item: 'Sealcoating Additives',
+              value: item.value.split('→').pop()?.trim() || item.value,
+            };
+          if (item.item === 'Fast-Dry Additive')
+            return {
+              item: 'Sealcoating Additives',
+              value: item.value.split('→').pop()?.trim() || item.value,
+            };
+          if (item.item === 'Crack Filler' || item.item === 'Propane Tanks')
+            return {
+              item: 'Cleaning & Crack Repair',
+              value: item.value.split('→').pop()?.trim() || item.value,
+            };
+          if (item.item === 'Striping') return { item: 'Parking Lot Striping', value: item.value };
+          if (item.item === 'Oil Spot Primer')
+            return {
+              item: 'Surface Preparation',
+              value: item.value.split('→').pop()?.trim() || item.value,
+            };
+          if (
+            item.item === 'Edge Pushing' ||
+            item.item.startsWith('Weed') ||
+            item.item.startsWith('Professional Crack Cleaning') ||
+            item.item === 'Power Washing' ||
+            item.item === 'Debris Removal'
+          ) {
+            return { item: 'Premium Services', value: item.value };
+          }
+          if (item.item.startsWith('Labor'))
+            return { item: 'Labor', value: item.value.split('→').pop()?.trim() || item.value };
+          if (item.item === 'Fuel Cost') return { item: 'Travel', value: item.value };
+          if (item.item === 'Total Area') return { item: 'Measured Area', value: item.value };
+          return item;
+        })
+        .reduce<Record<string, number>>((acc, cur) => {
+          const numeric = parseFloat(cur.value.replace(/[^0-9.]/g, '')) || 0;
+          acc[cur.item] = (acc[cur.item] || 0) + numeric;
+          return acc;
+        }, {}),
+    [breakdown],
+  );
 
-  const customerItems = Object.entries(customerBreakdown)
-    .filter(([k]) => !['Measured Area'].includes(k))
-    .map(([k, v]) => ({ item: k, value: `$${v.toFixed(2)}` }));
+  const customerItems = useMemo(
+    () =>
+      Object.entries(customerBreakdown)
+        .filter(([k]) => !['Measured Area'].includes(k))
+        .map(([k, v]) => ({ item: k, value: `$${v.toFixed(2)}` })),
+    [customerBreakdown],
+  );
 
   const totals = useMemo(() => {
     const base = costs.total;
@@ -230,4 +241,6 @@ export function CustomerInvoice({
       </CardContent>
     </Card>
   );
-}
+});
+
+CustomerInvoice.displayName = 'CustomerInvoice';

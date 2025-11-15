@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Minimal base tokens to restore build. Fonts are loaded via index.html */
+/* Division Design System Base Tokens */
 @layer base {
   :root {
     color-scheme: dark;
@@ -14,28 +14,129 @@
     --popover-foreground: 222 22% 92%;
     --primary: 25 100% 55%;
     --primary-foreground: 16 88% 95%;
+    --primary-hover: 25 100% 62%;
     --secondary: 197 86% 48%;
     --secondary-foreground: 210 100% 96%;
+    --secondary-hover: 197 86% 55%;
     --muted: 226 42% 10%;
     --muted-foreground: 226 20% 70%;
     --accent: 206 92% 55%;
     --accent-foreground: 0 0% 100%;
+    --accent-hover: 205 92% 61%;
     --destructive: 358 86% 54%;
     --destructive-foreground: 0 0% 98%;
+    --success: 135 56% 45%;
+    --success-foreground: 120 44% 92%;
+    --warning: 45 100% 52%;
+    --warning-foreground: 40 85% 96%;
+    --info: 190 90% 58%;
+    --info-foreground: 189 100% 96%;
     --border: 213 32% 22%;
     --input: 215 32% 16%;
     --ring: 206 92% 55%;
     --radius: 1rem;
+
+    /* Division HUD Variables */
+    --hud-font-heading: 'Rajdhani', 'Roboto Condensed', sans-serif;
+    --hud-font-display: 'Orbitron', 'Rajdhani', sans-serif;
+    --hud-font-body: 'Rajdhani', 'Inter', 'system-ui', sans-serif;
+    --hud-font-mono: 'Share Tech Mono', 'Roboto Mono', 'Menlo', monospace;
+    --hud-weight-display: 750;
+    --hud-weight-heading: 650;
+    --hud-weight-body: 500;
+    --hud-weight-mono: 550;
+    --hud-grid-opacity: 0.18;
+    --hud-card-opacity: 0.65;
+    --hud-panel-blur: 28px;
   }
 
   .light {
     color-scheme: light;
   }
 
-  * { @apply border-border; }
+  * {
+    @apply border-border;
+  }
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Rajdhani', system-ui, sans-serif;
+    font-family: var(--hud-font-body);
+    font-weight: var(--hud-weight-body);
+  }
+}
+
+/* Division Utility Classes */
+@layer utilities {
+  .division-scanline {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .division-scanline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255, 128, 0, 0.5), transparent);
+    animation: division-scanline 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  }
+
+  .division-glow-ember {
+    box-shadow: 0 0 12px rgba(255, 145, 0, 0.65);
+  }
+
+  .division-glow-aurora {
+    box-shadow: 0 0 12px rgba(56, 235, 214, 0.55);
+  }
+
+  .division-glow-lagoon {
+    box-shadow: 0 0 14px rgba(114, 159, 255, 0.55);
+  }
+
+  .text-glow-ember {
+    text-shadow:
+      0 0 14px rgba(255, 145, 0, 0.7),
+      0 0 32px rgba(255, 145, 0, 0.45);
+  }
+
+  .text-glow-aurora {
+    text-shadow:
+      0 0 16px rgba(56, 235, 214, 0.65),
+      0 0 36px rgba(56, 235, 214, 0.4);
+  }
+
+  .text-glow-lagoon {
+    text-shadow:
+      0 0 16px rgba(114, 159, 255, 0.65),
+      0 0 38px rgba(114, 159, 255, 0.4);
+  }
+
+  .division-corner-bracket {
+    position: relative;
+  }
+
+  .division-corner-bracket::before,
+  .division-corner-bracket::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(255, 128, 0, 0.6);
+  }
+
+  .division-corner-bracket::before {
+    top: 0;
+    left: 0;
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .division-corner-bracket::after {
+    bottom: 0;
+    right: 0;
+    border-left: none;
+    border-top: none;
   }
 }

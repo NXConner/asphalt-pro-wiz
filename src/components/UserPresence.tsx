@@ -1,9 +1,11 @@
+import { Radio } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
 
 interface PresenceState {
   [key: string]: {
@@ -79,31 +81,42 @@ export function UserPresence() {
           {onlineUsers.slice(0, 5).map((user) => (
             <Tooltip key={user.user_id}>
               <TooltipTrigger>
-                <Avatar className="border-2 border-background w-8 h-8">
-                  <AvatarFallback className="text-xs">
+                <Avatar className="border-2 border-orange-400/40 w-8 h-8 shadow-[0_0_8px_rgba(251,146,60,0.4)] transition-all duration-300 hover:border-orange-400/60 hover:shadow-[0_0_12px_rgba(251,146,60,0.6)]">
+                  <AvatarFallback className="text-xs bg-white/10 text-orange-300 font-semibold">
                     {user.email.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               </TooltipTrigger>
-              <TooltipContent>
-                <p>{user.email}</p>
+              <TooltipContent className="border-white/20 bg-slate-950/95 backdrop-blur-xl">
+                <p className="text-slate-50 font-mono text-xs">{user.email}</p>
               </TooltipContent>
             </Tooltip>
           ))}
           {onlineUsers.length > 5 && (
             <Tooltip>
               <TooltipTrigger>
-                <Avatar className="border-2 border-background w-8 h-8">
-                  <AvatarFallback className="text-xs">+{onlineUsers.length - 5}</AvatarFallback>
+                <Avatar className="border-2 border-orange-400/40 w-8 h-8 shadow-[0_0_8px_rgba(251,146,60,0.4)]">
+                  <AvatarFallback className="text-xs bg-white/10 text-orange-300 font-semibold">
+                    +{onlineUsers.length - 5}
+                  </AvatarFallback>
                 </Avatar>
               </TooltipTrigger>
-              <TooltipContent>
-                <p>{onlineUsers.length - 5} more online</p>
+              <TooltipContent className="border-white/20 bg-slate-950/95 backdrop-blur-xl">
+                <p className="text-slate-50 font-mono text-xs">
+                  {onlineUsers.length - 5} more online
+                </p>
               </TooltipContent>
             </Tooltip>
           )}
         </div>
-        <Badge variant="secondary" className="ml-2">
+        <Badge
+          variant="secondary"
+          className={cn(
+            'ml-2 border-orange-400/30 bg-orange-400/10 text-orange-200 font-mono text-xs',
+            'shadow-[0_0_8px_rgba(251,146,60,0.3)]',
+          )}
+        >
+          <Radio className="mr-1 h-3 w-3 animate-pulse" />
           {onlineUsers.length} online
         </Badge>
       </TooltipProvider>

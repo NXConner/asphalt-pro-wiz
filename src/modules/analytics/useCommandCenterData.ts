@@ -17,25 +17,26 @@ export interface CommandCenterQueryResult {
   errorMessage?: string;
 }
 
-  async function fetchCommandCenterData(): Promise<CommandCenterMetrics> {
-    const [jobsRes, estimatesRes] = await Promise.all([
-      supabase
-        .from('jobs' as any)
-        .select('id,status,quote_value,total_area_sqft,created_at,updated_at')
-        .limit(500),
-      supabase.from('estimates' as any).select('id,job_id,amount,created_at').limit(500),
-    ]);
+async function fetchCommandCenterData(): Promise<CommandCenterMetrics> {
+  const [jobsRes, estimatesRes] = await Promise.all([
+    supabase
+      .from('jobs')
+      .select('id,status,quote_value,total_area_sqft,created_at,updated_at')
+      .limit(500),
+    supabase.from('estimates').select('id,job_id,amount,created_at').limit(500),
+  ]);
 
-    const errors = [jobsRes.error, estimatesRes.error].filter(Boolean);
-    if (errors.length) {
-      throw errors[0]!;
-    }
+  const errors = [jobsRes.error, estimatesRes.error].filter(Boolean);
+  if (errors.length) {
+    throw errors[0]!;
+  }
 
-    return calculateCommandCenterMetrics(
-      (jobsRes.data ?? []) as any as JobRecord[],
-      (estimatesRes.data ?? []) as any as EstimateRecord[],
-      [] as CrewAssignmentRecord[],
-    );
+  // Type assertions are safe here as we control the query structure
+  return calculateCommandCenterMetrics(
+    (jobsRes.data ?? []) as unknown as JobRecord[],
+    (estimatesRes.data ?? []) as unknown as EstimateRecord[],
+    [] as CrewAssignmentRecord[],
+  );
 }
 
 export function useCommandCenterData(): CommandCenterQueryResult {

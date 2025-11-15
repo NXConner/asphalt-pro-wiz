@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { memo, useId } from 'react';
 
 import { AIGemini } from '@/components/AIGemini';
 import { BusinessSettings } from '@/components/BusinessSettings';
@@ -67,7 +67,9 @@ const FEATURE_FLAG_LABELS: Record<string, { title: string; description: string }
   },
 };
 
-export function EngagementHubPanel({ estimator }: EngagementHubPanelProps) {
+export const EngagementHubPanel = memo(function EngagementHubPanel({
+  estimator,
+}: EngagementHubPanelProps) {
   const { premium, customServices, calculation, job, business, featureFlags } = estimator;
   const ownerModeId = useId();
 
@@ -179,9 +181,15 @@ export function EngagementHubPanel({ estimator }: EngagementHubPanelProps) {
             waterPercent={estimator.materials.waterPercent}
             onWaterPercentChange={estimator.materials.setWaterPercent}
             sealerType={estimator.materials.sealerType}
-            onSealerTypeChange={(value) => estimator.materials.setSealerType(value as any)}
+            onSealerTypeChange={(value) =>
+              estimator.materials.setSealerType(
+                value as 'Acrylic' | 'Asphalt Emulsion' | 'Coal Tar' | 'PMM' | 'Other',
+              )
+            }
             sandType={estimator.materials.sandType}
-            onSandTypeChange={(value) => estimator.materials.setSandType(value as any)}
+            onSandTypeChange={(value) =>
+              estimator.materials.setSandType(value as 'Black Beauty' | 'Black Diamond' | 'Other')
+            }
           />
         </CanvasPanel>
       ) : null}
@@ -213,7 +221,7 @@ export function EngagementHubPanel({ estimator }: EngagementHubPanelProps) {
       ) : null}
     </div>
   );
-}
+});
 
 interface FlagToggleProps {
   title: string;

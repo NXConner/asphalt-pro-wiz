@@ -1,10 +1,14 @@
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-export function LayoutOptimizer({ totalAreaSqft }: { totalAreaSqft: number }) {
+export const LayoutOptimizer = React.memo(function LayoutOptimizer({
+  totalAreaSqft,
+}: {
+  totalAreaSqft: number;
+}) {
   const [stallWidth, setStallWidth] = useState<number>(9); // ft
   const [stallDepth, setStallDepth] = useState<number>(18); // ft
   const [aisleWidth, setAisleWidth] = useState<number>(24); // ft two-way
@@ -104,4 +108,4 @@ export function LayoutOptimizer({ totalAreaSqft }: { totalAreaSqft: number }) {
       </CardContent>
     </Card>
   );
-}
+});

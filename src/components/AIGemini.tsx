@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,13 +7,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { analyzeImage, generateChat } from '@/lib/gemini';
 import { retrieveRelevantContext } from '@/lib/rag';
 
-export function AIGemini() {
+export const AIGemini = React.memo(function AIGemini() {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [busy, setBusy] = useState(false);
   const [imageResult, setImageResult] = useState('');
 
-  const ask = async () => {
+  const ask = useCallback(async () => {
     setBusy(true);
     try {
       const ragContext = await retrieveRelevantContext(question);
@@ -21,14 +21,15 @@ export function AIGemini() {
       const context = ragContext ? `${system}\n\nContext:\n${ragContext}` : system;
       const res = await generateChat(question, context);
       setAnswer(res);
-    } catch (e: any) {
-      setAnswer(e?.message || 'Error');
+    } catch (e: unknown) {
+      const error = e as { message?: string };
+      setAnswer(error?.message || 'Error');
     } finally {
       setBusy(false);
     }
-  };
+  }, [question]);
 
-  const handleImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImage = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setBusy(true);
@@ -40,13 +41,14 @@ export function AIGemini() {
         'Analyze asphalt condition, cracks (length/width), patching needs, and estimated affected area in sq ft. Return a concise list with numeric estimates.',
       );
       setImageResult(res);
-    } catch (e: any) {
-      setImageResult(e?.message || 'Error');
+    } catch (e: unknown) {
+      const error = e as { message?: string };
+      setImageResult(error?.message || 'Error');
     } finally {
       setBusy(false);
       e.currentTarget.value = '';
     }
-  };
+  }, []);
 
   return (
     <Card>
@@ -85,7 +87,9 @@ export function AIGemini() {
       </CardContent>
     </Card>
   );
-}
+});
+
+AIGemini.displayName = 'AIGemini';
 
 function toBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {

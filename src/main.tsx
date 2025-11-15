@@ -15,21 +15,36 @@ try {
 
 // Session bootstrap logging
 try {
-  setLogContext({ appVersion: (import.meta as any)?.env?.VITE_APP_VERSION });
+  const appVersion =
+    typeof import.meta !== 'undefined' &&
+    'env' in import.meta &&
+    typeof (import.meta.env as { VITE_APP_VERSION?: string })?.VITE_APP_VERSION === 'string'
+      ? (import.meta.env as { VITE_APP_VERSION: string }).VITE_APP_VERSION
+      : undefined;
+  setLogContext({ appVersion });
   logEvent('app.start');
 } catch {}
 
 createRoot(document.getElementById('root')!).render(<App />);
 
 // Web-vitals (lazy) with sampling
-if ((import.meta as any)?.env?.VITE_ENABLE_WEB_VITALS) {
+const enableWebVitals =
+  typeof import.meta !== 'undefined' &&
+  'env' in import.meta &&
+  typeof (import.meta.env as { VITE_ENABLE_WEB_VITALS?: string })?.VITE_ENABLE_WEB_VITALS ===
+    'string'
+    ? (import.meta.env as { VITE_ENABLE_WEB_VITALS: string }).VITE_ENABLE_WEB_VITALS === 'true' ||
+      (import.meta.env as { VITE_ENABLE_WEB_VITALS: string }).VITE_ENABLE_WEB_VITALS === '1'
+    : false;
+
+if (enableWebVitals) {
   import('web-vitals').then(({ onCLS, onLCP, onFCP, onTTFB, onINP }) => {
     try {
       onCLS((m) => logVital('CLS', m.value, m.id));
       onLCP((m) => logVital('LCP', m.value, m.id));
-      onFCP?.((m: any) => logVital('FCP', m.value, m.id));
-      onTTFB?.((m: any) => logVital('TTFB', m.value, m.id));
-      onINP?.((m: any) => logVital('INP', m.value, m.id));
+      onFCP?.((m) => logVital('FCP', m.value, m.id));
+      onTTFB?.((m) => logVital('TTFB', m.value, m.id));
+      onINP?.((m) => logVital('INP', m.value, m.id));
     } catch {}
   });
 }

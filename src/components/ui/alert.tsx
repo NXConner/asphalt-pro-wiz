@@ -11,6 +11,13 @@ const alertVariants = cva(
         default: 'bg-background text-foreground',
         destructive:
           'border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive',
+        tactical:
+          'border-orange-400/30 bg-slate-950/80 backdrop-blur-sm text-slate-100 shadow-[0_8px_32px_rgba(0,0,0,0.4)] [&>svg]:text-orange-400',
+        hud: 'border-white/10 bg-slate-900/90 backdrop-blur-md text-slate-100 shadow-[0_16px_40px_rgba(8,12,24,0.45)] [&>svg]:text-cyan-400',
+        info: 'border-cyan-400/30 bg-cyan-500/10 text-cyan-100 [&>svg]:text-cyan-400',
+        warning: 'border-amber-400/30 bg-amber-500/10 text-amber-100 [&>svg]:text-amber-400',
+        success:
+          'border-emerald-400/30 bg-emerald-500/10 text-emerald-100 [&>svg]:text-emerald-400',
       },
     },
     defaultVariants: {
@@ -27,13 +34,15 @@ const Alert = React.forwardRef<
 ));
 Alert.displayName = 'Alert';
 
-const AlertTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => (
+const AlertTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
+  ({ className, children, ...props }, ref) => (
     <h5
       ref={ref}
       className={cn('mb-1 font-medium leading-none tracking-tight', className)}
       {...props}
-    />
+    >
+      {children}
+    </h5>
   ),
 );
 AlertTitle.displayName = 'AlertTitle';

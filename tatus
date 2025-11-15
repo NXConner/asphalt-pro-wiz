@@ -1,0 +1,40 @@
+[1mdiff --git a/.github/PULL_REQUEST_TEMPLATE.md b/.github/PULL_REQUEST_TEMPLATE.md[m
+[1mindex 9d327df..41ba377 100644[m
+[1m--- a/.github/PULL_REQUEST_TEMPLATE.md[m
+[1m+++ b/.github/PULL_REQUEST_TEMPLATE.md[m
+[36m@@ -1,7 +1,31 @@[m
+[31m-# Pull Request Template[m
+[32m+[m[32m## Summary[m
+ [m
+[31m-> Prefer using `.github/pull_request_template.md`. This file exists for legacy tooling that still looks for `PULL_REQUEST_TEMPLATE.md`.[m
+[32m+[m[32m- Describe the new capability or fix in one or two sentences.[m
+[32m+[m[32m- Note any user-facing impact for church administrators or field crews.[m
+ [m
+[31m-## Summary[m
+[32m+[m[32m## Change Type[m
+[32m+[m
+[32m+[m[32m- [ ] Feature / Enhancement[m
+[32m+[m[32m- [ ] Bug fix / Regression guard[m
+[32m+[m[32m- [ ] Refactor / Tech debt[m
+[32m+[m[32m- [ ] Release automation / Ops[m
+[32m+[m
+[32m+[m[32m## Validation[m
+[32m+[m
+[32m+[m[32m- [ ] Unit tests (`npm run test:unit -- --run`)[m
+[32m+[m[32m- [ ] Integration or contract tests (if applicable)[m
+[32m+[m[32m- [ ] E2E tests (`npm run test:e2e`)[m
+[32m+[m[32m- [ ] Lint & formatting (`npm run lint` / `npm run format:check`)[m
+[32m+[m[32m- [ ] Accessibility checks (axe, keyboard traversal)[m
+[32m+[m
+[32m+[m[32m## Observability & Security[m
+[32m+[m
+[32m+[m[32m- [ ] Structured logging updated where new flows exist[m
+[32m+[m[32m- [ ] Feature flags toggled or documented[m
+[32m+[m[32m- [ ] Secrets handled via env/secret manager (no hard-coded values)[m
+[32m+[m
+[32m+[m[32m## Documentation[m
+ [m
+[31m-- Link to the canonical template above if GitHub does not auto-populate it.[m
+[32m+[m[32m- [ ] README / docs updated[m
+[32m+[m[32m- [ ] Changelog entry drafted (if release-worthy)[m
+[32m+[m[32m- [ ] Deployment or migration notes captured[m
