@@ -9,6 +9,7 @@ export * from './motion';
 export * from './gradients';
 export * from './themes';
 export * from './typography';
+export * from './system';
 
 // Re-export missing items that components expect
 // These should come from the existing design system

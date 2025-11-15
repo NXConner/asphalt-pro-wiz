@@ -1,4 +1,4 @@
-import { cloneElement, isValidElement, type ReactElement, type ReactNode } from 'react';
+import { cloneElement, isValidElement, useMemo, type ReactElement, type ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,18 +9,85 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { logEvent } from '@/lib/logging';
+import { SupplierIntelPanel } from '@/modules/estimate/components/SupplierIntelPanel';
+import { useSupplierIntelligence } from '@/modules/estimate/supplier';
 import type { EstimatorState } from '@/modules/estimate/useEstimatorState';
 
 interface MaterialsStepProps {
-  materials: EstimatorState["materials"];
-  options: EstimatorState["options"];
-  cracks: EstimatorState["cracks"];
-  logistics: EstimatorState["logistics"];
+  materials: EstimatorState['materials'];
+  options: EstimatorState['options'];
+  cracks: EstimatorState['cracks'];
+  logistics: EstimatorState['logistics'];
+  job: EstimatorState['job'];
+  featureFlags: EstimatorState['featureFlags'];
   onNext: () => void;
   onBack: () => void;
 }
 
-export function MaterialsStep({ materials, options, cracks, logistics, onNext, onBack }: MaterialsStepProps) {
+export function MaterialsStep({
+  materials,
+  options,
+  cracks,
+  logistics,
+  job,
+  featureFlags,
+  onNext,
+  onBack,
+}: MaterialsStepProps) {
+  const supplierIntelEnabled = featureFlags.isEnabled('aiAssistant');
+  const requestedMaterials = useMemo(() => {
+    const unique = new Set<string>();
+    if (options.includeSealcoating && materials.sealerType) {
+      unique.add(`${materials.sealerType} Sealer`);
+    }
+    if (materials.sandAdded && materials.sandType) {
+      unique.add(`${materials.sandType} Sand`);
+    }
+    if (materials.polymerAdded) {
+      unique.add('Fast-Dry Polymer');
+    }
+    if (options.includeCleaningRepair) {
+      unique.add('Crack Filler');
+    }
+    return Array.from(unique);
+  }, [
+    materials.sealerType,
+    materials.sandType,
+    materials.sandAdded,
+    materials.polymerAdded,
+    options.includeSealcoating,
+    options.includeCleaningRepair,
+  ]);
+
+  const supplierRadiusMiles = useMemo(() => {
+    if (!job.supplierDistance || !Number.isFinite(job.supplierDistance)) {
+      return undefined;
+    }
+    return Math.max(10, Math.round(job.supplierDistance / 2));
+  }, [job.supplierDistance]);
+
+  const jobLocation = useMemo(() => {
+    if (!job.coords) return undefined;
+    return { lat: job.coords[0], lng: job.coords[1] };
+  }, [job.coords]);
+
+  const supplierIntelQuery = useSupplierIntelligence({
+    materials: requestedMaterials,
+    radiusMiles: supplierRadiusMiles,
+    jobLocation,
+    enabled: supplierIntelEnabled,
+  });
+
+  const handleRefreshIntel = () => {
+    logEvent('analytics.supplier_intel_refresh', {
+      materialsTracked: requestedMaterials.length,
+    });
+    void supplierIntelQuery.refetch();
+  };
+
+  const showSupplierIntel = supplierIntelEnabled;
+
   return (
     <>
       <section className="grid gap-4 md:grid-cols-2">
@@ -105,6 +172,17 @@ export function MaterialsStep({ materials, options, cracks, logistics, onNext, o
           </Field>
         </div>
       </section>
+
+        {showSupplierIntel ? (
+          <SupplierIntelPanel
+            data={supplierIntelQuery.data}
+            error={supplierIntelQuery.error ?? null}
+            isLoading={supplierIntelQuery.isLoading}
+            isRefetching={supplierIntelQuery.isRefetching}
+            onRefresh={handleRefreshIntel}
+            showSetupHint={requestedMaterials.length === 0}
+          />
+        ) : null}
 
       {options.includeCleaningRepair ? (
         <section className="space-y-3">

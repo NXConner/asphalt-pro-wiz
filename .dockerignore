@@ -1,26 +1,67 @@
+.git
+.gitmodules
+.github
+.husky
+.vscode
+.idea
+.cursor
+.cursorrules
+.history
+
+# Dependencies
 node_modules
+bun.lockb
+pnpm-lock.yaml
+yarn.lock
+
+# Build outputs & reports
 dist
 build
 coverage
-playwright-report
+reports
 test-results
-bun.lockb
-android
-docs
-tests
-e2e
-supabase/.temp
-deleted files
-.git
-.husky
-.github
-.idea
-.vscode
+playwright-report
+
+# Environment & secrets
 .env
 .env.*
+.envrc
+*.local
+
+# Logs
 *.log
 npm-debug.log
 yarn-error.log
 pnpm-debug.log
+
+# Temporary caches
+tmp
+temp
+.cache
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Archived items
+deleted files/
+
+# Supabase local data
+supabase/.temp
+supabase/.branches
+
+# Android build artifacts
+android/.gradle
+android/.idea
+android/local.properties
+android/app/build
+
+# Docker overrides
+Dockerfile.dev
 Dockerfile.local
+docker-compose.override.yml
 docker-compose.local.yml
+
+# Script outputs & generated artifacts
+scripts/load/output
+docs/swagger.json

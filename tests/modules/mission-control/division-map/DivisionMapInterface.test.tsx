@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('leaflet', () => {
   const fitBounds = vi.fn();
@@ -15,12 +15,21 @@ vi.mock('leaflet', () => {
   const circleMarker = vi.fn(() => ({
     addTo: vi.fn().mockReturnValue({ bindPopup: vi.fn() }),
   }));
+  const map = vi.fn(() => mockMap);
+  const tileLayer = vi.fn(() => ({ addTo: vi.fn() }));
+  const LayerGroup = vi.fn(() => mockLayerGroup);
+  const latLngBounds = vi.fn(() => ({ pad: vi.fn(() => ({})) }));
   const mocked = {
-    map: vi.fn(() => mockMap),
-    tileLayer: vi.fn(() => ({ addTo: vi.fn() })),
+    map,
+    tileLayer,
     circleMarker,
-    LayerGroup: vi.fn(() => mockLayerGroup),
-    latLngBounds: vi.fn(() => ({ pad: vi.fn(() => ({})) })),
+    LayerGroup,
+    latLngBounds,
+  };
+  return {
+    __esModule: true,
+    ...mocked,
+    default: mocked,
   };
   return { ...mocked, default: mocked };
 });
@@ -78,7 +87,8 @@ describe('DivisionMapInterface', () => {
     const user = userEvent.setup();
     render(<DivisionMapInterface />);
 
-    await user.click(screen.getByRole('button', { name: /refresh/i }));
+    const [refreshButton] = screen.getAllByRole('button', { name: /sync/i });
+    await user.click(refreshButton);
     expect(refetch).toHaveBeenCalled();
   });
 });

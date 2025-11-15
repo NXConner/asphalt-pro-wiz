@@ -19,6 +19,9 @@ export function useKeyboardShortcuts(shortcuts: ShortcutConfig[], enabled = true
     (event: KeyboardEvent) => {
       if (!enabled) return;
 
+      // Skip if event.key is undefined (can happen with some special keys)
+      if (!event.key) return;
+
       const matchingShortcut = shortcuts.find(
         (shortcut) =>
           shortcut.key.toLowerCase() === event.key.toLowerCase() &&

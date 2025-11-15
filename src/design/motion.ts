@@ -1,7 +1,10 @@
-/**
- * Division Motion System
- * Animation utilities and timing functions inspired by The Division
- */
+import type { HudAnimationPresetId } from '@/lib/theme';
+
+export const HUD_EASING = {
+  glide: [0.22, 1, 0.36, 1] as const,
+  tactical: [0.12, 0, 0.39, 0] as const,
+  pulse: [0.34, 0, 0.69, 1] as const,
+};
 
 export const divisionEasing = {
   // Smooth tactical transitions
@@ -117,3 +120,161 @@ export const PARTICLE_PRESETS = {
 } as const;
 
 export type ParticlePresetKey = keyof typeof PARTICLE_PRESETS;
+
+export interface HudAnimationLayerConfig {
+  initial: Record<string, unknown>;
+  animate: Record<string, unknown>;
+  exit?: Record<string, unknown>;
+  transition?: Record<string, unknown>;
+}
+
+export interface HudAnimationPresetSpec {
+  id: HudAnimationPresetId;
+  label: string;
+  description: string;
+  container: HudAnimationLayerConfig;
+  panel: HudAnimationLayerConfig;
+  accent: HudAnimationLayerConfig;
+  alert: HudAnimationLayerConfig;
+}
+
+export const HUD_ANIMATION_PRESETS: Record<HudAnimationPresetId, HudAnimationPresetSpec> = {
+  deploy: {
+    id: 'deploy',
+    label: 'Mission Deploy',
+    description: 'Heroic slide-in with tactical damping suited for high-urgency briefs.',
+    container: {
+      initial: { opacity: 0, scale: 0.94, y: -24 },
+      animate: { opacity: 1, scale: 1, y: 0 },
+      exit: { opacity: 0, scale: 0.92, y: 16 },
+      transition: { duration: HUD_DURATIONS.deliberate, ease: HUD_EASING.glide },
+    },
+    panel: {
+      initial: { opacity: 0, x: 24 },
+      animate: { opacity: 1, x: 0 },
+      transition: { duration: HUD_DURATIONS.standard, ease: HUD_EASING.glide },
+    },
+    accent: {
+      initial: { opacity: 0, scaleX: 0.6 },
+      animate: { opacity: 1, scaleX: 1 },
+      transition: { duration: HUD_DURATIONS.swift, ease: HUD_EASING.tactical },
+    },
+    alert: {
+      initial: { opacity: 0, y: -12 },
+      animate: { opacity: 1, y: 0 },
+      exit: { opacity: 0, y: -8 },
+      transition: { duration: HUD_DURATIONS.swift, ease: HUD_EASING.pulse },
+    },
+  },
+  patrol: {
+    id: 'patrol',
+    label: 'Perimeter Patrol',
+    description: 'Slow orbiting motion ideal for prolonged monitoring shifts.',
+    container: {
+      initial: { opacity: 0, rotateX: -12, y: 20 },
+      animate: { opacity: 1, rotateX: 0, y: 0 },
+      exit: { opacity: 0, rotateX: 8, y: 16 },
+      transition: { duration: HUD_DURATIONS.deliberate * 1.2, ease: HUD_EASING.tactical },
+    },
+    panel: {
+      initial: { opacity: 0, x: -18, scale: 0.98 },
+      animate: { opacity: 1, x: 0, scale: 1 },
+      transition: { duration: HUD_DURATIONS.deliberate, ease: HUD_EASING.glide },
+    },
+    accent: {
+      initial: { opacity: 0, scaleY: 0.4 },
+      animate: { opacity: 1, scaleY: 1 },
+      transition: { duration: HUD_DURATIONS.standard, ease: HUD_EASING.pulse },
+    },
+    alert: {
+      initial: { opacity: 0, scale: 0.8 },
+      animate: { opacity: 1, scale: 1 },
+      transition: { duration: HUD_DURATIONS.swift, ease: HUD_EASING.glide },
+    },
+  },
+  stealth: {
+    id: 'stealth',
+    label: 'Silent Stealth',
+    description: 'Subtle fades respecting reduced-motion contexts, optimized for low-light ops.',
+    container: {
+      initial: { opacity: 0, scale: 0.98 },
+      animate: { opacity: 1, scale: 1 },
+      exit: { opacity: 0, scale: 0.96 },
+      transition: { duration: HUD_DURATIONS.standard, ease: HUD_EASING.tactical },
+    },
+    panel: {
+      initial: { opacity: 0, y: 10 },
+      animate: { opacity: 1, y: 0 },
+      transition: { duration: HUD_DURATIONS.standard, ease: HUD_EASING.glide },
+    },
+    accent: {
+      initial: { opacity: 0 },
+      animate: { opacity: 1 },
+      transition: { duration: HUD_DURATIONS.swift, ease: HUD_EASING.tactical },
+    },
+    alert: {
+      initial: { opacity: 0, y: -6 },
+      animate: { opacity: 1, y: 0 },
+      exit: { opacity: 0, y: -4 },
+      transition: { duration: HUD_DURATIONS.swift, ease: HUD_EASING.tactical },
+    },
+  },
+  recon: {
+    id: 'recon',
+    label: 'Recon Sweep',
+    description: 'Energetic pacing with lateral sweeps ideal for field reconnaissance overlays.',
+    container: {
+      initial: { opacity: 0, x: 32, y: -16 },
+      animate: { opacity: 1, x: 0, y: 0 },
+      exit: { opacity: 0, x: -24, y: 16 },
+      transition: { duration: HUD_DURATIONS.standard, ease: HUD_EASING.glide },
+    },
+    panel: {
+      initial: { opacity: 0, x: 20 },
+      animate: { opacity: 1, x: 0 },
+      transition: { duration: HUD_DURATIONS.swift, ease: HUD_EASING.pulse },
+    },
+    accent: {
+      initial: { opacity: 0, scale: 0.7 },
+      animate: { opacity: 1, scale: 1 },
+      transition: { duration: HUD_DURATIONS.standard, ease: HUD_EASING.pulse },
+    },
+    alert: {
+      initial: { opacity: 0, x: 12 },
+      animate: { opacity: 1, x: 0 },
+      exit: { opacity: 0, x: -10 },
+      transition: { duration: HUD_DURATIONS.swift, ease: HUD_EASING.tactical },
+    },
+  },
+  command: {
+    id: 'command',
+    label: 'Command Pulse',
+    description: 'Authority-laden pulse with glow accent tailored for executive dashboards.',
+    container: {
+      initial: { opacity: 0, scale: 0.97 },
+      animate: { opacity: 1, scale: 1 },
+      exit: { opacity: 0, scale: 0.95 },
+      transition: { duration: HUD_DURATIONS.deliberate, ease: HUD_EASING.pulse },
+    },
+    panel: {
+      initial: { opacity: 0.2 },
+      animate: { opacity: 1 },
+      transition: { duration: HUD_DURATIONS.deliberate, ease: HUD_EASING.pulse },
+    },
+    accent: {
+      initial: { opacity: 0, boxShadow: '0 0 0 rgba(99,102,241,0)' },
+      animate: { opacity: 1, boxShadow: '0 0 24px rgba(99,102,241,0.45)' },
+      transition: { duration: HUD_DURATIONS.deliberate, ease: HUD_EASING.tactical },
+    },
+    alert: {
+      initial: { opacity: 0, scale: 0.9 },
+      animate: { opacity: 1, scale: 1 },
+      transition: { duration: HUD_DURATIONS.swift, ease: HUD_EASING.pulse },
+    },
+  },
+};
+
+export function resolveHudAnimationPreset(id: HudAnimationPresetId): HudAnimationPresetSpec {
+  return HUD_ANIMATION_PRESETS[id] ?? HUD_ANIMATION_PRESETS.deploy;
+}
+

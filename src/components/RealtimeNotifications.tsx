@@ -26,7 +26,7 @@ export function RealtimeNotifications() {
   useEffect(() => {
     // Fetch initial notifications
     const fetchNotifications = async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from('notifications')
         .select('*')
         .order('created_at', { ascending: false })
@@ -71,7 +71,7 @@ export function RealtimeNotifications() {
   }, [toast]);
 
   const markAsRead = async (id: string) => {
-    await supabase.from('notifications').update({ read: true }).eq('id', id);
+    await (supabase as any).from('notifications').update({ read: true }).eq('id', id);
 
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
     setUnreadCount((prev) => Math.max(0, prev - 1));
@@ -81,7 +81,7 @@ export function RealtimeNotifications() {
     const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
     if (unreadIds.length === 0) return;
 
-    await supabase.from('notifications').update({ read: true }).in('id', unreadIds);
+  await (supabase as any).from('notifications').update({ read: true }).in('id', unreadIds);
 
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     setUnreadCount(0);

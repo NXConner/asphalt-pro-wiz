@@ -1,25 +1,20 @@
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
+import { getComponentBaseClass } from "@/lib/designSystem";
+import { cn } from "@/lib/utils";
 
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & {
-    variant?: 'default' | 'tactical' | 'hud' | 'glass';
-  }
->(({ className, variant = 'default', ...props }, ref) => {
-  const variantClasses = {
-    default: 'rounded-lg border bg-card text-card-foreground shadow-sm',
-    tactical:
-      'relative overflow-hidden rounded-lg border border-orange-400/30 bg-slate-950/80 backdrop-blur-sm text-slate-100 shadow-[0_8px_32px_rgba(0,0,0,0.4)] before:absolute before:inset-0 before:border before:border-orange-400/20 before:rounded-lg',
-    hud: 'rounded-lg border border-white/10 bg-slate-900/90 backdrop-blur-md text-slate-100 shadow-[0_16px_40px_rgba(8,12,24,0.45)]',
-    glass:
-      'rounded-lg border border-white/20 bg-white/5 backdrop-blur-lg text-slate-50 shadow-[0_10px_32px_rgba(15,23,42,0.35)]',
-  };
+const cardBaseClass = getComponentBaseClass("card");
 
-  return <div ref={ref} className={cn(variantClasses[variant], className)} {...props} />;
-});
-Card.displayName = 'Card';
+const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(cardBaseClass, className)}
+      {...props}
+    />
+  ),
+);
+Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (

@@ -23,8 +23,8 @@ export interface GoogleMapProps {
   customerAddress: string;
   refreshKey?: number;
   children?: ReactNode;
-  className?: string;
-  showTacticalOverlay?: boolean;
+  center?: [number, number];
+  zoom?: number;
 }
 
 // Division-inspired status colors with tactical aesthetic
@@ -39,16 +39,16 @@ const statusColor: Record<string, string> = {
 const containerStyle: google.maps.MapOptions['styles'] | undefined = undefined;
 
 export const GoogleMap = memo(
-  ({
-    onAddressUpdate,
-    onAreaDrawn,
-    onCrackLengthDrawn,
-    customerAddress,
-    refreshKey,
-    children,
-    className,
-    showTacticalOverlay = true,
-  }: GoogleMapProps) => {
+    ({
+      onAddressUpdate,
+      onAreaDrawn,
+      onCrackLengthDrawn,
+      customerAddress,
+      refreshKey,
+      children,
+      center: centerOverride,
+      zoom: zoomOverride,
+    }: GoogleMapProps) => {
     const settings = loadMapSettings();
     const apiKey = settings.googleApiKey || '';
     const { isLoaded } = useJsApiLoader({
@@ -58,11 +58,11 @@ export const GoogleMap = memo(
     });
 
     const mapRef = useRef<google.maps.Map | null>(null);
-    const [center, setCenter] = useState<google.maps.LatLngLiteral>({
-      lat: settings.center?.[0] ?? BUSINESS_COORDS_FALLBACK[0],
-      lng: settings.center?.[1] ?? BUSINESS_COORDS_FALLBACK[1],
-    });
-    const [zoom, setZoom] = useState<number>(settings.zoom ?? 19);
+      const [center, setCenter] = useState<google.maps.LatLngLiteral>({
+        lat: centerOverride?.[0] ?? settings.center?.[0] ?? BUSINESS_COORDS_FALLBACK[0],
+        lng: centerOverride?.[1] ?? settings.center?.[1] ?? BUSINESS_COORDS_FALLBACK[1],
+      });
+      const [zoom, setZoom] = useState<number>(zoomOverride ?? settings.zoom ?? 19);
     const [jobs, setJobs] = useState<SavedJob[]>([]);
     const radarIntervalRef = useRef<number | null>(null);
     const baseOverlayCountRef = useRef<number>(0);
@@ -70,7 +70,19 @@ export const GoogleMap = memo(
     const userCoordsRef = useRef<[number, number] | null>(null);
     const bizCoordsRef = useRef<[number, number] | null>(null);
 
-    useEffect(() => {
+      useEffect(() => {
+        if (centerOverride) {
+          setCenter({ lat: centerOverride[0], lng: centerOverride[1] });
+        }
+      }, [centerOverride]);
+
+      useEffect(() => {
+        if (typeof zoomOverride === 'number') {
+          setZoom(zoomOverride);
+        }
+      }, [zoomOverride]);
+
+      useEffect(() => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
@@ -169,7 +181,7 @@ export const GoogleMap = memo(
       },
       // settings.baseLayer is read-but non-critical; overlays/radar functions are defined within and stable for session
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [center, zoom],
+        [center, zoom],
     );
 
     const setupBaseOverlays = (map: google.maps.Map) => {

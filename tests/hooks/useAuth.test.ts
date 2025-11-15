@@ -3,18 +3,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { useAuth } from '@/hooks/useAuth';
 
-// Mock Supabase client
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    auth: {
-      getSession: vi.fn(),
-      onAuthStateChange: vi.fn(),
-      signInWithPassword: vi.fn(),
-      signUp: vi.fn(),
-      signOut: vi.fn(),
-    },
-  },
-}));
+vi.mock('@/integrations/supabase/client', async () => {
+  const { createSupabaseModuleMock } = await import('../utils/supabaseMock');
+  return createSupabaseModuleMock();
+});
 
 vi.mock('sonner', () => ({
   toast: {

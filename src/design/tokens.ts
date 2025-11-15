@@ -3,94 +3,19 @@
  * Centralized design tokens inspired by The Division 1/2 aesthetic
  */
 
-export const divisionColors = {
-  // Primary SHD Orange
-  orange: {
-    50: 'hsl(25, 100%, 95%)',
-    100: 'hsl(25, 100%, 85%)',
-    200: 'hsl(25, 100%, 75%)',
-    300: 'hsl(25, 100%, 65%)',
-    400: 'hsl(25, 100%, 55%)', // Primary
-    500: 'hsl(25, 100%, 45%)',
-    600: 'hsl(25, 100%, 35%)',
-    700: 'hsl(25, 100%, 25%)',
-    800: 'hsl(25, 100%, 15%)',
-    900: 'hsl(25, 100%, 5%)',
-  },
-  // Tech Blue/Cyan
-  tech: {
-    50: 'hsl(190, 90%, 95%)',
-    100: 'hsl(190, 90%, 85%)',
-    200: 'hsl(190, 90%, 75%)',
-    300: 'hsl(190, 90%, 65%)',
-    400: 'hsl(190, 90%, 55%)',
-    500: 'hsl(190, 90%, 45%)',
-    600: 'hsl(190, 90%, 35%)',
-    700: 'hsl(190, 90%, 25%)',
-    800: 'hsl(190, 90%, 15%)',
-    900: 'hsl(190, 90%, 5%)',
-  },
-  // Rogue Red
-  rogue: {
-    50: 'hsl(0, 85%, 95%)',
-    100: 'hsl(0, 85%, 85%)',
-    200: 'hsl(0, 85%, 75%)',
-    300: 'hsl(0, 85%, 65%)',
-    400: 'hsl(0, 85%, 55%)',
-    500: 'hsl(0, 85%, 45%)',
-    600: 'hsl(0, 85%, 35%)',
-    700: 'hsl(0, 85%, 25%)',
-    800: 'hsl(0, 85%, 15%)',
-    900: 'hsl(0, 85%, 5%)',
-  },
-  // Stealth Green
-  stealth: {
-    50: 'hsl(120, 25%, 95%)',
-    100: 'hsl(120, 25%, 85%)',
-    200: 'hsl(120, 25%, 75%)',
-    300: 'hsl(120, 25%, 65%)',
-    400: 'hsl(120, 25%, 45%)',
-    500: 'hsl(120, 25%, 35%)',
-    600: 'hsl(120, 25%, 25%)',
-    700: 'hsl(120, 25%, 15%)',
-    800: 'hsl(120, 25%, 10%)',
-    900: 'hsl(120, 25%, 5%)',
-  },
-  // Hunter Purple
-  hunter: {
-    50: 'hsl(270, 60%, 95%)',
-    100: 'hsl(270, 60%, 85%)',
-    200: 'hsl(270, 60%, 75%)',
-    300: 'hsl(270, 60%, 65%)',
-    400: 'hsl(270, 60%, 55%)',
-    500: 'hsl(270, 60%, 45%)',
-    600: 'hsl(270, 60%, 35%)',
-    700: 'hsl(270, 60%, 25%)',
-    800: 'hsl(270, 60%, 15%)',
-    900: 'hsl(270, 60%, 5%)',
-  },
-  // Backgrounds
-  bg: {
-    dark: 'hsl(0, 0%, 7%)',
-    card: 'hsl(0, 0%, 10%)',
-    elevated: 'hsl(0, 0%, 12%)',
-    overlay: 'hsl(0, 0%, 5%)',
-  },
-  // Text
-  text: {
-    primary: 'hsl(0, 0%, 95%)',
-    secondary: 'hsl(0, 0%, 70%)',
-    muted: 'hsl(0, 0%, 50%)',
-    disabled: 'hsl(0, 0%, 30%)',
-  },
-  // Borders
-  border: {
-    default: 'hsl(25, 50%, 30%)',
-    accent: 'hsl(25, 100%, 55%)',
-    tech: 'hsl(190, 90%, 55%)',
-    muted: 'hsl(0, 0%, 20%)',
-  },
-} as const;
+export type DivisionThemeId =
+  | 'theme-division-agent'
+  | 'theme-division-rogue'
+  | 'theme-division-darkzone'
+  | 'theme-division-tech'
+  | 'theme-division-stealth'
+  | 'theme-division-combat'
+  | 'theme-division-tactical'
+  | 'theme-division-hunter'
+  | 'theme-division-sunrise'
+  | 'theme-division-evensong'
+  | 'theme-division-revival'
+  | 'theme-division-celestial';
 
 export const divisionSpacing = {
   xs: '0.25rem', // 4px

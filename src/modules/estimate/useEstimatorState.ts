@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { CustomService } from '@/components/CustomServices';
+import { isSupabaseConfigured } from '@/integrations/supabase/client';
 import {
   calculateDistance,
   calculateProject,
@@ -11,7 +12,7 @@ import {
   type Costs,
   type ProjectInputs,
 } from '@/lib/calculations';
-import { isEnabled, setFlag, type FeatureFlag } from '@/lib/flags';
+import { isEnabled, logFeatureFlagToggle, setFlag, type FeatureFlag } from '@/lib/flags';
 import { makeJobKey, setJobStatus, upsertJob, type JobStatus } from '@/lib/idb';
 import {
   BUSINESS_ADDRESS,
@@ -19,8 +20,13 @@ import {
   SUPPLIER_ADDRESS,
   SUPPLIER_COORDS_FALLBACK,
 } from '@/lib/locations';
-import { logEvent } from '@/lib/logging';
+import { logError, logEvent } from '@/lib/logging';
 import { getServiceById } from '@/lib/serviceCatalog';
+import { evaluateCompliance } from '@/modules/estimate/compliance';
+import type { ComplianceEvaluation } from '@/modules/estimate/compliance';
+import { exportEstimatePdf } from '@/modules/estimate/pdf';
+import { persistEstimateResult } from '@/modules/estimate/persistence';
+import type { ScenarioOverrides } from '@/modules/estimate/useEstimatorScenarios';
 
 export type AreaShape = 'rectangle' | 'triangle' | 'circle' | 'drawn' | 'manual' | 'image';
 
@@ -153,8 +159,15 @@ interface CalculationState {
   showResults: boolean;
   costs: Costs | null;
   breakdown: CostBreakdown[];
-  handleCalculate: () => void;
+  handleCalculate: () => Promise<void>;
   handlePrint: () => void;
+  isSaving: boolean;
+  lastSyncedAt: string | null;
+  lastSyncedEstimateId: string | null;
+  syncError: string | null;
+  buildInputs: (overrides?: Partial<ProjectInputs>) => ProjectInputs;
+  simulate: (overrides?: ScenarioSimulationOverrides) => ScenarioSimulationResult;
+  exportPdf: (options?: { scenarioName?: string; computation?: ScenarioSimulationResult }) => Promise<void>;
 }
 
 interface FeatureFlagState {
@@ -182,6 +195,16 @@ export interface EstimatorState {
   calculation: CalculationState;
   featureFlags: FeatureFlagState;
 }
+
+interface ScenarioSimulationResult {
+  inputs: ProjectInputs;
+  business: BusinessData;
+  costs: Costs;
+  breakdown: CostBreakdown[];
+  compliance: ComplianceEvaluation;
+}
+
+type ScenarioSimulationOverrides = ScenarioOverrides;
 
 export function useEstimatorState(): EstimatorState {
   const [businessData, setBusinessData] = useState<BusinessData>(defaultBusinessData);
@@ -236,11 +259,15 @@ export function useEstimatorState(): EstimatorState {
     'Black Beauty',
   );
 
-  const crackFillerProduct = 'CrackMaster Parking Lot LP hot pour (30 lb box)';
+    const crackFillerProduct = 'CrackMaster Parking Lot LP hot pour (30 lb box)';
 
-  const [showResults, setShowResults] = useState(false);
+    const [showResults, setShowResults] = useState(false);
   const [costs, setCosts] = useState<Costs | null>(null);
   const [breakdown, setBreakdown] = useState<CostBreakdown[]>([]);
+  const [isPersistingEstimate, setIsPersistingEstimate] = useState(false);
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
+  const [lastSyncedEstimateId, setLastSyncedEstimateId] = useState<string | null>(null);
+  const [syncErrorMessage, setSyncErrorMessage] = useState<string | null>(null);
   const [jobDistance, setJobDistance] = useState(0);
 
   const businessCoords: [number, number] = BUSINESS_COORDS_FALLBACK;
@@ -250,14 +277,14 @@ export function useEstimatorState(): EstimatorState {
     [businessCoords, supplierCoords],
   );
 
-  const totalArea = useMemo(() => areas.reduce((sum, item) => sum + item.area, 0), [areas]);
+    const totalArea = useMemo(() => areas.reduce((sum, item) => sum + item.area, 0), [areas]);
 
   const addedServiceNames = useMemo(
     () => customServices.map((service) => service.name),
     [customServices],
   );
 
-  const [flagVersion, setFlagVersion] = useState(0);
+    const [flagVersion, setFlagVersion] = useState(0);
   const [ownerMode, setOwnerModeInternal] = useState<boolean>(isEnabled('ownerMode'));
 
   useEffect(() => {
@@ -272,7 +299,7 @@ export function useEstimatorState(): EstimatorState {
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
-  const ensureJobPersisted = (address: string, coords: [number, number] | null) => {
+    const ensureJobPersisted = (address: string, coords: [number, number] | null) => {
     const key = makeJobKey(jobName, address);
     void upsertJob({
       id: key,
@@ -295,7 +322,7 @@ export function useEstimatorState(): EstimatorState {
     ensureJobPersisted(address, coords);
   };
 
-  const handleAreaDrawn = (area: number) => {
+    const handleAreaDrawn = (area: number) => {
     setAreas((prev) => [...prev, { id: nextAreaId, shape: 'drawn', area }]);
     setNextAreaId((prev) => prev + 1);
     try {
@@ -336,7 +363,7 @@ export function useEstimatorState(): EstimatorState {
     setAreas((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const handleCrackLengthDrawn = (length: number) => {
+    const handleCrackLengthDrawn = (length: number) => {
     setCrackLength((prev) => prev + length);
     toast.success(`Added ${length.toFixed(1)} ft to crack length`);
   };
@@ -347,7 +374,7 @@ export function useEstimatorState(): EstimatorState {
     );
   };
 
-  const handlePremiumServiceChange = (service: string, value: boolean) => {
+    const handlePremiumServiceChange = (service: string, value: boolean) => {
     switch (service) {
       case 'premiumEdgePushing':
         setPremiumEdgePushing(value);
@@ -369,7 +396,7 @@ export function useEstimatorState(): EstimatorState {
     }
   };
 
-  const addPremiumCustomService = (serviceId: string) => {
+    const addPremiumCustomService = (serviceId: string) => {
     const service = getServiceById(serviceId);
     if (!service) return;
     if (customServices.some((item) => item.name === service.name)) return;
@@ -383,98 +410,226 @@ export function useEstimatorState(): EstimatorState {
     setCustomServices((prev) => [...prev, newService]);
   };
 
-  const handleCalculate = () => {
+    const buildProjectInputs = useCallback(
+      (overrides: Partial<ProjectInputs> = {}) => {
+        const baseInputs: ProjectInputs = {
+          jobName,
+          customerAddress,
+          totalArea,
+          numCoats,
+          sandAdded,
+          polymerAdded,
+          crackLength,
+          crackWidth,
+          crackDepth,
+          stripingLines,
+          stripingHandicap,
+          stripingArrowsLarge,
+          stripingArrowsSmall,
+          stripingLettering,
+          stripingCurb,
+          stripingColors,
+          prepHours,
+          oilSpots,
+          propaneTanks,
+          jobDistanceMiles: jobDistance,
+          premiumEdgePushing,
+          premiumWeedKiller,
+          premiumCrackCleaning,
+          premiumPowerWashing,
+          premiumDebrisRemoval,
+          includeCleaningRepair,
+          includeSealcoating,
+          includeStriping,
+          sealerType,
+          sandType,
+          waterPercent,
+          crackFillerProduct,
+          customServices: customServices.map((service) => ({
+            name: service.name,
+            type: service.type,
+            unitPrice: service.unitPrice,
+            quantity: service.quantity,
+          })),
+        };
+        return { ...baseInputs, ...overrides };
+      },
+      [
+        jobName,
+        customerAddress,
+        totalArea,
+        numCoats,
+        sandAdded,
+        polymerAdded,
+        crackLength,
+        crackWidth,
+        crackDepth,
+        stripingLines,
+        stripingHandicap,
+        stripingArrowsLarge,
+        stripingArrowsSmall,
+        stripingLettering,
+        stripingCurb,
+        stripingColors,
+        prepHours,
+        oilSpots,
+        propaneTanks,
+        jobDistance,
+        premiumEdgePushing,
+        premiumWeedKiller,
+        premiumCrackCleaning,
+        premiumPowerWashing,
+        premiumDebrisRemoval,
+        includeCleaningRepair,
+        includeSealcoating,
+        includeStriping,
+        sealerType,
+        sandType,
+        waterPercent,
+        crackFillerProduct,
+        customServices,
+      ],
+    );
+
+    const simulateScenario = useCallback(
+      (overrides?: ScenarioSimulationOverrides): ScenarioSimulationResult => {
+        const projectOverrides = overrides?.project ?? {};
+        const businessOverrides = overrides?.business ?? {};
+        const inputs = buildProjectInputs(projectOverrides);
+        const business = { ...businessData, ...businessOverrides };
+        const { costs, breakdown } = calculateProject(inputs, business);
+        const compliance = evaluateCompliance({
+          inputs,
+          travelMiles: inputs.jobDistanceMiles,
+          premiumPowerWashing: inputs.premiumPowerWashing,
+          polymerAdded,
+          oilSpots,
+          prepHours,
+        });
+        return { inputs, business, costs, breakdown, compliance };
+      },
+      [buildProjectInputs, businessData, oilSpots, polymerAdded, prepHours],
+    );
+
+    const exportPdfReport = useCallback(
+      async (scenarioName?: string, computation?: ScenarioSimulationResult) => {
+        const snapshot = computation ?? simulateScenario();
+        await exportEstimatePdf({
+          scenarioName: scenarioName ?? 'Primary Scenario',
+          inputs: snapshot.inputs,
+          costs: snapshot.costs,
+          breakdown: snapshot.breakdown,
+          business: snapshot.business,
+          compliance: snapshot.compliance.issues,
+        });
+      },
+      [simulateScenario],
+    );
+
+    const handleCalculate = async () => {
+    if (isPersistingEstimate) {
+      return;
+    }
     if (totalArea <= 0) {
       toast.error('Please add an area measurement');
       return;
     }
 
-    const inputs: ProjectInputs = {
-      jobName,
-      customerAddress,
-      totalArea,
-      numCoats,
-      sandAdded,
-      polymerAdded,
-      crackLength,
-      crackWidth,
-      crackDepth,
-      stripingLines,
-      stripingHandicap,
-      stripingArrowsLarge,
-      stripingArrowsSmall,
-      stripingLettering,
-      stripingCurb,
-      stripingColors,
-      prepHours,
-      oilSpots,
-      propaneTanks,
-      jobDistanceMiles: jobDistance,
-      premiumEdgePushing,
-      premiumWeedKiller,
-      premiumCrackCleaning,
-      premiumPowerWashing,
-      premiumDebrisRemoval,
-      includeCleaningRepair,
-      includeSealcoating,
-      includeStriping,
-      sealerType,
-      sandType,
-      waterPercent,
-      crackFillerProduct,
-      customServices: customServices.map((service) => ({
-        name: service.name,
-        type: service.type,
-        unitPrice: service.unitPrice,
-        quantity: service.quantity,
-      })),
-    };
-
-    const result = calculateProject(inputs, businessData);
-    setCosts(result.costs);
-    setBreakdown(result.breakdown);
+      const scenarioResult = simulateScenario();
+      setCosts(scenarioResult.costs);
+      setBreakdown(scenarioResult.breakdown);
     setShowResults(true);
+    setSyncErrorMessage(null);
+
+    const jobKey = makeJobKey(jobName, customerAddress);
+    void setJobStatus(jobKey, 'estimated').then(() => setMapRefreshKey((value) => value + 1));
+
     try {
       logEvent('estimate.calculated', {
         jobName: jobName || 'Job',
-        totalArea,
-        crackLength,
+          totalArea: scenarioResult.inputs.totalArea,
+          crackLength: scenarioResult.inputs.crackLength,
         includeSealcoating,
         includeStriping,
         includeCleaningRepair,
         numCustomServices: customServices.length,
-        total: result.costs.total,
+          total: scenarioResult.costs.total,
       });
     } catch {}
 
-    const key = makeJobKey(jobName, customerAddress);
-    void setJobStatus(key, 'estimated').then(() => setMapRefreshKey((value) => value + 1));
+    if (!isSupabaseConfigured) {
+      setLastSyncedAt(null);
+      setLastSyncedEstimateId(null);
+      return;
+    }
+
+    setIsPersistingEstimate(true);
+    try {
+      const persistResult = await persistEstimateResult({
+          inputs: scenarioResult.inputs,
+          costs: scenarioResult.costs,
+          breakdown: scenarioResult.breakdown,
+        customServices,
+        premium: {
+          edgePushing: premiumEdgePushing,
+          weedKiller: premiumWeedKiller,
+          crackCleaning: premiumCrackCleaning,
+          powerWashing: premiumPowerWashing,
+          debrisRemoval: premiumDebrisRemoval,
+        },
+        job: {
+          name: jobName || 'Mission',
+          address: customerAddress,
+          coords: customerCoords,
+          status: 'estimated',
+          customerName: jobName || undefined,
+          competitor: jobCompetitor || undefined,
+            distance: scenarioResult.inputs.jobDistanceMiles,
+        },
+      });
+
+      const syncedAt = new Date().toISOString();
+      setLastSyncedAt(syncedAt);
+      setLastSyncedEstimateId(persistResult.estimateId ?? null);
+      setSyncErrorMessage(null);
+      toast.success('Estimate synced to mission records');
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to sync estimate to Supabase.';
+      setSyncErrorMessage(message);
+      toast.error(message);
+      logError(error, { source: 'estimate.persist', jobName });
+    } finally {
+      setIsPersistingEstimate(false);
+    }
   };
 
   const handlePrint = () => {
     window.print();
   };
 
-  const setOwnerMode = (enabled: boolean) => {
-    setOwnerModeInternal(enabled);
-    setFlag('ownerMode', enabled);
-    setFlagVersion((version) => version + 1);
-    try {
-      logEvent('flags.ownerMode_toggled', { enabled });
-    } catch {}
-  };
+    const setOwnerMode = (enabled: boolean) => {
+      setOwnerModeInternal(enabled);
+      setFlag('ownerMode', enabled);
+      setFlagVersion((version) => version + 1);
+      logFeatureFlagToggle('ownerMode', enabled, {
+        surface: 'estimator.ownerMode',
+        source: 'local',
+      });
+    };
 
-  const toggleFeatureFlag = (flag: FeatureFlag, enabled: boolean) => {
-    if (flag === 'ownerMode') {
-      setOwnerMode(enabled);
-      return;
-    }
-    setFlag(flag, enabled);
-    setFlagVersion((version) => version + 1);
-    try {
-      logEvent('flags.toggle', { flag, enabled });
-    } catch {}
-  };
+    const toggleFeatureFlag = (flag: FeatureFlag, enabled: boolean) => {
+      if (flag === 'ownerMode') {
+        setOwnerMode(enabled);
+        return;
+      }
+      setFlag(flag, enabled);
+      setFlagVersion((version) => version + 1);
+      logFeatureFlagToggle(flag, enabled, {
+        surface: 'estimator.feature_toggle',
+        source: 'local',
+      });
+    };
 
   const featureFlagValues = useMemo(
     () => ({
@@ -488,6 +643,7 @@ export function useEstimatorState(): EstimatorState {
       customerPortal: isEnabled('customerPortal'),
       observability: isEnabled('observability'),
       commandCenter: isEnabled('commandCenter'),
+      tacticalMapV2: isEnabled('tacticalMapV2'),
       ownerMode,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -629,6 +785,14 @@ export function useEstimatorState(): EstimatorState {
     breakdown,
     handleCalculate,
     handlePrint,
+    isSaving: isPersistingEstimate,
+    lastSyncedAt,
+    lastSyncedEstimateId,
+    syncError: syncErrorMessage,
+      buildInputs: buildProjectInputs,
+      simulate: simulateScenario,
+      exportPdf: async ({ scenarioName, computation } = {}) =>
+        exportPdfReport(scenarioName, computation),
   };
 
   const featureFlags: FeatureFlagState = {

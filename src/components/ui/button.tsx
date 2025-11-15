@@ -2,10 +2,13 @@ import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import * as React from 'react';
 
+import { getComponentBaseClass } from '@/lib/designSystem';
 import { cn } from '@/lib/utils';
 
+const buttonBaseClass = getComponentBaseClass('button');
+
 const buttonVariants = cva(
-  'group inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  `${buttonBaseClass} [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0`,
   {
     variants: {
       variant: {
@@ -13,7 +16,8 @@ const buttonVariants = cva(
           'bg-primary text-primary-foreground hover:bg-primary-hover shadow-sm hover:shadow-md',
         destructive:
           'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm hover:shadow-md',
-        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+        outline:
+          'border border-border bg-background text-foreground hover:border-accent hover:bg-accent/10 hover:text-accent-foreground',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary-hover shadow-sm',
         ghost: 'text-foreground hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline font-medium',
@@ -34,13 +38,13 @@ const buttonVariants = cva(
       },
       size: {
         default: 'h-10 px-4 py-2',
-        sm: 'h-9 rounded-md px-3 text-xs',
-        lg: 'h-11 rounded-md px-8 text-base',
-        xl: 'h-12 rounded-md px-10 text-lg',
-        icon: 'h-10 w-10',
+        sm: 'h-9 px-3 text-xs',
+        lg: 'h-11 px-8 text-base',
+        xl: 'h-12 px-10 text-lg',
+        icon: 'h-10 w-10 p-0',
         tactical: 'h-11 px-10 text-sm font-heading uppercase tracking-[0.35em]',
         pill: 'h-10 rounded-full px-6 text-sm font-semibold uppercase tracking-[0.2em]',
-        compact: 'h-8 rounded-lg px-2.5 text-xs font-medium',
+        compact: 'h-8 px-2.5 text-xs font-medium',
       },
     },
     defaultVariants: {
@@ -77,7 +81,24 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref,
   ) => {
-    const Comp = asChild ? Slot : 'button';
+    if (asChild) {
+      return (
+        <Slot
+          className={cn(
+            buttonVariants({ variant, size, className }),
+            loading && 'pointer-events-none opacity-90',
+          )}
+          ref={ref as any}
+          aria-busy={loading ? true : undefined}
+          data-variant={variant}
+          {...props}
+        >
+          {children}
+        </Slot>
+      );
+    }
+
+    // Internal rendering branch (regular <button>)
     const clampedProgress =
       typeof progress === 'number' ? Math.max(0, Math.min(100, progress)) : undefined;
     const iconElement = icon ? (
@@ -96,7 +117,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ) : null;
 
     return (
-      <Comp
+      <button
         className={cn(
           buttonVariants({ variant, size, className }),
           loading && 'pointer-events-none opacity-90',
@@ -130,7 +151,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             )}
           />
         ) : null}
-      </Comp>
+      </button>
     );
   },
 );

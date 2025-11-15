@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
 import { memo, type CSSProperties, type ReactNode } from 'react';
 
-import { cn } from '@/lib/utils';
-
 import { CanvasGrid } from './CanvasGrid';
 import { CornerBrackets, type CornerBracketsProps } from './CornerBrackets';
 import { ScanLines, type ScanLinesProps } from './ScanLines';
+
+import { resolveTacticalTone, type TacticalTone } from '@/lib/tacticalTone';
+import { cn } from '@/lib/utils';
 
 export interface TacticalOverlayProps {
   children?: ReactNode;
@@ -21,7 +22,31 @@ export interface TacticalOverlayProps {
   pulse?: boolean;
   className?: string;
   style?: CSSProperties;
+  tone?: TacticalTone;
 }
+
+const withAlpha = (color: string, alpha: number): string => {
+  const trimmed = color.trim();
+  if (trimmed.startsWith('hsla(')) {
+    if (trimmed.includes('/')) {
+      return trimmed.replace(/\/\s*([^)]+)\)/, `/ ${alpha})`);
+    }
+    return trimmed.replace(/\)\s*$/, `, ${alpha})`);
+  }
+  if (trimmed.startsWith('hsl(')) {
+    return trimmed.replace('hsl(', 'hsla(').replace(/\)\s*$/, `, ${alpha})`);
+  }
+  if (trimmed.startsWith('rgba(')) {
+    return trimmed.replace(
+      /rgba\(([^,]+),([^,]+),([^,]+),[^)]+\)/,
+      (_match, r, g, b) => `rgba(${r.trim()},${g.trim()},${b.trim()},${alpha})`,
+    );
+  }
+  if (trimmed.startsWith('rgb(')) {
+    return trimmed.replace('rgb(', 'rgba(').replace(/\)\s*$/, `, ${alpha})`);
+  }
+  return `color-mix(in srgb, ${trimmed} ${Math.max(0, Math.min(1, alpha)) * 100}%, transparent)`;
+};
 
 const TacticalOverlayComponent = ({
   children,
@@ -37,13 +62,22 @@ const TacticalOverlayComponent = ({
   pulse = true,
   className,
   style,
+  tone,
 }: TacticalOverlayProps) => {
-  const scanAccent = accentColor.startsWith('rgba')
-    ? accentColor.replace(
-        /rgba\(([^,]+),([^,]+),([^,]+),[^)]+\)/,
-        (_match, r, g, b) => `rgba(${r.trim()},${g.trim()},${b.trim()},0.35)`,
-      )
-    : accentColor;
+  const toneConfig = resolveTacticalTone({
+    tone,
+    accentOverride: accentColor,
+    backgroundOverride: backgroundTint,
+    gridOpacity,
+    scanOpacity: scanLinesProps?.opacity,
+  });
+
+  const resolvedAccent = toneConfig.accent;
+  const resolvedBackground = toneConfig.background;
+  const resolvedGridOpacity = gridOpacity ?? toneConfig.gridOpacity;
+  const resolvedScanOpacity = scanLinesProps?.opacity ?? toneConfig.scanOpacity;
+
+  const scanAccent = withAlpha(resolvedAccent, resolvedScanOpacity);
 
   return (
     <div
@@ -54,7 +88,7 @@ const TacticalOverlayComponent = ({
         className,
       )}
       style={{
-        backgroundColor: backgroundTint,
+        backgroundColor: resolvedBackground,
         backdropFilter: `blur(${blur}px)`,
         ...style,
       }}
@@ -67,26 +101,37 @@ const TacticalOverlayComponent = ({
           initial={{ opacity: 0.35 }}
           animate={{ opacity: [0.35, 0.8, 0.35] }}
           transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-          style={{
-            background: `radial-gradient(circle at 20% 20%, ${accentColor}22, transparent 60%), radial-gradient(circle at 80% 30%, ${accentColor}18, transparent 65%)`,
-          }}
+            style={{
+              background: `radial-gradient(circle at 20% 20%, ${withAlpha(
+                resolvedAccent,
+                0.22,
+              )}, transparent 60%), radial-gradient(circle at 80% 30%, ${withAlpha(
+                resolvedAccent,
+                0.18,
+              )}, transparent 65%)`,
+            }}
         />
       )}
-      {showGrid && <CanvasGrid opacity={gridOpacity} density={gridDensity} className="mix-blend-screen" />}
+      {showGrid && (
+        <CanvasGrid
+          opacity={resolvedGridOpacity}
+          density={gridDensity}
+          className="mix-blend-screen"
+        />
+      )}
       {showScanLines && (
         <ScanLines
-          opacity={0.45}
+          opacity={resolvedScanOpacity}
           density={72}
           speedMs={3400}
           accentColor={scanAccent}
           {...scanLinesProps}
         />
       )}
-      <CornerBrackets accentColor={accentColor} {...cornerProps} />
+      <CornerBrackets accentColor={resolvedAccent} {...cornerProps} />
       <div className="relative z-10">{children}</div>
     </div>
   );
 };
 
 export const TacticalOverlay = memo(TacticalOverlayComponent);
-

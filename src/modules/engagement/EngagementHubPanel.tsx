@@ -7,9 +7,6 @@ import { DocumentGenerator } from '@/components/DocumentGenerator';
 import { OwnerSettings } from '@/components/OwnerSettings';
 import { PremiumServices } from '@/components/PremiumServices';
 import { ReceiptsPanel } from '@/components/ReceiptsPanel';
-import { BlackoutEditor } from '@/components/Scheduler/BlackoutEditor';
-import { CrewAssign } from '@/components/Scheduler/CrewAssign';
-import { WeatherAdvisor } from '@/components/Scheduler/WeatherAdvisor';
 import { ThemeCustomizer } from '@/components/ThemeCustomizer';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -18,6 +15,7 @@ import { UploadsPanel } from '@/components/UploadsPanel';
 import type { FeatureFlag } from '@/lib/flags';
 import type { EstimatorState } from '@/modules/estimate/useEstimatorState';
 import { CanvasPanel } from '@/modules/layout/CanvasPanel';
+import { MissionSchedulerPanel, MissionSchedulerProvider } from '@/modules/scheduler';
 
 interface EngagementHubPanelProps {
   estimator: EstimatorState;
@@ -76,10 +74,14 @@ export const EngagementHubPanel = memo(function EngagementHubPanel({
   return (
     <div className="space-y-6">
       <CanvasPanel
+        id="premium-services-marketplace"
         title="Premium Services Marketplace"
         subtitle="Upsell enhancements tuned for church campuses — margin-positive, mission-aligned."
         eyebrow="Revenue"
         tone="ember"
+        collapsible
+        defaultCollapsed
+        collapseId="premium-services-marketplace"
       >
         <PremiumServices
           edgePushing={premium.edgePushing}
@@ -206,18 +208,16 @@ export const EngagementHubPanel = memo(function EngagementHubPanel({
       ) : null}
 
       {featureFlags.values.scheduler ? (
-        <CanvasPanel
-          title="Crew Scheduler"
-          subtitle="Align crews to blackout windows and weather advisories for minimal Sunday disruption."
-          eyebrow="Operations"
-          tone="lagoon"
-        >
-          <div className="space-y-6">
-            <BlackoutEditor />
-            <CrewAssign />
-            <WeatherAdvisor coords={job.coords} />
-          </div>
-        </CanvasPanel>
+        <MissionSchedulerProvider>
+          <CanvasPanel
+            title="Crew Scheduler"
+            subtitle="Align crews to blackout windows and weather advisories for minimal Sunday disruption."
+            eyebrow="Operations"
+            tone="lagoon"
+          >
+            <MissionSchedulerPanel coords={job.coords} />
+          </CanvasPanel>
+        </MissionSchedulerProvider>
       ) : null}
     </div>
   );

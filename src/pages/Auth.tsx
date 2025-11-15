@@ -3,31 +3,36 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { isDemoModeEnabled } from '@/lib/runtimeEnv';
 
 const emailSchema = z.string().email('Invalid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { isAuthenticated, signIn, signUp, loading } = useAuthContext();
+  const { isAuthenticated, signIn, signUp, loading, configurationError, isConfigured } =
+    useAuthContext();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const allowDemoAuth = isDemoModeEnabled();
+  const authDisabled = !isConfigured && !allowDemoAuth;
 
   // Redirect if already authenticated
   useEffect(() => {
+    if (allowDemoAuth) return;
     if (isAuthenticated && !loading) {
       navigate('/', { replace: true });
     }
-  }, [isAuthenticated, loading, navigate]);
+  }, [allowDemoAuth, isAuthenticated, loading, navigate]);
 
   const validateInputs = () => {
     const emailResult = emailSchema.safeParse(email);
@@ -49,6 +54,11 @@ export default function Auth() {
     e.preventDefault();
     setError('');
 
+    if (!isConfigured && !allowDemoAuth) {
+      setError(configurationError?.message ?? 'Supabase environment not configured.');
+      return;
+    }
+
     if (!validateInputs()) return;
 
     setIsSubmitting(true);
@@ -67,6 +77,11 @@ export default function Auth() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!isConfigured && !allowDemoAuth) {
+      setError(configurationError?.message ?? 'Supabase environment not configured.');
+      return;
+    }
 
     if (!validateInputs()) return;
 
@@ -103,10 +118,24 @@ export default function Auth() {
           <CardDescription>Sign in to your account or create a new one</CardDescription>
         </CardHeader>
         <CardContent>
+          {authDisabled && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Connect Supabase to continue</AlertTitle>
+              <AlertDescription>
+                {configurationError?.message ??
+                  'Provide VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your environment for Virginia and North Carolina deployments, then refresh the app.'}
+              </AlertDescription>
+            </Alert>
+          )}
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signin" disabled={authDisabled}>
+                Sign In
+              </TabsTrigger>
+              <TabsTrigger value="signup" disabled={authDisabled}>
+                Sign Up
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">
@@ -119,7 +148,7 @@ export default function Auth() {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || authDisabled}
                     required
                   />
                 </div>
@@ -131,7 +160,7 @@ export default function Auth() {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || authDisabled}
                     required
                   />
                 </div>
@@ -143,7 +172,7 @@ export default function Auth() {
                   </Alert>
                 )}
 
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                <Button type="submit" className="w-full" disabled={isSubmitting || authDisabled}>
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -166,7 +195,7 @@ export default function Auth() {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || authDisabled}
                     required
                   />
                 </div>
@@ -178,7 +207,7 @@ export default function Auth() {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || authDisabled}
                     required
                   />
                   <p className="text-sm text-muted-foreground">Must be at least 6 characters</p>
@@ -191,7 +220,7 @@ export default function Auth() {
                   </Alert>
                 )}
 
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                <Button type="submit" className="w-full" disabled={isSubmitting || !isConfigured}>
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

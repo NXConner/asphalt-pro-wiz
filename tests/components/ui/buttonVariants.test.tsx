@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { buttonVariants } from '@/components/ui/button';
 
 describe('buttonVariants', () => {

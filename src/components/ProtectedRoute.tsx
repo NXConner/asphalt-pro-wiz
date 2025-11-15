@@ -4,37 +4,26 @@ import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner } from './common/LoadingSpinner';
 
 import { useAuthContext } from '@/contexts/AuthContext';
-import { initializeSecureSession, logSecurityEvent, validateSession } from '@/lib/security';
+import { isLovablePreviewRuntime } from '@/lib/routing/basePath';
 
 interface ProtectedRouteProps {
   children: ReactNode;
   requireAuth?: boolean;
 }
 
-export function ProtectedRoute({ children, requireAuth = true }: ProtectedRouteProps) {
-  const { isAuthenticated, loading } = useAuthContext();
+export function ProtectedRoute({ children }: ProtectedRouteProps) {
+  const { isAuthenticated, loading, isConfigured } = useAuthContext();
   const navigate = useNavigate();
 
-  // Initialize secure session on mount
+  // Detect Lovable preview environment or hosted sandbox to keep preview unblocked
+  const isPreviewEnv = isLovablePreviewRuntime();
+  // Only redirect to /auth when the backend is configured and not in Lovable preview.
   useEffect(() => {
-    if (isAuthenticated) {
-      initializeSecureSession();
+    try { console.debug('[ProtectedRoute]', { isPreviewEnv, isConfigured, isAuthenticated, loading }); } catch {}
+    if (!loading && isConfigured && !isPreviewEnv && !isAuthenticated) {
+      navigate('/auth', { replace: true });
     }
-  }, [isAuthenticated]);
-
-  // Validate session security
-  useEffect(() => {
-    if (isAuthenticated && !loading) {
-      const sessionValidation = validateSession();
-      if (!sessionValidation.valid) {
-        logSecurityEvent('session_timeout', {
-          reason: sessionValidation.reason,
-        });
-        // Session invalid, redirect to auth
-        navigate('/auth', { replace: true });
-      }
-    }
-  }, [isAuthenticated, loading, navigate]);
+  }, [isAuthenticated, isConfigured, isPreviewEnv, loading, navigate]);
 
   useEffect(() => {
     if (!loading && requireAuth && !isAuthenticated) {
@@ -53,7 +42,12 @@ export function ProtectedRoute({ children, requireAuth = true }: ProtectedRouteP
     );
   }
 
-  if (requireAuth && !isAuthenticated) {
+  // In Lovable preview or when Supabase isn't configured (or demo mode), render children.
+  if (isPreviewEnv || !isConfigured) {
+    return <>{children}</>;
+  }
+
+  if (!isAuthenticated) {
     return null;
   }
 

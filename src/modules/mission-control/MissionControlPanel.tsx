@@ -1,5 +1,5 @@
 import { Building2, MapPin, Ruler, Waypoints } from 'lucide-react';
-import { lazy, memo, Suspense, useMemo } from 'react';
+import { lazy, memo, Suspense } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,9 +15,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { JobStatus } from '@/lib/idb';
 import type { EstimatorState } from '@/modules/estimate/useEstimatorState';
 import { CanvasPanel } from '@/modules/layout/CanvasPanel';
-import { DivisionMapInterface } from '@/modules/mission-control/division-map/DivisionMapInterface';
-
+import { MissionMapIntel } from '@/modules/mission-control/MissionMapIntel';
 const MapComponent = lazy(() => import('@/components/Map'));
+const DivisionMapInterface = lazy(() => import('@/modules/mission-control/division-map/DivisionMapInterface').then((m) => ({ default: m.DivisionMapInterface })));
 
 const JOB_STATUS_OPTIONS: { value: JobStatus; label: string }[] = [
   { value: 'need_estimate', label: 'Needs Estimate' },
@@ -31,9 +31,7 @@ interface MissionControlPanelProps {
   estimator: EstimatorState;
 }
 
-export const MissionControlPanel = memo(function MissionControlPanel({
-  estimator,
-}: MissionControlPanelProps) {
+export const MissionControlPanel = memo(function MissionControlPanel({ estimator }: MissionControlPanelProps) {
   const { job, areas, cracks } = estimator;
 
   const distanceLabel = useMemo(
@@ -43,7 +41,7 @@ export const MissionControlPanel = memo(function MissionControlPanel({
 
   return (
     <CanvasPanel
-      title="Mission Control"
+      title="PAVEMENT MISSION"
       subtitle="Map intelligence, travel logistics, and status telemetry for your next sealcoat mission."
       eyebrow="Field Intel"
       tone="aurora"
@@ -53,9 +51,9 @@ export const MissionControlPanel = memo(function MissionControlPanel({
         </span>
       }
     >
-      <section className="grid gap-4 lg:grid-cols-3">
-        <div className="space-y-3 lg:col-span-2">
-          <div className="grid gap-3 sm:grid-cols-2">
+      <section className="grid gap-3 lg:grid-cols-3 lg:gap-4">
+        <div className="space-y-2 lg:col-span-2 lg:space-y-3">
+          <div className="grid gap-2 sm:grid-cols-2 sm:gap-3">
             <fieldset>
               <Label
                 htmlFor="jobName"
@@ -68,7 +66,7 @@ export const MissionControlPanel = memo(function MissionControlPanel({
                 value={job.name}
                 placeholder="St. Mark Sanctuary"
                 onChange={(event) => job.setName(event.target.value)}
-                className="mt-1 bg-white/10 text-base text-slate-50 placeholder:text-slate-200/50"
+                className="mt-1 bg-secondary/80 text-base text-secondary-foreground placeholder:text-muted-foreground/60"
               />
             </fieldset>
             <fieldset>
@@ -83,15 +81,12 @@ export const MissionControlPanel = memo(function MissionControlPanel({
                 value={job.address}
                 placeholder="Search or type address"
                 onChange={(event) => job.setAddress(event.target.value)}
-                className="mt-1 bg-white/10 text-base text-slate-50 placeholder:text-slate-200/50"
+                className="mt-1 bg-secondary/80 text-base text-secondary-foreground placeholder:text-muted-foreground/60"
               />
             </fieldset>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-2 sm:grid-cols-3 sm:gap-3">
             <fieldset>
-              <Label className="text-xs uppercase tracking-wide text-slate-200/70">
-                Job Status
-              </Label>
               <Label
                 htmlFor="jobStatus"
                 className="text-xs uppercase tracking-wide text-slate-200/70"
@@ -101,7 +96,7 @@ export const MissionControlPanel = memo(function MissionControlPanel({
               <Select value={job.status} onValueChange={(value: JobStatus) => job.setStatus(value)}>
                 <SelectTrigger
                   id="jobStatus"
-                  className="mt-1 h-10 bg-white/10 text-slate-50"
+                  className="mt-1 h-10 bg-secondary/80 text-secondary-foreground"
                   aria-label="Select job status"
                 >
                   <SelectValue />
@@ -127,7 +122,7 @@ export const MissionControlPanel = memo(function MissionControlPanel({
                 value={job.competitor}
                 placeholder="Optional"
                 onChange={(event) => job.setCompetitor(event.target.value)}
-                className="mt-1 bg-white/10 text-base text-slate-50 placeholder:text-slate-200/50"
+                className="mt-1 bg-secondary/80 text-base text-secondary-foreground placeholder:text-muted-foreground/60"
               />
             </fieldset>
             <fieldset>
@@ -140,8 +135,8 @@ export const MissionControlPanel = memo(function MissionControlPanel({
               <Button
                 id="refreshButton"
                 type="button"
-                variant="outline"
-                className="mt-1 h-10 border-white/30 bg-white/10 text-slate-50 hover:bg-white/20"
+                variant="secondary"
+                className="mt-1 h-10"
                 onClick={() =>
                   job.handleAddressUpdate(job.coords ?? job.businessCoords, job.address)
                 }
@@ -153,7 +148,7 @@ export const MissionControlPanel = memo(function MissionControlPanel({
             </fieldset>
           </div>
         </div>
-        <aside className="grid gap-3">
+        <aside className="grid gap-2 lg:gap-3">
           <DataStat
             icon={<Building2 className="h-4 w-4" />}
             label="Business Home Base"
@@ -176,19 +171,26 @@ export const MissionControlPanel = memo(function MissionControlPanel({
       </section>
       <Suspense
         fallback={
-          <Skeleton className="h-[420px] w-full rounded-3xl border border-white/10 bg-white/10" />
+          <Skeleton className="h-[360px] w-full rounded-2xl border border-white/10 bg-white/10 sm:h-[400px] lg:h-[420px]" />
         }
       >
-        <MapComponent
-          customerAddress={job.address}
-          onAddressUpdate={job.handleAddressUpdate}
-          onAreaDrawn={areas.handleAreaDrawn}
-          onCrackLengthDrawn={cracks.handleCrackLengthDrawn}
-          refreshKey={job.mapRefreshKey}
-        />
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-xl lg:rounded-3xl">
+          <MapComponent
+            customerAddress={job.address}
+            onAddressUpdate={job.handleAddressUpdate}
+            onAreaDrawn={areas.handleAreaDrawn}
+            onCrackLengthDrawn={cracks.handleCrackLengthDrawn}
+            refreshKey={job.mapRefreshKey}
+          />
+        </div>
       </Suspense>
-      <DivisionMapInterface />
-      <footer className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+      <Suspense fallback={null}>
+        <DivisionMapInterface />
+      </Suspense>
+        {estimator.featureFlags.isEnabled('tacticalMapV2') ? (
+          <MissionMapIntel estimator={estimator} />
+        ) : null}
+      <footer className="grid gap-2 sm:grid-cols-2 sm:gap-3 md:grid-cols-3">
         <InfoChip icon={<MapPin className="h-4 w-4" />} label="Site Coordinates">
           {job.coords
             ? `${job.coords[0].toFixed(5)}, ${job.coords[1].toFixed(5)}`

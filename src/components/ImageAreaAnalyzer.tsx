@@ -239,7 +239,14 @@ export default function ImageAreaAnalyzer({ onAreaDetected }: ImageAreaAnalyzerP
               className="block w-full text-left p-0 m-0 bg-transparent"
               aria-label="Image area annotator"
             >
-              <img ref={imgRef} src={imageUrl} alt="Site" className="max-w-full h-auto block" />
+                <img
+                  ref={imgRef}
+                  src={imageUrl}
+                  alt="Uploaded site reference"
+                  loading="lazy"
+                  decoding="async"
+                  className="block h-auto max-w-full"
+                />
               <canvas
                 ref={canvasRef}
                 className="absolute top-0 left-0 pointer-events-none"

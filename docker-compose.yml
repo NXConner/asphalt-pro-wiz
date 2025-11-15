@@ -4,23 +4,60 @@ x-app-env: &app_env
   APP_ENV: ${APP_ENV:-development}
   NODE_ENV: ${NODE_ENV:-production}
   VITE_APP_VERSION: ${VITE_APP_VERSION:-local-dev}
-  VITE_BASE_PATH: ${VITE_BASE_PATH:-/}
+  VITE_DEMO_MODE: ${VITE_DEMO_MODE:-0}
+  VITE_ENVIRONMENT: ${VITE_ENVIRONMENT:-${APP_ENV:-development}}
+  VITE_BASE_PATH: ${VITE_BASE_PATH:-./}
+  VITE_BASE_NAME: ${VITE_BASE_NAME:-/}
+  VITE_BASE_URL: ${VITE_BASE_URL:-}
   VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
   VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
   VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY:-}
+  SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+  SUPABASE_PROJECT_REF: ${SUPABASE_PROJECT_REF:-}
+  DATABASE_URL: ${DATABASE_URL:-postgres://postgres:postgres@db:5432/pavement}
+  ADMIN_EMAIL: ${ADMIN_EMAIL:-ops@pavement-suite.local}
   VITE_LOG_BEACON_URL: ${VITE_LOG_BEACON_URL:-}
   VITE_OBSERVABILITY_EXPORTER_URL: ${VITE_OBSERVABILITY_EXPORTER_URL:-}
+  VITE_OBSERVABILITY_SAMPLE_RATE: ${VITE_OBSERVABILITY_SAMPLE_RATE:-0.1}
+  VITE_ENABLE_WEB_VITALS: ${VITE_ENABLE_WEB_VITALS:-1}
+  VITE_ENABLE_FEATURE_TELEMETRY: ${VITE_ENABLE_FEATURE_TELEMETRY:-1}
+  VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+  VITE_GEMINI_PROXY_URL: ${VITE_GEMINI_PROXY_URL:-}
+  VITE_GEMINI_API_KEY: ${VITE_GEMINI_API_KEY:-}
+  GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+  LOVABLE_API_KEY: ${LOVABLE_API_KEY:-}
+  VITE_GOOGLE_MAPS_API_KEY: ${VITE_GOOGLE_MAPS_API_KEY:-}
+  VITE_OPENWEATHER_API_KEY: ${VITE_OPENWEATHER_API_KEY:-}
+  VITE_MAPBOX_TOKEN: ${VITE_MAPBOX_TOKEN:-}
+  VITE_AIR_QUALITY_API_KEY: ${VITE_AIR_QUALITY_API_KEY:-}
+  GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+  OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://observability:4317}
+  OTEL_EXPORTER_OTLP_PROTOCOL: ${OTEL_EXPORTER_OTLP_PROTOCOL:-grpc}
   VITE_FLAG_AIASSISTANT: ${VITE_FLAG_AIASSISTANT:-1}
   VITE_FLAG_IMAGEAREAANALYZER: ${VITE_FLAG_IMAGEAREAANALYZER:-1}
   VITE_FLAG_RECEIPTS: ${VITE_FLAG_RECEIPTS:-1}
   VITE_FLAG_PWA: ${VITE_FLAG_PWA:-1}
   VITE_FLAG_I18N: ${VITE_FLAG_I18N:-1}
+  VITE_FLAG_HUD_MULTI_MONITOR: ${VITE_FLAG_HUD_MULTI_MONITOR:-1}
+  VITE_FLAG_HUD_GESTURES: ${VITE_FLAG_HUD_GESTURES:-1}
+  VITE_FLAG_HUD_KEYBOARD_NAV: ${VITE_FLAG_HUD_KEYBOARD_NAV:-1}
+  VITE_FLAG_HUD_ANIMATIONS: ${VITE_FLAG_HUD_ANIMATIONS:-1}
+  VITE_FLAG_HUD_CONFIG_SYNC: ${VITE_FLAG_HUD_CONFIG_SYNC:-1}
   VITE_FLAG_OWNERMODE: ${VITE_FLAG_OWNERMODE:-0}
   VITE_FLAG_SCHEDULER: ${VITE_FLAG_SCHEDULER:-0}
   VITE_FLAG_OPTIMIZER: ${VITE_FLAG_OPTIMIZER:-0}
   VITE_FLAG_CUSTOMERPORTAL: ${VITE_FLAG_CUSTOMERPORTAL:-0}
   VITE_FLAG_OBSERVABILITY: ${VITE_FLAG_OBSERVABILITY:-1}
   VITE_FLAG_COMMANDCENTER: ${VITE_FLAG_COMMANDCENTER:-1}
+  VITE_HUD_DEFAULT_ANIMATION_PRESET: ${VITE_HUD_DEFAULT_ANIMATION_PRESET:-deploy}
+  VITE_HUD_ANIMATION_PRESETS_PATH: ${VITE_HUD_ANIMATION_PRESETS_PATH:-/hud/animation-presets.json}
+  VITE_HUD_GESTURE_SENSITIVITY: ${VITE_HUD_GESTURE_SENSITIVITY:-standard}
+  VITE_HUD_MULTI_MONITOR_STRATEGY: ${VITE_HUD_MULTI_MONITOR_STRATEGY:-auto}
+  VITE_HUD_CONFIG_EXPORT_FORMAT: ${VITE_HUD_CONFIG_EXPORT_FORMAT:-json}
+  VITE_HUD_CONFIG_EXPORT_ENDPOINT: ${VITE_HUD_CONFIG_EXPORT_ENDPOINT:-}
+  HUD_CONFIG_EXPORT_SIGNING_KEY: ${HUD_CONFIG_EXPORT_SIGNING_KEY:-}
+  HUD_CONFIG_EXPORT_ENCRYPTION_KEY: ${HUD_CONFIG_EXPORT_ENCRYPTION_KEY:-}
+  HUD_CONFIG_EXPORT_BUCKET: ${HUD_CONFIG_EXPORT_BUCKET:-}
 
 services:
   app:
@@ -31,7 +68,8 @@ services:
       args:
         NODE_VERSION: ${NODE_VERSION:-22-alpine}
         VITE_APP_VERSION: ${VITE_APP_VERSION:-local-dev}
-        VITE_BASE_PATH: ${VITE_BASE_PATH:-/}
+        VITE_BASE_PATH: ${VITE_BASE_PATH:-./}
+        VITE_BASE_NAME: ${VITE_BASE_NAME:-/}
         VITE_ENVIRONMENT: ${APP_ENV:-development}
     image: ${APP_IMAGE:-pavement-performance-suite:web}
     container_name: pavement-web
@@ -47,6 +85,8 @@ services:
         condition: service_healthy
       migrator:
         condition: service_completed_successfully
+      observability:
+        condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost"]
       interval: 30s
@@ -67,8 +107,7 @@ services:
     container_name: pavement-migrator
     command: ["npm", "run", "migrate:up"]
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgres://postgres:postgres@db:5432/pavement}
-      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+      <<: *app_env
     env_file:
       - .env
     depends_on:
@@ -77,6 +116,29 @@ services:
     restart: "no"
     networks:
       - pavement
+
+  seeder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: tooling
+      args:
+        NODE_VERSION: ${NODE_VERSION:-22-alpine}
+    image: ${TOOLING_IMAGE:-pavement-performance-suite-tooling:latest}
+    container_name: pavement-seeder
+    command: ["npm", "run", "seed"]
+    environment:
+      <<: *app_env
+    env_file:
+      - .env
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+    restart: "no"
+    networks:
+      - pavement
+    profiles:
+      - setup
 
   db:
     image: ${DB_IMAGE:-pgvector/pgvector:pg16}
@@ -94,6 +156,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+    networks:
+      - pavement
+
+  observability:
+    image: ${OTEL_IMAGE:-otel/opentelemetry-collector-contrib:0.103.0}
+    container_name: pavement-observability
+    command: ["--config=/etc/otel-collector.yaml"]
+    volumes:
+      - ./config/observability/otel-collector.yaml:/etc/otel-collector.yaml:ro
+    ports:
+      - "${OTEL_COLLECTOR_GRPC_PORT:-4317}:4317"
+      - "${OTEL_COLLECTOR_HTTP_PORT:-4318}:4318"
     restart: unless-stopped
     networks:
       - pavement

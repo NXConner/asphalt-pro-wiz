@@ -123,10 +123,8 @@ export async function batchInsert<T>(
   records: Partial<T>[],
 ): Promise<QueryResult<T[]>> {
   return safeQuery(async () => {
-    // Type assertion is safe here as we control the table structure
-    const { data, error } = await supabase
-      .from(table)
-      .insert(records as unknown as Record<string, unknown>[])
+    const { data, error } = await (supabase.from(table as any) as any)
+      .insert(records as any)
       .select();
     return { data: data as T[] | null, error };
   });

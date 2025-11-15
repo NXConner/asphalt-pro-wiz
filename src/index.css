@@ -2,141 +2,234 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Division Design System Base Tokens */
 @layer base {
-  :root {
-    color-scheme: dark;
-    --background: 220 50% 4%;
-    --foreground: 220 22% 92%;
-    --card: 222 50% 6%;
-    --card-foreground: 222 18% 92%;
-    --popover: 222 50% 7%;
-    --popover-foreground: 222 22% 92%;
-    --primary: 25 100% 55%;
-    --primary-foreground: 16 88% 95%;
-    --primary-hover: 25 100% 62%;
-    --secondary: 197 86% 48%;
-    --secondary-foreground: 210 100% 96%;
-    --secondary-hover: 197 86% 55%;
-    --muted: 226 42% 10%;
-    --muted-foreground: 226 20% 70%;
-    --accent: 206 92% 55%;
-    --accent-foreground: 0 0% 100%;
-    --accent-hover: 205 92% 61%;
-    --destructive: 358 86% 54%;
-    --destructive-foreground: 0 0% 98%;
-    --success: 135 56% 45%;
-    --success-foreground: 120 44% 92%;
-    --warning: 45 100% 52%;
-    --warning-foreground: 40 85% 96%;
-    --info: 190 90% 58%;
-    --info-foreground: 189 100% 96%;
-    --border: 213 32% 22%;
-    --input: 215 32% 16%;
-    --ring: 206 92% 55%;
-    --radius: 1rem;
+    :root {
+      color-scheme: dark;
 
-    /* Division HUD Variables */
-    --hud-font-heading: 'Rajdhani', 'Roboto Condensed', sans-serif;
-    --hud-font-display: 'Orbitron', 'Rajdhani', sans-serif;
-    --hud-font-body: 'Rajdhani', 'Inter', 'system-ui', sans-serif;
-    --hud-font-mono: 'Share Tech Mono', 'Roboto Mono', 'Menlo', monospace;
-    --hud-weight-display: 750;
-    --hud-weight-heading: 650;
-    --hud-weight-body: 500;
-    --hud-weight-mono: 550;
-    --hud-grid-opacity: 0.18;
-    --hud-card-opacity: 0.65;
-    --hud-panel-blur: 28px;
-  }
+      /* Core semantic tokens */
+      --background: 220 50% 4%;
+      --foreground: 220 22% 92%;
+      --card: 222 50% 6%;
+      --card-foreground: 222 18% 92%;
+      --popover: 222 50% 7%;
+      --popover-foreground: 222 22% 92%;
+      --primary: 25 100% 55%;
+      --primary-foreground: 16 88% 95%;
+      --secondary: 197 86% 48%;
+      --secondary-foreground: 210 100% 96%;
+      --muted: 226 42% 10%;
+      --muted-foreground: 226 20% 70%;
+      --accent: 206 92% 55%;
+      --accent-foreground: 0 0% 100%;
+      --destructive: 358 86% 54%;
+      --destructive-foreground: 0 0% 98%;
+      --success: 142 76% 48%;
+      --success-foreground: 0 0% 98%;
+      --warning: 45 93% 58%;
+      --warning-foreground: 0 0% 10%;
+      --info: 206 92% 55%;
+      --info-foreground: 0 0% 98%;
+      --border: 213 32% 22%;
+      --input: 215 32% 16%;
+      --ring: 206 92% 55%;
+      --radius: 1rem;
+      --app-wallpaper:
+        radial-gradient(circle at 20% 18%, rgba(255, 128, 0, 0.35) 0%, rgba(9, 13, 25, 0.92) 60%),
+        radial-gradient(circle at 82% 0%, rgba(92, 215, 255, 0.25) 0%, rgba(6, 11, 23, 0.94) 62%);
+      --wallpaper-opacity: 0.25;
+      --wallpaper-blur: 0px;
+
+      /* Chart colors */
+      --chart-1: 25 100% 55%;
+      --chart-2: 197 86% 48%;
+      --chart-3: 206 92% 55%;
+      --chart-4: 358 86% 54%;
+      --chart-5: 45 93% 58%;
+    }
 
   .light {
     color-scheme: light;
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 25 100% 45%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 25 100% 45%;
   }
 
-  * {
-    @apply border-border;
+    * {
+      @apply border-border;
+    }
+
+    body {
+      @apply bg-background text-foreground;
+      font-family: 'Rajdhani', system-ui, sans-serif;
+      font-feature-settings: "kern" 1;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      background: var(--app-wallpaper);
+      opacity: 0;
+      filter: blur(var(--wallpaper-blur));
+      transition: opacity 240ms ease, filter 240ms ease, background 360ms ease;
+      transform: translateZ(0);
+    }
+
+    body.has-wallpaper::before {
+      opacity: var(--wallpaper-opacity);
+    }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Orbitron', system-ui, sans-serif;
+    font-weight: 700;
   }
 
-  body {
-    @apply bg-background text-foreground;
-    font-family: var(--hud-font-body);
-    font-weight: var(--hud-weight-body);
+  code, pre {
+    font-family: 'Share Tech Mono', monospace;
   }
 }
 
-/* Division Utility Classes */
 @layer utilities {
-  .division-scanline {
-    position: relative;
-    overflow: hidden;
+  .text-balance {
+    text-wrap: balance;
   }
 
-  .division-scanline::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(255, 128, 0, 0.5), transparent);
-    animation: division-scanline 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
   }
 
-  .division-glow-ember {
-    box-shadow: 0 0 12px rgba(255, 145, 0, 0.65);
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-muted/20;
   }
 
-  .division-glow-aurora {
-    box-shadow: 0 0 12px rgba(56, 235, 214, 0.55);
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded;
   }
 
-  .division-glow-lagoon {
-    box-shadow: 0 0 14px rgba(114, 159, 255, 0.55);
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
   }
 
-  .text-glow-ember {
-    text-shadow:
-      0 0 14px rgba(255, 145, 0, 0.7),
-      0 0 32px rgba(255, 145, 0, 0.45);
+  /* Reduced motion for accessibility and animation controls */
+  .reduce-motion *,
+  .reduce-motion *::before,
+  .reduce-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
+}
 
-  .text-glow-aurora {
-    text-shadow:
-      0 0 16px rgba(56, 235, 214, 0.65),
-      0 0 36px rgba(56, 235, 214, 0.4);
+/* Tactical HUD animations */
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
   }
+  100% {
+    transform: translateY(100vh);
+  }
+}
 
-  .text-glow-lagoon {
-    text-shadow:
-      0 0 16px rgba(114, 159, 255, 0.65),
-      0 0 38px rgba(114, 159, 255, 0.4);
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 1;
   }
+  50% {
+    opacity: 0.5;
+  }
+}
 
-  .division-corner-bracket {
-    position: relative;
+@keyframes flicker {
+  0%, 100% {
+    opacity: 1;
   }
+  50% {
+    opacity: 0.8;
+  }
+}
 
-  .division-corner-bracket::before,
-  .division-corner-bracket::after {
-    content: '';
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    border: 2px solid rgba(255, 128, 0, 0.6);
-  }
+.tactical-pulse-ring {
+  position: relative;
+  display: block;
+  width: 220px;
+  height: 220px;
+  border-radius: 9999px;
+  border: 1px solid hsla(var(--accent, 206 92% 55%) / 0.35);
+  box-shadow: 0 0 32px hsla(var(--accent, 206 92% 55%) / 0.45);
+  animation: tactical-pulse 4s ease-out infinite;
+}
 
-  .division-corner-bracket::before {
-    top: 0;
-    left: 0;
-    border-right: none;
-    border-bottom: none;
-  }
+.tactical-pulse-ring::after {
+  content: "";
+  position: absolute;
+  inset: -25%;
+  border-radius: inherit;
+  border: 1px solid hsla(var(--accent, 206 92% 55%) / 0.18);
+  opacity: 0;
+  animation: tactical-pulse-wave 4s ease-out infinite;
+}
 
-  .division-corner-bracket::after {
-    bottom: 0;
-    right: 0;
-    border-left: none;
-    border-top: none;
+@keyframes tactical-pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.65;
   }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.65;
+  }
+}
+
+@keyframes tactical-pulse-wave {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  70% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+.animate-scanline {
+  animation: scanline 8s linear infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.animate-flicker {
+  animation: flicker 0.15s infinite;
 }

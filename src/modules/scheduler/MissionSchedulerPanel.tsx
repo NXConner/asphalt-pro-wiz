@@ -1,0 +1,232 @@
+import { startOfWeek } from 'date-fns';
+import { Cloud, CloudOff, Download, Upload } from 'lucide-react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
+
+import { AddMissionTaskForm } from './AddMissionTaskForm';
+import { CrewCapacityCard } from './CrewCapacityCard';
+import { MissionAlerts } from './MissionAlerts';
+import { MissionTimeline } from './MissionTimeline';
+import { useMissionSchedulerContext } from './useMissionSchedulerContext';
+
+import { BlackoutEditor } from '@/components/Scheduler/BlackoutEditor';
+import { CrewAssign } from '@/components/Scheduler/CrewAssign';
+import { WeatherAdvisor } from '@/components/Scheduler/WeatherAdvisor';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { logEvent } from '@/lib/logging';
+import { schedulerSyncAvailable } from '@/modules/scheduler/persistence';
+
+interface MissionSchedulerPanelProps {
+  coords: [number, number] | null;
+}
+
+export function MissionSchedulerPanel({ coords }: MissionSchedulerPanelProps) {
+  const scheduler = useMissionSchedulerContext();
+  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 0 }));
+  const [icsImporting, setIcsImporting] = useState(false);
+  const [icsSummary, setIcsSummary] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const schedulerReady = scheduler.ready;
+  const supabaseEnabled = schedulerSyncAvailable();
+  const taskCount = scheduler.tasks.length;
+  const crewCount = scheduler.crewMembers.length;
+  const blackoutCount = scheduler.blackouts.length;
+
+  const handleIcsFileChange = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      if (!schedulerReady) {
+        toast.error('Mission scheduler is still loading. Please try again in a moment.');
+        event.target.value = '';
+        return;
+      }
+
+        setIcsImporting(true);
+        try {
+          const text = await file.text();
+          const result = scheduler.importBlackoutsFromICS(text);
+          const summaryParts = [`${result.created} new`, `${result.updated} refreshed`];
+          if (result.merged) summaryParts.push(`${result.merged} merged`);
+          if (result.conflicts.length) summaryParts.push(`${result.conflicts.length} conflicts`);
+          setIcsSummary(
+            `Imported ${result.totalEvents} worship events • ${summaryParts.join(' • ')}`,
+          );
+        } catch (error) {
+          toast.error(
+            error instanceof Error ? error.message : 'Failed to import worship calendar file.',
+          );
+        } finally {
+          setIcsImporting(false);
+          event.target.value = '';
+        }
+    },
+    [scheduler, schedulerReady],
+  );
+
+  const handleIcsExport = useCallback(() => {
+    if (!schedulerReady) {
+      toast.error('Mission scheduler is still loading. Please try again in a moment.');
+      return;
+    }
+    if (blackoutCount === 0) {
+      toast.info('No blackout windows available to export.');
+      return;
+    }
+    const ics = scheduler.exportBlackoutsToICS({
+      calendarName: 'Worship Blackouts',
+      organization: 'Pavement Performance Suite',
+    });
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `worship-blackouts-${new Date().toISOString().slice(0, 10)}.ics`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    toast.success('Worship blackout calendar exported.');
+    try {
+      logEvent('scheduler.blackout_exported', { blackoutCount });
+    } catch {}
+  }, [blackoutCount, scheduler, schedulerReady]);
+
+  const panelContent = useMemo(() => {
+    if (!schedulerReady) {
+      return (
+        <div className="space-y-6">
+          <div className="h-56 animate-pulse rounded-3xl bg-slate-900/60" />
+          <div className="h-[520px] animate-pulse rounded-3xl bg-slate-900/60" />
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="h-64 animate-pulse rounded-3xl bg-slate-900/60" />
+            <div className="h-64 animate-pulse rounded-3xl bg-slate-900/60" />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-8">
+        <Card className="border-slate-800/70 bg-slate-950/60 backdrop-blur">
+          <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle>Mission Sync Center</CardTitle>
+              <CardDescription>
+                Keep the crew schedule and worship blackout windows synced across every device.
+              </CardDescription>
+            </div>
+            <Badge
+              variant={supabaseEnabled ? 'default' : 'outline'}
+              className="flex items-center gap-1 text-xs uppercase tracking-wide"
+            >
+              {supabaseEnabled ? (
+                <Cloud className="h-4 w-4" />
+              ) : (
+                <CloudOff className="h-4 w-4 text-yellow-400" />
+              )}
+              {supabaseEnabled ? 'Supabase Connected' : 'Offline Draft Mode'}
+            </Badge>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-sm">
+              <div>
+                <span className="font-semibold text-foreground">{taskCount}</span> scheduled
+                missions
+              </div>
+              <div>
+                <span className="font-semibold text-foreground">{crewCount}</span> active crews
+              </div>
+              <div>
+                <span className="font-semibold text-foreground">{blackoutCount}</span> blackout
+                windows
+              </div>
+            </div>
+            <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
+              <Label htmlFor="ics-file-upload" className="sr-only">
+                Import Worship Calendar File
+              </Label>
+              <input
+                id="ics-file-upload"
+                ref={fileInputRef}
+                type="file"
+                accept=".ics,text/calendar"
+                className="hidden"
+                onChange={handleIcsFileChange}
+                aria-label="Import worship calendar file (.ics format)"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={icsImporting || !schedulerReady}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                {icsImporting ? 'Importing…' : 'Import Worship Calendar (.ics)'}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleIcsExport}
+                disabled={!schedulerReady || blackoutCount === 0}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export Worship Calendar (.ics)
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                {icsSummary ??
+                  (supabaseEnabled
+                    ? 'Synced with mission_tasks & crew blackout tables'
+                    : 'Local-only until Supabase credentials are configured')}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+        <AddMissionTaskForm />
+        <MissionTimeline weekStart={weekStart} onShiftWeek={setWeekStart} />
+        <div className="grid gap-6 lg:grid-cols-2">
+          <MissionAlerts />
+          <CrewCapacityCard />
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <BlackoutEditor />
+          <CrewAssign />
+        </div>
+        <WeatherAdvisor coords={coords} />
+      </div>
+    );
+    }, [
+      blackoutCount,
+      coords,
+      crewCount,
+      handleIcsExport,
+      handleIcsFileChange,
+      icsImporting,
+      icsSummary,
+      schedulerReady,
+      supabaseEnabled,
+      taskCount,
+      weekStart,
+    ]);
+
+  return (
+    <div className="space-y-6">
+      {scheduler.persistError ? (
+        <Alert variant="destructive" className="border-red-500/40 bg-red-500/10 text-red-100">
+          <AlertTitle>Scheduler Storage Issue</AlertTitle>
+          <AlertDescription>
+            Unable to persist mission planner state to local storage. Check browser storage quotas
+            and retry.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      {panelContent}
+    </div>
+  );
+}

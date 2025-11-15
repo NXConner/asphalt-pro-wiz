@@ -2,18 +2,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { safeQuery, checkPermission } from '@/lib/supabase';
 
-// Mock Supabase client
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
+vi.mock('@/integrations/supabase/client', async () => {
+  const { createSupabaseModuleMock } = await import('../utils/supabaseMock');
+  return createSupabaseModuleMock({
     from: vi.fn(),
-    storage: {
-      from: vi.fn(),
+    additionalSupabaseProps: {
+      storage: {
+        from: vi.fn(),
+      },
+      auth: {
+        getUser: vi.fn(),
+      },
     },
-    auth: {
-      getUser: vi.fn(),
-    },
-  },
-}));
+  });
+});
 
 describe('Supabase Utilities', () => {
   beforeEach(() => {

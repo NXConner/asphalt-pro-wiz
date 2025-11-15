@@ -1,105 +1,289 @@
 # Pavement Performance Suite
 
-Modern, AI-assisted operations cockpit for asphalt estimation, scheduling, and client collaboration with a focus on church facilities across Virginia.
+AI-assisted operations command center purpose-built for asphalt paving, sealcoating, and line-striping crews serving Virginia and North Carolina church campuses. The platform delivers estimation, scheduling, compliance automation, observability, and mobile experiences through a Division-inspired tactical HUD.
 
-## System Overview
+---
 
-- **Frontend**: React 18 + Vite + TypeScript, shadcn/ui, TailwindCSS, `react-grid-layout` for adaptive canvases.
-- **State & Data**: React Query, IndexedDB caching, Supabase client, feature-flag service.
-- **Tooling**: ESLint (flat config) + Prettier + Husky + lint-staged, Vitest + Playwright, k6/Artillery load kits.
-- **Mobile**: Capacitor Android shell for native deployments.
+## Table of Contents
 
-## Quickstart (Dev, Test, Prod-ready)
+1. [Overview](#overview)
+2. [Core Capabilities](#core-capabilities)
+3. [Architecture](#architecture)
+4. [Quickstart](#quickstart)
+5. [Feature Flags & Configuration](#feature-flags--configuration)
+6. [Environment & Secrets](#environment--secrets)
+7. [Observability & Operations](#observability--operations)
+8. [Security & Compliance](#security--compliance)
+9. [Testing & Quality Gates](#testing--quality-gates)
+10. [Load & Performance Testing](#load--performance-testing)
+11. [Deployment Targets](#deployment-targets)
+12. [Mobile & Offline Field Ops](#mobile--offline-field-ops)
+13. [Contribution & Developer Experience](#contribution--developer-experience)
+14. [Strategic Roadmap Snapshot](#strategic-roadmap-snapshot)
+15. [Reference Docs](#reference-docs)
+16. [License](#license)
 
-1. Clone and enter the repo.
-2. Duplicate the environment template and provide real secrets (never placeholders):
-   ```sh
-   cp .env.example .env
-   ```
-3. Install dependencies and prepare tooling (PowerShell users can run the `.ps1` variant):
-   ```sh
-   scripts/install_dependencies.sh
-   # or
-   pwsh ./scripts/install_dependencies.ps1
-   ```
-   - `--skip-playwright` to avoid browser downloads (CI containers)
-   - `--skip-husky` on read-only CI runners
-4. Start the dev server and refresh existing preview:
-   ```sh
-   npm run dev
-   ```
-5. Run quality gates before opening a PR:
-   ```sh
-   npm run lint
-   npm run test:unit -- --run
-   npm run test:e2e   # requires dev server
-   ```
+---
 
-## Environment Configuration
+## Overview
 
-- All variables live in `.env` (template in `.env.example`). Key values:
-  - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-  - `VITE_GEMINI_PROXY_URL` (required outside local dev), `GEMINI_API_KEY` for server scripts
-  - Observability exporters (`VITE_LOG_BEACON_URL`, `VITE_OBSERVABILITY_EXPORTER_URL`, `OBSERVABILITY_API_KEY`)
-  - Mapping + weather integrations (`VITE_GOOGLE_MAPS_API_KEY`, `VITE_OPENWEATHER_API_KEY`, `VITE_MAPBOX_TOKEN`)
-  - `VITE_APP_VERSION` surfaced in structured logs
-- Feature flags (set to `1`/`0`): `VITE_FLAG_OBSERVABILITY`, `VITE_FLAG_COMMANDCENTER`, plus UI toggles for other labs features
-- Config is environment-specific; never commit `.env`.
-- Supabase setup, seed strategy, and shared project guidance: `docs/UNIFIED_SUPABASE_GUIDE.md`.
+- **Mission**: Equip small church-focused paving crews with an AI-guided command center that streamlines estimation, mission planning, crew coordination, compliance, and reporting.
+- **Key Pillars**: User-centric HUD design, offline-ready workflows, Supabase-backed data integrity, structured observability, security-first automation, and extensible integrations.
+- **Primary Users**: Pavement operations leads, pastors and facility directors, field crew chiefs, and back-office administrators handling compliance and finance.
 
-## Branching Strategy
+---
 
-- `main`: production-ready, auto-deployed on passing CI.
-- `develop`: integration branch for completed epics before release hardening.
-- Feature branches: `feature/<scope>-<ticket>` (e.g., `feature/operations-canvas-PPS-102`).
-- Hotfix branches from `main`: `hotfix/<scope>`.
-- Use PR templates in `.github/` and ensure Husky hooks pass before merge.
+## Core Capabilities
 
-## Developer Tooling & Standards
+- **Estimator Studio** – multi-step cost modelling with AI assistance, compliance guardrails, multi-scenario simulation lab, and offline resilience.
+- **Mission Scheduler** – crew-aware timeline with worship blackout windows, ADA alerts, conflict detection, and what-if optimization.
+- **Command Center HUD** – live telemetry, revenue and margin dashboards, configurable widgets, multi-monitor layout memory, gesture controls, keyboard navigation, animation presets, and Supabase-backed data panels with export/import workflows.
+- **Theme Command Center** – multi-theme gallery with liturgical presets, custom wallpaper uploads, adaptive typography, and instant previews.
+- **Layout & Mapping Suite** – GIS overlays, measurement tools, tactical map waypoints, hazard zoning, and drone-ready workflows.
+- **Automation & Notifications** – templated outreach flows, incident management, and workflow hooks for estimator → mission transitions.
+- **Supplier Intelligence** – Supabase-backed pricing telemetry, AI summaries, and lead-time signals for regional material partners.
+- **Mobile Readiness** – Capacitor Android shell, responsive design, offline queues, and background sync tailored for field teams.
 
-- **Formatting**: Prettier + `prettier-plugin-tailwindcss` (`npm run format` / `format:check`).
-- **Linting**: ESLint with React, security, accessibility, import-order, and Prettier alignment (`npm run lint`).
-- **Type Safety**: TypeScript strictness enforced in lib/modules.
-- **Python utilities**: `pyproject.toml` configures Black/Flake8/isort for Supabase scripts or data tooling.
-- **Commit Hygiene**: Husky pre-commit runs lint-staged diff formatting + full lint + unit suite. Commit messages validated against Conventional Commits via `commitlint`.
+---
 
-### Testing Matrix
+## Architecture
 
-- `npm run test:unit` – Vitest with jsdom.
-- `npm run coverage` – coverage gate (85% target).
-- `npm run test:e2e` – Playwright smoke covering estimator, feature flags, uploads.
-- Load packs in `scripts/load/` (`k6` + `artillery`).
-- Accessibility audits included via `vitest-axe` suites.
+- **Frontend**: React 18, Vite, TypeScript, TailwindCSS, shadcn/ui, `react-grid-layout`.
+- **State & Data**: TanStack Query, feature flag context, Supabase client, IndexedDB caching, optimistic mutation helpers.
+- **Edge Functions**: `gemini-proxy` (AI gateway) and `log-beacon` (telemetry ingress) with OpenAPI definitions in `docs/swagger.json`.
+- **Tooling**: ESLint flat config, Prettier + Tailwind plugin, Husky + lint-staged, Vitest, Playwright, k6, Artillery, Commitlint.
+- **Mobile**: Capacitor packaging for Android; PWA path for iOS/desktop crews.
 
-## Operational Guides
+---
 
-### Executive Command Center
+## Quickstart
 
-- Navigate to `/command-center` (or use the header shortcut) once the `commandCenter` flag is enabled.
-- Requires Supabase credentials (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) to hydrate analytics.
-- Surfaces live metrics for job statuses, revenue, and crew coverage; logs telemetric events for observability when loaded.
+```bash
+# 1. Clone
+git clone https://github.com/continue-repo/pavement-performance-suite.git
+cd pavement-performance-suite
 
-- **Containers**: Build the optimized Nginx image and launch Postgres locally:
-  ```sh
-  docker compose --env-file .env up --build
-  ```
-  - Override build-time metadata via `VITE_APP_VERSION=1.0.0 docker compose build`
-  - Shut down and remove the volume when resetting state: `docker compose down -v`
-- **Security Scan**: Audit dependencies before releases:
-  ```sh
-  npm run security:scan
-  ```
-- **Database**: Launch local Postgres with Docker Compose, run migrations + seeds via `npm run migrate:up` / `npm run seed` (requires `DATABASE_URL`).
-- **AI Proxy**: Deploy Supabase Edge `gemini-proxy` and set `VITE_GEMINI_PROXY_URL`. Direct API key usage is blocked in production builds.
-- **Android Build**: `npm run mobile:prep` prepares assets; gradle tasks under `android/` handle APK generation.
-- **Observability**: Client logs beaconed when `VITE_LOG_BEACON_URL` is set; additional exporters controlled via `VITE_OBSERVABILITY_EXPORTER_URL` and sampling flags.
+# 2. Configure environment (populate with *real* secrets)
+cp .env.example .env
+#    Edit `.env` or `.env.local` with production-ready secrets from your manager
+npm run check:env
 
-## Contribution Reference
+# 3. Install dependencies (PowerShell equivalent available)
+scripts/install_dependencies.sh
+#  --skip-playwright   # avoid browser downloads in CI containers
+#  --skip-husky        # disable git hooks for read-only runners
+# PowerShell: pwsh -File scripts/install_dependencies.ps1
 
-- Ownership rules: `CODEOWNERS`
-- Workflow expectations and review checklist: `CONTRIBUTING.md`
-- Architectural notes, Supabase admin setup, and security posture: see `docs/` folder.
+# 4. Start dev server (refresh running preview if already launched)
+npm run dev
+
+# 5. Prime Supabase (optional for local data)
+npm run migrate:up
+npm run seed
+```
+
+> **Windows**: Follow `docs/WINDOWS_SETUP.md` for shell-specific flags, PostgreSQL provisioning, and Playwright dependencies.
+
+---
+
+## Feature Flags & Configuration
+
+- Global flags live under `src/lib/featureFlags` and are surfaced via the in-app Settings → Feature Flags panel.
+- Common overrides (set in `.env` or Supabase config):
+  - `VITE_FLAG_COMMANDCENTER`, `VITE_FLAG_SCHEDULER`, `VITE_FLAG_OBSERVABILITY`, `VITE_FLAG_TACTICALMAPV2`
+  - Experimental toggles: `VITE_FLAG_AIASSISTANT`, `VITE_FLAG_IMAGEAREAANALYZER`, `VITE_FLAG_PWA`, `VITE_FLAG_I18N`
+  - HUD suite toggles: `VITE_FLAG_HUD_MULTI_MONITOR`, `VITE_FLAG_HUD_GESTURES`, `VITE_FLAG_HUD_KEYBOARD_NAV`, `VITE_FLAG_HUD_ANIMATIONS`, `VITE_FLAG_HUD_CONFIG_SYNC`
+- Flags support environment scoping (dev/test/prod) and integrate with feature telemetry when `VITE_ENABLE_FEATURE_TELEMETRY=true`.
+
+---
+
+## Environment & Secrets
+
+- `.env` keys (see `.env.example`):
+  - **Deployment metadata**: `APP_ENV`, `VITE_ENVIRONMENT`, `VITE_APP_VERSION`, `VITE_BASE_PATH`, `VITE_BASE_NAME`, `VITE_BASE_URL`.
+  - **Supabase**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SUPABASE_PROJECT_ID`, `SUPABASE_PROJECT_REF`, `DATABASE_URL`.
+  - **AI Proxy**: `VITE_GEMINI_PROXY_URL`, `GEMINI_API_KEY`, `LOVABLE_API_KEY`.
+  - **Observability**: `VITE_LOG_BEACON_URL`, `VITE_OBSERVABILITY_EXPORTER_URL`, `OBSERVABILITY_API_KEY`, `VITE_SENTRY_DSN`.
+  - **Mapping & Weather**: `VITE_GOOGLE_MAPS_API_KEY`, `VITE_OPENWEATHER_API_KEY`, `VITE_MAPBOX_TOKEN`, `VITE_AIR_QUALITY_API_KEY`.
+  - **HUD Sync & Export**: `VITE_HUD_DEFAULT_ANIMATION_PRESET`, `VITE_HUD_ANIMATION_PRESETS_PATH`, `VITE_HUD_GESTURE_SENSITIVITY`, `VITE_HUD_MULTI_MONITOR_STRATEGY`, `VITE_HUD_CONFIG_EXPORT_FORMAT`, `VITE_HUD_CONFIG_EXPORT_ENDPOINT`, plus secrets `HUD_CONFIG_EXPORT_SIGNING_KEY`, `HUD_CONFIG_EXPORT_ENCRYPTION_KEY`, `HUD_CONFIG_EXPORT_BUCKET`.
+  - **Developer tooling**: `GITHUB_TOKEN` for ingest scripts.
+- **Secrets provider**: Set `SECRET_PROVIDER` to `env` (default), `doppler`, `vault`, or `aws-secrets-manager`. The runtime helper `src/config/secrets.ts` reads this value and fails fast if required secrets are missing or the provider is unconfigured.
+- Secrets automation templates live in `config/secrets/` for Doppler, Vault, and AWS Secrets Manager pipelines.
+- Never commit real secrets. Use Supabase Edge Secrets or your chosen secret manager for runtime credentials.
+- Run `npm run check:env` locally (non-strict) and `npm run check:env -- --strict` in CI to gate deployments; failures block Lovable preview regressions (e.g., absolute `VITE_BASE_PATH`).
+- Keep `VITE_BASE_PATH` set to `./` for production builds to ensure Lovable previews resolve nested asset paths. Let Lovable auto-detect `VITE_LOVABLE_BASE_PATH`.
+  - Supabase bootstrapping, RLS, and seed workflows are documented in `docs/UNIFIED_SUPABASE_GUIDE.md` and the detailed migration/seed map in `docs/SUPABASE_SCHEMA.md`.
+
+---
+
+## Observability & Operations
+
+- The app initializes monitoring via `initializeMonitoring()` and streams telemetry through the `log-beacon` edge function.
+- Structured logging emits for:
+  - Feature flag evaluations and overrides.
+  - Mission scheduler events (crew conflicts, ADA alerts, ICS imports).
+  - Estimator lifecycle (scenario creation, AI recommendations, proposal exports).
+  - Mobile/Capacitor events (back button handling, offline sync).
+  - Lovable preview asset watchers (`lovable.asset_load_error`, `lovable.asset_promise_rejection`) for visibility into missing bundles or proxy misconfigurations.
+- Enable/disable web vitals and feature telemetry with `VITE_ENABLE_WEB_VITALS` and `VITE_ENABLE_FEATURE_TELEMETRY`.
+- Integrate with external APMs by configuring `VITE_OBSERVABILITY_EXPORTER_URL` and `VITE_SENTRY_DSN`.
+
+---
+
+## Security & Compliance
+
+- Supabase schema enforces RLS across organizations, jobs, estimates, crew data, documents, and premium services.
+- Roles (`viewer`, `operator`, `manager`, `super_admin`) backed by `user_roles` and `user_org_memberships`.
+- Scripts:
+  - `npm run security:scan` (npm audit + Snyk)
+  - `npm run security:report` (JSON audit snapshot)
+- Secret resolution is centralised in `src/config/secrets.ts`, which normalises environment values and surfaces actionable errors when a managed provider (`SECRET_PROVIDER=doppler|vault|aws-secrets-manager`) is enabled without configuration. See `config/secrets/README.md` for provider-specific bootstrapping.
+  - GitHub Actions pipeline (`.github/workflows/main.yml`) runs CodeQL SAST, dependency scans, and tests per push.
+- Secrets management patterns documented in `docs/SECRETS_AND_CONFIG.md` with Doppler/Vault/AWS sample configs.
+- Virginia contractor compliance workflows, invoicing expectations, and retention policies detailed in `docs/PRODUCTION_READINESS.md` and `docs/SECURITY_REMEDIATION_GUIDE.md`.
+
+---
+
+## Testing & Quality Gates
+
+| Category | Command | Notes |
+| --- | --- | --- |
+| Formatting | `npm run format` / `npm run format:check` | Prettier + Tailwind plugin |
+| Linting | `npm run lint` / `npm run lint:fix` | ESLint with React, a11y, security plugins |
+| Type Safety | `npm run typecheck` | Strict TS config |
+| Unit | `npm run test:unit -- --run` | Vitest; coverage thresholds 85%/85%/70% configured |
+| Integration | `npm run test -- --run` | Module-level suites under `tests/` |
+| E2E | `npm run test:e2e` | Playwright specs (`e2e/`) |
+| Preview Smoke | `npm run test:preview` | Builds production bundle and runs the Playwright harness at `preview-smoke.html` to verify Lovable base detection |
+| Accessibility | `npm run test:unit -- --run` | Uses `vitest-axe` assertions |
+| Security | `npm run security:scan` | npm audit + Snyk |
+| Load | see [Load & Performance Testing](#load--performance-testing) | k6 + Artillery packs |
+
+Husky pre-commit hooks execute lint-staged, lint, typecheck, unit tests, and optional Playwright checks via `npm run precommit:hook`.
+
+---
+
+## Load & Performance Testing
+
+### k6 Observability Beacon
+
+```bash
+LOG_BEACON_URL=https://your-project.supabase.co/functions/v1/log-beacon \
+LOG_BEACON_TOKEN=SUPABASE_JWT_OR_ANON_KEY \
+npx k6 run scripts/load/k6-observability.js
+```
+
+Sends synthetic `lovable.asset_*` telemetry into the Supabase Edge Function to validate ingestion latency, dedupe, and incident rollups. Tune intensity with `STAGE_MULTIPLIER` and export JSON summaries via `--summary-export`.
+
+### k6 Gemini Proxy Assist
+
+```bash
+GEMINI_PROXY_URL=https://your-project.supabase.co/functions/v1/gemini-proxy \
+GEMINI_PROXY_TOKEN=SUPABASE_SERVICE_OR_ANON_JWT \
+GEMINI_PROMPT="Summarize church sealcoating scope best practices." \
+npx k6 run scripts/load/k6-gemini-proxy.js
+```
+
+Validates the authenticated Gemini chat proxy that powers scope recommendations. Monitors `gemini_chat_duration` and enforces `gemini_chat_success` > 95%.
+
+### k6 Mission Sweep
+
+```bash
+# Default BASE_URL is http://localhost:5173
+npx k6 run scripts/load/k6-estimate.js
+
+# Scale intensity for staging validation
+STAGE_MULTIPLIER=3 BASE_URL=https://preview.example npx k6 run scripts/load/k6-estimate.js
+```
+
+Metrics emitted: `successful_requests`, `request_duration`, `content_validation_failures`. Thresholds enforce p95 < 800 ms and success rate > 97%.
+
+### Artillery Smoke Pulse
+
+```bash
+npx artillery run scripts/load/artillery.yml
+```
+
+Ideal for CI or pre-release smoke tests. Full instructions live in `scripts/load/README.md`.
+
+---
+
+## Deployment Targets
+
+### Containers
+
+```bash
+docker compose --env-file .env up --build
+# Reset state
+docker compose down -v
+```
+
+> **Quality gate:** The Docker build stage runs `npm run lint`, `npm run typecheck`, and `npm run test:unit -- --run` before bundling, failing fast on regressions.
+
+> Need a hot-reload setup instead? Pair `docker-compose.yml` with `docker-compose.dev.yml` (see `docs/CONTAINERIZATION.md`) to spin up the Vite dev server alongside Postgres + Otel in one command.
+
+### Android
+
+```bash
+npm run mobile:prep
+npm run android:gradle:debug
+```
+
+### Release Checklist
+
+1. `npm run security:scan`
+2. `npm run openapi:generate` (parses Supabase Edge Function annotations and refreshes `docs/swagger.json`)
+3. `npm run test:e2e`
+4. Run load smoke (`k6-observability`, `k6-estimate`, or `artillery`)
+5. Update `CHANGELOG.md`
+
+---
+
+## Mobile & Offline Field Ops
+
+- Capacitor shell delivers native Android packaging; field devices receive offline caching, background sync, and optimized touch targets.
+- `MobileOptimizations` component handles PWA prompts, install banners, and viewport adjustments.
+- Offline-first patterns leverage IndexedDB persistence for estimator drafts, missions, telemetry, and wallpaper assets.
+- Push notification ready via Capacitor plugins (enable corresponding feature flags and provider credentials).
+
+---
+
+## Contribution & Developer Experience
+
+- Branching strategy:
+  - `main`: production-ready, auto-deploy after CI success.
+  - `develop`: integration branch for the next release cut; merge feature branches here.
+  - `feature/<scope>` or `hotfix/<scope>`: short-lived branches; rebase on `develop` before PR.
+  - Use release branches (`release/vX.Y.Z`) for stabilization windows when needed.
+- Conventional Commits enforced via Husky + Commitlint.
+- Generator scripts (`scripts/openapi`, `scripts/ingest`, planned `scripts/generate`) keep new modules consistent.
+- Provide risk/rollback notes in PR template (`.github/pull_request_template.md`) and keep docs in sync.
+- Consult `CONTRIBUTING.md` for coding standards, review checklist, and DevEx expectations.
+
+---
+
+## Strategic Roadmap Snapshot
+
+- **Estimator Studio Enhancements**: AI co-pilot, layout-driven quantity extraction, supplier pricing alerts, compliance guardrails, proposal PDFs.
+- **Mission Scheduler Optimization**: Constraint-based timeline planning, worship blackout imports, crew mobile sync, incident rerouting.
+- **Command Center & Observability**: Customizable HUD layouts, incident management, OTEL instrumentation, in-app observability console.
+
+Full roadmap and phased analysis live in `docs/PHASE_1_ANALYSIS.md`, `docs/PHASE_COMPLETION_SUMMARY.md`, and `docs/IMPROVEMENT_PLAN.md`.
+
+---
+
+## Reference Docs
+
+- Supabase & security: `docs/UNIFIED_SUPABASE_GUIDE.md`, `docs/SECURITY_REMEDIATION_GUIDE.md`, `docs/RLS_SECURITY.md`
+- Supabase schema tooling: `docs/SUPABASE_SCHEMA.md`, `docs/ADMIN_SETUP.md`
+- Mission scheduler & UX: `docs/DIVISION_UI_TRANSFORMATION.md`, `docs/MOBILE_GUIDE.md`
+- Testing & quality: `docs/TESTING_GUIDE.md`, `scripts/load/README.md`
+- API & integrations: `docs/API_REFERENCE.md`, `docs/INTEGRATIONS_GUIDE.md`
+- Deployment & operations: `docs/DEPLOYMENT.md`, `docs/PRODUCTION_READINESS.md`, `docs/CONTAINERIZATION.md`
+- UI foundations: `docs/DESIGN_SYSTEM.md`
+
+---
 
 ## License
 
-MIT – see `LICENSE`.
+MIT © Pavement Performance Suite contributors — see [LICENSE](./LICENSE).

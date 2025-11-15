@@ -1,7 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
-import { CanvasGrid, ParticleBackground, ProgressRing, StatusBar } from '@/components/hud';
 import {
   DivisionCard,
   DivisionCardBadge,
@@ -10,11 +9,16 @@ import {
   DivisionCardList,
   DivisionCardMetric,
 } from '@/components/division';
+import { CanvasGrid, ParticleBackground, ProgressRing, StatusBar } from '@/components/hud';
+import { TelemetrySignal } from '@/components/telemetry';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { usePreviewAssetIncidents } from '@/hooks/usePreviewAssetIncidents';
 import { isEnabled } from '@/lib/flags';
 import { logEvent } from '@/lib/logging';
 import { useCommandCenterData } from '@/modules/analytics/useCommandCenterData';
+import { MissionActivityPanel } from '@/modules/mission-control/MissionActivityPanel';
+import { PreviewIncidentsPanel } from '@/modules/observability/PreviewIncidentsPanel';
 
 const currencyFormatter = new Intl.NumberFormat(undefined, {
   style: 'currency',
@@ -48,11 +52,61 @@ const formatStatusLabel = (status: string) =>
 
 export default function CommandCenter() {
   const flagEnabled = isEnabled('commandCenter');
-  const { status, metrics, errorMessage } = useCommandCenterData();
+  const observabilityEnabled = isEnabled('observability');
+  const { status, metrics, errorMessage, isRealtimeConnected, refetch, isFetching } =
+    useCommandCenterData();
+  const previewIncidentsQuery = usePreviewAssetIncidents({
+    enabled:
+      flagEnabled && observabilityEnabled && status !== 'disabled' && status !== 'error',
+    pollingIntervalMs: 45_000,
+    limit: 75,
+  });
+
+  const latestMetricsIso = useMemo(() => {
+    if (!metrics) {
+      return null;
+    }
+
+    return metrics.recentJobs.reduce<string | null>((latest, job) => {
+      const candidate = job.updatedAt ?? job.createdAt;
+      if (!candidate) {
+        return latest;
+      }
+
+      if (!latest || Date.parse(candidate) > Date.parse(latest)) {
+        return candidate;
+      }
+
+      return latest;
+    }, null);
+  }, [metrics]);
 
   useEffect(() => {
     logEvent('analytics.command_center_route_loaded');
   }, []);
+
+  const previewAlertActive = previewIncidentsQuery.data?.hasActiveAlert ?? false;
+  const previewAlertRef = useRef(false);
+  useEffect(() => {
+    if (!observabilityEnabled) return;
+    if (previewAlertActive && !previewAlertRef.current) {
+      logEvent(
+        'observability.preview_incidents.alert_triggered',
+        {
+          lastHour: previewIncidentsQuery.data?.stats.lastHour ?? 0,
+          total: previewIncidentsQuery.data?.stats.total ?? 0,
+          affectedAssets: previewIncidentsQuery.data?.stats.affectedAssets ?? 0,
+        },
+        'warn',
+      );
+    }
+    if (!previewAlertActive && previewAlertRef.current) {
+      logEvent('observability.preview_incidents.alert_cleared', {
+        total: previewIncidentsQuery.data?.stats.total ?? 0,
+      });
+    }
+    previewAlertRef.current = previewAlertActive;
+  }, [observabilityEnabled, previewAlertActive, previewIncidentsQuery.data?.stats]);
 
   useEffect(() => {
     if (status === 'ready' && metrics) {
@@ -115,7 +169,6 @@ export default function CommandCenter() {
             <Button
               asChild
               variant="secondary"
-              className="bg-white/10 text-slate-50 hover:bg-white/20"
             >
               <Link to="/">Return to Operations Canvas</Link>
             </Button>
@@ -154,12 +207,28 @@ export default function CommandCenter() {
           ? ('warning' as const)
           : ('neutral' as const),
   }));
+  if (observabilityEnabled && previewIncidentsQuery.data?.hasActiveAlert) {
+    alertListItems.unshift({
+      id: 'lovable-preview-incidents',
+      headline: 'Lovable preview assets failing',
+      subline: `${
+        previewIncidentsQuery.data.stats.lastHour ?? 0
+      } incidents in the last hour · ${previewIncidentsQuery.data.stats.affectedAssets} assets impacted`,
+      meta: 'CRITICAL',
+      tone: 'critical' as const,
+    });
+  }
   const recentJobItems = metrics.recentJobs.map((job) => ({
     id: job.id,
     headline: job.name ?? job.id,
     subline: `${formatStatusLabel(job.status)} • ${currencyFormatter.format(job.quoteValue)}`,
     meta: dateTimeFormatter.format(Date.parse(job.updatedAt ?? job.createdAt)),
-    tone: job.status === 'active' ? ('positive' as const) : job.status === 'lost' ? ('critical' as const) : ('neutral' as const),
+    tone:
+      job.status === 'active'
+        ? ('positive' as const)
+        : job.status === 'lost'
+          ? ('critical' as const)
+          : ('neutral' as const),
   }));
   const assignmentItems = metrics.upcomingAssignments.map((assignment) => ({
     id: assignment.id,
@@ -190,6 +259,14 @@ export default function CommandCenter() {
             Mission telemetry surfaced directly from Supabase. Use this dashboard to triage risk,
             align crews, and spotlight revenue opportunities across church campuses.
           </p>
+          <TelemetrySignal
+            label="Command Center"
+            isConnected={isRealtimeConnected}
+            lastEventAt={latestMetricsIso}
+            isRefreshing={isFetching}
+            onRefresh={() => void refetch()}
+            className="max-w-sm text-[0.6rem]"
+          />
         </header>
 
         <section className="grid gap-4 lg:grid-cols-3">
@@ -257,7 +334,7 @@ export default function CommandCenter() {
               eyebrow="Risk Feed"
               title="Operational Alerts"
               subtitle="Auto surfaced blockers requiring attention"
-              badge={<DivisionCardBadge>{metrics.alerts.length} Notices</DivisionCardBadge>}
+              badge={<DivisionCardBadge>{alertListItems.length} Notices</DivisionCardBadge>}
             />
             {alertListItems.length === 0 ? (
               <p className="hud-mono text-sm text-slate-200/75">All systems nominal.</p>
@@ -266,6 +343,17 @@ export default function CommandCenter() {
             )}
           </DivisionCard>
         </section>
+
+        {observabilityEnabled ? (
+          <section className="grid gap-4">
+            <PreviewIncidentsPanel
+              data={previewIncidentsQuery.data}
+              isLoading={previewIncidentsQuery.isLoading || previewIncidentsQuery.isFetching}
+              isError={previewIncidentsQuery.isError}
+              onRefresh={() => void previewIncidentsQuery.refetch()}
+            />
+          </section>
+        ) : null}
 
         <section className="grid gap-4 lg:grid-cols-2">
           <DivisionCard>
@@ -325,6 +413,8 @@ export default function CommandCenter() {
             </div>
           </DivisionCard>
         </section>
+
+        <MissionActivityPanel />
 
         <div className="pt-4">
           <Button

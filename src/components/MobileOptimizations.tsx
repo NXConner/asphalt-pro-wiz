@@ -1,19 +1,36 @@
 import { App as CapacitorApp } from '@capacitor/app';
-import { StatusBar, Style } from '@capacitor/status-bar';
 import { useEffect } from 'react';
 
 import { useToast } from '@/hooks/use-toast';
+
+function isDev(): boolean {
+  return (
+    (typeof import.meta !== 'undefined' && (import.meta as any)?.env?.MODE === 'development') ||
+    (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development')
+  );
+}
 
 export function MobileOptimizations() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Configure status bar
+    // Configure status bar - only on native platforms (not web)
+    // Use dynamic import to prevent StatusBar from being loaded on web
     const configureStatusBar = async () => {
       try {
+        // Check if we're on a native platform before attempting to use Capacitor plugins
+        const { Capacitor } = await import('@capacitor/core');
+        if (!Capacitor.isNativePlatform()) {
+          // Skip status bar configuration on web - plugin not implemented
+          return;
+        }
+
+        // Only import StatusBar on native platforms
+        const { StatusBar, Style } = await import('@capacitor/status-bar');
         await StatusBar.setStyle({ style: Style.Light });
       } catch (error) {
-        console.log('Status bar not available:', error);
+        // Silently ignore status bar errors (expected on web and some platforms)
+        // If Capacitor import fails or platform check fails, we're likely on web
       }
     };
 

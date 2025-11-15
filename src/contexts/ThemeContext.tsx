@@ -5,18 +5,64 @@ import {
   applyThemePreferences,
   setThemeMode as persistThemeMode,
   setThemeName as persistThemeName,
-  setPrimaryHue as persistPrimaryHue,
+    setPrimaryHue as persistPrimaryHue,
+    setAccentHue as persistAccentHue,
   setRadius as persistRadius,
   setWallpaper as persistWallpaper,
   setWallpaperOpacity as persistWallpaperOpacity,
   setWallpaperBlur as persistWallpaperBlur,
-  setUseHueOverride as persistUseHueOverride,
+    setUseHueOverride as persistUseHueOverride,
+    setUseAccentOverride as persistUseAccentOverride,
   setHighContrastMode as persistHighContrastMode,
+  setHudOpacity as persistHudOpacity,
+  setHudBlur as persistHudBlur,
+  setShowHud as persistShowHud,
+  setHudPreset as persistHudPreset,
+  setHudAnimationsEnabled as persistHudAnimationsEnabled,
+  setHudLayoutPreset as persistHudLayoutPreset,
+  setHudPosition as persistHudPosition,
+  setHudSize as persistHudSize,
+  setHudPinned as persistHudPinned,
+  saveCustomLayout as persistSaveCustomLayout,
+  loadCustomLayout as persistLoadCustomLayout,
+  deleteCustomLayout as persistDeleteCustomLayout,
+  setHudTransitionPreset as persistHudTransitionPreset,
+  setHudMiniMode as persistHudMiniMode,
+  setHudAutoHide as persistHudAutoHide,
+  setHudAutoHideDelay as persistHudAutoHideDelay,
+  setHudThemeVariant as persistHudThemeVariant,
+  setHudProximityEffect as persistHudProximityEffect,
+  setHudProximityDistance as persistHudProximityDistance,
+  setHudAlertAnimation as persistHudAlertAnimation,
+  setHudQuickShortcuts as persistHudQuickShortcuts,
+    setHudAnimationPreset as persistHudAnimationPreset,
+    setHudGestureSensitivity as persistHudGestureSensitivity,
+    setHudMultiMonitorStrategy as persistHudMultiMonitorStrategy,
+    setHudKeyboardNavigation as persistHudKeyboardNavigation,
+    setHudZoom as persistHudZoom,
+  saveHudProfile as persistSaveHudProfile,
+  loadHudProfile as persistLoadHudProfile,
+  deleteHudProfile as persistDeleteHudProfile,
+  setHudGridSnap as persistHudGridSnap,
+  setHudGridSize as persistHudGridSize,
+    setHudCollisionDetection as persistHudCollisionDetection,
+    randomizeMissionPalette as executeRandomizePalette,
   resetThemePreferences,
   type ThemePreferences,
   type ThemeMode,
   type ThemeName,
   type ThemeWallpaperSelection,
+  type HudPresetMode,
+  type HudLayoutPreset,
+  type HudPosition,
+  type HudSize,
+  type HudTransitionPreset,
+  type HudThemeVariant,
+  type HudAlertAnimation,
+    type HudAnimationPresetId,
+    type HudGestureSensitivity,
+    type HudMultiMonitorStrategy,
+    type RandomizePaletteOptions,
 } from '@/lib/theme';
 
 interface ThemeContextValue {
@@ -24,13 +70,48 @@ interface ThemeContextValue {
   setMode: (mode: ThemeMode) => void;
   setTheme: (name: ThemeName) => void;
   setPrimaryHue: (hue: number) => void;
+  setAccentHue: (hue: number) => void;
   setRadius: (radius: number) => void;
   setUseHueOverride: (enabled: boolean) => void;
+  setUseAccentOverride: (enabled: boolean) => void;
   setWallpaper: (selection: ThemeWallpaperSelection) => void;
   setWallpaperOpacity: (opacity: number) => void;
   setWallpaperBlur: (blur: number) => void;
   setHighContrast: (enabled: boolean) => void;
+  setHudOpacity: (opacity: number) => void;
+  setHudBlur: (blur: number) => void;
+  setShowHud: (enabled: boolean) => void;
+  setHudPreset: (preset: HudPresetMode) => void;
+  setHudAnimationsEnabled: (enabled: boolean) => void;
+  setHudLayoutPreset: (preset: HudLayoutPreset) => void;
+  setHudPosition: (position: HudPosition) => void;
+  setHudSize: (size: HudSize) => void;
+  setHudPinned: (pinned: boolean) => void;
+  saveCustomLayout: (name: string) => void;
+  loadCustomLayout: (name: string) => void;
+  deleteCustomLayout: (name: string) => void;
+  setHudTransitionPreset: (preset: HudTransitionPreset) => void;
+  setHudMiniMode: (enabled: boolean) => void;
+  setHudAutoHide: (enabled: boolean) => void;
+  setHudAutoHideDelay: (delay: number) => void;
+  setHudThemeVariant: (variant: HudThemeVariant) => void;
+  setHudProximityEffect: (enabled: boolean) => void;
+  setHudProximityDistance: (distance: number) => void;
+  setHudAlertAnimation: (animation: HudAlertAnimation) => void;
+  setHudQuickShortcuts: (enabled: boolean) => void;
+    setHudAnimationPreset: (preset: HudAnimationPresetId) => void;
+    setHudGestureSensitivity: (sensitivity: HudGestureSensitivity) => void;
+    setHudMultiMonitorStrategy: (strategy: HudMultiMonitorStrategy) => void;
+    setHudKeyboardNavigation: (enabled: boolean) => void;
+  saveHudProfile: (name: string) => void;
+  loadHudProfile: (name: string) => void;
+  deleteHudProfile: (name: string) => void;
+  setHudGridSnap: (enabled: boolean) => void;
+  setHudGridSize: (size: number) => void;
+  setHudCollisionDetection: (enabled: boolean) => void;
+  setHudZoom: (zoom: number) => void;
   reset: () => void;
+  randomizePalette: (options?: RandomizePaletteOptions) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
@@ -42,42 +123,66 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     applyThemePreferences(preferences);
   }, [preferences]);
 
-  useEffect(() => {
-    const handleStorage = (event: StorageEvent) => {
-      if (event.key === 'pps:theme') {
-        setPreferences(loadThemePreferences());
-      }
-    };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, []);
+    useEffect(() => {
+      const handleStorage = (event: StorageEvent) => {
+        if (event.key === 'pps:theme') {
+          setPreferences(loadThemePreferences());
+        }
+      };
+
+      const handleToggleHud = () => {
+        persistShowHud(!preferences.showHud);
+        syncPreferences();
+      };
+
+      const handleHudPreferencesUpdated = () => {
+        syncPreferences();
+      };
+
+      window.addEventListener('storage', handleStorage);
+      window.addEventListener('toggleHud', handleToggleHud);
+      window.addEventListener('hudPreferencesUpdated', handleHudPreferencesUpdated);
+      return () => {
+        window.removeEventListener('storage', handleStorage);
+        window.removeEventListener('toggleHud', handleToggleHud);
+        window.removeEventListener('hudPreferencesUpdated', handleHudPreferencesUpdated);
+      };
+    }, [preferences.showHud]);
 
   const syncPreferences = () => {
     setPreferences(loadThemePreferences());
   };
 
-  const value: ThemeContextValue = {
-    preferences,
-    setMode: (mode) => {
-      persistThemeMode(mode);
-      syncPreferences();
-    },
-    setTheme: (name) => {
-      persistThemeName(name);
-      syncPreferences();
-    },
-    setPrimaryHue: (hue) => {
-      persistPrimaryHue(hue);
-      syncPreferences();
-    },
-    setRadius: (radius) => {
-      persistRadius(radius);
-      syncPreferences();
-    },
-    setUseHueOverride: (enabled) => {
-      persistUseHueOverride(enabled);
-      syncPreferences();
-    },
+    const value: ThemeContextValue = {
+      preferences,
+      setMode: (mode) => {
+        persistThemeMode(mode);
+        syncPreferences();
+      },
+      setTheme: (name) => {
+        persistThemeName(name);
+        syncPreferences();
+      },
+      setPrimaryHue: (hue) => {
+        persistPrimaryHue(hue);
+        syncPreferences();
+      },
+      setAccentHue: (hue) => {
+        persistAccentHue(hue);
+        syncPreferences();
+      },
+      setRadius: (radius) => {
+        persistRadius(radius);
+        syncPreferences();
+      },
+      setUseHueOverride: (enabled) => {
+        persistUseHueOverride(enabled);
+        syncPreferences();
+      },
+      setUseAccentOverride: (enabled) => {
+        persistUseAccentOverride(enabled);
+        syncPreferences();
+      },
     setWallpaper: (selection) => {
       persistWallpaper(selection);
       syncPreferences();
@@ -94,16 +199,148 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       persistHighContrastMode(enabled);
       syncPreferences();
     },
+    setHudOpacity: (opacity) => {
+      persistHudOpacity(opacity);
+      syncPreferences();
+    },
+    setHudBlur: (blur) => {
+      persistHudBlur(blur);
+      syncPreferences();
+    },
+    setShowHud: (enabled) => {
+      persistShowHud(enabled);
+      syncPreferences();
+    },
+    setHudPreset: (preset) => {
+      persistHudPreset(preset);
+      syncPreferences();
+    },
+    setHudAnimationsEnabled: (enabled) => {
+      persistHudAnimationsEnabled(enabled);
+      syncPreferences();
+    },
+    setHudLayoutPreset: (preset) => {
+      persistHudLayoutPreset(preset);
+      syncPreferences();
+    },
+    setHudPosition: (position) => {
+      persistHudPosition(position);
+      syncPreferences();
+    },
+    setHudSize: (size) => {
+      persistHudSize(size);
+      syncPreferences();
+    },
+    setHudPinned: (pinned) => {
+      persistHudPinned(pinned);
+      syncPreferences();
+    },
+    saveCustomLayout: (name) => {
+      persistSaveCustomLayout(name);
+      syncPreferences();
+    },
+    loadCustomLayout: (name) => {
+      persistLoadCustomLayout(name);
+      syncPreferences();
+    },
+    deleteCustomLayout: (name) => {
+      persistDeleteCustomLayout(name);
+      syncPreferences();
+    },
+    setHudTransitionPreset: (preset) => {
+      persistHudTransitionPreset(preset);
+      syncPreferences();
+    },
+    setHudMiniMode: (enabled) => {
+      persistHudMiniMode(enabled);
+      syncPreferences();
+    },
+    setHudAutoHide: (enabled) => {
+      persistHudAutoHide(enabled);
+      syncPreferences();
+    },
+    setHudAutoHideDelay: (delay) => {
+      persistHudAutoHideDelay(delay);
+      syncPreferences();
+    },
+    setHudThemeVariant: (variant) => {
+      persistHudThemeVariant(variant);
+      syncPreferences();
+    },
+    setHudProximityEffect: (enabled) => {
+      persistHudProximityEffect(enabled);
+      syncPreferences();
+    },
+    setHudProximityDistance: (distance) => {
+      persistHudProximityDistance(distance);
+      syncPreferences();
+    },
+    setHudAlertAnimation: (animation) => {
+      persistHudAlertAnimation(animation);
+      syncPreferences();
+    },
+    setHudQuickShortcuts: (enabled) => {
+      persistHudQuickShortcuts(enabled);
+      syncPreferences();
+    },
+      setHudAnimationPreset: (preset) => {
+        persistHudAnimationPreset(preset);
+        syncPreferences();
+      },
+      setHudGestureSensitivity: (sensitivity) => {
+        persistHudGestureSensitivity(sensitivity);
+        syncPreferences();
+      },
+      setHudMultiMonitorStrategy: (strategy) => {
+        persistHudMultiMonitorStrategy(strategy);
+        syncPreferences();
+      },
+      setHudKeyboardNavigation: (enabled) => {
+        persistHudKeyboardNavigation(enabled);
+        syncPreferences();
+      },
+    saveHudProfile: (name) => {
+      persistSaveHudProfile(name);
+      syncPreferences();
+    },
+    loadHudProfile: (name) => {
+      persistLoadHudProfile(name);
+      syncPreferences();
+    },
+    deleteHudProfile: (name) => {
+      persistDeleteHudProfile(name);
+      syncPreferences();
+    },
+    setHudGridSnap: (enabled) => {
+      persistHudGridSnap(enabled);
+      syncPreferences();
+    },
+    setHudGridSize: (size) => {
+      persistHudGridSize(size);
+      syncPreferences();
+    },
+    setHudCollisionDetection: (enabled) => {
+      persistHudCollisionDetection(enabled);
+      syncPreferences();
+    },
+    setHudZoom: (zoom) => {
+      persistHudZoom(zoom);
+      syncPreferences();
+    },
     reset: () => {
       const defaults = resetThemePreferences();
       setPreferences(defaults);
+    },
+    randomizePalette: (options) => {
+      executeRandomizePalette(options);
+      syncPreferences();
     },
   };
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
+ 
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (!context) {

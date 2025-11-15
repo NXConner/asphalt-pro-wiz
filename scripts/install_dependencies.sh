@@ -5,30 +5,36 @@ usage() {
   cat <<'USAGE'
 Install project dependencies, prepare git hooks, and provision optional tooling.
 
-Usage: scripts/install_dependencies.sh [--skip-playwright]
+Usage: scripts/install_dependencies.sh [--skip-playwright] [--skip-husky]
 
 Flags:
   --skip-playwright   Do not download Playwright browsers (useful for CI containers)
+  --skip-husky        Skip Husky git hook installation
 USAGE
 }
 
 SKIP_PLAYWRIGHT=false
-for arg in "$@"; do
-  case "$arg" in
+SKIP_HUSKY=false
+
+while [ $# -gt 0 ]; do
+  case "$1" in
     --help|-h)
       usage
       exit 0
       ;;
     --skip-playwright)
       SKIP_PLAYWRIGHT=true
-      shift
+      ;;
+    --skip-husky)
+      SKIP_HUSKY=true
       ;;
     *)
-      echo "Unknown argument: $arg" >&2
+      echo "Unknown argument: $1" >&2
       usage
       exit 1
       ;;
   esac
+  shift
 done
 
 if ! command -v node >/dev/null 2>&1; then
@@ -50,8 +56,12 @@ else
   npm install --include=dev
 fi
 
-echo "Preparing Husky git hooks..."
-npm run prepare >/dev/null 2>&1 || true
+if ! $SKIP_HUSKY; then
+  echo "Preparing Husky git hooks..."
+  npm run prepare >/dev/null 2>&1 || true
+else
+  echo "Skipping Husky git hook installation."
+fi
 
 echo "Syncing lint-staged cache..."
 npx --yes lint-staged --version >/dev/null 2>&1 || true
@@ -63,6 +73,12 @@ if ! $SKIP_PLAYWRIGHT; then
   fi
 else
   echo "Skipping Playwright browser installation."
+fi
+
+if command -v supabase >/dev/null 2>&1; then
+  echo "Supabase CLI detected: $(supabase --version 2>/dev/null | head -n1)"
+else
+  echo "Supabase CLI not found. Install via 'npm install -g supabase' or follow docs/UNIFIED_SUPABASE_GUIDE.md"
 fi
 
 echo "Dependencies installed and developer tooling prepared."

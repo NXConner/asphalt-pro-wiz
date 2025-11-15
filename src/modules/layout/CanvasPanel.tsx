@@ -1,12 +1,12 @@
+import { Maximize2, Minimize2 } from 'lucide-react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
-import {
-  CanvasGrid,
-  CornerBracket,
-  ParticleBackground,
-  ScanOverlay,
-} from '@/components/hud';
+import { ParticleBackground, ScanOverlay } from '@/components/hud';
+import { TacticalOverlay } from '@/components/hud/TacticalOverlay';
+import { Button } from '@/components/ui/button';
 import type { ParticlePresetKey } from '@/design';
+import type { TacticalTone } from '@/lib/tacticalTone';
 import { cn } from '@/lib/utils';
 
 export type CanvasTone = 'dusk' | 'aurora' | 'ember' | 'lagoon';
@@ -39,6 +39,13 @@ const PARTICLE_MAP: Record<CanvasTone, ParticlePresetKey> = {
   lagoon: 'command',
 };
 
+const TONE_MAP: Record<CanvasTone, TacticalTone> = {
+  dusk: 'dusk',
+  aurora: 'aurora',
+  ember: 'ember',
+  lagoon: 'lagoon',
+};
+
 interface CanvasPanelProps {
   title: string;
   subtitle?: string;
@@ -49,67 +56,151 @@ interface CanvasPanelProps {
   children: ReactNode;
   className?: string;
   id?: string;
+  collapsible?: boolean;
+  defaultCollapsed?: boolean;
+  collapseId?: string;
+  onCollapseChange?: (collapsed: boolean) => void;
 }
 
-export function CanvasPanel({
+const CanvasPanelComponent = ({
   title,
   subtitle,
   eyebrow,
-  tone = "dusk",
+  tone = 'dusk',
   badge,
   action,
   children,
   className,
   id,
-}: CanvasPanelProps) {
-  return (
-    <section
-      id={id}
-      className={cn(
-        'relative overflow-hidden rounded-[var(--hud-radius-lg)] border bg-slate-950/60 text-slate-50 shadow-[0_28px_120px_rgba(8,12,24,0.55)] backdrop-blur-[var(--hud-panel-blur)] transition-transform duration-300 hover:-translate-y-1',
-        BORDER_ACCENT[tone],
-        className,
-      )}
-    >
-      <div
-        className={cn(
-          'pointer-events-none absolute inset-0 bg-gradient-to-br opacity-80 mix-blend-screen',
-          `bg-gradient-to-br ${GRADIENT_MAP[tone]}`,
-        )}
-        aria-hidden
-      />
-      <CanvasGrid className="opacity-[var(--hud-grid-opacity)]" />
-      <ParticleBackground preset={PARTICLE_MAP[tone]} className="opacity-60" />
-      <ScanOverlay className="opacity-60" color="rgba(255,128,0,0.35)" />
-      <CornerBracket size={44} />
-      <div className="relative z-10 flex flex-col gap-6 p-6 sm:p-9">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
-          <div className="flex-1 space-y-1">
-            {eyebrow ? (
-              <span className="font-semibold uppercase tracking-[0.5em] text-[0.65rem] text-slate-200/60">
-                {eyebrow}
-              </span>
-            ) : null}
-            <h2 className="font-display text-3xl uppercase tracking-[0.18em] text-slate-50 sm:text-[2.35rem]">
-              {title}
-            </h2>
-            {subtitle ? (
-              <p className="font-mono text-sm text-slate-200/75 sm:text-[0.95rem]">{subtitle}</p>
-            ) : null}
+  collapsible = false,
+  defaultCollapsed = false,
+  collapseId,
+  onCollapseChange,
+}: CanvasPanelProps) => {
+  const collapseKey = useMemo(() => {
+    if (!collapsible) return null;
+    if (collapseId) return `pps:panel:${collapseId}`;
+    if (id) return `pps:panel:${id}`;
+    return null;
+  }, [collapsible, collapseId, id]);
+
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    if (!collapsible) return false;
+    if (typeof window === 'undefined') return defaultCollapsed;
+    if (!collapseKey) return defaultCollapsed;
+    try {
+      const stored = window.localStorage.getItem(collapseKey);
+      if (stored === '1') return true;
+      if (stored === '0') return false;
+    } catch {}
+    return defaultCollapsed;
+  });
+
+  useEffect(() => {
+    if (!collapsible || !collapseKey) return;
+    try {
+      window.localStorage.setItem(collapseKey, collapsed ? '1' : '0');
+    } catch {}
+  }, [collapsible, collapseKey, collapsed]);
+
+  useEffect(() => {
+    if (!collapsible) return;
+    onCollapseChange?.(collapsed);
+  }, [collapsible, collapsed, onCollapseChange]);
+
+  const bodyId = useMemo(() => {
+    if (!collapsible) return undefined;
+    if (collapseId) return `${collapseId}-panel-body`;
+    if (id) return `${id}-panel-body`;
+    return undefined;
+  }, [collapsible, collapseId, id]);
+
+  const toggleCollapse = () => {
+    if (!collapsible) return;
+    setCollapsed((prev) => !prev);
+  };
+
+    return (
+      <section id={id} className={cn('relative', className)}>
+        <TacticalOverlay
+          tone={TONE_MAP[tone]}
+          className="rounded-[var(--hud-radius-lg)] border border-white/12 text-slate-50 shadow-[0_18px_48px_rgba(8,12,24,0.45)] backdrop-blur-sm transition-all duration-200"
+          gridDensity={tone === 'aurora' ? 88 : tone === 'lagoon' ? 92 : 84}
+          scanLinesProps={{
+            opacity: 0.28,
+            density: tone === 'ember' ? 68 : 72,
+            speedMs: tone === 'ember' ? 3200 : 3600,
+          }}
+          cornerProps={{
+            size: 44,
+            thickness: 2,
+            glow: true,
+            pulseDelayMs: 180,
+            offset: 6,
+          }}
+        >
+          <ParticleBackground
+            preset={PARTICLE_MAP[tone]}
+            className="pointer-events-none absolute inset-0 opacity-35 mix-blend-screen"
+          />
+          <ScanOverlay className="pointer-events-none absolute inset-0 opacity-25" color="rgba(255,128,0,0.18)" />
+          <div className="relative z-10 flex flex-col gap-4 p-4 sm:gap-5 sm:p-6 lg:gap-6 lg:p-8">
+            <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4 lg:gap-6">
+              <div className="flex-1 space-y-1">
+                {eyebrow ? (
+                  <span className="font-semibold uppercase tracking-[0.5em] text-[0.65rem] text-slate-200/60">
+                    {eyebrow}
+                  </span>
+                ) : null}
+                <h2 className="font-display text-3xl uppercase tracking-[0.18em] text-slate-50 sm:text-[2.35rem]">
+                  {title}
+                </h2>
+                {subtitle ? (
+                  <p className="font-mono text-sm text-slate-200/75 sm:text-[0.95rem]">{subtitle}</p>
+                ) : null}
+              </div>
+              <div className="flex items-start gap-3">
+                {badge ? (
+                  <span
+                    className={cn('rounded-full px-3 py-1 text-xs font-semibold', BADGE_COLORS[tone])}
+                  >
+                    {badge}
+                  </span>
+                ) : null}
+                {action}
+                {collapsible ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={toggleCollapse}
+                    aria-expanded={!collapsed}
+                    aria-controls={bodyId}
+                  >
+                    {collapsed ? (
+                      <Maximize2 className="h-4 w-4" aria-hidden />
+                    ) : (
+                      <Minimize2 className="h-4 w-4" aria-hidden />
+                    )}
+                    <span className="sr-only">
+                      {collapsed ? `Expand ${title}` : `Collapse ${title}`}
+                    </span>
+                  </Button>
+                ) : null}
+              </div>
+            </header>
+            <div
+              id={bodyId}
+              hidden={collapsible && collapsed}
+              aria-hidden={collapsible && collapsed}
+              className="space-y-4 text-sm leading-relaxed text-slate-100/90 sm:space-y-5 sm:text-base"
+            >
+              {collapsible && collapsed ? null : children}
+            </div>
           </div>
-          <div className="flex items-start gap-3">
-            {badge ? (
-              <span className={cn("rounded-full px-3 py-1 text-xs font-semibold", BADGE_COLORS[tone])}>
-                {badge}
-              </span>
-            ) : null}
-            {action}
-          </div>
-        </header>
-        <div className="space-y-6 text-sm leading-relaxed text-slate-100/90 sm:text-base">
-          {children}
-        </div>
-      </div>
-    </section>
-  );
-}
+        </TacticalOverlay>
+      </section>
+    );
+};
+
+export const CanvasPanel = memo(CanvasPanelComponent);

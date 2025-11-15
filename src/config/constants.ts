@@ -1,3 +1,5 @@
+import { DEFAULT_FLAGS, FEATURE_FLAG_STORAGE_KEY } from '@/lib/featureFlags';
+
 /**
  * Application constants
  */
@@ -9,7 +11,7 @@ export const APP_DESCRIPTION = 'Professional asphalt maintenance estimating and 
 // Storage keys
 export const STORAGE_KEYS = {
   THEME: 'pps:theme',
-  FLAGS: 'pps:flags',
+  FLAGS: FEATURE_FLAG_STORAGE_KEY,
   DEVICE_ID: 'pps:deviceId',
   SESSION_ID: 'pps:sessionId',
   USER_PREFS: 'pps:userPrefs',
@@ -25,19 +27,7 @@ export const API_ENDPOINTS = {
 } as const;
 
 // Feature flags
-export const DEFAULT_FEATURES = {
-  imageAreaAnalyzer: true,
-  aiAssistant: true,
-  pwa: true,
-  i18n: true,
-  receipts: true,
-  scheduler: false,
-  optimizer: false,
-  customerPortal: false,
-  observability: true,
-  commandCenter: true,
-  ownerMode: false,
-} as const;
+export const DEFAULT_FEATURES = Object.freeze({ ...DEFAULT_FLAGS });
 
 // Calculation defaults
 export const CALCULATION_DEFAULTS = {

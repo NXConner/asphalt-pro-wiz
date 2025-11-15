@@ -14,11 +14,14 @@
 # Clone repository
 git clone [repository-url]
 
-# Install dependencies
-npm install
+# Install dependencies & developer tooling
+scripts/install_dependencies.sh
+# PowerShell users: scripts/install_dependencies.ps1
 
 # Copy environment variables
 cp .env.example .env
+# Populate `.env` with your real secrets (use Supabase Secrets/Doppler) then audit
+npm run check:env
 
 # Start development server
 npm run dev
@@ -46,7 +49,7 @@ npm run preview
 npm run test
 
 # Run tests with coverage
-npm run test:coverage
+npm run coverage
 
 # Run E2E tests
 npm run test:e2e
@@ -65,15 +68,22 @@ npm run lint
 npm run format
 
 # Type check
-npm run type-check
+npm run typecheck
 ```
 
 ### Git Hooks
 
 This project uses Husky for git hooks:
 
-- **pre-commit**: Runs linting and formatting on staged files
+- **pre-commit**: Runs `npm run check:env`, lint-staged, `npm run lint`, `npm run typecheck`, and `npm run test:unit -- --run`
 - **commit-msg**: Validates commit message format (Conventional Commits)
+
+### Branching Strategy
+
+- `main`: production-ready, auto-deployed once CI passes.
+- `develop`: integration branch for the next release; feature branches merge here.
+- `feature/<scope>` / `hotfix/<scope>`: short-lived branches rebased on `develop`.
+- Create `release/vX.Y.Z` during stabilization windows to freeze scope.
 
 ## Code Standards
 

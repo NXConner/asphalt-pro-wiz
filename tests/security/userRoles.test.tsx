@@ -14,24 +14,37 @@ const mockUser = {
   created_at: new Date().toISOString(),
 };
 
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    auth: {
-      getSession: vi.fn(),
-      onAuthStateChange: vi.fn(() => ({
-        data: { subscription: { unsubscribe: vi.fn() } },
-      })),
-    },
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          data: [],
-          error: null,
-        })),
+vi.mock('@/integrations/supabase/client', async () => {
+  const actual = await vi.importActual<typeof import('@/integrations/supabase/client')>(
+    '@/integrations/supabase/client',
+  );
+
+  const auth = {
+    getSession: vi.fn(),
+    onAuthStateChange: vi.fn(() => ({
+      data: { subscription: { unsubscribe: vi.fn() } },
+    })),
+  };
+
+  const from = vi.fn(() => ({
+    select: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        data: [],
+        error: null,
       })),
     })),
-  },
-}));
+  }));
+
+  return {
+    ...actual,
+    supabase: {
+      auth,
+      from,
+    },
+    supabaseConfigurationError: null,
+    isSupabaseConfigured: true,
+  };
+});
 
 const { supabase } = await import('@/integrations/supabase/client');
 

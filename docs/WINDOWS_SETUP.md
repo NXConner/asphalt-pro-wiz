@@ -1,76 +1,86 @@
-## Windows setup (PowerShell)
+## Windows & PowerShell Setup
 
-Use PowerShell `$env:` to set environment variables for one session. Replace placeholders with your values.
+> These instructions assume PowerShell 7+ and Windows 11. All commands are PowerShell-native and avoid Bash syntax that fails on Windows shells.
 
-### 1) Install dependencies
+### 1. Install prerequisites
+
+- **Node.js 18+** (https://nodejs.org/) – restart PowerShell after installation so `node` and `npm` are on `PATH`.
+- **PostgreSQL 15+** – ensure the server is running and that you have a database for local development.
+- **Git** (https://git-scm.com/download/win) – use the bundled credential helper.
+
+### 2. Clone the repository
 
 ```powershell
-pwsh ./scripts/install_dependencies.ps1
+cd $HOME\Desktop
+git clone https://github.com/NXConner/asphalt-pro-wiz.git pavement-performance-suite
+cd pavement-performance-suite
 ```
 
-Flags:
+### 3. Install dependencies & Husky hooks
 
-- `-SkipPlaywright` to skip browser downloads
-- `-SkipHusky` to skip preparing git hooks
-
-### 2) Environment variables
-
-**For the frontend app:** Create a `.env` from `.env.example` if you haven't already. Vite will read it automatically.
-
-**For migrations and seeds:** You must set environment variables in PowerShell using `$env:` syntax. These are required for database operations:
+Always run the PowerShell installer; it wraps `npm ci`, Husky, lint-staged priming, and Playwright downloads.
 
 ```powershell
-# Required for migrations and seeds
-$env:DATABASE_URL = "postgres://postgres:postgres@localhost:5432/pavement"  # or your Supabase direct connection string
-$env:ADMIN_EMAIL  = "n8ter8@gmail.com"                                     # auth user to elevate during seed (default shown)
-
-# Optional: Frontend variables (can also go in .env file)
-$env:VITE_SUPABASE_URL      = "https://YOUR-PROJECT.supabase.co"
-$env:VITE_SUPABASE_ANON_KEY = "YOUR-ANON-KEY"
+.\scripts\install_dependencies.ps1
+# Optional flags:
+#   -SkipPlaywright   -> skip Playwright browser download (CI containers)
+#   -SkipHusky        -> skip Husky install on read-only file systems
 ```
 
-**Important:** `$env:VAR = "value"` only persists for the current PowerShell session. You must set these variables each time you open a new PowerShell window, or add them to your PowerShell profile to persist across sessions.
+### 4. Configure environment variables
 
-### 3) Migrations
-
-**Important:** Set `DATABASE_URL` in your PowerShell session before running migrations:
+The project reads secrets from `.env`. Copy the template and edit it with real values:
 
 ```powershell
-# Set the database connection string (required)
-$env:DATABASE_URL = "postgres://postgres:postgres@localhost:5432/pavement"  # or your Supabase direct connection string
+Copy-Item .env.example .env
+```
 
-# Then run migrations
+For ad-hoc commands (e.g., migrations or seeds), set environment variables inline using `$env:` syntax:
+
+```powershell
+$env:DATABASE_URL = "postgres://postgres:postgres@localhost:5432/pavement"  # change to your credentials
+$env:ADMIN_EMAIL = "n8ter8@gmail.com"
+```
+
+To persist the values for future PowerShell sessions:
+
+```powershell
+[Environment]::SetEnvironmentVariable("DATABASE_URL", "postgres://...", "User")
+[Environment]::SetEnvironmentVariable("ADMIN_EMAIL", "n8ter8@gmail.com", "User")
+```
+
+Clear values when you are done:
+
+```powershell
+Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue
+Remove-Item Env:ADMIN_EMAIL -ErrorAction SilentlyContinue
+```
+
+### 5. Run database migrations
+
+`node-pg-migrate` is installed locally, so the command only succeeds after dependencies are installed. Ensure `DATABASE_URL` is set in the current session.
+
+```powershell
 npm run migrate:up
 ```
 
-This applies all scripts in `supabase/migrations/` using the `DATABASE_URL` environment variable. The migration script will read it from `process.env.DATABASE_URL`.
+> If you see `'node-pg-migrate' is not recognized`, rerun `.\scripts\install_dependencies.ps1` to install dependencies and verify that the command is executed from the repository root.
 
-**Note:** If you get connection errors, ensure:
+### 6. Seed initial data
 
-- Your database server is running (local Postgres) or your Supabase project is accessible
-- The connection string is correct and includes credentials
-- The database exists (for local Postgres, create it first: `createdb pavement`)
-
-### 4) Seed data
-
-**Important:** Set both `DATABASE_URL` and `ADMIN_EMAIL` before running seeds:
+The seed script uses `tsx` with `dotenv`. Both are local dev dependencies; make sure you have run the installer before seeding.
 
 ```powershell
-# Set required environment variables
-$env:DATABASE_URL = "postgres://postgres:postgres@localhost:5432/pavement"  # or your Supabase connection
-$env:ADMIN_EMAIL = "n8ter8@gmail.com"  # or your admin email
-
-# Then run seed
+$env:ADMIN_EMAIL = "n8ter8@gmail.com"   # ensure the user exists in Supabase Auth
 npm run seed
 ```
 
-The seed expects `ADMIN_EMAIL` to already exist in Supabase Auth. It will upsert org membership and demo data. Ensure the user exists in Supabase Auth dashboard before running the seed.
+The script is idempotent – rerun whenever you need to sync the seed data.
 
-### 5) Quality checks
+### 7. Useful helpers
 
-```powershell
-npm run lint
-npm run test:unit -- --run
-```
+- Refresh the dev server instead of restarting when you change env variables inside Vite.
+- Use `npm run lint`, `npm run test:unit -- --run`, and `npm run test:e2e` to match the Husky pre-commit checks.
+- Run `npm run security:scan` periodically on Windows to surface dependency vulnerabilities.
 
-If you see module import errors specific to Windows paths, ensure you are running in a PowerShell session from the project root and that Node.js v18+ is on PATH.
+Refer to `README.md` for additional environment details, Docker workflows, and Supabase provisioning guidance.

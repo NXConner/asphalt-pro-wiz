@@ -210,6 +210,7 @@ export type Database = {
         Row: {
           alert_type: string
           created_at: string | null
+          created_by: string | null
           employee_id: string | null
           id: string
           is_read: boolean | null
@@ -221,6 +222,7 @@ export type Database = {
         Insert: {
           alert_type: string
           created_at?: string | null
+          created_by?: string | null
           employee_id?: string | null
           id?: string
           is_read?: boolean | null
@@ -232,6 +234,7 @@ export type Database = {
         Update: {
           alert_type?: string
           created_at?: string | null
+          created_by?: string | null
           employee_id?: string | null
           id?: string
           is_read?: boolean | null
@@ -994,6 +997,45 @@ export type Database = {
           },
         ]
       }
+      crew_telemetry: {
+        Row: {
+          created_at: string
+          crew_id: string
+          event_type: string
+          id: string
+          location_lat: number | null
+          location_lng: number | null
+          metadata: Json | null
+          status: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          crew_id: string
+          event_type: string
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          metadata?: Json | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          crew_id?: string
+          event_type?: string
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          metadata?: Json | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       custom_spatial_data: {
         Row: {
           description: string | null
@@ -1233,6 +1275,30 @@ export type Database = {
           type?: string
           user_id?: string
           week_end?: string | null
+        }
+        Relationships: []
+      }
+      device_telemetry: {
+        Row: {
+          device_id: string
+          id: string
+          inserted_at: string | null
+          payload: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          device_id: string
+          id?: string
+          inserted_at?: string | null
+          payload?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          device_id?: string
+          id?: string
+          inserted_at?: string | null
+          payload?: Json | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -2266,6 +2332,51 @@ export type Database = {
         }
         Relationships: []
       }
+      equipment_telemetry: {
+        Row: {
+          created_at: string
+          equipment_id: string
+          event_type: string
+          fuel_level: number | null
+          hours_used: number | null
+          id: string
+          location_lat: number | null
+          location_lng: number | null
+          metadata: Json | null
+          status: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          equipment_id: string
+          event_type: string
+          fuel_level?: number | null
+          hours_used?: number | null
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          metadata?: Json | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          equipment_id?: string
+          event_type?: string
+          fuel_level?: number | null
+          hours_used?: number | null
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          metadata?: Json | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       estimate_line_items: {
         Row: {
           cost_item_id: string | null
@@ -3170,9 +3281,11 @@ export type Database = {
         Row: {
           address: string
           area: number | null
+          client_id: string | null
           crack_length: number | null
           created_at: string | null
           id: string
+          job_id: string | null
           labor_cost: number | null
           latitude: number | null
           longitude: number | null
@@ -3190,9 +3303,11 @@ export type Database = {
         Insert: {
           address: string
           area?: number | null
+          client_id?: string | null
           crack_length?: number | null
           created_at?: string | null
           id?: string
+          job_id?: string | null
           labor_cost?: number | null
           latitude?: number | null
           longitude?: number | null
@@ -3210,9 +3325,11 @@ export type Database = {
         Update: {
           address?: string
           area?: number | null
+          client_id?: string | null
           crack_length?: number | null
           created_at?: string | null
           id?: string
+          job_id?: string | null
           labor_cost?: number | null
           latitude?: number | null
           longitude?: number | null
@@ -3226,6 +3343,69 @@ export type Database = {
           total_price?: number | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_sites_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_sites_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_telemetry: {
+        Row: {
+          area_sqft: number | null
+          created_at: string
+          customer_address: string | null
+          event_type: string
+          id: string
+          job_id: string
+          location_lat: number | null
+          location_lng: number | null
+          metadata: Json | null
+          quote_value: number | null
+          status: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          area_sqft?: number | null
+          created_at?: string
+          customer_address?: string | null
+          event_type: string
+          id?: string
+          job_id: string
+          location_lat?: number | null
+          location_lng?: number | null
+          metadata?: Json | null
+          quote_value?: number | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          area_sqft?: number | null
+          created_at?: string
+          customer_address?: string | null
+          event_type?: string
+          id?: string
+          job_id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          metadata?: Json | null
+          quote_value?: number | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -4237,6 +4417,7 @@ export type Database = {
       project_documents: {
         Row: {
           id: string
+          job_id: string | null
           name: string | null
           project_id: string | null
           size: number | null
@@ -4247,6 +4428,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          job_id?: string | null
           name?: string | null
           project_id?: string | null
           size?: number | null
@@ -4257,6 +4439,7 @@ export type Database = {
         }
         Update: {
           id?: string
+          job_id?: string | null
           name?: string | null
           project_id?: string | null
           size?: number | null
@@ -4266,6 +4449,13 @@ export type Database = {
           url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "project_documents_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "project_documents_project_id_fkey"
             columns: ["project_id"]
@@ -4698,6 +4888,126 @@ export type Database = {
         }
         Relationships: []
       }
+      quote_line_items: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string
+          id: string
+          quantity: number
+          quote_id: string
+          unit_price: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description: string
+          id?: string
+          quantity?: number
+          quote_id: string
+          unit_price: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string
+          id?: string
+          quantity?: number
+          quote_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_line_items_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotes: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          expiry_date: string | null
+          id: string
+          issue_date: string
+          job_id: string | null
+          notes: string | null
+          quote_number: string
+          status: string
+          subtotal: number
+          tax_amount: number
+          tax_rate: number
+          terms: string | null
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string
+          job_id?: string | null
+          notes?: string | null
+          quote_number: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          terms?: string | null
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string
+          job_id?: string | null
+          notes?: string | null
+          quote_number?: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          terms?: string | null
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rate_limits: {
         Row: {
           action: string
@@ -4834,6 +5144,75 @@ export type Database = {
           description?: string | null
           id?: never
           name?: string
+        }
+        Relationships: []
+      }
+      room_members: {
+        Row: {
+          id: string
+          joined_at: string | null
+          role: string | null
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      room_members_staging: {
+        Row: {
+          role: string | null
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          role?: string | null
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          role?: string | null
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      room_messages: {
+        Row: {
+          id: string
+          inserted_at: string | null
+          message: string
+          metadata: Json | null
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          inserted_at?: string | null
+          message: string
+          metadata?: Json | null
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          inserted_at?: string | null
+          message?: string
+          metadata?: Json | null
+          room_id?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -5105,6 +5484,72 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedules: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          created_by: string | null
+          employee_id: string | null
+          end_time: string
+          estimated_duration: number | null
+          id: string
+          job_id: string | null
+          job_name: string
+          notes: string | null
+          progress: number | null
+          start_time: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string | null
+          end_time: string
+          estimated_duration?: number | null
+          id?: string
+          job_id?: string | null
+          job_name: string
+          notes?: string | null
+          progress?: number | null
+          start_time: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string | null
+          end_time?: string
+          estimated_duration?: number | null
+          id?: string
+          job_id?: string | null
+          job_name?: string
+          notes?: string | null
+          progress?: number | null
+          start_time?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedules_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedules_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
             referencedColumns: ["id"]
           },
         ]
@@ -5449,6 +5894,27 @@ export type Database = {
         }
         Relationships: []
       }
+      sync_runs: {
+        Row: {
+          file: string
+          id: number
+          imported: number
+          processed_at: string
+        }
+        Insert: {
+          file: string
+          id?: never
+          imported: number
+          processed_at?: string
+        }
+        Update: {
+          file?: string
+          id?: never
+          imported?: number
+          processed_at?: string
+        }
+        Relationships: []
+      }
       sync_status: {
         Row: {
           errormessage: string | null
@@ -5473,6 +5939,39 @@ export type Database = {
           recordcount?: number | null
           status?: string | null
           table?: string | null
+        }
+        Relationships: []
+      }
+      system_telemetry: {
+        Row: {
+          created_at: string
+          event_category: string | null
+          event_type: string
+          id: string
+          message: string | null
+          metadata: Json | null
+          severity: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_category?: string | null
+          event_type: string
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          severity?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_category?: string | null
+          event_type?: string
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          severity?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -5781,6 +6280,66 @@ export type Database = {
           },
         ]
       }
+      user_locations: {
+        Row: {
+          accuracy: number | null
+          id: string
+          inserted_at: string | null
+          latitude: number | null
+          longitude: number | null
+          payload: Json | null
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          id?: string
+          inserted_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          payload?: Json | null
+          user_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          id?: string
+          inserted_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          payload?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_notifications: {
+        Row: {
+          body: string | null
+          data: Json | null
+          id: string
+          inserted_at: string | null
+          read: boolean | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          data?: Json | null
+          id?: string
+          inserted_at?: string | null
+          read?: boolean | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          data?: Json | null
+          id?: string
+          inserted_at?: string | null
+          read?: boolean | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
           created_at: string | null
@@ -5870,21 +6429,32 @@ export type Database = {
           created_at: string
           id: string
           role: Database["public"]["Enums"]["app_role"]
+          role_id: number | null
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
           role: Database["public"]["Enums"]["app_role"]
+          role_id?: number | null
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          role_id?: number | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_settings: {
         Row: {
@@ -6542,6 +7112,15 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles_v_legacy: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          role: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       _postgis_deprecate: {
@@ -6848,7 +7427,16 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_admin_user: { Args: never; Returns: boolean }
+      is_admin_v2: { Args: { p_user_id: string }; Returns: boolean }
       is_current_user_admin: { Args: never; Returns: boolean }
+      is_room_member: {
+        Args: { p_room: string; p_user: string }
+        Returns: boolean
+      }
+      is_room_member_v2: {
+        Args: { p_room_id: string; p_user_id: string }
+        Returns: boolean
+      }
       log_security_event: {
         Args: {
           p_action: string
@@ -6918,6 +7506,19 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      rate_limit_check: {
+        Args: {
+          p_action: string
+          p_identifier: string
+          p_increment: number
+          p_limit: number
+          p_window_start: string
+        }
+        Returns: {
+          allowed: boolean
+          remaining: number
+        }[]
       }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }

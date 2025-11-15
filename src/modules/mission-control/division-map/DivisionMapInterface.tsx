@@ -1,7 +1,9 @@
-import { Loader2, RefreshCcw } from 'lucide-react';
 import L from 'leaflet';
+import { Loader2 } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { useDivisionMapData } from './useDivisionMapData';
 
 import {
   DivisionCard,
@@ -9,9 +11,9 @@ import {
   DivisionCardHeader,
   DivisionCardMetric,
 } from '@/components/division';
+import { TelemetrySignal } from '@/components/telemetry';
 import { Button } from '@/components/ui/button';
 
-import { useDivisionMapData } from './useDivisionMapData';
 const STATUS_COLORS: Record<string, string> = {
   need_estimate: '#fb923c',
   estimated: '#38bdf8',
@@ -29,7 +31,8 @@ function resolveStatusKey(status: string): string {
 }
 
 export function DivisionMapInterface() {
-  const { data, isLoading, isError, refetch } = useDivisionMapData();
+  const { data, isLoading, isError, refetch, isFetching, isRealtimeConnected } =
+    useDivisionMapData();
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markerLayerRef = useRef<L.LayerGroup | null>(null);
@@ -38,6 +41,25 @@ export function DivisionMapInterface() {
     () => (data ? Object.keys(data.statusCounts).map(resolveStatusKey) : []),
     [data],
   );
+
+  const latestTelemetryIso = useMemo(() => {
+    if (!data?.points?.length) {
+      return null;
+    }
+
+    return data.points.reduce<string | null>((latest, point) => {
+      const candidate = point.updatedAt ?? point.createdAt ?? null;
+      if (!candidate) {
+        return latest;
+      }
+
+      if (!latest) {
+        return candidate;
+      }
+
+      return Date.parse(candidate) > Date.parse(latest) ? candidate : latest;
+    }, null);
+  }, [data?.points]);
 
   const [activeStatuses, setActiveStatuses] = useState<string[]>([]);
 
@@ -74,20 +96,25 @@ export function DivisionMapInterface() {
 
     filteredPoints.forEach((point) => {
       const tone = STATUS_COLORS[resolveStatusKey(point.status)] ?? '#38bdf8';
-      const marker = L.circleMarker(point.coordinates, {
+      const marker = L.circleMarker([point.lat, point.lng], {
         radius: 7,
         color: tone,
         weight: 2,
         fillColor: tone,
         fillOpacity: 0.75,
       }).addTo(markerLayerRef.current!);
-      marker.bindPopup(
-        `<strong>${point.name}</strong><br/>Status: ${point.status}<br/>Quote: $${point.quoteValue.toLocaleString()}<br/>Area: ${point.totalAreaSqFt.toLocaleString()} sq ft`,
-      );
+      const popupContent = [
+        `<strong>${point.address || 'Job #' + point.id.slice(0, 8)}</strong>`,
+        `Status: ${point.status}`,
+        point.value ? `Quote: $${point.value.toLocaleString()}` : null,
+      ]
+        .filter(Boolean)
+        .join('<br/>');
+      marker.bindPopup(popupContent);
     });
 
     if (filteredPoints.length) {
-      const bounds = L.latLngBounds(filteredPoints.map((point) => point.coordinates));
+      const bounds = L.latLngBounds(filteredPoints.map((point) => [point.lat, point.lng]));
       mapRef.current.fitBounds(bounds.pad(0.2));
     }
   }, [data, activeStatuses]);
@@ -97,8 +124,9 @@ export function DivisionMapInterface() {
       prev.includes(status) ? prev.filter((value) => value !== status) : [...prev, status],
     );
   const summaryMetrics = data
-    ? { jobs: data.points.length, quote: data.totalQuoteValue, area: data.totalAreaSqFt }
+    ? { jobs: data.points.length, quote: data.totalQuoteValue, area: 0 }
     : null;
+
   return (
     <DivisionCard variant="intel">
       <DivisionCardHeader
@@ -106,16 +134,14 @@ export function DivisionMapInterface() {
         title="Mission Footprint"
         subtitle="Geo distribution of active, scheduled, and completed jobs"
         actions={
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="pointer-events-auto gap-2"
-            onClick={() => refetch()}
-            disabled={isLoading}
-          >
-            <RefreshCcw className="h-4 w-4" /> Refresh
-          </Button>
+          <TelemetrySignal
+            label="Map Telemetry"
+            isConnected={isRealtimeConnected}
+            lastEventAt={latestTelemetryIso}
+            isRefreshing={isFetching}
+            onRefresh={() => void refetch()}
+            className="pointer-events-auto max-w-full text-[0.55rem]"
+          />
         }
       />
 

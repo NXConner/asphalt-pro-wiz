@@ -1,41 +1,98 @@
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
+import type { RoleName, UserRoleRow } from '@/integrations/supabase/types-helpers';
 
-export type AppRole = Database['public']['Enums']['app_role'];
+export type AppRole = RoleName;
 
-type UserRole = Database['public']['Tables']['user_roles']['Row'];
+export const ROLE_LABELS: Record<RoleName, string> = {
+  'Super Administrator': 'Super Admin',
+  'Administrator': 'Administrator',
+  'Estimator': 'Estimator',
+  'Field Crew Lead': 'Field Crew Lead',
+  'Field Technician': 'Field Technician',
+  'Client': 'Client',
+};
+
+const ADMIN_ROLES: RoleName[] = ['Super Administrator', 'Administrator'];
+
+const normalizeRoleName = (value: unknown): RoleName | null => {
+  if (!value) return null;
+  const normalized = String(value).trim().toLowerCase();
+  switch (normalized) {
+    case 'viewer':
+    case 'client':
+      return 'Client';
+    case 'operator':
+    case 'estimator':
+      return 'Estimator';
+    case 'field tech':
+    case 'field_tech':
+    case 'field technician':
+      return 'Field Technician';
+    case 'field crew lead':
+    case 'crew lead':
+      return 'Field Crew Lead';
+    case 'manager':
+    case 'moderator':
+    case 'administrator':
+    case 'admin':
+      return 'Administrator';
+    case 'super_admin':
+    case 'super admin':
+    case 'super administrator':
+      return 'Super Administrator';
+    default:
+      return null;
+  }
+};
 
 export function useUserRole() {
   const { user, isAuthenticated } = useAuthContext();
 
-  const { data: roles = [], isLoading } = useQuery({
+  const { data: assignmentRows = [], isLoading } = useQuery({
     queryKey: ['user-roles', user?.id],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user) {
+        return [];
+      }
 
-      const { data, error } = await supabase.from('user_roles').select('*').eq('user_id', user.id);
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('id, user_id, role, created_at')
+        .eq('user_id', user.id);
 
       if (error) throw error;
-      return data;
+      return (data ?? []) as Array<{ id: string; user_id: string; role: RoleName; created_at: string }>;
     },
     enabled: isAuthenticated && !!user,
   });
 
-  const hasRole = (role: AppRole): boolean => {
-    return roles.some((r) => r.role === role);
+  const roles = useMemo(
+    () =>
+      (assignmentRows ?? [])
+        .map((row) => row.role)
+        .filter((role): role is RoleName => Boolean(role)) ?? [],
+    [assignmentRows],
+  );
+
+  const hasRole = (role: AppRole | string): boolean => {
+    const normalized = normalizeRoleName(role);
+    if (!normalized) return false;
+    return roles.includes(normalized);
   };
 
-  const isAdmin = hasRole('Administrator') || hasRole('Super Administrator');
-  const isModerator = hasRole('Field Crew Lead');
+  const isAdmin = hasRole('Super Administrator') || hasRole('Administrator');
+  const isModerator = hasRole('Administrator');
   const isEstimator = hasRole('Estimator');
-  const isFieldTech = hasRole('Field Technician');
+  const isFieldTech = hasRole('Field Crew Lead') || hasRole('Field Technician');
   const isClient = hasRole('Client');
 
   return {
     roles,
+    roleLabels: ROLE_LABELS,
     hasRole,
     isAdmin,
     isModerator,
