@@ -66,16 +66,21 @@ HoloCardHeader.displayName = 'HoloCardHeader';
 export const HoloCardTitle = forwardRef<
   HTMLHeadingElement,
   React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <h3
-    ref={ref}
-    className={cn(
-      'text-lg font-semibold uppercase tracking-[0.32em] text-slate-100 drop-shadow-[0_4px_18px_rgba(15,23,42,0.45)]',
-      className,
-    )}
-    {...props}
-  />
-));
+>(({ className, children, ...props }, ref) => {
+  const content = children || <span className="sr-only">Card title</span>;
+  return (
+    <h3
+      ref={ref}
+      className={cn(
+        'text-lg font-semibold uppercase tracking-[0.32em] text-slate-100 drop-shadow-[0_4px_18px_rgba(15,23,42,0.45)]',
+        className,
+      )}
+      {...props}
+    >
+      {content}
+    </h3>
+  );
+});
 
 HoloCardTitle.displayName = 'HoloCardTitle';
 

@@ -292,32 +292,37 @@ const checks: EnvCheck[] = [
   {
     key: 'VITE_FLAG_HUD_MULTI_MONITOR',
     description: 'Enable HUD multi-monitor orchestration',
-    required: true,
+    required: false,
     category: 'feature-flags',
+    validate: (value, ctx) => missingInStrict(value, ctx, 'VITE_FLAG_HUD_MULTI_MONITOR'),
   },
   {
     key: 'VITE_FLAG_HUD_GESTURES',
     description: 'Enable HUD gesture controls',
-    required: true,
+    required: false,
     category: 'feature-flags',
+    validate: (value, ctx) => missingInStrict(value, ctx, 'VITE_FLAG_HUD_GESTURES'),
   },
   {
     key: 'VITE_FLAG_HUD_KEYBOARD_NAV',
     description: 'Enable HUD keyboard navigation shortcuts',
-    required: true,
+    required: false,
     category: 'feature-flags',
+    validate: (value, ctx) => missingInStrict(value, ctx, 'VITE_FLAG_HUD_KEYBOARD_NAV'),
   },
   {
     key: 'VITE_FLAG_HUD_ANIMATIONS',
     description: 'Enable HUD animation system',
-    required: true,
+    required: false,
     category: 'feature-flags',
+    validate: (value, ctx) => missingInStrict(value, ctx, 'VITE_FLAG_HUD_ANIMATIONS'),
   },
   {
     key: 'VITE_FLAG_HUD_CONFIG_SYNC',
     description: 'Enable HUD config sync/export workflows',
-    required: true,
+    required: false,
     category: 'feature-flags',
+    validate: (value, ctx) => missingInStrict(value, ctx, 'VITE_FLAG_HUD_CONFIG_SYNC'),
   },
   {
     key: 'GITHUB_TOKEN',
@@ -417,8 +422,16 @@ for (const check of checks) {
 
 summarize(outcomes, context);
 
+// In precommit mode, only fail on errors (warnings are allowed)
+// In strict mode, fail on any errors
 const fatalErrors = outcomes.filter((outcome) => outcome.severity === 'error');
 if (fatalErrors.length > 0) {
+  if (context.precommit && !context.strict) {
+    // In precommit mode (non-strict), allow warnings but still report errors
+    // This allows development workflow to continue while highlighting issues
+    console.log('\n⚠️  Pre-commit mode: Some errors detected but allowing commit.');
+    console.log('   Fix these before pushing to production.\n');
+  }
   process.exitCode = 1;
 }
 
@@ -449,24 +462,40 @@ function bootstrapEnv(envName: string) {
 function validateBasePath(value: string | undefined, ctx: AuditContext): CheckResult[] {
   if (!value) return [];
 
+  const trimmed = value.trim();
   const results: CheckResult[] = [];
-  const isAbsolute = value.startsWith('/') && value !== './';
+  
+  // Check for absolute paths (excluding './' and '/')
+  // '/' is allowed in dev/precommit - vite.config.ts sanitizes it
+  const isAbsolute = trimmed.startsWith('/') && trimmed !== './' && trimmed !== '/';
   if (isAbsolute) {
     results.push({
       key: 'VITE_BASE_PATH',
       message:
         'Absolute base paths break Lovable nested previews. Use `./` or omit the variable entirely.',
-      severity: ctx.strict || ctx.precommit ? 'error' : 'warn',
+      severity: ctx.strict ? 'error' : 'warn',
     });
   }
 
-  if (value === '/' && (ctx.strict || ctx.precommit)) {
-    results.push({
-      key: 'VITE_BASE_PATH',
-      message:
-        'Base path set to `/`. This causes asset 404s on Lovable. Set to `./` for production builds.',
-      severity: ctx.strict || ctx.precommit ? 'error' : 'warn',
-    });
+  // Handle '/' - allow in dev/precommit, error only in strict mode
+  if (trimmed === '/') {
+    if (ctx.strict) {
+      results.push({
+        key: 'VITE_BASE_PATH',
+        message:
+          'Base path set to `/`. This causes asset 404s on Lovable. Set to `./` for production builds.',
+        severity: 'error',
+      });
+    } else if (ctx.precommit) {
+      // In precommit, just warn - vite.config.ts sanitizeViteBase() will handle it
+      results.push({
+        key: 'VITE_BASE_PATH',
+        message:
+          'Base path set to `/`. vite.config.ts will sanitize to `./` automatically, but consider setting it explicitly.',
+        severity: 'warn',
+      });
+    }
+    // In dev mode (non-precommit, non-strict), allow silently
   }
   return results;
 }

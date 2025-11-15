@@ -1,5 +1,5 @@
 import { ClipboardList, Compass, FlaskConical, ThermometerSun } from 'lucide-react';
-import { useMemo, useState, type ReactNode } from 'react';
+import { memo, useCallback, useMemo, useState, type ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -157,7 +157,7 @@ export const EstimatorStudio = memo(function EstimatorStudio({ estimator }: Esti
       </div>
     </CanvasPanel>
   );
-}
+});
 
 interface MobileWizardStepperProps {
   steps: Array<{ id: string; title: string; icon: ReactNode }>;

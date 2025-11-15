@@ -1,20 +1,16 @@
 import * as React from 'react';
 
-import { getComponentBaseClass } from "@/lib/designSystem";
-import { cn } from "@/lib/utils";
+import { getComponentBaseClass } from '@/lib/designSystem';
+import { cn } from '@/lib/utils';
 
-const cardBaseClass = getComponentBaseClass("card");
+const cardBaseClass = getComponentBaseClass('card');
 
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(cardBaseClass, className)}
-      {...props}
-    />
+    <div ref={ref} className={cn(cardBaseClass, className)} {...props} />
   ),
 );
-Card.displayName = "Card";
+Card.displayName = 'Card';
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
@@ -24,15 +20,18 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 CardHeader.displayName = 'CardHeader';
 
 const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, children, ...props }, ref) => (
-    <h2
-      ref={ref}
-      className={cn('text-2xl font-semibold leading-none tracking-tight', className)}
-      {...props}
-    >
-      {children}
-    </h2>
-  ),
+  ({ className, children, ...props }, ref) => {
+    const content = children || <span className="sr-only">Card title</span>;
+    return (
+      <h2
+        ref={ref}
+        className={cn('text-2xl font-semibold leading-none tracking-tight', className)}
+        {...props}
+      >
+        {content}
+      </h2>
+    );
+  },
 );
 CardTitle.displayName = 'CardTitle';
 

@@ -37,21 +37,24 @@ const PaginationLink = ({
   size = 'icon',
   children,
   ...props
-}: PaginationLinkProps) => (
-  <a
-    aria-current={isActive ? 'page' : undefined}
-    className={cn(
-      buttonVariants({
-        variant: isActive ? 'outline' : 'ghost',
-        size,
-      }),
-      className,
-    )}
-    {...props}
-  >
-    {children}
-  </a>
-);
+}: PaginationLinkProps) => {
+  const content = children || <span className="sr-only">Pagination link</span>;
+  return (
+    <a
+      aria-current={isActive ? 'page' : undefined}
+      className={cn(
+        buttonVariants({
+          variant: isActive ? 'outline' : 'ghost',
+          size,
+        }),
+        className,
+      )}
+      {...props}
+    >
+      {content}
+    </a>
+  );
+};
 PaginationLink.displayName = 'PaginationLink';
 
 const PaginationPrevious = ({

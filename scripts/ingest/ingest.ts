@@ -1,9 +1,9 @@
 #!/usr/bin/env tsx
-/*
-Ingest local files (data/**/*.{md,txt}) and optional GitHub repos to build a RAG index.
-Requires: GEMINI_API_KEY (or VITE_GEMINI_API_KEY) and optional GITHUB_TOKEN.
-Outputs: public/rag/index.json
-*/
+/**
+ * Ingest local files matching pattern data/glob/*.{md,txt} and optional GitHub repos to build a RAG index.
+ * Requires: GEMINI_API_KEY (or VITE_GEMINI_API_KEY) and optional GITHUB_TOKEN.
+ * Outputs: public/rag/index.json
+ */
 
 import fs from 'fs';
 import path from 'path';

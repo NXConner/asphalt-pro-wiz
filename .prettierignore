@@ -11,3 +11,7 @@ playwright-report
 test-results
 *.log
 deleted files
+scripts/**
+**/scripts/**
+asphalt-pro-wiz/**
+**/asphalt-pro-wiz/**

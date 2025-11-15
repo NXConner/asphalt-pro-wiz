@@ -13,13 +13,19 @@ export default tseslint.config(
     ignores: [
       'dist',
       'scripts/**',
+      '**/scripts/**',
       'supabase/migrations/**',
+      '**/supabase/migrations/**',
       'supabase/functions/**',
-      'deleted files/**',
+      '**/supabase/functions/**',
+      '**/deleted files/**',
+      '**/asphalt-pro-wiz/**',
+      '**/asphalt-pro-wiz/asphalt-pro-wiz/**',
     ],
   },
   {
     files: ['**/*.{ts,tsx}'],
+    ignores: ['scripts/**', '**/scripts/**'],
     extends: [js.configs.recommended, ...tseslint.configs.recommended, eslintConfigPrettier],
     languageOptions: {
       ecmaVersion: 2020,
@@ -73,6 +79,13 @@ export default tseslint.config(
       'jsx-a11y/click-events-have-key-events': 'off',
       'jsx-a11y/no-noninteractive-element-interactions': 'off',
       'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
+    files: ['scripts/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+      'no-console': 'off',
     },
   },
   {

@@ -14,6 +14,9 @@ const definition = {
     version: '0.3.0',
     description:
       'Documented Supabase Edge Function endpoints powering AI proxying, observability, and supplier intelligence for Pavement Performance Suite.',
+  },
+};
+
 const baseDefinition = {
   openapi: '3.0.3',
   info: {
@@ -352,12 +355,6 @@ const baseDefinition = {
           aiSummary: { type: ['string', 'null'], description: 'Optional Gemini-generated summary.' },
         },
         required: ['orgId', 'materials', 'generatedAt', 'insights', 'bestOffers', 'aiSummary'],
-            description: 'Batch of telemetry events submitted in a single beacon.',
-            items: { $ref: '#/components/schemas/LogEvent' },
-            minItems: 1,
-            maxItems: 50,
-          },
-        ],
       },
       LogBeaconResponse: {
         type: 'object',
