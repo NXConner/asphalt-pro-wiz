@@ -1,0 +1,15 @@
+[33m180199e[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix Timeline icon
+[33m4490b9e[m Changes
+[33mf01007a[m Merge pull request #66 from NXConner/cursor/redesign-ui-and-layout-4a18
+[33m5e72179[m[33m ([m[1;31morigin/cursor/redesign-ui-and-layout-4a18[m[33m)[m Checkpoint before follow-up message
+[33md48fd23[m Merge pull request #65 from NXConner/cursor/implement-responsive-layout-and-mobile-components-70d6
+[33m4678fb5[m[33m ([m[1;31morigin/cursor/implement-responsive-layout-and-mobile-components-70d6[m[33m)[m Checkpoint before follow-up message
+[33m8049a95[m Checkpoint before follow-up message
+[33mdb9a807[m Checkpoint before follow-up message
+[33mc623e69[m Checkpoint before follow-up message
+[33m96e53b3[m Checkpoint before follow-up message
+[33m8c46eaf[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Complete Division UI transformation with performance optimizations
+[33m3576c85[m fix(windows): update migrate:up to read DATABASE_URL from env
+[33m3ec24c9[m docs(windows): improve WINDOWS_SETUP.md with clearer env var instructions
+[33me1122b5[m chore(windows): add WINDOWS_SETUP.md, fix tests, enable vitest globals
+[33mfadae2e[m Fix CSS build errors
