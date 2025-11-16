@@ -252,14 +252,23 @@ Ideal for CI or pre-release smoke tests. Full instructions live in `scripts/load
 ### Containers
 
 ```bash
-docker compose --env-file .env up --build web
-# Reset state
+# 1. Build optimized runtime image (quality gate runs automatically)
+docker build -t pps:web --build-arg VITE_APP_VERSION=$(git rev-parse --short HEAD) .
+
+# 2. Launch the production stack (web + db + observability mocks)
+docker compose --env-file .env up --build web db observability measurement-ai
+
+# 3. Run database migrations / seed data (one-off)
+docker compose run --rm migrator
+docker compose --profile setup run --rm seeder
+
+# 4. Reset everything
 docker compose down -v
 ```
 
-> **Quality gate:** The Docker build stage runs `npm run lint`, `npm run typecheck`, and `npm run test:unit -- --run` before bundling, failing fast on regressions.
-
-> Need a hot-reload setup instead? Enable the dev profile: `docker compose --profile dev up devserver db measurement-ai`.
+- The multi-stage `Dockerfile` bakes in a `quality` gate: the runtime image copies a sentinel file from the lint/type/test stage, so `docker build` fails immediately if checks regress.
+- Hot reload uses the Vite dev server on port `8080` to stay Lovable-compatible: `docker compose --profile dev up devserver db measurement-ai`.
+- Need only the API mocks? All compose services support profiles—start just what you need (e.g., `--profile setup` for seed-only).
 
 ### Android
 
