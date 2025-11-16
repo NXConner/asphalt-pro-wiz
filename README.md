@@ -137,13 +137,15 @@ npm run seed
 
 - Supabase schema enforces RLS across organizations, jobs, estimates, crew data, documents, and premium services.
 - Roles (`viewer`, `operator`, `manager`, `super_admin`) backed by `user_roles` and `user_org_memberships`.
-- Scripts:
-  - `npm run security:scan` (npm audit + Snyk)
-  - `npm run security:report` (JSON audit snapshot)
-  - `npm run security:ci` (aggregated audit + Snyk + JSON report for CI gates)
+  - Scripts:
+    - `npm run security:scan` (npm audit + Snyk)
+    - `npm run security:report` (JSON audit snapshot)
+    - `npm run security:baseline` (scan + report in one step for daily health checks)
+    - `npm run security:ci` (aggregated audit + Snyk + JSON report for CI gates)
 - Secret resolution is centralised in `src/config/secrets.ts`, which normalises environment values and surfaces actionable errors when a managed provider (`SECRET_PROVIDER=doppler|vault|aws-secrets-manager`) is enabled without configuration. See `config/secrets/README.md` for provider-specific bootstrapping.
   - GitHub Actions pipeline (`.github/workflows/main.yml`) runs CodeQL SAST, dependency scans, and tests per push.
 - Secrets management patterns documented in `docs/SECRETS_AND_CONFIG.md` with Doppler/Vault/AWS sample configs.
+  - day-to-day security expectations (secret rotation, dependency scans, incident checklist) live in `docs/SECURITY_OPERATIONS.md`.
 - Virginia contractor compliance workflows, invoicing expectations, and retention policies detailed in `docs/PRODUCTION_READINESS.md` and `docs/SECURITY_REMEDIATION_GUIDE.md`.
 
 ---
