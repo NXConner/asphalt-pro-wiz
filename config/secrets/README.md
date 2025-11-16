@@ -7,23 +7,24 @@ This folder documents how to connect the Pavement Performance Suite to a product
 - Set `SECRET_PROVIDER` in your environment (`env`, `doppler`, `vault`, or `aws-secrets-manager`). The helper at `src/config/secrets.ts` reads this flag, normalises provider names, and throws actionable errors when required secrets are missing.
 - Backend utilities (`scripts/check-env`, Supabase functions, CLI tooling) call `getSecret`/`requireSecret` to retrieve sensitive values. When `SECRET_PROVIDER` is not `env`, the helper reminds you to run the provider-specific bootstrap steps below.
 - For local development, keep `SECRET_PROVIDER=env` and populate `.env` directly. For staging/production, switch to a managed provider and follow the relevant template.
+- After secrets are hydrated (from Doppler, Vault, AWS, etc.), run `npm run secrets:render -- --output .env.runtime` to emit a sanitized, idempotent runtime file. Pass `--strict` to fail fast if any keys in `.env.example` are missing—perfect for CI and container builds.
 
 ## Doppler
 
 1. Create a Doppler project (e.g., `pavement-performance-suite`).
 2. Populate project secrets matching the keys in `.env.example` (`VITE_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, etc.).
-  3. Copy `config/secrets/doppler.yaml.example` to `config/secrets/doppler.yaml` and update the project/config names. The manifest maps Doppler secrets into the runtime environment:
+3. Copy `config/secrets/doppler.yaml.example` to `config/secrets/doppler.yaml` and update the project/config names. The manifest maps Doppler secrets into the runtime environment:
 
-   ```yaml
-   # config/secrets/doppler.yaml
-   project: pavement-performance-suite
-   config: production
-   envs:
-     NODE_ENV: production
-   fetch:
-     path: ./doppler.env
-     format: dotenv
-   ```
+```yaml
+# config/secrets/doppler.yaml
+project: pavement-performance-suite
+config: production
+envs:
+  NODE_ENV: production
+fetch:
+  path: ./doppler.env
+  format: dotenv
+```
 
 4. In CI or your container entrypoint run:
 
@@ -36,24 +37,24 @@ This folder documents how to connect the Pavement Performance Suite to a product
 1. Enable the KV secrets engine and create a policy that grants read access to a `pavement-performance-suite` path.
 2. Store secrets under `kv/data/pavement-performance-suite`, for example:
 
-    ```json
-    {
-      "data": {
-        "VITE_SUPABASE_URL": "https://...",
-        "SUPABASE_SERVICE_ROLE_KEY": "...",
-        "VITE_GEMINI_PROXY_URL": "https://...",
-        "HUD_CONFIG_EXPORT_SIGNING_KEY": "...",
-        "HUD_CONFIG_EXPORT_ENCRYPTION_KEY": "..."
-      }
-    }
-    ```
-
-  3. Copy `vault.env.template` to `vault.env`, fill in your Vault address/token, then source it to render a `.env.runtime` file via the included script. Vault integrations should export `CONFIG_STRICT_MODE=true` to enable runtime validation:
-
-   ```bash
-    vault kv get -format=json kv/pavement-performance-suite \
-      | jq -r '.data.data | to_entries | map("\(.key)=\(.value)") | .[]' > .env.runtime
+   ```json
+   {
+     "data": {
+       "VITE_SUPABASE_URL": "https://...",
+       "SUPABASE_SERVICE_ROLE_KEY": "...",
+       "VITE_GEMINI_PROXY_URL": "https://...",
+       "HUD_CONFIG_EXPORT_SIGNING_KEY": "...",
+       "HUD_CONFIG_EXPORT_ENCRYPTION_KEY": "..."
+     }
+   }
    ```
+
+3. Copy `vault.env.template` to `vault.env`, fill in your Vault address/token, then source it to render a `.env.runtime` file via the included script. Vault integrations should export `CONFIG_STRICT_MODE=true` to enable runtime validation:
+
+```bash
+ vault kv get -format=json kv/pavement-performance-suite \
+   | jq -r '.data.data | to_entries | map("\(.key)=\(.value)") | .[]' > .env.runtime
+```
 
 4. Run the application or tests with the generated `.env.runtime`.
 
@@ -61,14 +62,14 @@ This folder documents how to connect the Pavement Performance Suite to a product
 
 1. Store secrets in a JSON secret, for example `pavement/performance-suite/prod` (see `aws-secrets-manager.json.example` for a full payload):
 
-    ```json
-    {
-      "VITE_SUPABASE_URL": "https://...",
-      "SUPABASE_SERVICE_ROLE_KEY": "...",
-      "DATABASE_URL": "postgres://...",
-      "HUD_CONFIG_EXPORT_BUCKET": "s3://..."
-    }
-    ```
+   ```json
+   {
+     "VITE_SUPABASE_URL": "https://...",
+     "SUPABASE_SERVICE_ROLE_KEY": "...",
+     "DATABASE_URL": "postgres://...",
+     "HUD_CONFIG_EXPORT_BUCKET": "s3://..."
+   }
+   ```
 
 2. Fetch and export the values at runtime:
 
