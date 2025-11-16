@@ -322,6 +322,7 @@ npm run android:gradle:debug
 
 ## Contribution & Developer Experience
 
+- New to the project? Start with the [Contributor Onboarding Guide](./docs/CONTRIBUTOR_GUIDE.md) for environment prerequisites, first-run scripts, and the full PR checklist.
 - Branching strategy:
   - `main`: production-ready, auto-deploy after CI success.
   - `develop`: integration branch for the next release cut; merge feature branches here.
@@ -355,6 +356,7 @@ Full roadmap and phased analysis live in `docs/PHASE_1_ANALYSIS.md`, `docs/PHASE
 - API & integrations: `docs/API_REFERENCE.md`, `docs/INTEGRATIONS_GUIDE.md`
 - Deployment & operations: `docs/DEPLOYMENT.md`, `docs/PRODUCTION_READINESS.md`, `docs/CONTAINERIZATION.md`
 - UI foundations: `docs/DESIGN_SYSTEM.md`
+- Contributor onboarding: `docs/CONTRIBUTOR_GUIDE.md`
 
 ---
 
