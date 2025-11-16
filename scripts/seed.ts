@@ -41,6 +41,28 @@ interface WallpaperSeedDefinition {
   source?: "system" | "custom" | "synthesized";
 }
 
+interface BlackoutFeedSeed {
+  name: string;
+  description?: string;
+  sourceUrl: string;
+  timezone?: string;
+  events: Array<{
+    summary: string;
+    startsAt: string;
+    endsAt: string;
+    details?: string;
+  }>;
+}
+
+interface LiturgicalEventSeed {
+  season: "advent" | "christmas" | "lent" | "holy_week" | "easter" | "pentecost" | "ordinary_time";
+  title: string;
+  description?: string;
+  startsOn: string;
+  endsOn: string;
+  isGlobal?: boolean;
+}
+
 async function ensureJob(
   client: PoolClient,
   orgId: string,
@@ -247,6 +269,91 @@ async function ensureThemePreference(
       JSON.stringify({ primary: "25 100% 55%", accent: "197 88% 56%" }),
       JSON.stringify({ opacity: 0.82, blur: 12 }),
       JSON.stringify({ hudOpacity: 0.85, hudBlur: 10, hudPreset: "command" }),
+    ] satisfies QueryOptions,
+  );
+}
+
+async function ensureSchedulerBlackoutFeed(
+  client: PoolClient,
+  orgId: string,
+  adminUserId: string,
+  seed: BlackoutFeedSeed,
+): Promise<void> {
+  const { rows } = await client.query<{ id: string }>(
+    `INSERT INTO public.scheduler_blackout_feeds (org_id, created_by, name, description, source_url, timezone)
+     VALUES ($1, $2, $3, $4, $5, $6)
+     ON CONFLICT (org_id, name)
+     DO UPDATE SET description = EXCLUDED.description,
+                   source_url = EXCLUDED.source_url,
+                   timezone = EXCLUDED.timezone,
+                   updated_at = now()
+     RETURNING id;`,
+    [orgId, adminUserId, seed.name, seed.description ?? null, seed.sourceUrl, seed.timezone ?? "America/New_York"] satisfies QueryOptions,
+  );
+
+  const feedId =
+    rows[0]?.id ??
+    (
+      await client.query<{ id: string }>(
+        `SELECT id FROM public.scheduler_blackout_feeds WHERE org_id = $1 AND name = $2 LIMIT 1;`,
+        [orgId, seed.name] satisfies QueryOptions,
+      )
+    ).rows[0]?.id;
+
+  if (!feedId) {
+    throw new Error(`Unable to upsert scheduler_blackout_feed ${seed.name}`);
+  }
+
+  await ensureBlackoutEntries(client, feedId, orgId, seed.events);
+}
+
+async function ensureBlackoutEntries(
+  client: PoolClient,
+  feedId: string,
+  orgId: string,
+  events: BlackoutFeedSeed["events"],
+): Promise<void> {
+  for (const event of events) {
+    await client.query(
+      `INSERT INTO public.scheduler_blackout_entries (feed_id, org_id, starts_at, ends_at, summary, details)
+       SELECT $1, $2, $3, $4, $5, $6
+       WHERE NOT EXISTS (
+         SELECT 1 FROM public.scheduler_blackout_entries
+         WHERE feed_id = $1
+           AND starts_at = $3
+           AND ends_at = $4
+           AND summary = $5
+       );`,
+      [feedId, orgId, event.startsAt, event.endsAt, event.summary, event.details ?? null] satisfies QueryOptions,
+    );
+  }
+}
+
+async function ensureLiturgicalEvent(
+  client: PoolClient,
+  adminUserId: string,
+  seed: LiturgicalEventSeed,
+  orgId?: string | null,
+): Promise<void> {
+  await client.query(
+    `INSERT INTO public.liturgical_calendar_events (org_id, created_by, season, title, description, starts_on, ends_on, is_global)
+     SELECT $1, $2, $3, $4, $5, $6::date, $7::date, $8
+     WHERE NOT EXISTS (
+       SELECT 1 FROM public.liturgical_calendar_events
+       WHERE season = $3
+         AND title = $4
+         AND starts_on = $6::date
+         AND (org_id IS NOT DISTINCT FROM $1)
+     );`,
+    [
+      orgId ?? null,
+      adminUserId,
+      seed.season,
+      seed.title,
+      seed.description ?? null,
+      seed.startsOn,
+      seed.endsOn,
+      seed.isGlobal ?? !orgId,
     ] satisfies QueryOptions,
   );
 }
@@ -839,6 +946,69 @@ async function main() {
           JSON.stringify({ seedSource: "seed-script" }),
         ] satisfies QueryOptions,
       );
+
+      const blackoutSeeds: BlackoutFeedSeed[] = [
+        {
+          name: "Sunday Services & Events",
+          description: "Weekend worship gatherings pulled from the shared ICS feed.",
+          sourceUrl:
+            process.env.SCHEDULER_BLACKOUT_FEED_URL ||
+            "https://calendar.google.com/calendar/ical/connerasphalt_chapel%40gmail.com/private-6b9c73fcb4a61/basic.ics",
+          timezone: "America/New_York",
+          events: [
+            {
+              summary: "Sunday Worship Block",
+              startsAt: "2025-12-07T14:00:00.000Z",
+              endsAt: "2025-12-07T18:00:00.000Z",
+            },
+            {
+              summary: "Midweek Advent Choir",
+              startsAt: "2025-12-11T23:00:00.000Z",
+              endsAt: "2025-12-12T01:00:00.000Z",
+              details: "Reserve sanctuary lot spots for choir arrivals.",
+            },
+          ],
+        },
+      ];
+
+      for (const feedSeed of blackoutSeeds) {
+        await ensureSchedulerBlackoutFeed(client, orgId, adminUserId, feedSeed);
+      }
+
+      const liturgicalSeeds: LiturgicalEventSeed[] = [
+        {
+          season: "advent",
+          title: "Advent Vigil",
+          description: "Candlelight services leading into Christmas Eve.",
+          startsOn: "2025-11-30",
+          endsOn: "2025-12-24",
+        },
+        {
+          season: "lent",
+          title: "Lent Refocus",
+          description: "Wednesday prayer gatherings and fasting focus.",
+          startsOn: "2026-02-18",
+          endsOn: "2026-03-28",
+        },
+        {
+          season: "easter",
+          title: "Easter Weekend",
+          description: "Sunrise services, egg hunts, and overflow parking prep.",
+          startsOn: "2026-04-04",
+          endsOn: "2026-04-05",
+        },
+        {
+          season: "pentecost",
+          title: "Pentecost Flare",
+          description: "Community outreach push during Pentecost week.",
+          startsOn: "2026-05-24",
+          endsOn: "2026-05-31",
+        },
+      ];
+
+      for (const eventSeed of liturgicalSeeds) {
+        await ensureLiturgicalEvent(client, adminUserId, eventSeed, null);
+      }
 
     await client.query("COMMIT");
     // eslint-disable-next-line no-console
