@@ -76,6 +76,8 @@ scripts/install_dependencies.sh
 
 # 4. Start dev server (refresh running preview if already launched)
 npm run dev
+# Or run the Dockerized dev stack with Supabase + measurement mocks:
+# docker compose --profile dev up devserver db measurement-ai
 
 # 5. Prime Supabase (optional for local data)
 npm run migrate:up
@@ -215,14 +217,14 @@ Ideal for CI or pre-release smoke tests. Full instructions live in `scripts/load
 ### Containers
 
 ```bash
-docker compose --env-file .env up --build
+docker compose --env-file .env up --build web
 # Reset state
 docker compose down -v
 ```
 
 > **Quality gate:** The Docker build stage runs `npm run lint`, `npm run typecheck`, and `npm run test:unit -- --run` before bundling, failing fast on regressions.
 
-> Need a hot-reload setup instead? Pair `docker-compose.yml` with `docker-compose.dev.yml` (see `docs/CONTAINERIZATION.md`) to spin up the Vite dev server alongside Postgres + Otel in one command.
+> Need a hot-reload setup instead? Enable the dev profile: `docker compose --profile dev up devserver db measurement-ai`.
 
 ### Android
 

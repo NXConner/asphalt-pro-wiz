@@ -1,0 +1,59 @@
+[
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/api/measurements"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": [
+          "application/json"
+        ]
+      },
+      "delay": {
+        "timeUnit": "MILLISECONDS",
+        "value": 120
+      },
+      "body": "{\"squareFeet\":42875,\"confidence\":0.93,\"segments\":[{\"id\":\"sanctuary\",\"label\":\"Sanctuary Loop\",\"squareFeet\":17250},{\"id\":\"admin\",\"label\":\"Admin Wing\",\"squareFeet\":8200},{\"id\":\"student\",\"label\":\"Student Center\",\"squareFeet\":6100},{\"id\":\"overflow\",\"label\":\"Overflow + Bus\",\"squareFeet\":11325}],\"cracks\":{\"linearFeet\":1475,\"severityScore\":0.61,\"distribution\":{\"hairline\":760,\"alligator\":420,\"structural\":295}},\"notes\":\"Mockserver payload – replace with AI inference service in production.\"}"
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/api/segmentation"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": [
+          "application/json"
+        ]
+      },
+      "delay": {
+        "timeUnit": "MILLISECONDS",
+        "value": 180
+      },
+      "body": "{\"masks\":[{\"id\":\"lot-a\",\"type\":\"polygon\",\"points\":[[36.7772,-76.3331],[36.7774,-76.3324],[36.7768,-76.3322],[36.7766,-76.3329]],\"squareFeet\":9800},{\"id\":\"lot-b\",\"type\":\"polygon\",\"points\":[[36.7775,-76.3337],[36.7778,-76.3332],[36.7771,-76.3329],[36.7769,-76.3335]],\"squareFeet\":12640}],\"crackVectorLayer\":\"https://mock.local/cracks/layer.geojson\",\"metadata\":{\"source\":\"mockserver\",\"version\":\"1.0.0\"}}"
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/api/drone-intel"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": [
+          "application/json"
+        ]
+      },
+      "delay": {
+        "timeUnit": "MILLISECONDS",
+        "value": 240
+      },
+      "body": "{\"ortho\":{\"url\":\"https://mock.local/assets/mission-001/ortho.webp\",\"capturedAt\":\"2024-11-05T13:00:00Z\"},\"thermal\":{\"url\":\"https://mock.local/assets/mission-001/thermal.webp\",\"pavementDeltaF\":12.5},\"hazards\":[{\"id\":\"playground\",\"type\":\"cone\",\"description\":\"Playground equipment stored near drive lane\"},{\"id\":\"hvac\",\"type\":\"keepout\",\"description\":\"HVAC pad – protect from overspray\"}],\"recommendations\":[\"Schedule sealcoat before noon to avoid afternoon crosswinds\",\"Deploy crew-2 crack crew for 3 labor-hours prior to seal\"]}"
+    }
+  }
+]
