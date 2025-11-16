@@ -38,7 +38,7 @@ AI-assisted operations command center purpose-built for asphalt paving, sealcoat
 - **Estimator Studio** – multi-step cost modelling with AI assistance, compliance guardrails, multi-scenario simulation lab, and offline resilience.
 - **Mission Scheduler** – crew-aware timeline with worship blackout windows, ADA alerts, conflict detection, and what-if optimization.
 - **Command Center HUD** – live telemetry, revenue and margin dashboards, configurable widgets, multi-monitor layout memory, gesture controls, keyboard navigation, animation presets, and Supabase-backed data panels with export/import workflows.
-- **Theme Command Center** – multi-theme gallery with liturgical presets, custom wallpaper uploads, adaptive typography, and instant previews.
+- **Theme Command Center** – multi-theme gallery with liturgical presets, drag-and-drop wallpaper uploads, adaptive typography, and instant previews plus a live design token manifest.
 - **Layout & Mapping Suite** – GIS overlays, measurement tools, tactical map waypoints, hazard zoning, and drone-ready workflows.
 - **Automation & Notifications** – templated outreach flows, incident management, and workflow hooks for estimator → mission transitions.
 - **Supplier Intelligence** – Supabase-backed pricing telemetry, AI summaries, and lead-time signals for regional material partners.
@@ -177,6 +177,8 @@ Lovable previews poll `VITE_HEALTHCHECK_URL` (`/health` by default) **before** t
 | Load          | see [Load & Performance Testing](#load--performance-testing) | k6 + Artillery packs                                                                                              |
 
 Husky pre-commit hooks execute lint-staged, lint, typecheck, unit tests, and optional Playwright checks via `npm run precommit:hook`.
+
+> Accessibility linting is enforced via `eslint-plugin-jsx-a11y`; `npm run lint` and the Docker quality gate both fail on violations so HUD widgets remain screen-reader friendly.
 
 ---
 
