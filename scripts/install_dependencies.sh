@@ -3,21 +3,25 @@ set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-Install project dependencies, prepare git hooks, and provision optional tooling.
+Install project dependencies, verify the toolchain, and prime developer automation.
 
-Usage: scripts/install_dependencies.sh [--skip-playwright] [--skip-husky]
+Usage: scripts/install_dependencies.sh [--skip-playwright] [--skip-husky] [--skip-env-check] [--strict-env]
 
 Flags:
   --skip-playwright   Do not download Playwright browsers (useful for CI containers)
   --skip-husky        Skip Husky git hook installation
+  --skip-env-check    Skip running npm run check:env (not recommended)
+  --strict-env        Run check:env with --strict to enforce completeness
 USAGE
 }
 
 SKIP_PLAYWRIGHT=false
 SKIP_HUSKY=false
+SKIP_ENV_CHECK=false
+STRICT_ENV=false
 
 while [ $# -gt 0 ]; do
-  case "$1" in
+    case "$1" in
     --help|-h)
       usage
       exit 0
@@ -28,6 +32,12 @@ while [ $# -gt 0 ]; do
     --skip-husky)
       SKIP_HUSKY=true
       ;;
+      --skip-env-check)
+        SKIP_ENV_CHECK=true
+        ;;
+      --strict-env)
+        STRICT_ENV=true
+        ;;
     *)
       echo "Unknown argument: $1" >&2
       usage
@@ -65,6 +75,26 @@ fi
 
 echo "Syncing lint-staged cache..."
 npx --yes lint-staged --version >/dev/null 2>&1 || true
+
+if [ ! -f .env ] && [ -f .env.example ]; then
+  echo "Hydrating .env from .env.example (edit this file with real secrets)..."
+  cp .env.example .env
+fi
+
+if ! $SKIP_ENV_CHECK; then
+  echo "Validating environment configuration..."
+  ENV_ARGS=()
+  if $STRICT_ENV; then
+    ENV_ARGS+=(--strict)
+  fi
+  if [ "${#ENV_ARGS[@]}" -eq 0 ]; then
+    npm run check:env
+  else
+    npm run check:env -- "${ENV_ARGS[@]}"
+  fi
+else
+  echo "Skipping environment validation."
+fi
 
 if ! $SKIP_PLAYWRIGHT; then
   if npx --yes playwright --version >/dev/null 2>&1; then

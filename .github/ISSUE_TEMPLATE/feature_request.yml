@@ -1,31 +1,44 @@
 name: Feature request
 description: Suggest an idea for this project
 labels: [enhancement]
-body:
-  - type: textarea
-    id: problem
-    attributes:
-      label: Problem statement
-      description: What problem are you trying to solve?
-    validations:
-      required: true
-  - type: textarea
-    id: proposal
-    attributes:
-      label: Proposed solution
-      description: Describe the feature and how it solves the problem
-    validations:
-      required: true
-  - type: textarea
-    id: scope
-    attributes:
-      label: Scope & acceptance
-      description: What should be in/out of scope? Acceptance criteria.
-  - type: textarea
-    id: alternatives
-    attributes:
-      label: Alternatives considered
-  - type: textarea
-    id: risks
-    attributes:
-      label: Risks & mitigations
+  body:
+    - type: textarea
+      id: problem
+      attributes:
+        label: Problem statement
+        description: What user workflow or business objective is blocked? Link telemetry or missions.
+      validations:
+        required: true
+    - type: textarea
+      id: maximum_potential
+      attributes:
+        label: Maximum potential outcome
+        description: Describe the “dream state” for UI/automation/performance/compliance.
+      validations:
+        required: true
+    - type: textarea
+      id: proposal
+      attributes:
+        label: Proposed solution
+        description: Outline UX, data flows, Supabase tables/functions, and integration touchpoints.
+      validations:
+        required: true
+    - type: textarea
+      id: feature_flags
+      attributes:
+        label: Feature flag strategy
+        description: Which `VITE_FLAG_*` / Supabase toggles gate this work?
+    - type: textarea
+      id: observability
+      attributes:
+        label: Observability, security, accessibility
+        description: Logging/metrics changes, secrets, compliance notes, WCAG/i18n impact.
+    - type: textarea
+      id: scope
+      attributes:
+        label: Acceptance criteria
+        description: Define in/out of scope plus verifiable outcomes/tests.
+    - type: textarea
+      id: risks
+      attributes:
+        label: Risks & mitigations
