@@ -24,7 +24,7 @@ const TacticalLoaderComponent = ({
         transition={{
           duration: divisionDurations.deliberate,
           repeat: Infinity,
-          ease: divisionEasing.tactical,
+          ease: 'linear',
         }}
       />
       <motion.span
@@ -33,7 +33,7 @@ const TacticalLoaderComponent = ({
         transition={{
           duration: divisionDurations.standard,
           repeat: Infinity,
-          ease: divisionEasing.glide,
+          ease: 'linear',
         }}
       />
       <motion.span

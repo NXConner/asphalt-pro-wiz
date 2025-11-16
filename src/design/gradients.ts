@@ -33,6 +33,14 @@ export function createGradient(startColor: string, endColor: string, angle = 135
   return `linear-gradient(${angle}deg, ${startColor} 0%, ${endColor} 100%)`;
 }
 
+export interface WallpaperDefinition {
+  id: string;
+  name: string;
+  description: string;
+  gradient: string;
+  particlePreset: 'ember' | 'tech' | 'stealth' | 'command' | 'rogue';
+}
+
 export const DIVISION_WALLPAPERS: WallpaperDefinition[] = [
   {
     id: 'division-twilight-ops',
