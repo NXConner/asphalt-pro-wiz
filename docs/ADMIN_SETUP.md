@@ -32,9 +32,15 @@ npm run migrate:up
 ADMIN_EMAIL=n8ter8@gmail.com npm run seed
 ```
 
+This pass now also provisions the Theme Command Center inventory:
+
+- Global wallpapers are inserted into `theme_wallpapers` with `is_global=true` so every tenant shares a curated Division palette.
+- Organization-scoped wallpapers inherit your org_id so crews can upload private assets later without sharing them globally.
+- The admin user receives a baseline record in `theme_preferences`, wiring the default wallpaper, palette, and HUD tuning without touching the UI.
+
 Notes
 
 - Migrations enable Row Level Security (RLS) on every table. All access is mediated by the helper functions defined in `supabase/migrations`, so always add new policies through migrations rather than manual dashboard edits.
 - The seed script is idempotent: re-running it updates existing demo records, inserts missing ones, and never duplicates organizations, portal sessions, or knowledge-base content.
-- Additional demo data now includes customer portal sessions, compliance artifacts, mission milestones, knowledge base entries, and observability session records—review them inside Supabase Studio to understand expected shapes.
+- Additional demo data now includes customer portal sessions, compliance artifacts, mission milestones, knowledge base entries, observability session records, and the new `theme_wallpapers` + `theme_preferences` tables used by the Theme Command Center—review them inside Supabase Studio to understand expected shapes.
 - For local development via Docker Compose, the default `DATABASE_URL` is provided in `.env.example`. Update it if you connect to a remote Supabase project.
