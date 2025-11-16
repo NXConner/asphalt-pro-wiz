@@ -1,9 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 
 import { logError } from '@/lib/logging';
-import type { AppError, ErrorContext } from '@/types';
-
-import { logError } from "@/lib/logging";
 
 type FallbackRender = (args: { error: Error | null; reset: () => void }) => ReactNode;
 

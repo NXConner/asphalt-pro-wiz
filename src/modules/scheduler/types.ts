@@ -1,6 +1,12 @@
 export type MissionTaskStatus = 'planned' | 'scheduled' | 'in_progress' | 'completed' | 'blocked';
 export type MissionTaskPriority = 'critical' | 'standard' | 'low';
-export type MissionAccessibilityImpact = 'entrance' | 'parking' | 'mobility' | 'auditorium' | 'walkway' | 'none';
+export type MissionAccessibilityImpact =
+  | 'entrance'
+  | 'parking'
+  | 'mobility'
+  | 'auditorium'
+  | 'walkway'
+  | 'none';
 
 export type AccessibilityImpact = MissionAccessibilityImpact;
 
@@ -65,4 +71,40 @@ export interface WorshipImportConflict {
   blackoutId: string;
   start: string;
   end: string;
+}
+
+export type MissionConflictType =
+  | 'crew-overlap'
+  | 'time-overlap'
+  | 'blackout'
+  | 'capacity'
+  | 'overtime';
+
+export interface MissionConflict {
+  id: string;
+  severity: 'info' | 'warning' | 'critical';
+  type: MissionConflictType;
+  taskIds: string[];
+  description: string;
+  window: { start: string; end: string };
+}
+
+export interface AccessibilityInsight {
+  id: string;
+  severity: 'info' | 'warning';
+  taskId: string;
+  description: string;
+  recommendation: string;
+}
+
+export interface CapacitySnapshot {
+  slot: string;
+  crewScheduled: number;
+  capacity: number;
+}
+
+export interface MissionSuggestion {
+  id: string;
+  message: string;
+  relatedTaskIds: string[];
 }

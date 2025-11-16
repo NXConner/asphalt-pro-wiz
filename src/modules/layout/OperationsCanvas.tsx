@@ -39,7 +39,7 @@ const OperationsCanvasComponent = ({
         }}
       />
       <ParticleBackground
-        preset={wallpaper.particlePreset}
+        preset={wallpaper.particlePreset as 'ember' | 'tech' | 'stealth' | 'command' | 'rogue'}
         densityMultiplier={0.5}
         className="opacity-35 mix-blend-screen"
       />

@@ -1,13 +1,13 @@
 ## Containerization Guide
 
-This project ships with a container stack that targets both production deployments and day-to-day development. Everything is driven by multi-stage Docker builds plus two Compose entrypoints:
+This project ships with a container stack that targets both production deployments and day-to-day development. Everything is driven by multi-stage Docker builds plus two Compose entrypoints, and the build context is aggressively pruned via `.dockerignore` (Android sources, archived folders, docs, and vendored externals are now excluded) so `docker build` stays lean even on CI runners:
 
-| Use Case | Command | Notes |
-| --- | --- | --- |
-| Production-like stack (Nginx + Postgres + Otel) | `docker compose up --build app` | Builds the multi-stage image, runs migrations via the `migrator` service, then serves the static bundle behind Nginx. |
-| Interactive dev server with hot reload | `docker compose -f docker-compose.yml -f docker-compose.dev.yml up app-dev db observability` | Reuses the tooling stage, mounts your working tree, and runs `npm run dev` on port `5173` while keeping Postgres + Otel in the same network. |
-| Database migrations only | `docker compose run --rm migrator` | Uses the tooling target to run `npm run migrate:up`. |
-| Database seed data | `docker compose --profile setup run --rm seeder` | Seeds realistic demo data after migrations succeed. |
+| Use Case                                        | Command                                                                                      | Notes                                                                                                                                        |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Production-like stack (Nginx + Postgres + Otel) | `docker compose up --build app`                                                              | Builds the multi-stage image, runs migrations via the `migrator` service, then serves the static bundle behind Nginx.                        |
+| Interactive dev server with hot reload          | `docker compose -f docker-compose.yml -f docker-compose.dev.yml up app-dev db observability` | Reuses the tooling stage, mounts your working tree, and runs `npm run dev` on port `5173` while keeping Postgres + Otel in the same network. |
+| Database migrations only                        | `docker compose run --rm migrator`                                                           | Uses the tooling target to run `npm run migrate:up`.                                                                                         |
+| Database seed data                              | `docker compose --profile setup run --rm seeder`                                             | Seeds realistic demo data after migrations succeed.                                                                                          |
 
 ### Dockerfile Layout
 

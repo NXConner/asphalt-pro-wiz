@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, type MutableRefObject } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, type MutableRefObject } from 'react';
 
 interface VirtualScrollOptions {
   itemHeight: number;

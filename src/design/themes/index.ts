@@ -3,7 +3,8 @@
  * Theme configurations for all Division-inspired themes
  */
 
-import { divisionColors } from '../tokens';
+import { divisionGradients } from '../gradients';
+import { composeThemeVariables, divisionColors, type DivisionThemeId } from '../tokens';
 
 export interface DivisionTheme {
   name: string;
@@ -35,10 +36,10 @@ export const divisionThemes: DivisionTheme[] = [
     primary: divisionColors.rogue[400],
     secondary: divisionColors.rogue[600],
     accent: divisionColors.rogue[500],
-    background: divisionColors.bg.overlay,
+    background: divisionColors.bg.dark,
     foreground: divisionColors.text.primary,
     border: divisionColors.rogue[500],
-    description: 'Rogue red with dark crimson - aggressive, hostile interface',
+    description: 'Crimson rogue palette with hostile pulses and deep noir background.',
   },
   {
     name: 'Dark Zone',
@@ -122,26 +123,12 @@ export function getDefaultTheme(): DivisionTheme {
   return divisionThemes[0]; // Division Agent
 }
 
-// Export types expected by designSystem.ts
-export type DivisionThemeId =
-  | 'theme-division-agent'
-  | 'theme-division-rogue'
-  | 'theme-division-darkzone'
-  | 'theme-division-tech'
-  | 'theme-division-stealth'
-  | 'theme-division-combat'
-  | 'theme-division-tactical'
-  | 'theme-division-hunter';
-
 export interface DivisionThemeDefinition {
   id: DivisionThemeId;
   name: string;
   description: string;
   tokens: Record<string, string>;
 }
-
-// Export theme registry format expected by designSystem.ts
-import { composeThemeVariables } from '../tokens';
 
 const withPrimary = (primary: string, accent: string, extras: Record<string, string> = {}) =>
   composeThemeVariables({
@@ -238,54 +225,17 @@ export const DIVISION_THEMES: Record<DivisionThemeId, DivisionThemeDefinition> =
       '--ring': '152 86% 54%',
     }),
   },
-    'theme-division-sunrise': {
-      id: 'theme-division-sunrise',
-      name: 'Sunrise Service',
-      description: 'Golden hour warmth for early-morning campus walkthroughs.',
-      tokens: withPrimary('32 96% 58%', '12 88% 62%', {
-        '--background': '215 62% 6%',
-        '--card': '214 56% 10%',
-        '--foreground': '38 28% 94%',
-        '--hud-grid-opacity': '0.18',
-        '--ring': '32 96% 64%',
-      }),
-    },
-    'theme-division-evensong': {
-      id: 'theme-division-evensong',
-      name: 'Evensong Twilight',
-      description: 'Indigo-lavender gradients with brass accents for evening briefings.',
-      tokens: withPrimary('266 82% 64%', '38 96% 60%', {
-        '--background': '232 64% 5%',
-        '--card': '232 58% 10%',
-        '--foreground': '230 24% 94%',
-        '--hud-grid-opacity': '0.24',
-        '--ring': '266 82% 60%',
-      }),
-    },
-    'theme-division-revival': {
-      id: 'theme-division-revival',
-      name: 'Revival Energy',
-      description: 'Teal and cobalt uplift for youth night rally planning.',
-      tokens: withPrimary('168 82% 54%', '210 92% 60%', {
-        '--background': '204 68% 6%',
-        '--card': '204 60% 10%',
-        '--foreground': '195 24% 94%',
-        '--hud-grid-opacity': '0.2',
-        '--ring': '210 92% 62%',
-      }),
-    },
-    'theme-division-celestial': {
-      id: 'theme-division-celestial',
-      name: 'Celestial Chapel',
-      description: 'Soft sky gradients with luminous whites for worship center dashboards.',
-      tokens: withPrimary('198 88% 72%', '26 92% 72%', {
-        '--background': '210 58% 12%',
-        '--card': '210 34% 18%',
-        '--foreground': '210 18% 98%',
-        '--hud-grid-opacity': '0.12',
-        '--ring': '198 88% 68%',
-      }),
-    },
+  'theme-division-celestial': {
+    id: 'theme-division-celestial',
+    name: 'Celestial Night',
+    description: 'Deep indigo conference glow for executive mission briefings.',
+    tokens: withPrimary('256 92% 70%', '242 76% 65%', {
+      '--background': '260 60% 5%',
+      '--card': '260 54% 9%',
+      '--foreground': '260 20% 92%',
+      '--ring': '250 92% 70%',
+    }),
+  },
 };
 
 export const DIVISION_THEME_IDS = Object.keys(DIVISION_THEMES) as DivisionThemeId[];
@@ -304,14 +254,148 @@ export const DIVISION_WALLPAPERS: WallpaperDefinition[] = [
     id: 'division-twilight-ops',
     name: 'Twilight Ops',
     description: 'Warm dusk glow across a tactical grid',
-    gradient: 'radial-gradient(circle at 20% 18%, rgba(255,128,0,0.45) 0%, rgba(9,13,25,0.95) 55%)',
+    gradient: `radial-gradient(circle at 20% 18%, rgba(255,128,0,0.45) 0%, rgba(9,13,25,0.95) 55%), ${divisionGradients.darkOverlay}`,
+    particlePreset: 'ember',
   },
   {
     id: 'division-sanctuary-grid',
     name: 'Sanctuary Grid',
     description: 'Teal aurora bands reflecting sanctuary lighting',
-    gradient:
-      'radial-gradient(circle at 10% 35%, rgba(32,209,205,0.38) 0%, rgba(10,15,30,0.92) 55%)',
+    gradient: `radial-gradient(circle at 10% 35%, rgba(32,209,205,0.38) 0%, rgba(10,15,30,0.92) 55%), ${divisionGradients.lagoon}`,
+    particlePreset: 'command',
+  },
+  {
+    id: 'division-dark-zone',
+    name: 'Dark Zone Beacon',
+    description: 'Infrared hazard bloom for emergency deployments.',
+    gradient: `${divisionGradients.rogue}, radial-gradient(circle at 70% 20%, rgba(255,72,72,0.35), transparent 65%)`,
+    particlePreset: 'rogue',
+  },
+  {
+    id: 'division-cathedral-briefing',
+    name: 'Cathedral Briefing',
+    description: 'Deep indigo vault lighting with brass reflections.',
+    gradient: `${divisionGradients.lagoon}, radial-gradient(circle at 15% 80%, rgba(255,196,140,0.25), transparent 70%)`,
+    particlePreset: 'command',
+  },
+  {
+    id: 'division-stealth-insertion',
+    name: 'Stealth Insertion',
+    description: 'Night vision grid tuned for covert mapping.',
+    gradient: `${divisionGradients.stealth}, radial-gradient(circle at 80% 30%, rgba(34,197,94,0.35), transparent 60%)`,
+    particlePreset: 'stealth',
+  },
+  {
+    id: 'division-sunrise-service',
+    name: 'Sunrise Service',
+    description: 'Amber flare breaking over sanctuary lots.',
+    gradient: `${divisionGradients.ember}, radial-gradient(circle at 0% 100%, rgba(255,200,95,0.35), transparent 60%)`,
+    particlePreset: 'ember',
+  },
+  {
+    id: 'division-vespers-halo',
+    name: 'Vespers Halo',
+    description: 'Evening purple bloom for nightly briefings.',
+    gradient: `${divisionGradients.hunter}, radial-gradient(circle at 85% 15%, rgba(255,176,124,0.25), transparent 60%)`,
+    particlePreset: 'command',
+  },
+  {
+    id: 'division-revival-rush',
+    name: 'Revival Rush',
+    description: 'Neon teal ribbons for youth rallies.',
+    gradient: `${divisionGradients.aurora}, linear-gradient(135deg, rgba(59,130,246,0.25), transparent)`,
+    particlePreset: 'tech',
+  },
+  {
+    id: 'division-celestial-dawn',
+    name: 'Celestial Dawn',
+    description: 'Indigo atmosphere with subtle starlight.',
+    gradient: `${divisionGradients.lagoon}, radial-gradient(circle at 70% 10%, rgba(147,197,253,0.2), transparent 70%)`,
+    particlePreset: 'command',
+  },
+  {
+    id: 'division-advent-lights',
+    name: 'Advent Lights',
+    description: 'Candlelit violets for Advent season planning.',
+    gradient: `${divisionGradients.hunter}, radial-gradient(circle at 25% 25%, rgba(255,214,165,0.32), transparent 68%)`,
+    particlePreset: 'command',
+  },
+  {
+    id: 'division-lent-embers',
+    name: 'Lent Embers',
+    description: 'Muted plum to copper gradient for reflective prep.',
+    gradient: `${divisionGradients.rogue}, radial-gradient(circle at 50% 90%, rgba(255,152,108,0.28), transparent 65%)`,
+    particlePreset: 'ember',
+  },
+  {
+    id: 'division-easter-bloom',
+    name: 'Easter Bloom',
+    description: 'Radiant teal and gold bloom celebrating resurrection.',
+    gradient: `${divisionGradients.aurora}, radial-gradient(circle at 30% 40%, rgba(253,224,71,0.32), transparent 70%)`,
+    particlePreset: 'tech',
+  },
+  {
+    id: 'division-pentecost-flare',
+    name: 'Pentecost Flare',
+    description: 'Fiery orange atmosphere for Pentecost services.',
+    gradient: `${divisionGradients.ember}, radial-gradient(circle at 80% 50%, rgba(255,111,97,0.35), transparent 70%)`,
+    particlePreset: 'ember',
+  },
+  {
+    id: 'division-campus-heritage',
+    name: 'Campus Heritage',
+    description: 'Sandstone warmth with cool teal edge lighting.',
+    gradient: `${divisionGradients.ember}, radial-gradient(circle at 10% 80%, rgba(59,197,255,0.25), transparent 70%)`,
+    particlePreset: 'command',
+  },
+  {
+    id: 'division-community-hub',
+    name: 'Community Hub',
+    description: 'Coral and amber ribbons for multipurpose halls.',
+    gradient: `${divisionGradients.ember}, radial-gradient(circle at 70% 70%, rgba(255,255,255,0.08), transparent 65%)`,
+    particlePreset: 'ember',
+  },
+  {
+    id: 'division-youth-dynamo',
+    name: 'Youth Dynamo',
+    description: 'Electric violets with cyan scan lines.',
+    gradient: `${divisionGradients.hunter}, ${divisionGradients.scanline}`,
+    particlePreset: 'tech',
+  },
+  {
+    id: 'division-parking-grid',
+    name: 'Parking Grid',
+    description: 'Blueprint grid overlay for lot reconfiguration.',
+    gradient: `${divisionGradients.lagoon}, repeating-linear-gradient(90deg, rgba(255,255,255,0.07) 0px, rgba(255,255,255,0.07) 1px, transparent 1px, transparent 40px)`,
+    particlePreset: 'command',
+  },
+  {
+    id: 'division-summer-outreach',
+    name: 'Summer Outreach',
+    description: 'Citrus gradients built for VBS and outreach weeks.',
+    gradient: `linear-gradient(145deg, rgba(255,204,112,0.45), rgba(59,216,255,0.4)), ${divisionGradients.aurora}`,
+    particlePreset: 'ember',
+  },
+  {
+    id: 'division-autumn-harvest',
+    name: 'Autumn Harvest',
+    description: 'Harvest amber fading into cool midnight blue.',
+    gradient: `linear-gradient(145deg, rgba(245,158,11,0.45), rgba(14,116,144,0.45)), ${divisionGradients.ember}`,
+    particlePreset: 'ember',
+  },
+  {
+    id: 'division-winter-brilliance',
+    name: 'Winter Brilliance',
+    description: 'Frosted teal shimmer for snow-season planning.',
+    gradient: `${divisionGradients.lagoon}, radial-gradient(circle at 15% 20%, rgba(255,255,255,0.35), transparent 60%)`,
+    particlePreset: 'command',
+  },
+  {
+    id: 'division-storm-response',
+    name: 'Storm Response',
+    description: 'Rain radar blues with emergency amber glint.',
+    gradient: `linear-gradient(160deg, rgba(15,118,255,0.55), rgba(8,47,73,0.95)), radial-gradient(circle at 80% 30%, rgba(253,186,116,0.28), transparent 70%)`,
+    particlePreset: 'tech',
   },
 ];
 

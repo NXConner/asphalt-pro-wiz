@@ -1,11 +1,5 @@
 import type { HudAnimationPresetId } from '@/lib/theme';
 
-export const HUD_EASING = {
-  glide: [0.22, 1, 0.36, 1] as const,
-  tactical: [0.12, 0, 0.39, 0] as const,
-  pulse: [0.34, 0, 0.69, 1] as const,
-};
-
 export const divisionEasing = {
   // Smooth tactical transitions
   tactical: 'cubic-bezier(0.22, 1, 0.36, 1)',
@@ -80,10 +74,10 @@ export const HUD_DURATIONS = {
 } as const;
 
 export const HUD_EASING = {
-  glide: divisionEasing.smooth,
-  tactical: divisionEasing.tactical,
-  pulse: divisionEasing.snappy,
-} as const;
+  glide: [0.22, 1, 0.36, 1] as const,
+  tactical: [0.12, 0, 0.39, 0] as const,
+  pulse: [0.34, 0, 0.69, 1] as const,
+};
 
 // Particle presets
 export const PARTICLE_PRESETS = {

@@ -25,6 +25,8 @@ export interface GoogleMapProps {
   children?: ReactNode;
   center?: [number, number];
   zoom?: number;
+  className?: string;
+  showTacticalOverlay?: boolean;
 }
 
 // Division-inspired status colors with tactical aesthetic
@@ -48,6 +50,8 @@ export const GoogleMap = memo(
       children,
       center: centerOverride,
       zoom: zoomOverride,
+      className,
+      showTacticalOverlay = false,
     }: GoogleMapProps) => {
     const settings = loadMapSettings();
     const apiKey = settings.googleApiKey || '';

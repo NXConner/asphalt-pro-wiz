@@ -4,10 +4,10 @@
  */
 
 // Export from existing design system if available, otherwise from new files
-export * from './tokens';
 export * from './motion';
 export * from './gradients';
-export * from './themes';
+export { divisionThemes, type DivisionTheme } from './themes';
+export * from './tokens';
 export * from './typography';
 export * from './system';
 

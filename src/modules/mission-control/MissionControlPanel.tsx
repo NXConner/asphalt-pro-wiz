@@ -1,5 +1,5 @@
 import { Building2, MapPin, Ruler, Waypoints } from 'lucide-react';
-import { lazy, memo, Suspense } from 'react';
+import { lazy, memo, Suspense, useMemo } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
