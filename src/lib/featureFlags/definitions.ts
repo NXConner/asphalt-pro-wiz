@@ -104,6 +104,32 @@ const FEATURE_FLAG_DEFINITIONS_RAW = [
     surfaces: ['MissionScheduler'],
   },
   {
+    id: 'schedulerConstraintSolver',
+    label: 'Scheduler Constraint Solver',
+    description:
+      'Enable the advanced constraint engine that analyzes crew load, rest windows, and blackout proximity to surface higher-fidelity conflicts and recommendations.',
+    category: 'scheduler',
+    defaultValue: false,
+    envVar: 'VITE_FLAG_SCHEDULER_CONSTRAINTS',
+    supabaseKey: 'schedulerConstraintSolver',
+    telemetryKey: 'scheduler_constraint_solver',
+    tags: ['scheduling', 'optimization'],
+    surfaces: ['MissionScheduler'],
+  },
+  {
+    id: 'schedulerIcsAutomation',
+    label: 'Worship ICS Automation',
+    description:
+      'Allows importing and exporting worship blackout calendars (ICS) with structured logging, buffering, and deduplication safeguards.',
+    category: 'scheduler',
+    defaultValue: true,
+    envVar: 'VITE_FLAG_SCHEDULER_ICS',
+    supabaseKey: 'schedulerIcsAutomation',
+    telemetryKey: 'scheduler_ics_automation',
+    tags: ['calendar', 'integrations'],
+    surfaces: ['MissionScheduler'],
+  },
+  {
     id: 'optimizer',
     label: 'Scenario Optimizer',
     description:
@@ -188,15 +214,18 @@ export type FeatureFlagDefinition = (typeof FEATURE_FLAG_DEFINITIONS_RAW)[number
 export const FEATURE_FLAG_DEFINITIONS: ReadonlyArray<FeatureFlagDefinition> =
   FEATURE_FLAG_DEFINITIONS_RAW;
 
-export const FEATURE_FLAGS = FEATURE_FLAG_DEFINITIONS.map((definition) => definition.id) as readonly FeatureFlag[];
+export const FEATURE_FLAGS = FEATURE_FLAG_DEFINITIONS.map(
+  (definition) => definition.id,
+) as readonly FeatureFlag[];
 
-export const DEFAULT_FLAGS: Readonly<Record<FeatureFlag, boolean>> = FEATURE_FLAG_DEFINITIONS.reduce(
-  (acc, definition) => {
-    acc[definition.id] = definition.defaultValue;
-    return acc;
-  },
-  {} as Record<FeatureFlag, boolean>,
-);
+export const DEFAULT_FLAGS: Readonly<Record<FeatureFlag, boolean>> =
+  FEATURE_FLAG_DEFINITIONS.reduce(
+    (acc, definition) => {
+      acc[definition.id] = definition.defaultValue;
+      return acc;
+    },
+    {} as Record<FeatureFlag, boolean>,
+  );
 
 export const FEATURE_FLAG_LOOKUP = new Map<FeatureFlag, FeatureFlagDefinition>(
   FEATURE_FLAG_DEFINITIONS.map((definition) => [definition.id, definition]),

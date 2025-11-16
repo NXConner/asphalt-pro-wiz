@@ -10,7 +10,9 @@ import {
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useFeatureFlagValue } from '@/contexts/FeatureFlagProvider';
 import { logError, logEvent } from '@/lib/logging';
+import { evaluateSchedulerConstraints } from '@/modules/scheduler/constraintEngine';
 import { extractWorshipBlackouts, generateWorshipBlackoutsICS } from '@/modules/scheduler/ics';
 import {
   deleteBlackout,
@@ -24,50 +26,18 @@ import {
 } from '@/modules/scheduler/persistence';
 import type {
   AccessibilityImpact,
+  AccessibilityInsight,
   BlackoutWindow,
   CrewMember,
   MissionTask,
   MissionTaskPriority,
   MissionTaskStatus,
+  MissionConflict,
+  MissionSuggestion,
+  CapacitySnapshot,
   WorshipImportOptions,
   WorshipImportResult,
 } from '@/modules/scheduler/types';
-
-export type MissionConflictType =
-  | 'crew-overlap'
-  | 'time-overlap'
-  | 'blackout'
-  | 'capacity'
-  | 'overtime';
-
-export interface MissionConflict {
-  id: string;
-  severity: 'info' | 'warning' | 'critical';
-  type: MissionConflictType;
-  taskIds: string[];
-  description: string;
-  window: { start: string; end: string };
-}
-
-export interface AccessibilityInsight {
-  id: string;
-  severity: 'info' | 'warning';
-  taskId: string;
-  description: string;
-  recommendation: string;
-}
-
-export interface CapacitySnapshot {
-  slot: string; // ISO timestamp representing the beginning of the slot
-  crewScheduled: number;
-  capacity: number;
-}
-
-export interface MissionSuggestion {
-  id: string;
-  message: string;
-  relatedTaskIds: string[];
-}
 
 interface MissionSchedulerPersistentState {
   version: number;
@@ -517,6 +487,29 @@ function buildDerivedState(
   return { conflicts, accessibilityInsights, capacityTimeline, suggestions };
 }
 
+function mergeConflicts(base: MissionConflict[], additions: MissionConflict[]): MissionConflict[] {
+  if (!additions || additions.length === 0) {
+    return base;
+  }
+  const merged = new Map<string, MissionConflict>();
+  base.forEach((conflict) => merged.set(conflict.id, conflict));
+  additions.forEach((conflict) => merged.set(conflict.id, conflict));
+  return Array.from(merged.values());
+}
+
+function mergeSuggestions(
+  base: MissionSuggestion[],
+  additions: MissionSuggestion[],
+): MissionSuggestion[] {
+  if (!additions || additions.length === 0) {
+    return base;
+  }
+  const merged = new Map<string, MissionSuggestion>();
+  base.forEach((suggestion) => merged.set(suggestion.id, suggestion));
+  additions.forEach((suggestion) => merged.set(suggestion.id, suggestion));
+  return Array.from(merged.values());
+}
+
 function maxDate(a: Date, b: Date): Date {
   return a > b ? a : b;
 }
@@ -550,9 +543,7 @@ export interface MissionSchedulerHook {
   updateBlackout: (window: BlackoutWindow) => void;
   removeBlackout: (blackoutId: string) => void;
   setCapacityPerShift: (capacity: number) => void;
-  exportBlackoutsToICS: (
-    metadata?: { calendarName?: string; organization?: string },
-  ) => string;
+  exportBlackoutsToICS: (metadata?: { calendarName?: string; organization?: string }) => string;
   importBlackoutsFromICS: (
     icsContent: string,
     options?: WorshipImportOptions,
@@ -561,15 +552,39 @@ export interface MissionSchedulerHook {
 
 export function useMissionScheduler(): MissionSchedulerHook {
   const [state, dispatch] = useReducer(missionSchedulerReducer, defaultState);
+  const constraintSolverEnabled = useFeatureFlagValue('schedulerConstraintSolver');
+  const worshipIcsAutomationEnabled = useFeatureFlagValue('schedulerIcsAutomation');
   const [persistError, setPersistError] = useState<Error | null>(null);
-  const derived = useMemo(
-    () => buildDerivedState(state.tasks, state.crew, state.blackouts, state.capacityPerShift),
-    [state.tasks, state.crew, state.blackouts, state.capacityPerShift],
+  const constraintSnapshot = useMemo(
+    () =>
+      constraintSolverEnabled
+        ? evaluateSchedulerConstraints({
+            tasks: state.tasks,
+            crew: state.crew,
+            blackouts: state.blackouts,
+            capacityPerShift: state.capacityPerShift,
+          })
+        : null,
+    [constraintSolverEnabled, state.tasks, state.crew, state.blackouts, state.capacityPerShift],
   );
+  const derived = useMemo(() => {
+    const base = buildDerivedState(
+      state.tasks,
+      state.crew,
+      state.blackouts,
+      state.capacityPerShift,
+    );
+    if (constraintSnapshot) {
+      base.conflicts = mergeConflicts(base.conflicts, constraintSnapshot.conflicts);
+      base.suggestions = mergeSuggestions(base.suggestions, constraintSnapshot.suggestions);
+    }
+    return base;
+  }, [state.tasks, state.crew, state.blackouts, state.capacityPerShift, constraintSnapshot]);
 
   const hydratedRef = useRef(false);
   const supabaseEnabledRef = useRef(schedulerSyncAvailable());
   const remoteHydratedRef = useRef(false);
+  const solverLogRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (hydratedRef.current) return;
@@ -591,6 +606,27 @@ export function useMissionScheduler(): MissionSchedulerHook {
     }
     hydratedRef.current = true;
   }, []);
+
+  useEffect(() => {
+    if (!constraintSolverEnabled || !constraintSnapshot) return;
+    const conflictFingerprint = constraintSnapshot.conflicts
+      .map((conflict) => conflict.id)
+      .sort()
+      .join(',');
+    const suggestionFingerprint = constraintSnapshot.suggestions
+      .map((suggestion) => suggestion.id)
+      .sort()
+      .join(',');
+    const fingerprint = `${conflictFingerprint}|${suggestionFingerprint}`;
+    if (solverLogRef.current === fingerprint) return;
+    solverLogRef.current = fingerprint;
+    try {
+      logEvent('scheduler.constraint_solver_evaluated', {
+        conflictCount: constraintSnapshot.conflicts.length,
+        suggestionCount: constraintSnapshot.suggestions.length,
+      });
+    } catch {}
+  }, [constraintSolverEnabled, constraintSnapshot]);
 
   useEffect(() => {
     if (!state.ready) return;
@@ -866,152 +902,170 @@ export function useMissionScheduler(): MissionSchedulerHook {
     [state.blackouts, deleteBlackoutFromCloud],
   );
 
-    const exportBlackoutsToICS = useCallback(
-      (metadata?: { calendarName?: string; organization?: string }) => {
-        return generateWorshipBlackoutsICS(
-          state.blackouts.map((blackout) => ({
-            id: blackout.id,
-            title: blackout.title,
-            reason: blackout.reason,
-            start: blackout.start,
-            end: blackout.end,
-          })),
-          metadata,
-        );
-      },
-      [state.blackouts],
-    );
-
-    const importBlackoutsFromICS = useCallback(
-      (icsContent: string, options?: WorshipImportOptions): WorshipImportResult => {
-        const drafts = extractWorshipBlackouts(icsContent, options);
-        if (drafts.length === 0) {
-          toast.info('No worship services detected in uploaded calendar');
-          return { totalEvents: 0, created: 0, updated: 0, merged: 0, skipped: 0, conflicts: [] };
-        }
-
-        const existingByKey = new Map(
-          state.blackouts.map((blackout) => [`${blackout.start}|${blackout.end}`, blackout]),
-        );
-        const conflicts: WorshipImportResult['conflicts'] = [];
-
-        let created = 0;
-        let updated = 0;
-        let merged = 0;
-
-        const existingBlackouts = [...state.blackouts];
-        const taskWindows = state.tasks.map((task) => ({
-          id: task.id,
-          start: parseISO(task.start),
-          end: parseISO(task.end),
-        }));
-
-        drafts.forEach((draft) => {
-          const key = `${draft.start}|${draft.end}`;
-          const draftStart = parseISO(draft.start);
-          const draftEnd = parseISO(draft.end);
-
-          const existing = existingByKey.get(key);
-          if (existing) {
-            updateBlackout({ ...existing, title: draft.title, reason: draft.reason });
-            existingByKey.set(key, { ...existing, title: draft.title, reason: draft.reason });
-            updated += 1;
-            return;
-          }
-
-          const overlappingBlackout = existingBlackouts.find((window) =>
-            intervalsOverlap(draftStart, draftEnd, parseISO(window.start), parseISO(window.end)),
-          );
-          if (overlappingBlackout) {
-            const mergedWindow: BlackoutWindow = {
-              ...overlappingBlackout,
-              start:
-                draftStart < parseISO(overlappingBlackout.start)
-                  ? draft.start
-                  : overlappingBlackout.start,
-              end:
-                draftEnd > parseISO(overlappingBlackout.end)
-                  ? draft.end
-                  : overlappingBlackout.end,
-              title: draft.title ?? overlappingBlackout.title,
-              reason: draft.reason ?? overlappingBlackout.reason,
-            };
-            updateBlackout(mergedWindow);
-            merged += 1;
-            conflicts.push({
-              type: 'blackout_overlap',
-              referenceId: overlappingBlackout.id,
-              blackoutId: mergedWindow.id,
-              start: mergedWindow.start,
-              end: mergedWindow.end,
-            });
-            existingByKey.set(`${mergedWindow.start}|${mergedWindow.end}`, mergedWindow);
-            try {
-              logEvent('scheduler.blackout_merge', {
-                blackoutId: mergedWindow.id,
-                overlapId: overlappingBlackout.id,
-              });
-            } catch {}
-            return;
-          }
-
-          const createdWindow = addBlackout(draft);
-          existingByKey.set(`${createdWindow.start}|${createdWindow.end}`, createdWindow);
-          existingBlackouts.push(createdWindow);
-          created += 1;
-
-          const overlappingTasks = taskWindows.filter((taskWindow) =>
-            intervalsOverlap(draftStart, draftEnd, taskWindow.start, taskWindow.end),
-          );
-          overlappingTasks.forEach((window) => {
-            conflicts.push({
-              type: 'task_overlap',
-              referenceId: window.id,
-              blackoutId: createdWindow.id,
-              start: createdWindow.start,
-              end: createdWindow.end,
-            });
-            try {
-              logEvent('scheduler.blackout_conflict_task', {
-                blackoutId: createdWindow.id,
-                taskId: window.id,
-              });
-            } catch {}
-          });
-        });
-
-        const skipped = drafts.length - (created + updated + merged);
-        if (conflicts.length > 0) {
-          toast.warning(
-            `Imported ${drafts.length} worship events (${created} new • ${updated} refreshed • ${merged} merged • ${conflicts.length} conflicts)`,
-          );
-        } else {
-          toast.success(
-            `Imported ${drafts.length} worship events (${created} new • ${updated} refreshed • ${merged} merged)`,
-          );
-        }
-
+  const exportBlackoutsToICS = useCallback(
+    (metadata?: { calendarName?: string; organization?: string }) => {
+      if (!worshipIcsAutomationEnabled) {
+        toast.info('ICS export is disabled by feature flag.');
         try {
-          logEvent('scheduler.blackout_imported', {
-            totalEvents: drafts.length,
-            created,
-            updated,
-            merged,
-            conflicts: conflicts.length,
-          });
+          logEvent('scheduler.blackout_export_disabled', { reason: 'flag_disabled' });
         } catch {}
+        return '';
+      }
+      const payload = generateWorshipBlackoutsICS(
+        state.blackouts.map((blackout) => ({
+          id: blackout.id,
+          title: blackout.title,
+          reason: blackout.reason,
+          start: blackout.start,
+          end: blackout.end,
+        })),
+        metadata,
+      );
+      try {
+        logEvent('scheduler.blackout_export', {
+          count: state.blackouts.length,
+          hasMetadata: Boolean(metadata?.calendarName || metadata?.organization),
+        });
+      } catch {}
+      return payload;
+    },
+    [state.blackouts, worshipIcsAutomationEnabled],
+  );
 
-        return {
+  const importBlackoutsFromICS = useCallback(
+    (icsContent: string, options?: WorshipImportOptions): WorshipImportResult => {
+      if (!worshipIcsAutomationEnabled) {
+        toast.info('ICS import is disabled by feature flag.');
+        try {
+          logEvent('scheduler.blackout_import_disabled', { reason: 'flag_disabled' });
+        } catch {}
+        return { totalEvents: 0, created: 0, updated: 0, merged: 0, skipped: 0, conflicts: [] };
+      }
+      const drafts = extractWorshipBlackouts(icsContent, options);
+      if (drafts.length === 0) {
+        toast.info('No worship services detected in uploaded calendar');
+        return { totalEvents: 0, created: 0, updated: 0, merged: 0, skipped: 0, conflicts: [] };
+      }
+
+      const existingByKey = new Map(
+        state.blackouts.map((blackout) => [`${blackout.start}|${blackout.end}`, blackout]),
+      );
+      const conflicts: WorshipImportResult['conflicts'] = [];
+
+      let created = 0;
+      let updated = 0;
+      let merged = 0;
+
+      const existingBlackouts = [...state.blackouts];
+      const taskWindows = state.tasks.map((task) => ({
+        id: task.id,
+        start: parseISO(task.start),
+        end: parseISO(task.end),
+      }));
+
+      drafts.forEach((draft) => {
+        const key = `${draft.start}|${draft.end}`;
+        const draftStart = parseISO(draft.start);
+        const draftEnd = parseISO(draft.end);
+
+        const existing = existingByKey.get(key);
+        if (existing) {
+          updateBlackout({ ...existing, title: draft.title, reason: draft.reason });
+          existingByKey.set(key, { ...existing, title: draft.title, reason: draft.reason });
+          updated += 1;
+          return;
+        }
+
+        const overlappingBlackout = existingBlackouts.find((window) =>
+          intervalsOverlap(draftStart, draftEnd, parseISO(window.start), parseISO(window.end)),
+        );
+        if (overlappingBlackout) {
+          const mergedWindow: BlackoutWindow = {
+            ...overlappingBlackout,
+            start:
+              draftStart < parseISO(overlappingBlackout.start)
+                ? draft.start
+                : overlappingBlackout.start,
+            end: draftEnd > parseISO(overlappingBlackout.end) ? draft.end : overlappingBlackout.end,
+            title: draft.title ?? overlappingBlackout.title,
+            reason: draft.reason ?? overlappingBlackout.reason,
+          };
+          updateBlackout(mergedWindow);
+          merged += 1;
+          conflicts.push({
+            type: 'blackout_overlap',
+            referenceId: overlappingBlackout.id,
+            blackoutId: mergedWindow.id,
+            start: mergedWindow.start,
+            end: mergedWindow.end,
+          });
+          existingByKey.set(`${mergedWindow.start}|${mergedWindow.end}`, mergedWindow);
+          try {
+            logEvent('scheduler.blackout_merge', {
+              blackoutId: mergedWindow.id,
+              overlapId: overlappingBlackout.id,
+            });
+          } catch {}
+          return;
+        }
+
+        const createdWindow = addBlackout(draft);
+        existingByKey.set(`${createdWindow.start}|${createdWindow.end}`, createdWindow);
+        existingBlackouts.push(createdWindow);
+        created += 1;
+
+        const overlappingTasks = taskWindows.filter((taskWindow) =>
+          intervalsOverlap(draftStart, draftEnd, taskWindow.start, taskWindow.end),
+        );
+        overlappingTasks.forEach((window) => {
+          conflicts.push({
+            type: 'task_overlap',
+            referenceId: window.id,
+            blackoutId: createdWindow.id,
+            start: createdWindow.start,
+            end: createdWindow.end,
+          });
+          try {
+            logEvent('scheduler.blackout_conflict_task', {
+              blackoutId: createdWindow.id,
+              taskId: window.id,
+            });
+          } catch {}
+        });
+      });
+
+      const skipped = drafts.length - (created + updated + merged);
+      if (conflicts.length > 0) {
+        toast.warning(
+          `Imported ${drafts.length} worship events (${created} new • ${updated} refreshed • ${merged} merged • ${conflicts.length} conflicts)`,
+        );
+      } else {
+        toast.success(
+          `Imported ${drafts.length} worship events (${created} new • ${updated} refreshed • ${merged} merged)`,
+        );
+      }
+
+      try {
+        logEvent('scheduler.blackout_imported', {
           totalEvents: drafts.length,
           created,
           updated,
           merged,
-          skipped,
-          conflicts,
-        };
-      },
-      [addBlackout, state.blackouts, state.tasks, updateBlackout],
-    );
+          conflicts: conflicts.length,
+        });
+      } catch {}
+
+      return {
+        totalEvents: drafts.length,
+        created,
+        updated,
+        merged,
+        skipped,
+        conflicts,
+      };
+    },
+    [addBlackout, state.blackouts, state.tasks, updateBlackout, worshipIcsAutomationEnabled],
+  );
 
   const setCapacityPerShift = useCallback((capacity: number) => {
     dispatch({ type: 'set-capacity', payload: capacity });
