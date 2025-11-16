@@ -184,6 +184,16 @@ npx k6 run scripts/load/k6-observability.js
 
 Sends synthetic `lovable.asset_*` telemetry into the Supabase Edge Function to validate ingestion latency, dedupe, and incident rollups. Tune intensity with `STAGE_MULTIPLIER` and export JSON summaries via `--summary-export`.
 
+### k6 Lovable Preview Heartbeat
+
+```bash
+PREVIEW_HEALTH_URL=https://id-preview.lovable.app/health \
+STAGE_MULTIPLIER=2 \
+npx k6 run scripts/load/k6-preview-health.js
+```
+
+Validates the `/health` endpoint that Lovable proxies poll. Metrics enforce `preview_health_latency` (p95 < 500 ms) and `preview_health_failures` (should stay at zero). Override `PREVIEW_HEALTH_STATUS` (default `200`) if your Nginx health endpoint returns a different status, and scale `STAGE_MULTIPLIER` to mimic Lovable’s burstiness.
+
 ### k6 Gemini Proxy Assist
 
 ```bash
