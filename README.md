@@ -88,6 +88,8 @@ npm run seed
 
 Lovable previews poll `VITE_HEALTHCHECK_URL` (`/health` by default) **before** the SPA mounts. The repository now ships a static responder at `public/health` so previews stay green while Vite compiles; once React hydrates, the `/health` route in `src/pages/Health.tsx` adds live metadata. If you change ports or hosts, update `PORT`, `VITE_DEV_SERVER_PORT`, and `VITE_HEALTHCHECK_URL`, then refresh the already-running dev server.
 
+> **Supabase admin user**: before running `npm run seed`, create the `ADMIN_EMAIL` user (defaults to `n8ter8@gmail.com`) in Supabase Auth so the script can attach the `super_admin` role. Follow `docs/ADMIN_SETUP.md` for dashboard, CLI, or SQL instructions.
+
 > **Windows**: Follow `docs/WINDOWS_SETUP.md` for shell-specific flags, PostgreSQL provisioning, and Playwright dependencies.
 
 ---
@@ -118,6 +120,7 @@ Lovable previews poll `VITE_HEALTHCHECK_URL` (`/health` by default) **before** t
   - **Mapping & Weather**: `VITE_GOOGLE_MAPS_API_KEY`, `VITE_OPENWEATHER_API_KEY`, `VITE_MAPBOX_TOKEN`, `VITE_AIR_QUALITY_API_KEY`.
   - **HUD Sync & Export**: `VITE_HUD_DEFAULT_ANIMATION_PRESET`, `VITE_HUD_ANIMATION_PRESETS_PATH`, `VITE_HUD_GESTURE_SENSITIVITY`, `VITE_HUD_MULTI_MONITOR_STRATEGY`, `VITE_HUD_CONFIG_EXPORT_FORMAT`, `VITE_HUD_CONFIG_EXPORT_ENDPOINT`, plus secrets `HUD_CONFIG_EXPORT_SIGNING_KEY`, `HUD_CONFIG_EXPORT_ENCRYPTION_KEY`, `HUD_CONFIG_EXPORT_BUCKET`.
   - **Developer tooling**: `GITHUB_TOKEN` for ingest scripts.
+  - **Seed admin**: `ADMIN_EMAIL` (defaults to `n8ter8@gmail.com`) tells the seed script which Supabase Auth user should receive `super_admin`, demo org memberships, and Theme Command Center defaults.
   - `npm run check:env` (or `npm run check:env -- --strict` in CI) now blocks deployments if Lovable routing keys drift: it validates `PORT`, `VITE_DEV_SERVER_PORT`, `VITE_BASE_PATH`, `VITE_HEALTHCHECK_URL`, and both heartbeat timing variables so preview watchdogs never fail silently.
 - **Secrets provider**: Set `SECRET_PROVIDER` to `env` (default), `doppler`, `vault`, or `aws-secrets-manager`. The runtime helper `src/config/secrets.ts` reads this value and fails fast if required secrets are missing or the provider is unconfigured.
 - Generate sanitized runtime bundles with `npm run secrets:render -- --output .env.runtime` after hydrating secrets. Use `--strict` in CI to fail fast when a key from `.env.example` is missing.
