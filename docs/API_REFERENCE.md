@@ -8,6 +8,12 @@ The Supabase Edge Functions that power PPS are documented in `docs/swagger.json`
 npm run openapi:generate
 ```
 
+To browse interactively:
+
+```bash
+npx swagger-ui-watcher docs/swagger.json
+```
+
 ### `POST /gemini-proxy`
 
 - **Purpose**: Safely proxy chat, image, and embedding requests to Google Gemini models without exposing the upstream API key.

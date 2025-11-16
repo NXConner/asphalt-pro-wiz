@@ -7,16 +7,6 @@ import swaggerJSDoc from 'swagger-jsdoc';
 const ROOT = process.cwd();
 const OUTPUT_PATH = path.join(ROOT, 'docs', 'swagger.json');
 
-const definition = {
-  openapi: '3.1.0',
-  info: {
-    title: 'Pavement Performance Suite – Supabase Edge Functions',
-    version: '0.3.0',
-    description:
-      'Documented Supabase Edge Function endpoints powering AI proxying, observability, and supplier intelligence for Pavement Performance Suite.',
-  },
-};
-
 const baseDefinition = {
   openapi: '3.0.3',
   info: {
@@ -53,29 +43,29 @@ const baseDefinition = {
       description: 'Local Supabase CLI',
     },
   ],
-  tags: [
-    { name: 'AI', description: 'Generative AI proxy endpoints' },
-    { name: 'Observability', description: 'Telemetry capture and log beacons' },
-    { name: 'Intelligence', description: 'Supplier pricing and operations insights' },
-  ],
-  components: {
-    securitySchemes: {
-      supabaseAnonKey: {
-        type: 'apiKey',
-        in: 'header',
-        name: 'apikey',
-        description:
-          "Supabase anon or service key. When calling from browsers use the anon public key; for server-to-server use service role credentials via the 'apikey' header.",
+    tags: [
+      { name: 'AI', description: 'Generative AI proxy endpoints' },
+      { name: 'Observability', description: 'Telemetry capture and log beacons' },
+      { name: 'Intelligence', description: 'Supplier pricing and operations insights' },
+    ],
+    components: {
+      securitySchemes: {
+        supabaseAnonKey: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'apikey',
+          description:
+            "Supabase anon or service key. When calling from browsers use the anon public key; for server-to-server use service role credentials via the 'apikey' header.",
+        },
+        supabaseBearer: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description:
+            'Supabase JWT (anon or service role). Provide as `Authorization: Bearer <token>` when invoking Edge Functions.',
+        },
       },
-      supabaseBearer: {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        description:
-          'Supabase JWT (anon or service role). Provide as `Authorization: Bearer <token>` when invoking Edge Functions.',
-      },
-    },
-    schemas: {
+      schemas: {
       GeminiProxyRequest: {
         type: 'object',
         description: 'Payload forwarded to Google Gemini.',
@@ -330,12 +320,13 @@ const baseDefinition = {
         },
         required: ['error'],
         additionalProperties: true,
+        },
       },
     },
-};
+  };
 
 const spec = swaggerJSDoc({
-  definition,
+  definition: baseDefinition,
   apis: [path.join(ROOT, 'supabase/functions/**/*.ts')],
 });
 

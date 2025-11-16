@@ -253,6 +253,22 @@ npx artillery run scripts/load/artillery.yml --output artillery-report.json
 
 The Artillery profile mirrors the k6 routes with a lighter 2-minute pulse for CI. The `--output` flag captures JSON summaries—upload the file as a build artifact for audit trails (see `scripts/load/README.md` for more knobs).
 
+## API Documentation
+
+- Generate the OpenAPI spec after editing Supabase Edge Functions:
+
+  ```bash
+  npm run openapi:generate
+  ```
+
+- Preview it locally with Swagger UI:
+
+  ```bash
+  npx swagger-ui-watcher docs/swagger.json
+  ```
+
+- See `docs/API_REFERENCE.md` for human-friendly summaries of each function plus example cURL snippets. The canonical machine-readable spec lives at `docs/swagger.json`.
+
 ---
 
 ## Deployment Targets
