@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 
 import { StageMetric } from '../components/StageMetric';
 import { StagePanel } from '../components/StagePanel';
+import { useWorkflowTelemetry, type WorkflowMeasurementRun } from '../hooks/useWorkflowTelemetry';
 
 interface MeasurementStageProps {
   estimator: EstimatorState;
@@ -24,6 +25,26 @@ export function MeasurementStage({ estimator, intel }: MeasurementStageProps) {
   const [notes, setNotes] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [mapViewport, setMapViewport] = useState({ lat: 36.777, lng: -76.334, zoom: 19 });
+  const fallbackRuns = useMemo<WorkflowMeasurementRun[]>(() => {
+    if (!intel.measurement) return [];
+    return [
+      {
+        id: 'local-measurement',
+        strategy: 'session',
+        status: 'ready',
+        squareFeet: intel.measurement.squareFeet,
+        crackLinearFeet: intel.measurement.cracks.linearFeet,
+        confidence: intel.measurement.confidence,
+        createdAt: new Date().toISOString(),
+        segments: intel.measurement.segments?.map((segment, idx) => ({
+          id: `local-${segment.id ?? idx}`,
+          label: segment.label,
+          squareFeet: segment.squareFeet,
+        })),
+      },
+    ];
+  }, [intel.measurement]);
+  const telemetry = useWorkflowTelemetry(estimator.job.id ?? null, fallbackRuns);
 
   const metrics = useMemo(
     () => [
@@ -209,6 +230,54 @@ export function MeasurementStage({ estimator, intel }: MeasurementStageProps) {
           ) : null}
         </TabsContent>
       </Tabs>
+
+      <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-white">Measurement history</p>
+            <p className="text-xs text-white/60">
+              {telemetry.isRemoteSourceActive ? 'Synced from Supabase' : 'Local session snapshot'}
+            </p>
+          </div>
+          <Button type="button" variant="ghost" size="sm" className="gap-2" onClick={telemetry.refresh} disabled={telemetry.isLoading}>
+            <RefreshCcw className={cn('h-4 w-4', telemetry.isLoading && 'animate-spin')} />
+            Refresh
+          </Button>
+        </div>
+        {telemetry.error ? (
+          <p className="mt-2 text-xs text-rose-300">{telemetry.error}</p>
+        ) : null}
+        {telemetry.measurementRuns.length ? (
+          <ul className="mt-4 space-y-3">
+            {telemetry.measurementRuns.map((run) => (
+              <li key={run.id ?? `${run.strategy}-${run.createdAt ?? Math.random()}`} className="rounded-2xl border border-white/10 bg-white/5 p-3 text-sm text-white/80">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-white">{run.strategy}</p>
+                    <p className="text-xs text-white/60">
+                      {run.squareFeet ? `${Math.round(run.squareFeet).toLocaleString()} ft²` : 'Pending area'}
+                    </p>
+                  </div>
+                  <span className="text-[0.65rem] uppercase tracking-[0.3em] text-white/60">{run.status}</span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-3 text-xs text-white/60">
+                  {typeof run.confidence === 'number' ? (
+                    <span>Confidence {Math.round(run.confidence * 100)}%</span>
+                  ) : null}
+                  {typeof run.crackLinearFeet === 'number' ? (
+                    <span>{Math.round(run.crackLinearFeet).toLocaleString()} lf cracks</span>
+                  ) : null}
+                  <span>{run.segments?.length ?? 0} segments</span>
+                  {run.createdAt ? <span>{new Date(run.createdAt).toLocaleString()}</span> : null}
+                </div>
+                {run.notes ? <p className="mt-2 text-xs text-white/60">{run.notes}</p> : null}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-4 text-sm text-white/60">Run an auto measurement to seed history.</p>
+        )}
+      </div>
     </StagePanel>
   );
 }
