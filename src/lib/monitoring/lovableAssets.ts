@@ -107,7 +107,7 @@ const startPreviewHeartbeat = (): (() => void) => {
         url: heartbeatUrl,
       };
       emitPreviewHealth(snapshot);
-      logEvent('lovable.preview.health.success', snapshot);
+      logEvent('lovable.preview.health.success', snapshot as unknown as Record<string, unknown>);
     } catch (error) {
       failureCount += 1;
       const status = computeStatus(failureCount);

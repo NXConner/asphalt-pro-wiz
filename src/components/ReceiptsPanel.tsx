@@ -28,6 +28,7 @@ import { logEvent, logError } from '@/lib/logging';
 export type ReceiptsPanelProps = {
   jobName?: string;
   customerAddress?: string;
+  estimator?: any;
 };
 
 const RECEIPT_CATEGORIES: ReceiptCategory[] = [

@@ -89,6 +89,20 @@ export const divisionColors = {
     400: '#c084fc',
     500: '#a855f7',
   },
+  ember: {
+    200: '#fed7aa',
+    300: '#fdba74',
+    400: '#fb923c',
+  },
+  sand: {
+    200: '#fde68a',
+    300: '#fcd34d',
+  },
+  coral: {
+    200: '#fecaca',
+    300: '#fca5a5',
+    400: '#f87171',
+  },
   bg: {
     dark: 'hsl(220 50% 4%)',
     elevated: 'hsl(222 45% 7%)',

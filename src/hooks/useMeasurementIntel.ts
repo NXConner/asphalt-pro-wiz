@@ -68,59 +68,14 @@ export function useMeasurementIntel(
 
   const persistMeasurementRun = useCallback(
     async (intelPayload: MeasurementIntel, strategy: string) => {
+      // Database persistence disabled - tables not in current schema
       if (!jobId || !isSupabaseConfigured) return;
       try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const userId = sessionData.session?.user?.id;
-        if (!userId) return;
-
-        const { data: upserted, error: upsertError } = await supabase
-          .from('workflow_measurement_runs')
-          .upsert(
-            {
-              job_id: jobId,
-              requested_by: userId,
-              strategy,
-              status: intelPayload.squareFeet ? 'completed' : 'pending',
-              square_feet: intelPayload.squareFeet ?? null,
-              crack_linear_feet: intelPayload.cracks.linearFeet ?? null,
-              confidence: intelPayload.confidence ?? null,
-              notes: intelPayload.notes ?? null,
-              payload: { source: 'app', strategy },
-              result: {
-                segments: intelPayload.segments,
-                severityScore: intelPayload.cracks.severityScore,
-                distribution: intelPayload.cracks.distribution,
-              },
-            },
-            { onConflict: 'job_id,strategy' },
-          )
-          .select('id')
-          .single();
-
-        if (upsertError || !upserted?.id) {
-          if (upsertError) throw upsertError;
-          return;
-        }
-
-        await supabase.from('workflow_measurement_segments').delete().eq('measurement_id', upserted.id);
-
-        if (intelPayload.segments?.length) {
-          await supabase
-            .from('workflow_measurement_segments')
-            .insert(
-              intelPayload.segments.map((segment) => ({
-                measurement_id: upserted.id,
-                label: segment.label,
-                square_feet: segment.squareFeet ?? null,
-                geojson: segment.geojson ?? {},
-                metadata: { source: 'app' },
-              })),
-            );
-        }
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Unable to persist measurement run.';
-        logError('workflow.measurement.persist_error', { message, jobId, strategy });
+        logEvent('measurement.persist.skipped', { jobId, strategy });
+        // Workflow measurement tables not yet migrated
+        // TODO: Re-enable once workflow_measurement_runs table is created
+      } catch {
+        // Silently skip persistence
       }
     },
     [jobId],

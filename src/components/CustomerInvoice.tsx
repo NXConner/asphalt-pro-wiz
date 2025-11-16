@@ -7,20 +7,22 @@ import { Separator } from '@/components/ui/separator';
 import { Costs, CostBreakdown } from '@/lib/calculations';
 
 interface CustomerInvoiceProps {
-  jobName: string;
-  customerAddress: string;
-  costs: Costs;
-  breakdown: CostBreakdown[];
-  onPrint: () => void;
+  jobName?: string;
+  customerAddress?: string;
+  costs?: Costs;
+  breakdown?: CostBreakdown[];
+  onPrint?: () => void;
+  estimator?: any;
 }
 
 export const CustomerInvoice = React.memo(function CustomerInvoice({
-  jobName,
-  customerAddress,
+  jobName = '',
+  customerAddress = '',
   costs,
-  breakdown,
-  onPrint,
+  breakdown = [],
+  onPrint = () => {},
 }: CustomerInvoiceProps) {
+  if (!costs) return null;
   const [taxRatePct, setTaxRatePct] = useState<number>(0);
   const [discountPct, setDiscountPct] = useState<number>(0);
   const today = new Date().toLocaleDateString('en-US', {

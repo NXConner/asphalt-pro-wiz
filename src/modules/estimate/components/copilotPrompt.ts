@@ -1,4 +1,4 @@
-import type { ScenarioComparisonRow } from '@/modules/estimate/components/ScenarioComparisonMatrix';
+import type { ScenarioComparisonRow } from '@/modules/estimate/components/scenarioMatrixUtils';
 
 export interface CopilotPromptInput {
   jobName: string;

@@ -1,6 +1,6 @@
-import type { CanvasTone } from './CanvasPanel';
-
 import { DEFAULT_WALLPAPER_ID, DIVISION_WALLPAPERS, type WallpaperDefinition } from '@/design';
+
+export type CanvasTone = 'ember' | 'aurora' | 'lagoon' | 'dusk';
 
 export interface CanvasWallpaper extends WallpaperDefinition {
   accentTone: CanvasTone;
