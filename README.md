@@ -205,6 +205,18 @@ STAGE_MULTIPLIER=3 BASE_URL=https://preview.example npx k6 run scripts/load/k6-e
 
 Metrics emitted: `successful_requests`, `request_duration`, `content_validation_failures`. Thresholds enforce p95 < 800 ms and success rate > 97%.
 
+### k6 Workflow Orchestration (Supabase REST)
+
+```bash
+WORKFLOW_SUPABASE_URL=https://your-project.supabase.co/rest/v1 \
+WORKFLOW_SERVICE_ROLE_KEY=$(cat service_role_jwt.txt) \
+WORKFLOW_JOB_ID=YOUR_JOB_UUID \
+STAGE_MULTIPLIER=2 \
+npx k6 run scripts/load/k6-workflow.js
+```
+
+Exercises the workflow telemetry tables by creating synthetic measurement runs, stage events, and outreach touchpoints via Supabase REST (requires a service-role or elevated key). Point `WORKFLOW_JOB_ID` at a seeded job (see `VITE_SAMPLE_JOB_ID` and `npm run seed`) to hydrate the same mission surfaced in the Workflow Shell.
+
 ### Artillery Smoke Pulse
 
 ```bash
@@ -241,7 +253,7 @@ npm run android:gradle:debug
 1. `npm run security:scan`
 2. `npm run openapi:generate` (parses Supabase Edge Function annotations and refreshes `docs/swagger.json`)
 3. `npm run test:e2e`
-4. Run load smoke (`k6-observability`, `k6-estimate`, or `artillery`)
+4. Run load smoke (`k6-observability`, `k6-estimate`, `k6-workflow`, or `artillery`)
 5. Update `CHANGELOG.md`
 
 ---
