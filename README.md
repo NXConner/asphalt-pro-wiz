@@ -68,11 +68,13 @@ cp .env.example .env
 #    Edit `.env` or `.env.local` with production-ready secrets from your manager
 npm run check:env
 
-# 3. Install dependencies (PowerShell equivalent available)
-scripts/install_dependencies.sh
-#  --skip-playwright   # avoid browser downloads in CI containers
-#  --skip-husky        # disable git hooks for read-only runners
-# PowerShell: pwsh -File scripts/install_dependencies.ps1
+# 3. Install dependencies + validate env (PowerShell equivalent available)
+scripts/install_dependencies.sh --strict-env
+# Flags:
+#   --skip-playwright   # avoid browser downloads in CI containers
+#   --skip-husky        # disable git hooks for read-only runners
+#   --skip-env-check    # bypass env validation (not recommended)
+# PowerShell: pwsh -File scripts/install_dependencies.ps1 -StrictEnv
 
 # 4. Start dev server (refresh running preview if already launched)
 npm run dev
@@ -103,8 +105,12 @@ npm run seed
 
 - `.env` keys (see `.env.example`):
   - **Deployment metadata**: `APP_ENV`, `VITE_ENVIRONMENT`, `VITE_APP_VERSION`, `VITE_BASE_PATH`, `VITE_BASE_NAME`, `VITE_BASE_URL`.
+  - **Preview reliability & health**: `PORT`, `VITE_DEV_SERVER_PORT`, `VITE_PREVIEW_HEARTBEAT_INTERVAL_MS`, `VITE_HEALTHCHECK_URL` — keep aligned with Lovable proxy expectations to avoid connection refused errors.
   - **Supabase**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SUPABASE_PROJECT_ID`, `SUPABASE_PROJECT_REF`, `DATABASE_URL`.
   - **Workflow telemetry**: `VITE_SAMPLE_JOB_ID` (optional) points the workflow shell at a seeded Supabase job UUID so stage/outreach history can be fetched automatically.
+  - **Scheduler & liturgical sync**: `SCHEDULER_BLACKOUT_FEED_URL`, `SCHEDULER_BLACKOUT_FEED_TOKEN`, `SCHEDULER_CREW_CAPACITY`, `SCHEDULER_ICS_PUBLISH_BUCKET`, `VITE_LITURGICAL_CALENDAR_URL`.
+  - **AI & wallpaper services**: `VITE_THEME_AI_ENDPOINT`, `VITE_THEME_AI_MODEL`, `THEME_WALLPAPER_AI_TOKEN`, `VITE_ESTIMATOR_AI_ENDPOINT`, `ESTIMATOR_AI_TOKEN`.
+  - **Supplier & incident telemetry**: `VITE_SUPPLIER_FEED_URL`, `SUPPLIER_INTELLIGENCE_API_KEY`, `VITE_INCIDENT_WEBHOOK_URL`, `INCIDENT_BRIDGE_SIGNING_SECRET`.
   - **AI Proxy**: `VITE_GEMINI_PROXY_URL`, `GEMINI_API_KEY`, `LOVABLE_API_KEY`.
   - **Observability**: `VITE_LOG_BEACON_URL`, `VITE_OBSERVABILITY_EXPORTER_URL`, `OBSERVABILITY_API_KEY`, `VITE_SENTRY_DSN`.
   - **Mapping & Weather**: `VITE_GOOGLE_MAPS_API_KEY`, `VITE_OPENWEATHER_API_KEY`, `VITE_MAPBOX_TOKEN`, `VITE_AIR_QUALITY_API_KEY`.
@@ -131,6 +137,7 @@ npm run seed
   - Lovable preview asset watchers (`lovable.asset_load_error`, `lovable.asset_promise_rejection`) for visibility into missing bundles or proxy misconfigurations.
 - Enable/disable web vitals and feature telemetry with `VITE_ENABLE_WEB_VITALS` and `VITE_ENABLE_FEATURE_TELEMETRY`.
 - Integrate with external APMs by configuring `VITE_OBSERVABILITY_EXPORTER_URL` and `VITE_SENTRY_DSN`.
+- **Lovable preview watchdog**: `installLovableAssetMonitoring()` pings `VITE_HEALTHCHECK_URL` using `VITE_PREVIEW_HEARTBEAT_INTERVAL_MS`. If previews return “connection refused,” verify this endpoint locally (Step 3) before redeploying to Lovable; set `PORT=8080` unless Lovable assigns a different value.
 
 ---
 
@@ -181,6 +188,16 @@ npx k6 run scripts/load/k6-observability.js
 ```
 
 Sends synthetic `lovable.asset_*` telemetry into the Supabase Edge Function to validate ingestion latency, dedupe, and incident rollups. Tune intensity with `STAGE_MULTIPLIER` and export JSON summaries via `--summary-export`.
+
+### k6 Lovable Preview Heartbeat
+
+```bash
+PREVIEW_HEALTH_URL=https://id-preview.lovable.app/health \
+STAGE_MULTIPLIER=2 \
+npx k6 run scripts/load/k6-preview-health.js
+```
+
+Validates the `/health` endpoint that Lovable proxies poll. Metrics enforce `preview_health_latency` (p95 < 500 ms) and `preview_health_failures` (should stay at zero). Override `PREVIEW_HEALTH_STATUS` (default `200`) if your Nginx health endpoint returns a different status, and scale `STAGE_MULTIPLIER` to mimic Lovable’s burstiness.
 
 ### k6 Gemini Proxy Assist
 
@@ -275,6 +292,8 @@ npm run android:gradle:debug
   - `feature/<scope>` or `hotfix/<scope>`: short-lived branches; rebase on `develop` before PR.
   - Use release branches (`release/vX.Y.Z`) for stabilization windows when needed.
 - Conventional Commits enforced via Husky + Commitlint.
+- Issue/PR templates capture Lovable preview context, feature flag strategy, observability, and risk/rollback details—fill them out fully to unblock the small crew.
+- Run `scripts/install_dependencies.sh --strict-env` (or the PowerShell variant) on fresh checkouts to hydrate `.env`, install hooks, and validate secrets before writing code.
 - Generator scripts (`scripts/openapi`, `scripts/ingest`, planned `scripts/generate`) keep new modules consistent.
 - Provide risk/rollback notes in PR template (`.github/pull_request_template.md`) and keep docs in sync.
 - Consult `CONTRIBUTING.md` for coding standards, review checklist, and DevEx expectations.

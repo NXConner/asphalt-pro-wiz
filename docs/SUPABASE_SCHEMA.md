@@ -31,6 +31,9 @@ ADMIN_EMAIL=n8ter8@gmail.com npm run seed
 | `public.customer_portal_sessions`, `customer_portal_events` | Shareable portal with hashed tokens. | Portal tokens allow read-only access to a single job; application roles retain full access via membership filters. |
 | `public.knowledge_documents`, `knowledge_chunks` | AI/knowledge base content for compliance and ops SOPs. | Organization-scoped RLS, optional feature-flag gating. |
 | `public.observability_sessions`, `weather_snapshots` | Client telemetry + weather overlays. | Only org members and service roles can read; insertion handled by backend functions. |
+| `public.scheduler_blackout_feeds`, `scheduler_blackout_entries` | ICS-driven worship blackout feeds + expanded entries for the mission scheduler. | Org-scoped read access; insert/update limited to operators/managers who own the feed. |
+| `public.liturgical_calendar_events` | Global + org-specific liturgical calendar (Advent, Lent, Easter, Pentecost). | Everyone can read global rows; only managers/super_admin update scoped events. |
+| `public.theme_gallery_profiles` | Curated theme + wallpaper pairings powering the Theme Gallery. | Readable globally; only managers/super_admin (or the creator) can write. |
 
 ### Workflow Orchestration Entities
 
@@ -58,7 +61,7 @@ Every table created in the migration set enables Row Level Security immediately 
   - Mission milestones, crews, crew blackouts, scheduler tasks.
   - Compliance artifacts + reviews, customer portal session/events.
   - Knowledge base docs/chunks, observability sessions.
-  - Workflow measurement runs + segments, stage events, outreach touchpoints, and draft contracts for sample jobs.
+  - Worship blackout feeds + liturgical calendar events aligned with new Phase 5 tables.
 - Requires an existing Supabase Auth user; see `docs/ADMIN_SETUP.md` for creating `n8ter8@gmail.com`.
 
 ### Admin User Workflow
@@ -76,5 +79,6 @@ Every table created in the migration set enables Row Level Security immediately 
 - `supabase/migrations/20251106095000_mission_operational_expansion.js` – mission tasks, telemetry, customer portal.
 - `supabase/migrations/20251109121500_supplier_intelligence.js` – observability + supplier intel tables.
 - `supabase/migrations/20251116133000_workflow_orchestration.js` – workflow measurement, outreach, stage, and contract entities.
+- `supabase/migrations/20251116131500_theme_gallery_blackouts.js` – scheduler blackout feeds, liturgical calendar events, theme gallery profiles.
 
 Always add new schema changes through migrations—never edit tables directly in Supabase Studio—so environments stay in sync and CI can validate the structure.

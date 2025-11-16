@@ -25,6 +25,21 @@ Environment knobs:
 
 > Tip: Combine with Supabase Edge Function logs to confirm the incidents table and telemetry roll-ups remain healthy under pressure.
 
+## k6 – Lovable preview heartbeat
+
+```bash
+PREVIEW_HEALTH_URL=https://preview-id.lovable.app/health \
+STAGE_MULTIPLIER=2 \
+npx k6 run scripts/load/k6-preview-health.js
+```
+
+This scenario hammers the public `/health` endpoint that Lovable probes:
+
+- Default target is `http://localhost:8080/health`, override via `PREVIEW_HEALTH_URL`.
+- `STAGE_MULTIPLIER` scales the RPS profile to mimic Lovable bursts.
+- `PREVIEW_HEALTH_STATUS` can be set if your health route returns something other than `200`.
+- Emits `preview_health_latency` (p95 < 500 ms) and `preview_health_failures` counters, ideal for spotting proxy regressions.
+
 ## k6 – Gemini Proxy Chat Assist
 
 ```bash

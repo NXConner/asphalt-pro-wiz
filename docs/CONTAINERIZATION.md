@@ -22,6 +22,12 @@ The root `Dockerfile` now follows this multi-stage structure:
 6. **`build`** produces the optimized Vite bundle and prunes dev dependencies.
 7. **`devserver`** exposes `npm run dev -- --host 0.0.0.0 --port 5173` for Compose-driven hot reload.
 8. **`runtime`** copies the dist output into an `nginx:1.27-alpine` image with health checks baked in.
+1. **`base`** installs dependencies with `npm ci` using predictable caching.
+2. **`sources`** copies the TypeScript, Vite, test, and Supabase sources.
+3. **`tooling`** configures the full environment to run linting, tests, and scripts (used by `migrator`, `seeder`, and now `app-dev`).
+4. **`quality`** executes `npm run check:env -- --strict`, ESLint, TypeScript, and Vitest to prevent shipping broken builds.
+5. **`build`** produces the optimized Vite bundle and prunes dev dependencies.
+6. **`runtime`** copies the dist output into an `nginx:1.27-alpine` image with a dedicated `/health` endpoint so Docker, Lovable, or Kubernetes probes no longer hit the SPA shell.
 
 Every stage honours `NODE_VERSION`, `VITE_*`, and Supabase arguments so the same Dockerfile powers production releases, CI checks, dev hot reload, and auxiliary scripting containers.
 
@@ -54,6 +60,10 @@ docker compose up --build web
 - `APP_ENV`, `VITE_ENVIRONMENT`: controls feature-flag defaults and telemetry.
 - `WEB_PORT`: port exposed by the production Nginx container (defaults to 8080).
 - `VITE_PORT`: port exposed by the Vite dev server (defaults to 5173).
+- `PORT`, `WEB_PORT`, `VITE_DEV_SERVER_PORT`: keep Lovable previews, Compose, and Vite dev server aligned; `/health` uses these values automatically.
+- `VITE_PREVIEW_HEARTBEAT_INTERVAL_MS`, `VITE_PREVIEW_HEALTH_TIMEOUT_MS`, `VITE_HEALTHCHECK_URL`: control the preview watchdog heartbeat in `installLovableAssetMonitoring`.
+- `SCHEDULER_*`, `VITE_LITURGICAL_CALENDAR_URL`, `VITE_SUPPLIER_FEED_URL`: feed the mission scheduler, blackout imports, and supplier telemetry inside containers so production and local demos match.
+- `VITE_THEME_AI_ENDPOINT`, `VITE_ESTIMATOR_AI_ENDPOINT`, `VITE_INCIDENT_WEBHOOK_URL`: wire up AI wallpaper ingestion, estimator copilots, and incident bridge flows regardless of environment.
 - `DB_PORT`, `POSTGRES_*`: configure the pgvector instance.
 - `OTEL_COLLECTOR_{GRPC,HTTP}_PORT`: expose the collector for local tracing.
 - `MEASUREMENT_API_PORT`: expose the measurement MockServer (defaults to 8787).
