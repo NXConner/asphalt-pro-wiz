@@ -13,6 +13,7 @@ export interface ComplianceIssue {
 export interface ComplianceEvaluation {
   issues: ComplianceIssue[];
   score: number;
+  overall: ComplianceIssueStatus;
 }
 
 export interface ComplianceContext {
@@ -27,13 +28,32 @@ export interface ComplianceContext {
 const PASS_SCORE = 1;
 const WARN_SCORE = 0.5;
 
+function summarizeStatusCounts(issues: ComplianceIssue[]) {
+  let pass = 0;
+  let warn = 0;
+  let fail = 0;
+  issues.forEach((issue) => {
+    if (issue.status === 'pass') pass += 1;
+    else if (issue.status === 'warn') warn += 1;
+    else fail += 1;
+  });
+  return { pass, warn, fail };
+}
+
+function determineOverallStatus(counts: { pass: number; warn: number; fail: number }): ComplianceIssueStatus {
+  if (counts.fail > 0) return 'fail';
+  if (counts.warn > 0) return 'warn';
+  return 'pass';
+}
+
 export function evaluateCompliance(context: ComplianceContext): ComplianceEvaluation {
   const { inputs, travelMiles, premiumPowerWashing, polymerAdded, oilSpots, prepHours } = context;
   const issues: ComplianceIssue[] = [];
 
   const handicapRequired = Math.max(1, Math.ceil(inputs.totalArea / 15000));
+  const adaCoverage = inputs.includeStriping ? inputs.stripingHandicap / handicapRequired : 0;
   const adaStatus =
-    inputs.stripingHandicap >= handicapRequired && inputs.includeStriping ? 'pass' : 'warn';
+    adaCoverage >= 1 ? 'pass' : adaCoverage >= 0.8 ? 'warn' : inputs.includeStriping ? 'fail' : 'warn';
   issues.push({
     id: 'ada-stalls',
     label: `ADA stalls (${inputs.stripingHandicap}/${handicapRequired})`,
@@ -44,7 +64,13 @@ export function evaluateCompliance(context: ComplianceContext): ComplianceEvalua
         : undefined,
   });
 
-  const coatStatus = inputs.numCoats >= 2 ? 'pass' : 'fail';
+  const coatStatus = inputs.includeSealcoating
+    ? inputs.numCoats >= 2
+      ? 'pass'
+      : inputs.numCoats === 1
+        ? 'warn'
+        : 'fail'
+    : 'pass';
   issues.push({
     id: 'coat-count',
     label: `${inputs.numCoats} sealcoat passes`,
@@ -55,14 +81,17 @@ export function evaluateCompliance(context: ComplianceContext): ComplianceEvalua
         : undefined,
   });
 
-  const waterStatus = inputs.waterPercent <= 20 ? 'pass' : 'warn';
+  const waterPercent = Math.min(Math.max(inputs.waterPercent ?? 0, 0), 40);
+  const waterStatus = waterPercent <= 20 ? 'pass' : waterPercent <= 30 ? 'warn' : 'fail';
   issues.push({
     id: 'water-dilution',
-    label: `Water dilution ${inputs.waterPercent}%`,
+    label: `Water dilution ${waterPercent}%`,
     status: waterStatus,
     recommendation:
       waterStatus === 'warn'
         ? 'Keep dilution below 20% to maintain mix solids and manufacturer warranty.'
+        : waterStatus === 'fail'
+          ? 'Dilution above 30% violates spec; reduce water immediately.'
         : undefined,
   });
 
@@ -99,6 +128,65 @@ export function evaluateCompliance(context: ComplianceContext): ComplianceEvalua
         : undefined,
   });
 
+  const stripingDensity = inputs.includeStriping
+    ? inputs.stripingLines / Math.max(inputs.totalArea / 10000, 1)
+    : 0;
+  const stripingStatus = !inputs.includeStriping
+    ? 'warn'
+    : stripingDensity >= 5
+      ? 'pass'
+      : stripingDensity >= 3
+        ? 'warn'
+        : 'fail';
+  issues.push({
+    id: 'striping-density',
+    label: 'Striping density vs. lot size',
+    status: stripingStatus,
+    recommendation:
+      stripingStatus !== 'pass'
+        ? 'Add layout or confirm headcount to maintain parking flow and ADA routes.'
+        : undefined,
+  });
+
+  const handicapPaintStatus =
+    inputs.includeStriping && inputs.stripingHandicap > 0
+      ? inputs.stripingColors?.includes('Blue') ?? false
+        ? 'pass'
+        : 'fail'
+      : 'pass';
+  issues.push({
+    id: 'handicap-color',
+    label: 'Blue ADA markings present',
+    status: handicapPaintStatus,
+    recommendation:
+      handicapPaintStatus === 'fail'
+        ? 'Add blue pigment / reflective glass beads for ADA stalls.'
+        : undefined,
+  });
+
+  if (inputs.totalArea > 45000) {
+    issues.push({
+      id: 'edge-prep',
+      label: 'Edge restoration plan',
+      status: inputs.premiumEdgePushing ? 'pass' : 'warn',
+      recommendation: !inputs.premiumEdgePushing
+        ? 'Consider edge pushing to prevent unraveling along sanctuary drives.'
+        : undefined,
+    });
+  }
+
+  if (inputs.includeCleaningRepair && inputs.crackLength > 2000) {
+    issues.push({
+      id: 'vegetation-control',
+      label: 'Vegetation mitigation in cracks',
+      status: inputs.premiumWeedKiller ? 'pass' : 'warn',
+      recommendation: !inputs.premiumWeedKiller
+        ? 'Add weed killer to crack cleaning scope for longevity.'
+        : undefined,
+    });
+  }
+
+  const counts = summarizeStatusCounts(issues);
   const complianceScore =
     issues.reduce((score, issue) => {
       if (issue.status === 'pass') return score + PASS_SCORE;
@@ -109,5 +197,6 @@ export function evaluateCompliance(context: ComplianceContext): ComplianceEvalua
   return {
     issues,
     score: Number.isFinite(complianceScore) ? complianceScore : 0,
+    overall: determineOverallStatus(counts),
   };
 }

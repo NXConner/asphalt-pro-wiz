@@ -155,6 +155,32 @@ const FEATURE_FLAG_DEFINITIONS_RAW = [
     tags: ['collaboration'],
     surfaces: ['Portal'],
   },
+    {
+      id: 'estimatorCompliance',
+      label: 'Estimator Compliance Insights',
+      description:
+        'Surface ADA, prep, and logistics guardrails during estimation with structured scoring and export-ready guidance.',
+      category: 'estimator',
+      defaultValue: true,
+      envVar: 'VITE_FLAG_ESTIMATOR_COMPLIANCE',
+      supabaseKey: 'estimatorCompliance',
+      telemetryKey: 'estimator_compliance',
+      tags: ['compliance', 'estimation'],
+      surfaces: ['EstimatorStudio'],
+    },
+    {
+      id: 'supplierIntelV2',
+      label: 'Supplier Intelligence v2',
+      description:
+        'Enables richer supplier telemetry with AI summaries, reliability scoring, and structured logging.',
+      category: 'operations',
+      defaultValue: true,
+      envVar: 'VITE_FLAG_SUPPLIER_INTEL_V2',
+      supabaseKey: 'supplierIntelV2',
+      telemetryKey: 'supplier_intel_v2',
+      tags: ['supply-chain'],
+      surfaces: ['EstimatorStudio'],
+    },
   {
     id: 'observability',
     label: 'Observability & Telemetry',
