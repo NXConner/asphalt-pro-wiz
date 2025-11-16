@@ -1,82 +1,117 @@
-import { Shield } from 'lucide-react';
-import { lazy, memo, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ComplianceResources, type ComplianceTopic } from '@/components/ComplianceResources';
-import { PanelErrorBoundary } from '@/components/ErrorBoundary/PanelErrorBoundary';
 import { HudWrapper } from '@/components/hud/HudWrapper';
 import { type TacticalHudOverlayProps } from '@/components/hud/TacticalHudOverlay';
 import { KeyboardShortcutsModal } from '@/components/KeyboardShortcutsModal';
 import { ThemeCommandCenter } from '@/components/ThemeCommandCenter';
-import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useImageOptimization } from '@/hooks/useImageOptimization';
-import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
+import { useMeasurementIntel } from '@/hooks/useMeasurementIntel';
 import { blobToDataUrl } from '@/lib/blob';
+import { logEvent } from '@/lib/logging';
+import type { WorkflowThemeId } from '@/design/system';
+import { MissionControlPanel } from '@/modules/mission-control/MissionControlPanel';
 import { useEstimatorState } from '@/modules/estimate/useEstimatorState';
-import { CanvasPanel } from '@/modules/layout/CanvasPanel';
-import { CommandRibbon } from '@/modules/layout/CommandRibbon';
-import { isCommandLayoutMode, type CommandLayoutMode } from '@/modules/layout/layoutModes';
-import { OperationsHeader } from '@/modules/layout/OperationsHeader';
-import {
-  EngagementSkeleton,
-  EstimatorSkeleton,
-  InsightsSkeleton,
-  MissionControlSkeleton,
-} from '@/modules/layout/PanelSkeletons';
-import { ResponsiveCanvas } from '@/modules/layout/ResponsiveCanvas';
+import { useWorkflowStages } from '@/modules/workflow/useWorkflowStages';
+import type { WorkflowStageId } from '@/modules/workflow/types';
+import { WorkflowShell } from '@/modules/workflow/WorkflowShell';
 import { useWallpaperLibrary } from '@/modules/layout/wallpaperLibrary';
 import { DEFAULT_WALLPAPER, getNextWallpaper, getWallpaperById } from '@/modules/layout/wallpapers';
+import { toast } from 'sonner';
 
-// Lazy load heavy components for better initial load performance
-const EstimatorStudio = lazy(() => import('@/modules/estimate/EstimatorStudio').then(m => ({ default: m.EstimatorStudio })));
-const InsightTowerPanel = lazy(() => import('@/modules/insights/InsightTowerPanel').then(m => ({ default: m.InsightTowerPanel })));
-const MissionControlPanel = lazy(() =>
-  import('@/modules/mission-control/MissionControlPanel').then((m) => ({
-    default: m.MissionControlPanel,
-  })),
-);
-const EngagementHubPanel = lazy(() =>
-  import('@/modules/engagement/EngagementHubPanel').then((m) => ({
-    default: m.EngagementHubPanel,
-  })),
-);
+const THEME_BY_WALLPAPER: Record<string, WorkflowThemeId> = {
+  'division-twilight-ops': 'sunrise',
+  'division-sanctuary-grid': 'tech',
+  'division-dark-zone': 'rogue',
+  'division-stealth-insertion': 'stealth',
+  'division-cathedral-briefing': 'executive',
+  'division-youth-dynamo': 'youth',
+  'division-sunrise-service': 'sunrise',
+  'division-campus-heritage': 'heritage',
+};
 
-const LAYOUT_MODE_STORAGE_KEY = 'pps:layout-mode';
-
-/**
- * Main Index page component - Optimized with memo and callbacks
- */
-const Index = memo(() => {
+const Index = memo(function Index() {
   const estimator = useEstimatorState();
-  const layout = useResponsiveLayout();
+  const measurementIntel = useMeasurementIntel(estimator);
   const { setWallpaper } = useTheme();
   const { addWallpaper } = useWallpaperLibrary();
   const { optimizeImage, isProcessing: optimizingWallpaper } = useImageOptimization();
   const [wallpaperId, setWallpaperId] = useState(DEFAULT_WALLPAPER.id);
   const wallpaper = useMemo(() => getWallpaperById(wallpaperId), [wallpaperId]);
+  const [uploadingWallpaper, setUploadingWallpaper] = useState(false);
   const [complianceOpen, setComplianceOpen] = useState(false);
   const [complianceTopic, setComplianceTopic] = useState<ComplianceTopic>('striping');
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const [layoutMode, setLayoutMode] = useState<CommandLayoutMode>('grid');
-  const [uploadingWallpaper, setUploadingWallpaper] = useState(false);
+  const [lastUpdatedIso, setLastUpdatedIso] = useState(() => new Date().toISOString());
+  const [activeStageId, setActiveStageId] = useState<WorkflowStageId>('measure');
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const stored = window.localStorage.getItem(LAYOUT_MODE_STORAGE_KEY);
-    if (stored && isCommandLayoutMode(stored)) {
-      setLayoutMode(stored);
-    }
-  }, []);
+    const timeoutId = setTimeout(() => setLastUpdatedIso(new Date().toISOString()), 200);
+    return () => clearTimeout(timeoutId);
+  }, [
+    estimator.job.mapRefreshKey,
+    estimator.calculation.costs?.total,
+    estimator.calculation.costs?.profit,
+    estimator.areas.total,
+  ]);
 
-  const summary = useMemo(
+  const missionPhase = useMemo(() => {
+    switch (estimator.job.status) {
+      case 'need_estimate':
+        return 'Reconnaissance';
+      case 'estimated':
+        return 'Proposal Ready';
+      case 'active':
+        return 'Deployment Prep';
+      case 'completed':
+        return 'Mission Complete';
+      case 'lost':
+        return 'After Action';
+      default:
+        return 'Operations';
+    }
+  }, [estimator.job.status]);
+
+  const missionMeta = useMemo(
     () => ({
-      jobName: estimator.job.name,
+      jobName: estimator.job.name || 'Untitled mission',
+      campus: estimator.job.address || 'Pending campus address',
+      contact: estimator.business.data?.primaryContactName ?? estimator.business.data?.primaryEmail ?? 'Facilities team',
+      phaseLabel: missionPhase,
       totalArea: estimator.areas.total,
-      totalCost: estimator.calculation.costs?.total ?? null,
+      crackFootage: estimator.cracks.length,
+      status: estimator.job.status,
+      lastUpdatedIso,
     }),
-    [estimator.job.name, estimator.areas.total, estimator.calculation.costs?.total],
+    [
+      estimator.job.name,
+      estimator.job.address,
+      estimator.business.data?.primaryContactName,
+      estimator.business.data?.primaryEmail,
+      missionPhase,
+      estimator.areas.total,
+      estimator.cracks.length,
+      estimator.job.status,
+      lastUpdatedIso,
+    ],
   );
+
+  const missionControlPanel = useMemo(() => <MissionControlPanel estimator={estimator} />, [estimator]);
+
+  const stages = useWorkflowStages({
+    estimator,
+    measurement: measurementIntel,
+    missionControl: missionControlPanel,
+    onOpenCompliance: () => setComplianceOpen(true),
+  });
+
+  useEffect(() => {
+    const firstUnlocked = stages.find((stage) => stage.status !== 'locked');
+    if (firstUnlocked && firstUnlocked.id !== activeStageId) {
+      setActiveStageId(firstUnlocked.id);
+    }
+  }, [stages, activeStageId]);
 
   const hudFlags = useMemo(() => {
     const labelMap: Record<string, string> = {
@@ -99,17 +134,7 @@ const Index = memo(() => {
     }));
   }, [estimator.featureFlags.values]);
 
-  const currencyFormatter = useMemo(
-    () =>
-      new Intl.NumberFormat(undefined, {
-        style: 'currency',
-        currency: 'USD',
-        maximumFractionDigits: 0,
-      }),
-    [],
-  );
-
-  const hudWatchers = useMemo(() => {
+  const hudWatchers = useMemo<NonNullable<TacticalHudOverlayProps['watchers']>>(() => {
     const watchers: NonNullable<TacticalHudOverlayProps['watchers']> = [];
     const segmentCount = estimator.areas.items.length;
     watchers.push({
@@ -117,7 +142,6 @@ const Index = memo(() => {
       value: segmentCount.toString(),
       tone: segmentCount > 0 ? 'ok' : 'warn',
     });
-
     const crackLength = estimator.cracks.length;
     const crackTone = crackLength > 400 ? 'critical' : crackLength > 100 ? 'warn' : 'ok';
     watchers.push({
@@ -125,7 +149,6 @@ const Index = memo(() => {
       value: `${crackLength.toFixed(1)} ft`,
       tone: crackTone,
     });
-
     const premiumSelections = [
       estimator.premium.edgePushing,
       estimator.premium.weedKiller,
@@ -134,27 +157,22 @@ const Index = memo(() => {
       estimator.premium.debrisRemoval,
     ].filter(Boolean).length;
     const customSelections = estimator.customServices.items.length;
-    const enhancementCount = premiumSelections + customSelections;
     watchers.push({
       label: 'Enhancements',
-      value: enhancementCount.toString(),
-      tone: enhancementCount > 0 ? 'ok' : 'warn',
+      value: (premiumSelections + customSelections).toString(),
+      tone: premiumSelections + customSelections > 0 ? 'ok' : 'warn',
     });
-
     const projectedProfit = estimator.calculation.costs?.profit ?? null;
     if (projectedProfit !== null) {
       watchers.push({
         label: 'Projected Profit',
-        value: currencyFormatter.format(projectedProfit),
+        value: `$${Math.round(projectedProfit).toLocaleString()}`,
         tone: projectedProfit > 0 ? 'ok' : 'critical',
       });
     }
-
     return watchers;
   }, [
-    currencyFormatter,
     estimator.areas.items.length,
-    estimator.calculation.costs?.profit,
     estimator.cracks.length,
     estimator.customServices.items.length,
     estimator.premium.crackCleaning,
@@ -162,52 +180,30 @@ const Index = memo(() => {
     estimator.premium.edgePushing,
     estimator.premium.powerWashing,
     estimator.premium.weedKiller,
-  ]);
-
-  const missionPhase = useMemo(() => {
-    switch (estimator.job.status) {
-      case 'need_estimate':
-        return 'Reconnaissance';
-      case 'estimated':
-        return 'Proposal Ready';
-      case 'active':
-        return 'Deployment Prep';
-      case 'completed':
-        return 'Mission Complete';
-      case 'lost':
-        return 'After Action';
-      default:
-        return 'Operations';
-    }
-  }, [estimator.job.status]);
-
-  const [lastUpdatedIso, setLastUpdatedIso] = useState(() => new Date().toISOString());
-
-  // Debounce lastUpdatedIso updates to reduce re-renders
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setLastUpdatedIso(new Date().toISOString());
-    }, 100); // Small delay to batch updates
-    
-    return () => clearTimeout(timeoutId);
-  }, [
-    estimator.job.mapRefreshKey,
-    estimator.calculation.costs?.total,
     estimator.calculation.costs?.profit,
-    estimator.areas.total,
   ]);
+
+  const hudOverlay = (
+    <HudWrapper
+      missionName={missionMeta.jobName}
+      missionStatus={estimator.job.status}
+      missionPhase={missionPhase}
+      totalAreaSqFt={estimator.areas.total}
+      totalCost={estimator.calculation.costs?.total ?? null}
+      travelMiles={estimator.job.distance}
+      coordinates={estimator.job.coords}
+      scheduleWindow={null}
+      lastUpdatedIso={lastUpdatedIso}
+      watchers={hudWatchers}
+      flags={hudFlags}
+    />
+  );
 
   const cycleWallpaper = useCallback(() => {
     const next = getNextWallpaper(wallpaperId);
     setWallpaperId(next.id);
+    logEvent('workflow.wallpaper.cycle', { next: next.id });
   }, [wallpaperId]);
-
-  const handleLayoutModeChange = useCallback((mode: CommandLayoutMode) => {
-    setLayoutMode(mode);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(LAYOUT_MODE_STORAGE_KEY, mode);
-    }
-  }, []);
 
   const handleWallpaperUpload = useCallback(
     async (file: File) => {
@@ -232,9 +228,7 @@ const Index = memo(() => {
           name: asset.name,
           description: asset.description,
         });
-        toast.success('Wallpaper updated', {
-          description: `${asset.name} applied across the HUD`,
-        });
+        toast.success('Wallpaper updated', { description: `${asset.name} applied to workflow shell.` });
       } catch (error) {
         console.error('[Index] Failed to upload wallpaper', error);
         toast.error('Unable to process wallpaper');
@@ -250,155 +244,42 @@ const Index = memo(() => {
     setComplianceOpen(true);
   }, []);
 
-  const handleOpenShortcuts = useCallback(() => setShortcutsOpen(true), []);
-
-  const handleOpenCompliancePanel = useCallback(() => {
-    openCompliance('striping');
-  }, [openCompliance]);
+  useEffect(() => {
+    const handler = () => setShortcutsOpen(true);
+    window.addEventListener('openShortcuts', handler);
+    return () => window.removeEventListener('openShortcuts', handler);
+  }, []);
 
   const wallpaperUploadBusy = uploadingWallpaper || optimizingWallpaper;
 
-  useEffect(() => {
-    window.addEventListener('openShortcuts', handleOpenShortcuts);
-    return () => window.removeEventListener('openShortcuts', handleOpenShortcuts);
-  }, [handleOpenShortcuts]);
-
-  const hudOverlay = layout.showFullHud ? (
-    <HudWrapper
-      missionName={estimator.job.name || 'Pavement Mission'}
-      missionStatus={estimator.job.status}
-      missionPhase={missionPhase}
-      totalAreaSqFt={estimator.areas.total}
-      totalCost={estimator.calculation.costs?.total ?? null}
-      travelMiles={estimator.job.distance}
-      coordinates={estimator.job.coords}
-      scheduleWindow={null}
-      lastUpdatedIso={lastUpdatedIso}
-      watchers={hudWatchers}
-      flags={hudFlags}
-    />
-  ) : null;
+  const workflowThemeId = THEME_BY_WALLPAPER[wallpaperId] ?? 'sunrise';
 
   return (
     <>
       <main id="main-content">
         <h1 className="sr-only">Pavement Performance Suite</h1>
-        <ResponsiveCanvas
-          wallpaper={wallpaper}
-          layoutMode={layoutMode}
-          summary={{
-            totalCost: summary.totalCost,
-            totalArea: summary.totalArea,
+        <WorkflowShell
+          stages={stages}
+          activeStageId={activeStageId}
+          onStageChange={setActiveStageId}
+          wallpaper={{
+            name: wallpaper.name,
+            description: wallpaper.description,
+            source: wallpaper.source,
           }}
-          header={
-            <div className="space-y-6">
-              <CommandRibbon
-                wallpaper={wallpaper}
-                missionPhase={missionPhase}
-                summary={summary}
-                watchers={hudWatchers}
-                hudFlags={hudFlags}
-                layoutMode={layoutMode}
-                onLayoutModeChange={handleLayoutModeChange}
-                onNextWallpaper={cycleWallpaper}
-                onUploadWallpaper={handleWallpaperUpload}
-                uploadingWallpaper={wallpaperUploadBusy}
-                themeTrigger={<ThemeCommandCenter />}
-                onOpenShortcuts={handleOpenShortcuts}
-                onOpenCompliance={handleOpenCompliancePanel}
-              />
-              <OperationsHeader
-                wallpaper={wallpaper}
-                onNextWallpaper={cycleWallpaper}
-                summary={summary}
-              />
-            </div>
-          }
-            missionControl={
-              <PanelErrorBoundary title="Mission Control">
-                <Suspense fallback={<MissionControlSkeleton />}>
-                  <MissionControlPanel estimator={estimator} />
-                </Suspense>
-              </PanelErrorBoundary>
-            }
-            estimator={
-              <PanelErrorBoundary title="Estimator Studio">
-                <Suspense fallback={<EstimatorSkeleton />}>
-                  <EstimatorStudio estimator={estimator} />
-                </Suspense>
-              </PanelErrorBoundary>
-            }
-            insights={
-              <PanelErrorBoundary title="Insight Tower">
-                <Suspense fallback={<InsightsSkeleton />}>
-                  <InsightTowerPanel estimator={estimator} />
-                </Suspense>
-              </PanelErrorBoundary>
-            }
-            engagement={
-              <PanelErrorBoundary title="Engagement Hub">
-                <Suspense fallback={<EngagementSkeleton />}>
-                  <div className="space-y-5">
-                    <EngagementHubPanel estimator={estimator} />
-                    <CanvasPanel
-                      title="Regulatory Toolkit"
-                      subtitle="Jump into ADA, VDOT, and NC DOT resources before finalizing proposals."
-                      eyebrow="Compliance"
-                      tone="ember"
-                      action={
-                        <Button
-                          type="button"
-                          variant="command"
-                          onClick={() => openCompliance(complianceTopic)}
-                        >
-                          <Shield className="mr-2 h-4 w-4" /> Open Library
-                        </Button>
-                      }
-                    >
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openCompliance('striping')}
-                        >
-                          ADA & Striping
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => openCompliance('sealcoating')}
-                        >
-                          Sealcoat Specs
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => openCompliance('crackfilling')}
-                        >
-                          Crack Filling SOP
-                        </Button>
-                      </div>
-                    </CanvasPanel>
-                  </div>
-                </Suspense>
-              </PanelErrorBoundary>
-            }
+          onNextWallpaper={cycleWallpaper}
+          onUploadWallpaper={handleWallpaperUpload}
+          uploadingWallpaper={wallpaperUploadBusy}
+          toolbarSlot={<ThemeCommandCenter />}
           hudOverlay={hudOverlay}
+          missionMeta={missionMeta}
+          workflowThemeId={workflowThemeId}
         />
       </main>
-      <ComplianceResources
-        open={complianceOpen}
-        onOpenChange={setComplianceOpen}
-        activeTopic={complianceTopic}
-      />
+      <ComplianceResources open={complianceOpen} onOpenChange={setComplianceOpen} activeTopic={complianceTopic} />
       <KeyboardShortcutsModal open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
     </>
   );
 });
-
-Index.displayName = 'Index';
-
-Index.displayName = 'Index';
 
 export default Index;
