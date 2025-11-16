@@ -1,4 +1,4 @@
-import { UploadCloud } from 'lucide-react';
+import { RefreshCcw, UploadCloud } from 'lucide-react';
 import { type ReactNode, useMemo } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,11 @@ import { WORKFLOW_THEMES, type WorkflowThemeId } from '@/design/system';
 import { WorkflowContext } from './context/WorkflowContext';
 import { WorkflowSummaryPanel } from './components/WorkflowSummaryPanel';
 import { WorkflowTimeline } from './components/WorkflowTimeline';
+import { useWorkflowStageEvents } from './hooks/useWorkflowStageEvents';
+import type { UseWorkflowStageEventsResult } from './hooks/useWorkflowStageEvents';
+import { useWorkflowOutreach } from './hooks/useWorkflowOutreach';
+import type { UseWorkflowOutreachResult } from './hooks/useWorkflowOutreach';
+import { STAGE_LABELS } from './constants';
 import type { WorkflowShellProps, WorkflowStageId } from './types';
 
 export function WorkflowShell({
@@ -23,11 +28,14 @@ export function WorkflowShell({
   hudOverlay,
   missionMeta,
   workflowThemeId = 'sunrise',
+  jobId,
 }: WorkflowShellProps) {
   const activeStage = stages.find((stage) => stage.id === activeStageId);
   const activeTheme = useMemo(() => {
     return WORKFLOW_THEMES.find((theme) => theme.id === workflowThemeId) ?? WORKFLOW_THEMES[0];
   }, [workflowThemeId]);
+  const stageEvents = useWorkflowStageEvents(jobId);
+  const outreachLog = useWorkflowOutreach(jobId);
 
   const handleWallpaperUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!onUploadWallpaper || !event.target.files?.length) return;
@@ -86,6 +94,12 @@ export function WorkflowShell({
             <div className="space-y-6">
               <WorkflowTimeline stages={stages} activeStageId={activeStageId} onStageChange={onStageChange} />
               <WorkflowSummaryPanel mission={missionMeta} />
+              {(stageEvents.isRemoteSourceActive || stageEvents.events.length > 0) && (
+                <StageEventsCard data={stageEvents} />
+              )}
+              {(outreachLog.isRemoteSourceActive || outreachLog.touchpoints.length > 0) && (
+                <OutreachCard data={outreachLog} />
+              )}
               {hudOverlay ? (
                 <div className="rounded-3xl border border-white/10 bg-slate-950/60 p-4">{hudOverlay}</div>
               ) : null}
@@ -117,4 +131,108 @@ export function WorkflowShell({
 
 function renderStagePanel(stageId: WorkflowStageId, panel: ReactNode) {
   return <div data-stage-panel={stageId}>{panel}</div>;
+}
+
+interface StageEventsCardProps {
+  data: UseWorkflowStageEventsResult;
+}
+
+function StageEventsCard({ data }: StageEventsCardProps) {
+  return (
+    <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-2xl">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-white/55">
+            Workflow Activity
+          </p>
+          <p className="text-sm text-white/70">Recent stage transitions synced from Supabase.</p>
+        </div>
+        <Button type="button" variant="ghost" size="sm" className="gap-2" onClick={data.refresh} disabled={data.isLoading}>
+          <RefreshCcw className={cn('h-4 w-4', data.isLoading && 'animate-spin')} />
+          Refresh
+        </Button>
+      </div>
+      {data.error ? <p className="mt-2 text-xs text-rose-300">{data.error}</p> : null}
+      {data.events.length ? (
+        <ul className="mt-4 space-y-3">
+          {data.events.map((event) => (
+            <li key={event.id ?? `${event.stageId}-${event.createdAt ?? Math.random()}`} className="rounded-2xl border border-white/10 bg-black/30 p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-white">{STAGE_LABELS[event.stageId]}</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-white/60">{event.status}</p>
+                </div>
+                {event.createdAt ? (
+                  <span className="text-xs text-white/50">{new Date(event.createdAt).toLocaleString()}</span>
+                ) : null}
+              </div>
+              {event.notes ? <p className="mt-2 text-xs text-white/65">{event.notes}</p> : null}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-4 text-sm text-white/60">
+          {data.isRemoteSourceActive ? 'No workflow events logged yet.' : 'Connect Supabase to see workflow telemetry.'}
+        </p>
+      )}
+    </div>
+  );
+}
+
+interface OutreachCardProps {
+  data: UseWorkflowOutreachResult;
+}
+
+function OutreachCard({ data }: OutreachCardProps) {
+  return (
+    <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-2xl">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-white/55">
+            Outreach Log
+          </p>
+          <p className="text-sm text-white/70">Pastor/board communications with status tracking.</p>
+        </div>
+        <Button type="button" variant="ghost" size="sm" className="gap-2" onClick={data.refresh} disabled={data.isLoading}>
+          <RefreshCcw className={cn('h-4 w-4', data.isLoading && 'animate-spin')} />
+          Refresh
+        </Button>
+      </div>
+      {data.error ? <p className="mt-2 text-xs text-rose-300">{data.error}</p> : null}
+      {data.touchpoints.length ? (
+        <ul className="mt-4 space-y-3">
+          {data.touchpoints.map((touchpoint) => {
+            const contact = (touchpoint.contact ?? {}) as Record<string, string>;
+            const contactLabel = contact.name ?? contact.email ?? contact.phone ?? 'Primary contact';
+            return (
+              <li key={touchpoint.id ?? `${touchpoint.channel}-${touchpoint.subject ?? Math.random()}`} className="rounded-2xl border border-white/10 bg-black/30 p-3 text-sm text-white/80">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="font-semibold text-white">{touchpoint.subject ?? contactLabel}</p>
+                    <p className="text-xs text-white/60">
+                      {touchpoint.channel.toUpperCase()} · {touchpoint.status}
+                    </p>
+                  </div>
+                  {touchpoint.sentAt ? (
+                    <span className="text-xs text-white/50">{new Date(touchpoint.sentAt).toLocaleString()}</span>
+                  ) : touchpoint.scheduledAt ? (
+                    <span className="text-xs text-white/50">
+                      Schedules {new Date(touchpoint.scheduledAt).toLocaleString()}
+                    </span>
+                  ) : null}
+                </div>
+                {touchpoint.body ? (
+                  <p className="mt-2 line-clamp-3 text-xs text-white/65">{touchpoint.body}</p>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p className="mt-4 text-sm text-white/60">
+          {data.isRemoteSourceActive ? 'No outreach touchpoints logged yet.' : 'Connect Supabase to sync outreach history.'}
+        </p>
+      )}
+    </div>
+  );
 }

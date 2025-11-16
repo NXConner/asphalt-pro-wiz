@@ -97,6 +97,8 @@ const Index = memo(function Index() {
     ],
   );
 
+  const jobId = (estimator.job as { id?: string | null })?.id ?? null;
+
   const missionControlPanel = useMemo(() => <MissionControlPanel estimator={estimator} />, [estimator]);
 
   const stages = useWorkflowStages({
@@ -274,6 +276,7 @@ const Index = memo(function Index() {
           hudOverlay={hudOverlay}
           missionMeta={missionMeta}
           workflowThemeId={workflowThemeId}
+          jobId={jobId}
         />
       </main>
       <ComplianceResources open={complianceOpen} onOpenChange={setComplianceOpen} activeTopic={complianceTopic} />

@@ -73,4 +73,5 @@ export interface WorkflowShellProps {
   hudOverlay?: ReactNode;
   missionMeta: WorkflowMissionMeta;
   workflowThemeId?: WorkflowThemeId;
+  jobId?: string | null;
 }

@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { isSupabaseConfigured, supabase } from '@/integrations/supabase/client';
@@ -53,6 +54,7 @@ export function useWorkflowTelemetry(
   const [measurementRuns, setMeasurementRuns] = useState<WorkflowMeasurementRun[]>(fallbackRuns);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
+  const supabaseClient = useMemo(() => supabase as SupabaseClient<any>, []);
 
   const normalizedFallback = useMemo(() => fallbackRuns.filter(Boolean), [fallbackRuns]);
 
@@ -73,8 +75,8 @@ export function useWorkflowTelemetry(
 
     setIsLoading(true);
     setError(undefined);
-    try {
-      const { data, error: queryError } = await supabase
+      try {
+        const { data, error: queryError } = await supabaseClient
         .from('workflow_measurement_runs')
         .select('id, strategy, status, square_feet, crack_linear_feet, confidence, notes, created_at, workflow_measurement_segments ( id, label, square_feet )')
         .eq('job_id', jobId)
@@ -100,7 +102,7 @@ export function useWorkflowTelemetry(
     } finally {
       setIsLoading(false);
     }
-  }, [jobId, normalizedFallback]);
+  }, [jobId, normalizedFallback, supabaseClient]);
 
   useEffect(() => {
     fetchRemoteRuns();
