@@ -25,14 +25,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
   }, [isAuthenticated, isConfigured, isPreviewEnv, loading, navigate]);
 
-  useEffect(() => {
-    if (!loading && requireAuth && !isAuthenticated) {
-      logSecurityEvent('authorization_failure', {
-        path: window.location.pathname,
-      });
-      navigate('/auth', { replace: true });
-    }
-  }, [isAuthenticated, loading, navigate, requireAuth]);
+  // Auth check is already handled above
 
   if (loading) {
     return (

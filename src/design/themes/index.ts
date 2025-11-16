@@ -3,8 +3,6 @@
  * Theme configurations for all Division-inspired themes
  */
 
-import { divisionColors } from '../tokens';
-
 export interface DivisionTheme {
   name: string;
   id: string;
@@ -21,33 +19,33 @@ export const divisionThemes: DivisionTheme[] = [
   {
     name: 'Division Agent',
     id: 'theme-division-agent',
-    primary: divisionColors.orange[400],
-    secondary: divisionColors.tech[400],
-    accent: divisionColors.orange[500],
-    background: divisionColors.bg.dark,
-    foreground: divisionColors.text.primary,
-    border: divisionColors.border.accent,
+    primary: '#fb923c',
+    secondary: '#22d3ee',
+    accent: '#ff8c00',
+    background: 'hsl(220 50% 4%)',
+    foreground: 'hsl(220 22% 92%)',
+    border: 'hsl(25 100% 55%)',
     description: 'Signature SHD orange with tech blue accents - standard agent interface',
   },
   {
     name: 'Rogue Agent',
     id: 'theme-division-rogue',
-    primary: divisionColors.rogue[400],
-    secondary: divisionColors.rogue[600],
-    accent: divisionColors.rogue[500],
-    background: divisionColors.bg.overlay,
-    foreground: divisionColors.text.primary,
-    border: divisionColors.rogue[500],
+    primary: '#f87171',
+    secondary: '#dc2626',
+    accent: '#ef4444',
+    background: 'hsl(220 50% 4%)',
+    foreground: 'hsl(220 22% 92%)',
+    border: '#ef4444',
     description: 'Rogue red with dark crimson - aggressive, hostile interface',
   },
   {
     name: 'Dark Zone',
     id: 'theme-division-darkzone',
-    primary: divisionColors.rogue[500],
-    secondary: divisionColors.orange[500],
-    accent: divisionColors.rogue[400],
-    background: divisionColors.bg.dark,
-    foreground: divisionColors.text.primary,
+    primary: '#ef4444',
+    secondary: '#ff8c00',
+    accent: '#f87171',
+    background: 'hsl(220 50% 4%)',
+    foreground: 'hsl(220 22% 92%)',
     border: divisionColors.rogue[400],
     description: 'Dark Zone warning red with orange alerts - high-tension combat aesthetic',
   },
@@ -238,54 +236,17 @@ export const DIVISION_THEMES: Record<DivisionThemeId, DivisionThemeDefinition> =
       '--ring': '152 86% 54%',
     }),
   },
-    'theme-division-sunrise': {
-      id: 'theme-division-sunrise',
-      name: 'Sunrise Service',
-      description: 'Golden hour warmth for early-morning campus walkthroughs.',
-      tokens: withPrimary('32 96% 58%', '12 88% 62%', {
-        '--background': '215 62% 6%',
-        '--card': '214 56% 10%',
-        '--foreground': '38 28% 94%',
-        '--hud-grid-opacity': '0.18',
-        '--ring': '32 96% 64%',
-      }),
-    },
-    'theme-division-evensong': {
-      id: 'theme-division-evensong',
-      name: 'Evensong Twilight',
-      description: 'Indigo-lavender gradients with brass accents for evening briefings.',
-      tokens: withPrimary('266 82% 64%', '38 96% 60%', {
-        '--background': '232 64% 5%',
-        '--card': '232 58% 10%',
-        '--foreground': '230 24% 94%',
-        '--hud-grid-opacity': '0.24',
-        '--ring': '266 82% 60%',
-      }),
-    },
-    'theme-division-revival': {
-      id: 'theme-division-revival',
-      name: 'Revival Energy',
-      description: 'Teal and cobalt uplift for youth night rally planning.',
-      tokens: withPrimary('168 82% 54%', '210 92% 60%', {
-        '--background': '204 68% 6%',
-        '--card': '204 60% 10%',
-        '--foreground': '195 24% 94%',
-        '--hud-grid-opacity': '0.2',
-        '--ring': '210 92% 62%',
-      }),
-    },
-    'theme-division-celestial': {
-      id: 'theme-division-celestial',
-      name: 'Celestial Chapel',
-      description: 'Soft sky gradients with luminous whites for worship center dashboards.',
-      tokens: withPrimary('198 88% 72%', '26 92% 72%', {
-        '--background': '210 58% 12%',
-        '--card': '210 34% 18%',
-        '--foreground': '210 18% 98%',
-        '--hud-grid-opacity': '0.12',
-        '--ring': '198 88% 68%',
-      }),
-    },
+  'theme-division-celestial': {
+    id: 'theme-division-celestial',
+    name: 'Celestial Night',
+    description: 'Deep indigo conference glow for executive mission briefings.',
+    tokens: withPrimary('256 92% 70%', '242 76% 65%', {
+      '--background': '260 60% 5%',
+      '--card': '260 54% 9%',
+      '--foreground': '260 20% 92%',
+      '--ring': '250 92% 70%',
+    }),
+  },
 };
 
 export const DIVISION_THEME_IDS = Object.keys(DIVISION_THEMES) as DivisionThemeId[];

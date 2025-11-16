@@ -17,14 +17,14 @@ export function getBrowserClient(): SupabaseClient | null {
     typeof import.meta !== 'undefined' &&
     'env' in import.meta &&
     typeof (import.meta.env as { VITE_SUPABASE_URL?: string })?.VITE_SUPABASE_URL === 'string'
-      ? (import.meta.env as { VITE_SUPABASE_URL: string }).VITE_SUPABASE_URL
+      ? (import.meta.env as any).VITE_SUPABASE_URL
       : undefined;
   const key =
     typeof import.meta !== 'undefined' &&
     'env' in import.meta &&
     typeof (import.meta.env as { VITE_SUPABASE_ANON_KEY?: string })?.VITE_SUPABASE_ANON_KEY ===
       'string'
-      ? (import.meta.env as { VITE_SUPABASE_ANON_KEY: string }).VITE_SUPABASE_ANON_KEY
+      ? (import.meta.env as any).VITE_SUPABASE_ANON_KEY
       : undefined;
   if (!url || !key) {
     cached = { browser: null };
@@ -72,7 +72,7 @@ export async function checkPermission(
   id: string | number,
   userId: string,
 ): Promise<boolean> {
-  const { data, error } = await supabase.from(table).select('user_id').eq('id', id).single();
+  const { data, error } = await supabase.from(table as any).select('user_id').eq('id', id).single();
 
   if (error || !data) return false;
   return (data as { user_id?: string }).user_id === userId;

@@ -5,7 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import type { PortalSnapshot } from '@/types';
+
+interface PortalSnapshot {
+  id: string;
+  subtotal: number;
+  tax: number;
+  total: number;
+  items?: Array<{ name: string; cost: number }>;
+  costs?: Array<{ name: string; cost: number }>;
+  jobName?: string;
+  customerAddress?: string;
+  customerItems?: Array<{ name: string; cost: number }>;
+}
 
 // Lightweight, read-only portal for customers
 // MVP: enter a code (future), or paste a tokenized estimate snapshot

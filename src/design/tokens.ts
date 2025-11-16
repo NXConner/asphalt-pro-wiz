@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+
 /**
  * Division Design System Tokens
  * Centralized design tokens inspired by The Division 1/2 aesthetic
@@ -58,7 +60,11 @@ export const divisionZIndex = {
   hud: 1080,
 } as const;
 
-export type DivisionColor = typeof divisionColors;
+export const divisionColors = {
+  orange: { 400: '#fb923c', 500: '#ff8c00', 600: '#ea580c' },
+  tech: { 400: '#22d3ee', 500: '#06b6d4', 600: '#0891b2' },
+  rogue: { 400: '#f87171', 500: '#ef4444', 600: '#dc2626' },
+} as const;
 export type DivisionSpacing = typeof divisionSpacing;
 export type DivisionBorderRadius = typeof divisionBorderRadius;
 export type DivisionShadows = typeof divisionShadows;
@@ -149,7 +155,7 @@ export function composeThemeVariables(
 export function toCSSProperties(tokens: Record<string, string>): CSSProperties {
   return Object.entries(tokens).reduce<CSSProperties>((acc, [key, value]) => {
     const cssKey = key.startsWith('--') ? key : `--${key}`;
-    (acc as Record<string, string>)[cssKey] = value;
+    (acc as any)[cssKey] = value;
     return acc;
   }, {});
 }
