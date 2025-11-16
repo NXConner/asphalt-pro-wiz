@@ -61,9 +61,48 @@ export const divisionZIndex = {
 } as const;
 
 export const divisionColors = {
-  orange: { 400: '#fb923c', 500: '#ff8c00', 600: '#ea580c' },
-  tech: { 400: '#22d3ee', 500: '#06b6d4', 600: '#0891b2' },
-  rogue: { 400: '#f87171', 500: '#ef4444', 600: '#dc2626' },
+  orange: {
+    300: '#fdba74',
+    400: '#fb923c',
+    500: '#ff8c00',
+    600: '#ea580c',
+  },
+  tech: {
+    300: '#67e8f9',
+    400: '#22d3ee',
+    500: '#0ea5e9',
+    600: '#0284c7',
+  },
+  rogue: {
+    300: '#fecaca',
+    400: '#f87171',
+    500: '#ef4444',
+    600: '#dc2626',
+  },
+  stealth: {
+    300: '#a8f3c4',
+    400: '#4ade80',
+    500: '#22c55e',
+  },
+  hunter: {
+    300: '#d8b4fe',
+    400: '#c084fc',
+    500: '#a855f7',
+  },
+  bg: {
+    dark: 'hsl(220 50% 4%)',
+    elevated: 'hsl(222 45% 7%)',
+    overlay: 'rgba(2, 6, 23, 0.92)',
+    card: 'hsl(222 45% 10%)',
+  },
+  text: {
+    primary: 'hsl(220 22% 92%)',
+    secondary: 'hsl(220 18% 70%)',
+  },
+  border: {
+    base: 'hsl(215 32% 18%)',
+    accent: 'hsl(25 100% 55%)',
+  },
 } as const;
 export type DivisionSpacing = typeof divisionSpacing;
 export type DivisionBorderRadius = typeof divisionBorderRadius;

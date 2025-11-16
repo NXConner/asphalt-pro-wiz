@@ -31,6 +31,16 @@ interface JobSeedDefinition {
   premiumServices?: string[];
 }
 
+interface WallpaperSeedDefinition {
+  key: string;
+  name: string;
+  description: string;
+  gradient: string;
+  tone: "dusk" | "aurora" | "ember" | "lagoon" | "stealth" | "command";
+  scope?: "global" | "org";
+  source?: "system" | "custom" | "synthesized";
+}
+
 async function ensureJob(
   client: PoolClient,
   orgId: string,
@@ -157,6 +167,88 @@ async function ensureTelemetry(
       );
     }
   }
+}
+
+async function ensureWallpaper(
+  client: PoolClient,
+  adminUserId: string,
+  orgId: string | null,
+  seed: WallpaperSeedDefinition,
+): Promise<string> {
+  const wallpaperHash = hashToken(`${seed.name}:${seed.gradient}`);
+  const scope = seed.scope ?? "global";
+
+  const insertParams: QueryOptions = [
+    scope === "org" ? orgId : null,
+    adminUserId,
+    seed.name,
+    seed.description,
+    seed.gradient,
+    seed.tone,
+    seed.source ?? "system",
+    wallpaperHash,
+    scope !== "org",
+  ];
+
+  const { rows } = await client.query<{ id: string }>(
+    `INSERT INTO public.theme_wallpapers (org_id, created_by, name, description, data_url, tone, source, wallpaper_hash, is_global)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+     ON CONFLICT (wallpaper_hash)
+     DO UPDATE
+       SET name = EXCLUDED.name,
+           description = EXCLUDED.description,
+           data_url = EXCLUDED.data_url,
+           tone = EXCLUDED.tone,
+           source = EXCLUDED.source,
+           is_global = EXCLUDED.is_global,
+           updated_at = now()
+     RETURNING id;`,
+    insertParams,
+  );
+
+  if (rows[0]?.id) {
+    return rows[0].id;
+  }
+
+  const fallback = await client.query<{ id: string }>(
+    `SELECT id FROM public.theme_wallpapers WHERE wallpaper_hash = $1 LIMIT 1;`,
+    [wallpaperHash] satisfies QueryOptions,
+  );
+
+  if (!fallback.rows[0]) {
+    throw new Error(`Unable to upsert wallpaper ${seed.name}`);
+  }
+
+  return fallback.rows[0].id;
+}
+
+async function ensureThemePreference(
+  client: PoolClient,
+  userId: string,
+  orgId: string,
+  wallpaperId: string | null,
+): Promise<void> {
+  await client.query(
+    `INSERT INTO public.theme_preferences (user_id, org_id, theme_id, wallpaper_id, palette, wallpaper_settings, hud_settings)
+     VALUES ($1, $2, 'theme-division-agent', $3, $4::jsonb, $5::jsonb, $6::jsonb)
+     ON CONFLICT (user_id)
+     DO UPDATE
+       SET org_id = COALESCE(EXCLUDED.org_id, theme_preferences.org_id),
+           theme_id = EXCLUDED.theme_id,
+           wallpaper_id = COALESCE(EXCLUDED.wallpaper_id, theme_preferences.wallpaper_id),
+           palette = theme_preferences.palette || EXCLUDED.palette,
+           wallpaper_settings = theme_preferences.wallpaper_settings || EXCLUDED.wallpaper_settings,
+           hud_settings = theme_preferences.hud_settings || EXCLUDED.hud_settings,
+           updated_at = now();`,
+    [
+      userId,
+      orgId,
+      wallpaperId,
+      JSON.stringify({ primary: "25 100% 55%", accent: "197 88% 56%" }),
+      JSON.stringify({ opacity: 0.82, blur: 12 }),
+      JSON.stringify({ hudOpacity: 0.85, hudBlur: 10, hudPreset: "command" }),
+    ] satisfies QueryOptions,
+  );
 }
 
 function hashToken(seed: string): string {
@@ -364,6 +456,53 @@ async function main() {
         }
       }
     }
+
+    const wallpaperSeeds: WallpaperSeedDefinition[] = [
+      {
+        key: "twilight-ops",
+        name: "Twilight Ops",
+        description: "Warm dusk glow across a tactical grid.",
+        gradient:
+          "radial-gradient(circle at 20% 18%, rgba(255,128,0,0.45) 0%, rgba(9,13,25,0.95) 55%), linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%)",
+        tone: "dusk",
+        scope: "global",
+        source: "system",
+      },
+      {
+        key: "sanctuary-grid",
+        name: "Sanctuary Grid",
+        description: "Teal aurora bands reflecting sanctuary lighting.",
+        gradient:
+          "radial-gradient(circle at 10% 35%, rgba(32,209,205,0.38) 0%, rgba(10,15,30,0.92) 55%), linear-gradient(135deg, rgba(14,165,233,0.25), rgba(8,47,73,0.85))",
+        tone: "lagoon",
+        scope: "global",
+        source: "system",
+      },
+      {
+        key: "revival-rush",
+        name: "Revival Rush",
+        description: "Neon teal ribbons for youth outreach schedules.",
+        gradient:
+          "linear-gradient(135deg, rgba(59,130,246,0.25), transparent), linear-gradient(135deg, rgba(16,185,129,0.25), rgba(4,47,46,0.9))",
+        tone: "aurora",
+        scope: "org",
+        source: "synthesized",
+      },
+    ];
+
+    const wallpaperIdMap = new Map<string, string>();
+    for (const wallpaperSeed of wallpaperSeeds) {
+      const wallpaperId = await ensureWallpaper(
+        client,
+        adminUserId,
+        orgId,
+        wallpaperSeed,
+      );
+      wallpaperIdMap.set(wallpaperSeed.key, wallpaperId);
+    }
+
+    const defaultWallpaperId = wallpaperIdMap.get("twilight-ops") ?? null;
+    await ensureThemePreference(client, adminUserId, orgId, defaultWallpaperId);
 
     const stMarkJobId = jobIdMap.get("st-mark-sanctuary-reseal");
 

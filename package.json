@@ -22,6 +22,7 @@
     "snyk:monitor": "snyk monitor || true",
     "security:scan": "npm run audit && npm run snyk:test",
     "security:report": "npm audit --audit-level=moderate --json > security-report.json",
+    "security:ci": "npm run audit && npm run snyk:test && npm run security:report",
     "prepare": "husky",
     "lint-staged": "lint-staged",
     "precommit:hook": "echo Running pre-commit checks && npm run check:env --silent && npm run lint-staged && npm run lint && npm run typecheck && npm run test:unit -- --run",
@@ -46,7 +47,9 @@
     "android:gradle:release": "android/gradlew assembleRelease",
     "android:debug": "npm run mobile:prep && npm run android:gradle:debug",
     "android:release": "npm run mobile:prep && npm run android:gradle:release",
-    "android:open": "cap open android"
+    "android:open": "cap open android",
+    "secrets:render": "tsx scripts/secrets/render-runtime.ts",
+    "secrets:render:strict": "tsx scripts/secrets/render-runtime.ts --strict"
   },
   "dependencies": {
     "@capacitor/android": "^6.1.4",
