@@ -28,3 +28,8 @@ dist-ssr
 .env.*
 !.env.example
 config/secrets/generated/**
+
+# Nested repositories and artifacts
+asphalt-pro-wiz/
+ersn8terDesktopasphalt-pro-wiz
+tatus*
