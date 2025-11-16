@@ -167,6 +167,13 @@ const checks: EnvCheck[] = [
     required: true,
     category: 'observability',
   },
+    {
+      key: 'VITE_DISABLE_THIRD_PARTY_ANALYTICS',
+      description: 'Disable GA/TikTok beacons when running behind restricted proxies (0/1)',
+      required: false,
+      category: 'observability',
+      validate: (value, ctx) => validateBooleanFlag('VITE_DISABLE_THIRD_PARTY_ANALYTICS', value, ctx),
+    },
   {
     key: 'VITE_OBSERVABILITY_EXPORTER_URL',
     description: 'HTTP exporter endpoint for observability payload forwarding',
@@ -585,6 +592,21 @@ function validateHealthcheckUrl(value: string | undefined, ctx: AuditContext): C
       },
     ];
   }
+}
+
+function validateBooleanFlag(key: string, value: string | undefined, ctx: AuditContext): CheckResult[] {
+  if (!value) return [];
+  const normalized = value.trim().toLowerCase();
+  if (['1', '0', 'true', 'false', 'yes', 'no'].includes(normalized)) {
+    return [];
+  }
+  return [
+    {
+      key,
+      message: `${key} should be boolean-like (0/1/true/false). Received "${value}".`,
+      severity: ctx.strict ? 'error' : 'warn',
+    },
+  ];
 }
 
 function validatePositiveNumber(

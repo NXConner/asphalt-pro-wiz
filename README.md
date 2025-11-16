@@ -144,6 +144,7 @@ Lovable previews poll `VITE_HEALTHCHECK_URL` (`/health` by default) **before** t
 - Enable/disable web vitals and feature telemetry with `VITE_ENABLE_WEB_VITALS` and `VITE_ENABLE_FEATURE_TELEMETRY`.
 - Integrate with external APMs by configuring `VITE_OBSERVABILITY_EXPORTER_URL` and `VITE_SENTRY_DSN`.
 - **Lovable preview watchdog**: `installLovableAssetMonitoring()` pings `VITE_HEALTHCHECK_URL` using `VITE_PREVIEW_HEARTBEAT_INTERVAL_MS`. A static JSON responder (`public/health`) guarantees 200-level responses even before Vite finishes compiling, while the SPA `/health` route layers live diagnostics once React hydrates. If previews return “connection refused,” verify this endpoint locally (Step 3) before redeploying to Lovable; keep `PORT`/`VITE_DEV_SERVER_PORT` at 8080 unless your proxy explicitly supports overrides.
+- **Third-party beacon guardrails**: Lovable previews often block Google/TikTok hosts. Set `VITE_DISABLE_THIRD_PARTY_ANALYTICS=1` to keep `gtag`/`ttq` calls from firing, or rely on the automatic Lovable host/offline detection baked into `trackEvent` to suppress them gracefully while still logging to Supabase.
 
 ---
 
