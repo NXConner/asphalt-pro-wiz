@@ -22,6 +22,7 @@
     "snyk:monitor": "snyk monitor || true",
     "security:scan": "npm run audit && npm run snyk:test",
     "security:report": "npm audit --audit-level=moderate --json > security-report.json",
+    "security:baseline": "npm run security:scan && npm run security:report",
     "security:ci": "npm run audit && npm run snyk:test && npm run security:report",
     "prepare": "husky",
     "lint-staged": "lint-staged",

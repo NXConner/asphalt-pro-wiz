@@ -32,6 +32,8 @@ npm run migrate:up
 ADMIN_EMAIL=n8ter8@gmail.com npm run seed
 ```
 
+> The seed pass now also inserts measurement runs (with segments), outreach touchpoints, workflow stage events, and draft contracts so the redesigned workflow shell renders real telemetry immediately.
+
 This pass now also provisions the Theme Command Center inventory:
 
 - Global wallpapers are inserted into `theme_wallpapers` with `is_global=true` so every tenant shares a curated Division palette.

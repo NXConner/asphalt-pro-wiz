@@ -39,6 +39,7 @@ export interface AreaItem {
 export type StripingColor = 'White' | 'Blue' | 'Yellow' | 'Red' | 'Green';
 
 interface JobState {
+  id?: string | null;
   name: string;
   setName: (value: string) => void;
   address: string;
@@ -661,7 +662,8 @@ export function useEstimatorState(): EstimatorState {
     setData: setBusinessData,
   };
 
-  const job: JobState = {
+    const job: JobState = {
+      id: null,
     name: jobName,
     setName: setJobName,
     address: customerAddress,

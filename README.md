@@ -78,6 +78,8 @@ scripts/install_dependencies.sh --strict-env
 
 # 4. Start dev server (refresh running preview if already launched)
 npm run dev
+# Or run the Dockerized dev stack with Supabase + measurement mocks:
+# docker compose --profile dev up devserver db measurement-ai
 
 # 5. Prime Supabase (optional for local data)
 npm run migrate:up
@@ -105,6 +107,7 @@ npm run seed
   - **Deployment metadata**: `APP_ENV`, `VITE_ENVIRONMENT`, `VITE_APP_VERSION`, `VITE_BASE_PATH`, `VITE_BASE_NAME`, `VITE_BASE_URL`.
   - **Preview reliability & health**: `PORT`, `VITE_DEV_SERVER_PORT`, `VITE_PREVIEW_HEARTBEAT_INTERVAL_MS`, `VITE_HEALTHCHECK_URL` — keep aligned with Lovable proxy expectations to avoid connection refused errors.
   - **Supabase**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SUPABASE_PROJECT_ID`, `SUPABASE_PROJECT_REF`, `DATABASE_URL`.
+  - **Workflow telemetry**: `VITE_SAMPLE_JOB_ID` (optional) points the workflow shell at a seeded Supabase job UUID so stage/outreach history can be fetched automatically.
   - **Scheduler & liturgical sync**: `SCHEDULER_BLACKOUT_FEED_URL`, `SCHEDULER_BLACKOUT_FEED_TOKEN`, `SCHEDULER_CREW_CAPACITY`, `SCHEDULER_ICS_PUBLISH_BUCKET`, `VITE_LITURGICAL_CALENDAR_URL`.
   - **AI & wallpaper services**: `VITE_THEME_AI_ENDPOINT`, `VITE_THEME_AI_MODEL`, `THEME_WALLPAPER_AI_TOKEN`, `VITE_ESTIMATOR_AI_ENDPOINT`, `ESTIMATOR_AI_TOKEN`.
   - **Supplier & incident telemetry**: `VITE_SUPPLIER_FEED_URL`, `SUPPLIER_INTELLIGENCE_API_KEY`, `VITE_INCIDENT_WEBHOOK_URL`, `INCIDENT_BRIDGE_SIGNING_SECRET`.
@@ -142,13 +145,15 @@ npm run seed
 
 - Supabase schema enforces RLS across organizations, jobs, estimates, crew data, documents, and premium services.
 - Roles (`viewer`, `operator`, `manager`, `super_admin`) backed by `user_roles` and `user_org_memberships`.
-- Scripts:
-  - `npm run security:scan` (npm audit + Snyk)
-  - `npm run security:report` (JSON audit snapshot)
-  - `npm run security:ci` (aggregated audit + Snyk + JSON report for CI gates)
+  - Scripts:
+    - `npm run security:scan` (npm audit + Snyk)
+    - `npm run security:report` (JSON audit snapshot)
+    - `npm run security:baseline` (scan + report in one step for daily health checks)
+    - `npm run security:ci` (aggregated audit + Snyk + JSON report for CI gates)
 - Secret resolution is centralised in `src/config/secrets.ts`, which normalises environment values and surfaces actionable errors when a managed provider (`SECRET_PROVIDER=doppler|vault|aws-secrets-manager`) is enabled without configuration. See `config/secrets/README.md` for provider-specific bootstrapping.
   - GitHub Actions pipeline (`.github/workflows/main.yml`) runs CodeQL SAST, dependency scans, and tests per push.
 - Secrets management patterns documented in `docs/SECRETS_AND_CONFIG.md` with Doppler/Vault/AWS sample configs.
+  - day-to-day security expectations (secret rotation, dependency scans, incident checklist) live in `docs/SECURITY_OPERATIONS.md`.
 - Virginia contractor compliance workflows, invoicing expectations, and retention policies detailed in `docs/PRODUCTION_READINESS.md` and `docs/SECURITY_REMEDIATION_GUIDE.md`.
 
 ---
@@ -217,6 +222,18 @@ STAGE_MULTIPLIER=3 BASE_URL=https://preview.example npx k6 run scripts/load/k6-e
 
 Metrics emitted: `successful_requests`, `request_duration`, `content_validation_failures`. Thresholds enforce p95 < 800 ms and success rate > 97%.
 
+### k6 Workflow Orchestration (Supabase REST)
+
+```bash
+WORKFLOW_SUPABASE_URL=https://your-project.supabase.co/rest/v1 \
+WORKFLOW_SERVICE_ROLE_KEY=$(cat service_role_jwt.txt) \
+WORKFLOW_JOB_ID=YOUR_JOB_UUID \
+STAGE_MULTIPLIER=2 \
+npx k6 run scripts/load/k6-workflow.js
+```
+
+Exercises the workflow telemetry tables by creating synthetic measurement runs, stage events, and outreach touchpoints via Supabase REST (requires a service-role or elevated key). Point `WORKFLOW_JOB_ID` at a seeded job (see `VITE_SAMPLE_JOB_ID` and `npm run seed`) to hydrate the same mission surfaced in the Workflow Shell.
+
 ### Artillery Smoke Pulse
 
 ```bash
@@ -232,14 +249,14 @@ Ideal for CI or pre-release smoke tests. Full instructions live in `scripts/load
 ### Containers
 
 ```bash
-docker compose --env-file .env up --build
+docker compose --env-file .env up --build web
 # Reset state
 docker compose down -v
 ```
 
 > **Quality gate:** The Docker build stage runs `npm run lint`, `npm run typecheck`, and `npm run test:unit -- --run` before bundling, failing fast on regressions.
 
-> Need a hot-reload setup instead? Pair `docker-compose.yml` with `docker-compose.dev.yml` (see `docs/CONTAINERIZATION.md`) to spin up the Vite dev server alongside Postgres + Otel in one command.
+> Need a hot-reload setup instead? Enable the dev profile: `docker compose --profile dev up devserver db measurement-ai`.
 
 ### Android
 
@@ -253,7 +270,7 @@ npm run android:gradle:debug
 1. `npm run security:scan`
 2. `npm run openapi:generate` (parses Supabase Edge Function annotations and refreshes `docs/swagger.json`)
 3. `npm run test:e2e`
-4. Run load smoke (`k6-observability`, `k6-estimate`, or `artillery`)
+4. Run load smoke (`k6-observability`, `k6-estimate`, `k6-workflow`, or `artillery`)
 5. Update `CHANGELOG.md`
 
 ---

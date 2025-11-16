@@ -107,6 +107,33 @@ npx k6 run scripts/load/k6-estimate.js
 
 > Tip: k6 emits a `content_validation_failures` counter when HTML checks fail. Use the `--summary-export` flag to capture JSON output for CI artefacts.
 
+## k6 – workflow orchestration (Supabase REST)
+
+```bash
+# Requires Supabase REST base, service-role (or elevated) key, and a job UUID
+WORKFLOW_SUPABASE_URL=https://YOUR_SUPABASE_URL/rest/v1 \
+WORKFLOW_SERVICE_ROLE_KEY=$(cat service_role_jwt.txt) \
+WORKFLOW_JOB_ID=YOUR_JOB_UUID \
+STAGE_MULTIPLIER=2 \
+npx k6 run scripts/load/k6-workflow.js
+```
+
+This profile stresses the Supabase REST tables introduced for the Workflow Shell:
+
+- Inserts synthetic `workflow_measurement_runs` + `workflow_measurement_segments`.
+- Logs a `workflow_stage_events` entry (`measure → done`) for each iteration.
+- Records `workflow_outreach_touchpoints` to simulate board/pastor communication.
+- Fetches measurement history to validate query latency.
+
+Environment knobs:
+
+- `WORKFLOW_SUPABASE_URL` – REST base (`https://<project>.supabase.co/rest/v1`).
+- `WORKFLOW_SERVICE_ROLE_KEY` – service-role JWT (needed for write-heavy load tests). Use a scoped key in staging environments.
+- `WORKFLOW_JOB_ID` – UUID of the job to hydrate (seeded via `npm run seed` by default).
+- `STAGE_MULTIPLIER` – scale the ramp intensity (defaults to `1`).
+
+> Tip: Run this script against a disposable database branch if you want to keep telemetry tables clean; it intentionally writes rows to mimic reality.
+
 ## Artillery – quick pulse for CI
 
 ```bash
