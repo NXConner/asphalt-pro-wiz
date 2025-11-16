@@ -86,6 +86,8 @@ npm run migrate:up
 npm run seed
 ```
 
+Lovable previews poll `VITE_HEALTHCHECK_URL` (`/health` by default) **before** the SPA mounts. The repository now ships a static responder at `public/health` so previews stay green while Vite compiles; once React hydrates, the `/health` route in `src/pages/Health.tsx` adds live metadata. If you change ports or hosts, update `PORT`, `VITE_DEV_SERVER_PORT`, and `VITE_HEALTHCHECK_URL`, then refresh the already-running dev server.
+
 > **Windows**: Follow `docs/WINDOWS_SETUP.md` for shell-specific flags, PostgreSQL provisioning, and Playwright dependencies.
 
 ---
@@ -116,6 +118,7 @@ npm run seed
   - **Mapping & Weather**: `VITE_GOOGLE_MAPS_API_KEY`, `VITE_OPENWEATHER_API_KEY`, `VITE_MAPBOX_TOKEN`, `VITE_AIR_QUALITY_API_KEY`.
   - **HUD Sync & Export**: `VITE_HUD_DEFAULT_ANIMATION_PRESET`, `VITE_HUD_ANIMATION_PRESETS_PATH`, `VITE_HUD_GESTURE_SENSITIVITY`, `VITE_HUD_MULTI_MONITOR_STRATEGY`, `VITE_HUD_CONFIG_EXPORT_FORMAT`, `VITE_HUD_CONFIG_EXPORT_ENDPOINT`, plus secrets `HUD_CONFIG_EXPORT_SIGNING_KEY`, `HUD_CONFIG_EXPORT_ENCRYPTION_KEY`, `HUD_CONFIG_EXPORT_BUCKET`.
   - **Developer tooling**: `GITHUB_TOKEN` for ingest scripts.
+  - `npm run check:env` (or `npm run check:env -- --strict` in CI) now blocks deployments if Lovable routing keys drift: it validates `PORT`, `VITE_DEV_SERVER_PORT`, `VITE_BASE_PATH`, `VITE_HEALTHCHECK_URL`, and both heartbeat timing variables so preview watchdogs never fail silently.
 - **Secrets provider**: Set `SECRET_PROVIDER` to `env` (default), `doppler`, `vault`, or `aws-secrets-manager`. The runtime helper `src/config/secrets.ts` reads this value and fails fast if required secrets are missing or the provider is unconfigured.
 - Generate sanitized runtime bundles with `npm run secrets:render -- --output .env.runtime` after hydrating secrets. Use `--strict` in CI to fail fast when a key from `.env.example` is missing.
 - Secrets automation templates live in `config/secrets/` for Doppler, Vault, and AWS Secrets Manager pipelines.
@@ -137,7 +140,7 @@ npm run seed
   - Lovable preview asset watchers (`lovable.asset_load_error`, `lovable.asset_promise_rejection`) for visibility into missing bundles or proxy misconfigurations.
 - Enable/disable web vitals and feature telemetry with `VITE_ENABLE_WEB_VITALS` and `VITE_ENABLE_FEATURE_TELEMETRY`.
 - Integrate with external APMs by configuring `VITE_OBSERVABILITY_EXPORTER_URL` and `VITE_SENTRY_DSN`.
-- **Lovable preview watchdog**: `installLovableAssetMonitoring()` pings `VITE_HEALTHCHECK_URL` using `VITE_PREVIEW_HEARTBEAT_INTERVAL_MS`. If previews return “connection refused,” verify this endpoint locally (Step 3) before redeploying to Lovable; set `PORT=8080` unless Lovable assigns a different value.
+- **Lovable preview watchdog**: `installLovableAssetMonitoring()` pings `VITE_HEALTHCHECK_URL` using `VITE_PREVIEW_HEARTBEAT_INTERVAL_MS`. A static JSON responder (`public/health`) guarantees 200-level responses even before Vite finishes compiling, while the SPA `/health` route layers live diagnostics once React hydrates. If previews return “connection refused,” verify this endpoint locally (Step 3) before redeploying to Lovable; keep `PORT`/`VITE_DEV_SERVER_PORT` at 8080 unless your proxy explicitly supports overrides.
 
 ---
 

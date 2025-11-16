@@ -73,13 +73,13 @@ const checks: EnvCheck[] = [
     required: true,
     category: 'meta',
   },
-  {
-    key: 'VITE_BASE_PATH',
-    description: 'Vite build base path (must be relative for Lovable previews)',
-    required: true,
-    category: 'routing',
-    validate: validateBasePath,
-  },
+    {
+      key: 'VITE_BASE_PATH',
+      description: 'Vite build base path (must be relative for Lovable previews)',
+      required: true,
+      category: 'routing',
+      validate: (value, ctx) => validateBasePath(value, ctx, 'VITE_BASE_PATH'),
+    },
   {
     key: 'VITE_BASE_NAME',
     description: 'React Router basename (leave `/` to enable Lovable detection)',
@@ -104,6 +104,57 @@ const checks: EnvCheck[] = [
     required: true,
     category: 'routing',
   },
+    {
+      key: 'VITE_LOVABLE_BASE_PATH',
+      description: 'Lovable-provided base path override used for previews',
+      required: false,
+      category: 'routing',
+      validate: (value, ctx) => validateBasePath(value, ctx, 'VITE_LOVABLE_BASE_PATH'),
+    },
+    {
+      key: 'LOVABLE_BASE_PATH',
+      description: 'Fallback Lovable base path override',
+      required: false,
+      category: 'routing',
+      validate: (value, ctx) => validateBasePath(value, ctx, 'LOVABLE_BASE_PATH'),
+    },
+    {
+      key: 'PORT',
+      description: 'Primary dev server port exposed to Lovable/Docker (default 8080)',
+      required: true,
+      category: 'routing',
+      validate: (value, ctx) => validatePortValue('PORT', value, ctx),
+    },
+    {
+      key: 'VITE_DEV_SERVER_PORT',
+      description: 'Vite dev server port (must align with PORT)',
+      required: true,
+      category: 'routing',
+      validate: (value, ctx) => validatePortValue('VITE_DEV_SERVER_PORT', value, ctx),
+    },
+    {
+      key: 'VITE_HEALTHCHECK_URL',
+      description: 'Lovable preview heartbeat endpoint (must resolve before SPA boot)',
+      required: true,
+      category: 'routing',
+      validate: validateHealthcheckUrl,
+    },
+    {
+      key: 'VITE_PREVIEW_HEARTBEAT_INTERVAL_MS',
+      description: 'Interval in ms between Lovable heartbeat pings',
+      required: true,
+      category: 'routing',
+      validate: (value, ctx) =>
+        validatePositiveNumber('VITE_PREVIEW_HEARTBEAT_INTERVAL_MS', value, 5000, 600000, ctx),
+    },
+    {
+      key: 'VITE_PREVIEW_HEALTH_TIMEOUT_MS',
+      description: 'Timeout in ms for Lovable heartbeat responses',
+      required: true,
+      category: 'routing',
+      validate: (value, ctx) =>
+        validatePositiveNumber('VITE_PREVIEW_HEALTH_TIMEOUT_MS', value, 10000, 900000, ctx),
+    },
   {
     key: 'VITE_ENABLE_WEB_VITALS',
     description: 'Enable web vitals instrumentation (true/false)',
@@ -459,7 +510,11 @@ function bootstrapEnv(envName: string) {
   }
 }
 
-function validateBasePath(value: string | undefined, ctx: AuditContext): CheckResult[] {
+function validateBasePath(
+  value: string | undefined,
+  ctx: AuditContext,
+  key: string,
+): CheckResult[] {
   if (!value) return [];
 
   const trimmed = value.trim();
@@ -468,9 +523,9 @@ function validateBasePath(value: string | undefined, ctx: AuditContext): CheckRe
   // Check for absolute paths (excluding './' and '/')
   // '/' is allowed in dev/precommit - vite.config.ts sanitizes it
   const isAbsolute = trimmed.startsWith('/') && trimmed !== './' && trimmed !== '/';
-  if (isAbsolute) {
+    if (isAbsolute) {
     results.push({
-      key: 'VITE_BASE_PATH',
+        key,
       message:
         'Absolute base paths break Lovable nested previews. Use `./` or omit the variable entirely.',
       severity: ctx.strict ? 'error' : 'warn',
@@ -478,24 +533,115 @@ function validateBasePath(value: string | undefined, ctx: AuditContext): CheckRe
   }
 
   // Handle '/' - allow in dev/precommit, error only in strict mode
-  if (trimmed === '/') {
+    if (trimmed === '/') {
     if (ctx.strict) {
       results.push({
-        key: 'VITE_BASE_PATH',
+          key,
         message:
           'Base path set to `/`. This causes asset 404s on Lovable. Set to `./` for production builds.',
         severity: 'error',
       });
     } else if (ctx.precommit) {
       // In precommit, just warn - vite.config.ts sanitizeViteBase() will handle it
-      results.push({
-        key: 'VITE_BASE_PATH',
+        results.push({
+          key,
         message:
           'Base path set to `/`. vite.config.ts will sanitize to `./` automatically, but consider setting it explicitly.',
         severity: 'warn',
       });
     }
     // In dev mode (non-precommit, non-strict), allow silently
+  }
+  return results;
+}
+
+function validateHealthcheckUrl(value: string | undefined, ctx: AuditContext): CheckResult[] {
+  if (!value) return [];
+
+  try {
+    const parsed = new URL(value);
+    const results: CheckResult[] = [];
+    if (!/^https?:$/.test(parsed.protocol)) {
+      results.push({
+        key: 'VITE_HEALTHCHECK_URL',
+        message: 'Healthcheck URL should use http/https.',
+        severity: ctx.strict ? 'error' : 'warn',
+      });
+    }
+    if (!parsed.pathname.endsWith('/health')) {
+      results.push({
+        key: 'VITE_HEALTHCHECK_URL',
+        message: 'Healthcheck URL should point directly to `/health` for Lovable heartbeats.',
+        severity: 'warn',
+      });
+    }
+    return results;
+  } catch {
+    return [
+      {
+        key: 'VITE_HEALTHCHECK_URL',
+        message: 'Invalid healthcheck URL. Provide a fully-qualified URL (e.g. https://app.com/health).',
+        severity: ctx.strict ? 'error' : 'warn',
+      },
+    ];
+  }
+}
+
+function validatePositiveNumber(
+  key: string,
+  value: string | undefined,
+  min: number,
+  max: number,
+  ctx: AuditContext,
+): CheckResult[] {
+  if (!value) return [];
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return [
+      {
+        key,
+        message: `${key} must be a numeric value.`,
+        severity: ctx.strict ? 'error' : 'warn',
+      },
+    ];
+  }
+  if (parsed < min || parsed > max) {
+    return [
+      {
+        key,
+        message: `${key} must be between ${min} and ${max} (received ${parsed}).`,
+        severity: ctx.strict ? 'error' : 'warn',
+      },
+    ];
+  }
+  return [];
+}
+
+function validatePortValue(key: string, value: string | undefined, ctx: AuditContext): CheckResult[] {
+  if (!value) return [];
+  const results: CheckResult[] = [];
+  if (!/^\d+$/.test(value)) {
+    results.push({
+      key,
+      message: `${key} must be a numeric port.`,
+      severity: ctx.strict ? 'error' : 'warn',
+    });
+    return results;
+  }
+  const numeric = Number(value);
+  if (numeric < 1 || numeric > 65535) {
+    results.push({
+      key,
+      message: `${key} must be between 1 and 65535.`,
+      severity: ctx.strict ? 'error' : 'warn',
+    });
+  }
+  if (numeric !== 8080 && ctx.strict) {
+    results.push({
+      key,
+      message: `${key} differs from Lovable-required 8080 port. Update Lovable proxy config if this is intentional.`,
+      severity: 'warn',
+    });
   }
   return results;
 }
