@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ThemeAccessibilityPanel } from '@/components/theme/ThemeAccessibilityPanel';
 import { ThemeDesignTokensPanel } from '@/components/theme/ThemeDesignTokensPanel';
 import { ThemeFoundationShowcase } from '@/components/theme/ThemeFoundationShowcase';
+import { ThemeGallery } from '@/components/theme/ThemeGallery';
 import { ThemeHudControls } from '@/components/theme/ThemeHudControls';
 import { ThemeHueControls } from '@/components/theme/ThemeHueControls';
 import { ThemeMissionPresets } from '@/components/theme/ThemeMissionPresets';
@@ -242,7 +243,21 @@ export function ThemeCustomizer() {
       <CardContent className="space-y-10">
         <ThemePreview />
 
-        <ThemeShowcase limitPerGroup={3} />
+          <ThemeShowcase limitPerGroup={3} />
+
+          <ThemeGallery
+            activeTheme={preferences.name}
+            activeWallpaperId={preferences.wallpaperId}
+            onSelectTheme={handlePresetSelect}
+            onSelectWallpaper={handleWallpaperSelect}
+            onUploadWallpaper={({ file, tone, name }) =>
+              handleWallpaperUpload({
+                file,
+                name,
+                tone,
+              })
+            }
+          />
 
         <ThemeFoundationShowcase />
 
