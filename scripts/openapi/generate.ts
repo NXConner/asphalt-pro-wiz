@@ -157,68 +157,6 @@ const baseDefinition = {
           metadata: {
             type: 'object',
             description: 'Arbitrary metadata supplied by the client.',
-        description: 'Telemetry event emitted by the PPS web client.',
-        properties: {
-          event: {
-            type: 'string',
-            description: 'Event name (e.g. lovable.asset_load_error)',
-          },
-          level: {
-            type: 'string',
-            description: 'Severity level',
-            enum: ['debug', 'info', 'warn', 'error'],
-            default: 'info',
-          },
-          message: {
-            type: 'string',
-            description: 'Human readable diagnostic message',
-          },
-          reason: {
-            type: 'string',
-            description: 'Optional rejection reason or exception message',
-          },
-          timestamp: {
-            type: 'string',
-            description: 'Client provided timestamp (ISO-8601 or epoch milliseconds)',
-          },
-          sessionId: {
-            type: 'string',
-            description: 'Session identifier allocated by the client logger',
-          },
-          deviceId: {
-            type: 'string',
-            description: 'Device identifier allocated by the client logger',
-          },
-          environment: {
-            type: 'string',
-            description: 'Environment tag (development, production, loadtest, etc.)',
-          },
-          pageUrl: {
-            type: 'string',
-            format: 'uri',
-            description: 'Page URL where the issue occurred',
-          },
-          url: {
-            type: 'string',
-            format: 'uri',
-            description: 'Deprecated alias for pageUrl (supported for backward compatibility)',
-          },
-          assetUrl: {
-            type: 'string',
-            format: 'uri',
-            description: 'Failed asset URL for lovable.asset_* events',
-          },
-          assetTag: {
-            type: 'string',
-            description: 'DOM tag name for the asset (img, script, link, etc.)',
-          },
-          userAgent: {
-            type: 'string',
-            description: 'User agent string captured server-side if provided',
-          },
-          metadata: {
-            type: 'object',
-            description: 'Arbitrary metadata supplied by the client',
             additionalProperties: true,
           },
         },
