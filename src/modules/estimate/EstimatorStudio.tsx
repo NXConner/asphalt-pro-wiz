@@ -143,6 +143,7 @@ export const EstimatorStudio = memo(function EstimatorStudio({ estimator }: Esti
               business={estimator.business}
               job={estimator.job}
               onBack={previousStep}
+              featureFlags={estimator.featureFlags}
             />
           </TabsContent>
         </Tabs>

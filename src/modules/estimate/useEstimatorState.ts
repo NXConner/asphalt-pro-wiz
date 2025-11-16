@@ -167,7 +167,10 @@ interface CalculationState {
   syncError: string | null;
   buildInputs: (overrides?: Partial<ProjectInputs>) => ProjectInputs;
   simulate: (overrides?: ScenarioSimulationOverrides) => ScenarioSimulationResult;
-  exportPdf: (options?: { scenarioName?: string; computation?: ScenarioSimulationResult }) => Promise<void>;
+  exportPdf: (options?: {
+    scenarioName?: string;
+    computation?: ScenarioSimulationResult;
+  }) => Promise<void>;
 }
 
 interface FeatureFlagState {
@@ -259,9 +262,9 @@ export function useEstimatorState(): EstimatorState {
     'Black Beauty',
   );
 
-    const crackFillerProduct = 'CrackMaster Parking Lot LP hot pour (30 lb box)';
+  const crackFillerProduct = 'CrackMaster Parking Lot LP hot pour (30 lb box)';
 
-    const [showResults, setShowResults] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   const [costs, setCosts] = useState<Costs | null>(null);
   const [breakdown, setBreakdown] = useState<CostBreakdown[]>([]);
   const [isPersistingEstimate, setIsPersistingEstimate] = useState(false);
@@ -277,14 +280,14 @@ export function useEstimatorState(): EstimatorState {
     [businessCoords, supplierCoords],
   );
 
-    const totalArea = useMemo(() => areas.reduce((sum, item) => sum + item.area, 0), [areas]);
+  const totalArea = useMemo(() => areas.reduce((sum, item) => sum + item.area, 0), [areas]);
 
   const addedServiceNames = useMemo(
     () => customServices.map((service) => service.name),
     [customServices],
   );
 
-    const [flagVersion, setFlagVersion] = useState(0);
+  const [flagVersion, setFlagVersion] = useState(0);
   const [ownerMode, setOwnerModeInternal] = useState<boolean>(isEnabled('ownerMode'));
 
   useEffect(() => {
@@ -299,7 +302,7 @@ export function useEstimatorState(): EstimatorState {
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
-    const ensureJobPersisted = (address: string, coords: [number, number] | null) => {
+  const ensureJobPersisted = (address: string, coords: [number, number] | null) => {
     const key = makeJobKey(jobName, address);
     void upsertJob({
       id: key,
@@ -322,7 +325,7 @@ export function useEstimatorState(): EstimatorState {
     ensureJobPersisted(address, coords);
   };
 
-    const handleAreaDrawn = (area: number) => {
+  const handleAreaDrawn = (area: number) => {
     setAreas((prev) => [...prev, { id: nextAreaId, shape: 'drawn', area }]);
     setNextAreaId((prev) => prev + 1);
     try {
@@ -363,7 +366,7 @@ export function useEstimatorState(): EstimatorState {
     setAreas((prev) => prev.filter((item) => item.id !== id));
   };
 
-    const handleCrackLengthDrawn = (length: number) => {
+  const handleCrackLengthDrawn = (length: number) => {
     setCrackLength((prev) => prev + length);
     toast.success(`Added ${length.toFixed(1)} ft to crack length`);
   };
@@ -374,7 +377,7 @@ export function useEstimatorState(): EstimatorState {
     );
   };
 
-    const handlePremiumServiceChange = (service: string, value: boolean) => {
+  const handlePremiumServiceChange = (service: string, value: boolean) => {
     switch (service) {
       case 'premiumEdgePushing':
         setPremiumEdgePushing(value);
@@ -396,7 +399,7 @@ export function useEstimatorState(): EstimatorState {
     }
   };
 
-    const addPremiumCustomService = (serviceId: string) => {
+  const addPremiumCustomService = (serviceId: string) => {
     const service = getServiceById(serviceId);
     if (!service) return;
     if (customServices.some((item) => item.name === service.name)) return;
@@ -410,51 +413,9 @@ export function useEstimatorState(): EstimatorState {
     setCustomServices((prev) => [...prev, newService]);
   };
 
-    const buildProjectInputs = useCallback(
-      (overrides: Partial<ProjectInputs> = {}) => {
-        const baseInputs: ProjectInputs = {
-          jobName,
-          customerAddress,
-          totalArea,
-          numCoats,
-          sandAdded,
-          polymerAdded,
-          crackLength,
-          crackWidth,
-          crackDepth,
-          stripingLines,
-          stripingHandicap,
-          stripingArrowsLarge,
-          stripingArrowsSmall,
-          stripingLettering,
-          stripingCurb,
-          stripingColors,
-          prepHours,
-          oilSpots,
-          propaneTanks,
-          jobDistanceMiles: jobDistance,
-          premiumEdgePushing,
-          premiumWeedKiller,
-          premiumCrackCleaning,
-          premiumPowerWashing,
-          premiumDebrisRemoval,
-          includeCleaningRepair,
-          includeSealcoating,
-          includeStriping,
-          sealerType,
-          sandType,
-          waterPercent,
-          crackFillerProduct,
-          customServices: customServices.map((service) => ({
-            name: service.name,
-            type: service.type,
-            unitPrice: service.unitPrice,
-            quantity: service.quantity,
-          })),
-        };
-        return { ...baseInputs, ...overrides };
-      },
-      [
+  const buildProjectInputs = useCallback(
+    (overrides: Partial<ProjectInputs> = {}) => {
+      const baseInputs: ProjectInputs = {
         jobName,
         customerAddress,
         totalArea,
@@ -474,7 +435,7 @@ export function useEstimatorState(): EstimatorState {
         prepHours,
         oilSpots,
         propaneTanks,
-        jobDistance,
+        jobDistanceMiles: jobDistance,
         premiumEdgePushing,
         premiumWeedKiller,
         premiumCrackCleaning,
@@ -487,46 +448,88 @@ export function useEstimatorState(): EstimatorState {
         sandType,
         waterPercent,
         crackFillerProduct,
-        customServices,
-      ],
-    );
+        customServices: customServices.map((service) => ({
+          name: service.name,
+          type: service.type,
+          unitPrice: service.unitPrice,
+          quantity: service.quantity,
+        })),
+      };
+      return { ...baseInputs, ...overrides };
+    },
+    [
+      jobName,
+      customerAddress,
+      totalArea,
+      numCoats,
+      sandAdded,
+      polymerAdded,
+      crackLength,
+      crackWidth,
+      crackDepth,
+      stripingLines,
+      stripingHandicap,
+      stripingArrowsLarge,
+      stripingArrowsSmall,
+      stripingLettering,
+      stripingCurb,
+      stripingColors,
+      prepHours,
+      oilSpots,
+      propaneTanks,
+      jobDistance,
+      premiumEdgePushing,
+      premiumWeedKiller,
+      premiumCrackCleaning,
+      premiumPowerWashing,
+      premiumDebrisRemoval,
+      includeCleaningRepair,
+      includeSealcoating,
+      includeStriping,
+      sealerType,
+      sandType,
+      waterPercent,
+      crackFillerProduct,
+      customServices,
+    ],
+  );
 
-    const simulateScenario = useCallback(
-      (overrides?: ScenarioSimulationOverrides): ScenarioSimulationResult => {
-        const projectOverrides = overrides?.project ?? {};
-        const businessOverrides = overrides?.business ?? {};
-        const inputs = buildProjectInputs(projectOverrides);
-        const business = { ...businessData, ...businessOverrides };
-        const { costs, breakdown } = calculateProject(inputs, business);
-        const compliance = evaluateCompliance({
-          inputs,
-          travelMiles: inputs.jobDistanceMiles,
-          premiumPowerWashing: inputs.premiumPowerWashing,
-          polymerAdded,
-          oilSpots,
-          prepHours,
-        });
-        return { inputs, business, costs, breakdown, compliance };
-      },
-      [buildProjectInputs, businessData, oilSpots, polymerAdded, prepHours],
-    );
+  const simulateScenario = useCallback(
+    (overrides?: ScenarioSimulationOverrides): ScenarioSimulationResult => {
+      const projectOverrides = overrides?.project ?? {};
+      const businessOverrides = overrides?.business ?? {};
+      const inputs = buildProjectInputs(projectOverrides);
+      const business = { ...businessData, ...businessOverrides };
+      const { costs, breakdown } = calculateProject(inputs, business);
+      const compliance = evaluateCompliance({
+        inputs,
+        travelMiles: inputs.jobDistanceMiles,
+        premiumPowerWashing: inputs.premiumPowerWashing,
+        polymerAdded,
+        oilSpots,
+        prepHours,
+      });
+      return { inputs, business, costs, breakdown, compliance };
+    },
+    [buildProjectInputs, businessData, oilSpots, polymerAdded, prepHours],
+  );
 
-    const exportPdfReport = useCallback(
-      async (scenarioName?: string, computation?: ScenarioSimulationResult) => {
-        const snapshot = computation ?? simulateScenario();
-        await exportEstimatePdf({
-          scenarioName: scenarioName ?? 'Primary Scenario',
-          inputs: snapshot.inputs,
-          costs: snapshot.costs,
-          breakdown: snapshot.breakdown,
-          business: snapshot.business,
-          compliance: snapshot.compliance.issues,
-        });
-      },
-      [simulateScenario],
-    );
+  const exportPdfReport = useCallback(
+    async (scenarioName?: string, computation?: ScenarioSimulationResult) => {
+      const snapshot = computation ?? simulateScenario();
+      await exportEstimatePdf({
+        scenarioName: scenarioName ?? 'Primary Scenario',
+        inputs: snapshot.inputs,
+        costs: snapshot.costs,
+        breakdown: snapshot.breakdown,
+        business: snapshot.business,
+        compliance: snapshot.compliance.issues,
+      });
+    },
+    [simulateScenario],
+  );
 
-    const handleCalculate = async () => {
+  const handleCalculate = async () => {
     if (isPersistingEstimate) {
       return;
     }
@@ -535,9 +538,9 @@ export function useEstimatorState(): EstimatorState {
       return;
     }
 
-      const scenarioResult = simulateScenario();
-      setCosts(scenarioResult.costs);
-      setBreakdown(scenarioResult.breakdown);
+    const scenarioResult = simulateScenario();
+    setCosts(scenarioResult.costs);
+    setBreakdown(scenarioResult.breakdown);
     setShowResults(true);
     setSyncErrorMessage(null);
 
@@ -547,13 +550,13 @@ export function useEstimatorState(): EstimatorState {
     try {
       logEvent('estimate.calculated', {
         jobName: jobName || 'Job',
-          totalArea: scenarioResult.inputs.totalArea,
-          crackLength: scenarioResult.inputs.crackLength,
+        totalArea: scenarioResult.inputs.totalArea,
+        crackLength: scenarioResult.inputs.crackLength,
         includeSealcoating,
         includeStriping,
         includeCleaningRepair,
         numCustomServices: customServices.length,
-          total: scenarioResult.costs.total,
+        total: scenarioResult.costs.total,
       });
     } catch {}
 
@@ -566,9 +569,9 @@ export function useEstimatorState(): EstimatorState {
     setIsPersistingEstimate(true);
     try {
       const persistResult = await persistEstimateResult({
-          inputs: scenarioResult.inputs,
-          costs: scenarioResult.costs,
-          breakdown: scenarioResult.breakdown,
+        inputs: scenarioResult.inputs,
+        costs: scenarioResult.costs,
+        breakdown: scenarioResult.breakdown,
         customServices,
         premium: {
           edgePushing: premiumEdgePushing,
@@ -584,7 +587,7 @@ export function useEstimatorState(): EstimatorState {
           status: 'estimated',
           customerName: jobName || undefined,
           competitor: jobCompetitor || undefined,
-            distance: scenarioResult.inputs.jobDistanceMiles,
+          distance: scenarioResult.inputs.jobDistanceMiles,
         },
       });
 
@@ -608,28 +611,28 @@ export function useEstimatorState(): EstimatorState {
     window.print();
   };
 
-    const setOwnerMode = (enabled: boolean) => {
-      setOwnerModeInternal(enabled);
-      setFlag('ownerMode', enabled);
-      setFlagVersion((version) => version + 1);
-      logFeatureFlagToggle('ownerMode', enabled, {
-        surface: 'estimator.ownerMode',
-        source: 'local',
-      });
-    };
+  const setOwnerMode = (enabled: boolean) => {
+    setOwnerModeInternal(enabled);
+    setFlag('ownerMode', enabled);
+    setFlagVersion((version) => version + 1);
+    logFeatureFlagToggle('ownerMode', enabled, {
+      surface: 'estimator.ownerMode',
+      source: 'local',
+    });
+  };
 
-    const toggleFeatureFlag = (flag: FeatureFlag, enabled: boolean) => {
-      if (flag === 'ownerMode') {
-        setOwnerMode(enabled);
-        return;
-      }
-      setFlag(flag, enabled);
-      setFlagVersion((version) => version + 1);
-      logFeatureFlagToggle(flag, enabled, {
-        surface: 'estimator.feature_toggle',
-        source: 'local',
-      });
-    };
+  const toggleFeatureFlag = (flag: FeatureFlag, enabled: boolean) => {
+    if (flag === 'ownerMode') {
+      setOwnerMode(enabled);
+      return;
+    }
+    setFlag(flag, enabled);
+    setFlagVersion((version) => version + 1);
+    logFeatureFlagToggle(flag, enabled, {
+      surface: 'estimator.feature_toggle',
+      source: 'local',
+    });
+  };
 
   const featureFlagValues = useMemo(
     () => ({
@@ -644,8 +647,9 @@ export function useEstimatorState(): EstimatorState {
       observability: isEnabled('observability'),
       commandCenter: isEnabled('commandCenter'),
       tacticalMapV2: isEnabled('tacticalMapV2'),
-        estimatorCompliance: isEnabled('estimatorCompliance'),
-        supplierIntelV2: isEnabled('supplierIntelV2'),
+      estimatorCompliance: isEnabled('estimatorCompliance'),
+      estimatorCopilot: isEnabled('estimatorCopilot'),
+      supplierIntelV2: isEnabled('supplierIntelV2'),
       ownerMode,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -791,10 +795,10 @@ export function useEstimatorState(): EstimatorState {
     lastSyncedAt,
     lastSyncedEstimateId,
     syncError: syncErrorMessage,
-      buildInputs: buildProjectInputs,
-      simulate: simulateScenario,
-      exportPdf: async ({ scenarioName, computation } = {}) =>
-        exportPdfReport(scenarioName, computation),
+    buildInputs: buildProjectInputs,
+    simulate: simulateScenario,
+    exportPdf: async ({ scenarioName, computation } = {}) =>
+      exportPdfReport(scenarioName, computation),
   };
 
   const featureFlags: FeatureFlagState = {
