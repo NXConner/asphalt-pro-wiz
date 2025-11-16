@@ -3,6 +3,8 @@
  * Theme configurations for all Division-inspired themes
  */
 
+import { composeThemeVariables, divisionColors, type DivisionThemeId } from '../tokens';
+
 export interface DivisionTheme {
   name: string;
   id: string;
@@ -19,33 +21,33 @@ export const divisionThemes: DivisionTheme[] = [
   {
     name: 'Division Agent',
     id: 'theme-division-agent',
-    primary: '#fb923c',
-    secondary: '#22d3ee',
-    accent: '#ff8c00',
-    background: 'hsl(220 50% 4%)',
-    foreground: 'hsl(220 22% 92%)',
-    border: 'hsl(25 100% 55%)',
+    primary: divisionColors.orange[400],
+    secondary: divisionColors.tech[400],
+    accent: divisionColors.orange[500],
+    background: divisionColors.bg.dark,
+    foreground: divisionColors.text.primary,
+    border: divisionColors.border.accent,
     description: 'Signature SHD orange with tech blue accents - standard agent interface',
   },
   {
     name: 'Rogue Agent',
     id: 'theme-division-rogue',
-    primary: '#f87171',
-    secondary: '#dc2626',
-    accent: '#ef4444',
-    background: 'hsl(220 50% 4%)',
-    foreground: 'hsl(220 22% 92%)',
-    border: '#ef4444',
-    description: 'Rogue red with dark crimson - aggressive, hostile interface',
+    primary: divisionColors.rogue[400],
+    secondary: divisionColors.rogue[600],
+    accent: divisionColors.rogue[500],
+    background: divisionColors.bg.dark,
+    foreground: divisionColors.text.primary,
+    border: divisionColors.rogue[500],
+    description: 'Crimson rogue palette with hostile pulses and deep noir background.',
   },
   {
     name: 'Dark Zone',
     id: 'theme-division-darkzone',
-    primary: '#ef4444',
-    secondary: '#ff8c00',
-    accent: '#f87171',
-    background: 'hsl(220 50% 4%)',
-    foreground: 'hsl(220 22% 92%)',
+    primary: divisionColors.rogue[500],
+    secondary: divisionColors.orange[500],
+    accent: divisionColors.rogue[400],
+    background: divisionColors.bg.dark,
+    foreground: divisionColors.text.primary,
     border: divisionColors.rogue[400],
     description: 'Dark Zone warning red with orange alerts - high-tension combat aesthetic',
   },
@@ -120,26 +122,12 @@ export function getDefaultTheme(): DivisionTheme {
   return divisionThemes[0]; // Division Agent
 }
 
-// Export types expected by designSystem.ts
-export type DivisionThemeId =
-  | 'theme-division-agent'
-  | 'theme-division-rogue'
-  | 'theme-division-darkzone'
-  | 'theme-division-tech'
-  | 'theme-division-stealth'
-  | 'theme-division-combat'
-  | 'theme-division-tactical'
-  | 'theme-division-hunter';
-
 export interface DivisionThemeDefinition {
   id: DivisionThemeId;
   name: string;
   description: string;
   tokens: Record<string, string>;
 }
-
-// Export theme registry format expected by designSystem.ts
-import { composeThemeVariables } from '../tokens';
 
 const withPrimary = (primary: string, accent: string, extras: Record<string, string> = {}) =>
   composeThemeVariables({
