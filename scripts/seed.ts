@@ -41,6 +41,67 @@ interface WallpaperSeedDefinition {
   source?: "system" | "custom" | "synthesized";
 }
 
+type WorkflowStageId =
+  | "measure"
+  | "condition"
+  | "scope"
+  | "estimate"
+  | "outreach"
+  | "contract"
+  | "schedule"
+  | "closeout";
+
+interface WorkflowMeasurementSegmentSeed {
+  label: string;
+  squareFeet: number;
+  geojson?: Record<string, unknown>;
+}
+
+interface WorkflowMeasurementSeed {
+  strategy: "image" | "map" | "drone";
+  status?: string;
+  squareFeet: number;
+  crackLinearFeet: number;
+  confidence: number;
+  segments: WorkflowMeasurementSegmentSeed[];
+  notes?: string;
+  droneIntel?: Record<string, unknown>;
+}
+
+interface WorkflowStageEventSeed {
+  stageId: WorkflowStageId;
+  status: string;
+  notes?: string;
+  payload?: Record<string, unknown>;
+}
+
+interface WorkflowOutreachSeed {
+  channel: string;
+  status: string;
+  contact: Record<string, unknown>;
+  subject: string;
+  body: string;
+  direction?: "outbound" | "inbound";
+  scheduledAtOffsetHours?: number;
+}
+
+interface WorkflowContractSeed {
+  version?: number;
+  status: string;
+  total: number;
+  currency?: string;
+  docUrl?: string;
+  metadata?: Record<string, unknown>;
+}
+
+interface WorkflowSeedDefinition {
+  jobKey: string;
+  measurement?: WorkflowMeasurementSeed;
+  stageEvents?: WorkflowStageEventSeed[];
+  outreach?: WorkflowOutreachSeed[];
+  contract?: WorkflowContractSeed;
+}
+
 async function ensureJob(
   client: PoolClient,
   orgId: string,
@@ -251,6 +312,213 @@ async function ensureThemePreference(
   );
 }
 
+async function upsertMeasurementRun(
+  client: PoolClient,
+  orgId: string,
+  jobId: string,
+  adminUserId: string,
+  seed: WorkflowMeasurementSeed,
+): Promise<void> {
+  const payload = JSON.stringify({ seedSource: "seed-script", strategy: seed.strategy });
+  const resultPayload = JSON.stringify({
+    segments: seed.segments,
+    crackLinearFeet: seed.crackLinearFeet,
+    squareFeet: seed.squareFeet,
+  });
+  const droneIntel = JSON.stringify(seed.droneIntel ?? { seedSource: "seed-script" });
+
+  const { rows } = await client.query<{ id: string }>(
+    `INSERT INTO public.workflow_measurement_runs (org_id, job_id, requested_by, strategy, status, square_feet, crack_linear_feet, confidence, payload, result, drone_intel, notes)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10::jsonb, $11::jsonb, $12)
+     ON CONFLICT (job_id, strategy)
+     DO UPDATE
+       SET status = EXCLUDED.status,
+           square_feet = EXCLUDED.square_feet,
+           crack_linear_feet = EXCLUDED.crack_linear_feet,
+           confidence = EXCLUDED.confidence,
+           payload = workflow_measurement_runs.payload || EXCLUDED.payload,
+           result = EXCLUDED.result,
+           drone_intel = COALESCE(EXCLUDED.drone_intel, workflow_measurement_runs.drone_intel),
+           notes = EXCLUDED.notes,
+           updated_at = now()
+     RETURNING id;`,
+    [
+      orgId,
+      jobId,
+      adminUserId,
+      seed.strategy,
+      seed.status ?? "completed",
+      seed.squareFeet,
+      seed.crackLinearFeet,
+      seed.confidence,
+      payload,
+      resultPayload,
+      droneIntel,
+      seed.notes ?? null,
+    ] satisfies QueryOptions,
+  );
+
+  const measurementId = rows[0].id;
+  await client.query(
+    `DELETE FROM public.workflow_measurement_segments WHERE measurement_id = $1;`,
+    [measurementId] satisfies QueryOptions,
+  );
+
+  for (const segment of seed.segments) {
+    await client.query(
+      `INSERT INTO public.workflow_measurement_segments (measurement_id, label, square_feet, geojson, metadata)
+       VALUES ($1, $2, $3, $4::jsonb, $5::jsonb);`,
+      [
+        measurementId,
+        segment.label,
+        segment.squareFeet,
+        JSON.stringify(segment.geojson ?? {}),
+        JSON.stringify({ seedSource: "seed-script" }),
+      ] satisfies QueryOptions,
+    );
+  }
+}
+
+async function ensureStageEvents(
+  client: PoolClient,
+  orgId: string,
+  jobId: string,
+  adminUserId: string,
+  events: WorkflowStageEventSeed[],
+): Promise<void> {
+  for (const event of events) {
+    await client.query(
+      `INSERT INTO public.workflow_stage_events (org_id, job_id, stage_id, status, notes, payload, performed_by)
+       SELECT $1, $2, $3, $4, $5, $6::jsonb, $7
+       WHERE NOT EXISTS (
+         SELECT 1 FROM public.workflow_stage_events
+         WHERE job_id = $2 AND stage_id = $3 AND status = $4
+       );`,
+      [
+        orgId,
+        jobId,
+        event.stageId,
+        event.status,
+        event.notes ?? null,
+        JSON.stringify({ seedSource: "seed-script", ...(event.payload ?? {}) }),
+        adminUserId,
+      ] satisfies QueryOptions,
+    );
+  }
+}
+
+async function ensureOutreach(
+  client: PoolClient,
+  orgId: string,
+  jobId: string,
+  adminUserId: string,
+  touchpoints: WorkflowOutreachSeed[],
+): Promise<void> {
+  const now = Date.now();
+  for (const touch of touchpoints) {
+    const offset = touch.scheduledAtOffsetHours ?? 0;
+    const scheduledAt =
+      offset === 0 ? null : new Date(now + offset * 60 * 60 * 1000).toISOString();
+    const sentAt =
+      touch.status === "sent"
+        ? scheduledAt ?? new Date(now - 30 * 60 * 1000).toISOString()
+        : null;
+
+    await client.query(
+      `INSERT INTO public.workflow_outreach_touchpoints
+        (org_id, job_id, contact, channel, direction, status, subject, body, scheduled_at, sent_at, metadata, created_by)
+       VALUES ($1, $2, $3::jsonb, $4, $5, $6, $7, $8, $9, $10, $11::jsonb, $12)
+       ON CONFLICT (job_id, channel, subject)
+       DO UPDATE SET
+         status = EXCLUDED.status,
+         body = EXCLUDED.body,
+         scheduled_at = EXCLUDED.scheduled_at,
+         sent_at = EXCLUDED.sent_at,
+         metadata = workflow_outreach_touchpoints.metadata || EXCLUDED.metadata,
+         updated_at = now();`,
+      [
+        orgId,
+        jobId,
+        JSON.stringify(touch.contact),
+        touch.channel,
+        touch.direction ?? "outbound",
+        touch.status,
+        touch.subject,
+        touch.body,
+        scheduledAt,
+        sentAt,
+        JSON.stringify({ seedSource: "seed-script" }),
+        adminUserId,
+      ] satisfies QueryOptions,
+    );
+  }
+}
+
+async function upsertContract(
+  client: PoolClient,
+  orgId: string,
+  jobId: string,
+  adminUserId: string,
+  seed: WorkflowContractSeed,
+): Promise<void> {
+  const { rows } = await client.query<{ id: string }>(
+    `SELECT id FROM public.estimates WHERE job_id = $1 ORDER BY created_at DESC LIMIT 1;`,
+    [jobId] satisfies QueryOptions,
+  );
+  const estimateId = rows[0]?.id ?? null;
+
+  await client.query(
+    `INSERT INTO public.workflow_contracts (org_id, job_id, estimate_id, version, status, total, currency, doc_url, metadata, created_by)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10)
+     ON CONFLICT (job_id, version)
+     DO UPDATE SET
+       status = EXCLUDED.status,
+       total = EXCLUDED.total,
+       currency = EXCLUDED.currency,
+       doc_url = COALESCE(EXCLUDED.doc_url, workflow_contracts.doc_url),
+       metadata = workflow_contracts.metadata || EXCLUDED.metadata,
+       updated_at = now();`,
+    [
+      orgId,
+      jobId,
+      estimateId,
+      seed.version ?? 1,
+      seed.status,
+      seed.total,
+      seed.currency ?? "USD",
+      seed.docUrl ?? null,
+      JSON.stringify({ seedSource: "seed-script", ...(seed.metadata ?? {}) }),
+      adminUserId,
+    ] satisfies QueryOptions,
+  );
+}
+
+async function seedWorkflowArtifacts(
+  client: PoolClient,
+  orgId: string,
+  adminUserId: string,
+  jobIdMap: Map<string, string>,
+  seeds: WorkflowSeedDefinition[],
+): Promise<void> {
+  for (const seed of seeds) {
+    const jobId = jobIdMap.get(seed.jobKey);
+    if (!jobId) continue;
+
+    if (seed.measurement) {
+      await upsertMeasurementRun(client, orgId, jobId, adminUserId, seed.measurement);
+    }
+    if (seed.stageEvents?.length) {
+      await ensureStageEvents(client, orgId, jobId, adminUserId, seed.stageEvents);
+    }
+    if (seed.outreach?.length) {
+      await ensureOutreach(client, orgId, jobId, adminUserId, seed.outreach);
+    }
+    if (seed.contract) {
+      await upsertContract(client, orgId, jobId, adminUserId, seed.contract);
+    }
+  }
+}
+
 function hashToken(seed: string): string {
   return createHash("sha256").update(seed).digest("hex");
 }
@@ -435,6 +703,100 @@ async function main() {
       },
     ];
 
+      const workflowSeeds: WorkflowSeedDefinition[] = [
+        {
+          jobKey: "st-mark-sanctuary-reseal",
+          measurement: {
+            strategy: "image",
+            status: "completed",
+            squareFeet: 42875,
+            crackLinearFeet: 1475,
+            confidence: 0.93,
+            notes: "Seeded AI measurement run from drone imagery.",
+            segments: [
+              { label: "Sanctuary Loop", squareFeet: 17250 },
+              { label: "Admin Wing", squareFeet: 8200 },
+              { label: "Student Center", squareFeet: 6100 },
+              { label: "Overflow & Bus", squareFeet: 11325 },
+            ],
+            droneIntel: {
+              hazards: [
+                { id: "playground", type: "cone", description: "Playground equipment staged near drive lane" },
+                { id: "hvac", type: "keepout", description: "HVAC pad – protect from overspray" },
+              ],
+            },
+          },
+          stageEvents: [
+            { stageId: "measure", status: "done", notes: "Auto measurement approved" },
+            { stageId: "condition", status: "active", notes: "Severity heatmap routed to crews" },
+            { stageId: "scope", status: "todo", notes: "Awaiting board feedback" },
+          ],
+          outreach: [
+            {
+              channel: "email",
+              status: "sent",
+              contact: { name: "Trustees Board", email: "trustees@stmark.org", role: "Board" },
+              subject: "Updated proposal + ADA exhibits",
+              body: "Attached estimate packet and ADA exhibits. Reply to confirm board vote.",
+              scheduledAtOffsetHours: -2,
+            },
+            {
+              channel: "sms",
+              status: "scheduled",
+              contact: { name: "Pastor Allen", phone: "+15405551234", role: "Pastor" },
+              subject: "Crew ETA",
+              body: "Crew targeting Monday 0600 arrival. Reply STOP to opt out of SMS alerts.",
+              scheduledAtOffsetHours: 36,
+            },
+          ],
+          contract: {
+            status: "draft",
+            total: 22275,
+            currency: "USD",
+            docUrl: "https://example.com/contracts/st-mark-v1.pdf",
+            metadata: { versionTag: "Board Review" },
+          },
+        },
+        {
+          jobKey: "grace-fellowship-lot-renewal",
+          measurement: {
+            strategy: "map",
+            status: "completed",
+            squareFeet: 42875,
+            crackLinearFeet: 980,
+            confidence: 0.88,
+            notes: "Composite from Google Maps trace.",
+            segments: [
+              { label: "North Lot", squareFeet: 21000 },
+              { label: "Youth Lot", squareFeet: 12000 },
+              { label: "Bus Loop", squareFeet: 9875 },
+            ],
+          },
+          stageEvents: [
+            { stageId: "measure", status: "done", notes: "Manual trace confirmed." },
+            { stageId: "condition", status: "done", notes: "Crack routing scheduled." },
+            { stageId: "scope", status: "active", notes: "Premium striping add-ons pending approval." },
+            { stageId: "estimate", status: "todo" },
+          ],
+          outreach: [
+            {
+              channel: "email",
+              status: "scheduled",
+              contact: { name: "Elder Maria", email: "maria@grace.org", role: "Elder Board" },
+              subject: "Layout mockups ready",
+              body: "See attached PDF for revised ADA stalls and bus drop sequence.",
+              scheduledAtOffsetHours: 12,
+            },
+          ],
+          contract: {
+            status: "negotiation",
+            total: 48750.75,
+            currency: "USD",
+            docUrl: "https://example.com/contracts/grace-v1.pdf",
+          },
+        },
+      ];
+
     const jobIdMap = new Map<string, string>();
 
     for (const seed of jobSeeds) {
@@ -455,7 +817,9 @@ async function main() {
           );
         }
       }
-    }
+      }
+
+      await seedWorkflowArtifacts(client, orgId, adminUserId, jobIdMap, workflowSeeds);
 
     const wallpaperSeeds: WallpaperSeedDefinition[] = [
       {

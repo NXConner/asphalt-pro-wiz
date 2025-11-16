@@ -32,6 +32,16 @@ ADMIN_EMAIL=n8ter8@gmail.com npm run seed
 | `public.knowledge_documents`, `knowledge_chunks` | AI/knowledge base content for compliance and ops SOPs. | Organization-scoped RLS, optional feature-flag gating. |
 | `public.observability_sessions`, `weather_snapshots` | Client telemetry + weather overlays. | Only org members and service roles can read; insertion handled by backend functions. |
 
+### Workflow Orchestration Entities
+
+| Table | Purpose | RLS Summary |
+| --- | --- | --- |
+| `public.workflow_measurement_runs` | Stores AI/manual measurement requests, results, and drone intel tied to a job. | Policies reuse `user_is_member_of_org`/`user_has_org_role`; `operator`+ may insert/update, `manager`+ may delete. |
+| `public.workflow_measurement_segments` | Child records for each measured segment (square feet + optional geojson). | RLS piggybacks on the parent measurement row via subqueries so segment access mirrors the run’s org. |
+| `public.workflow_stage_events` | Timeline of workflow status transitions (measure → closeout). | Org-scoped; events are immutable per stage/status combination to keep the rail deterministic. |
+| `public.workflow_outreach_touchpoints` | Email/SMS/phone outreach log with contact JSON, scheduling, and metadata. | Org members can read; `operator`+ can insert; `manager`+ can edit/delete; triggers keep `org_id`/`created_by` hydrated. |
+| `public.workflow_contracts` | Contract/proposal metadata tied to a job/estimate, including e-sign references. | Same RLS pattern; `version` is unique per job, allowing idempotent upserts from seed/data pipelines. |
+
 Every table created in the migration set enables Row Level Security immediately and pairs with helper SQL functions for checking roles (`public.is_org_member`, etc.). When adding new tables, follow the existing pattern:
 
 1. Create the table and indexes.
@@ -48,6 +58,7 @@ Every table created in the migration set enables Row Level Security immediately 
   - Mission milestones, crews, crew blackouts, scheduler tasks.
   - Compliance artifacts + reviews, customer portal session/events.
   - Knowledge base docs/chunks, observability sessions.
+  - Workflow measurement runs + segments, stage events, outreach touchpoints, and draft contracts for sample jobs.
 - Requires an existing Supabase Auth user; see `docs/ADMIN_SETUP.md` for creating `n8ter8@gmail.com`.
 
 ### Admin User Workflow
@@ -64,5 +75,6 @@ Every table created in the migration set enables Row Level Security immediately 
 - `supabase/migrations/1700000016000_pavement_core.js` – organizations, jobs, estimates, RLS policies.
 - `supabase/migrations/20251106095000_mission_operational_expansion.js` – mission tasks, telemetry, customer portal.
 - `supabase/migrations/20251109121500_supplier_intelligence.js` – observability + supplier intel tables.
+- `supabase/migrations/20251116133000_workflow_orchestration.js` – workflow measurement, outreach, stage, and contract entities.
 
 Always add new schema changes through migrations—never edit tables directly in Supabase Studio—so environments stay in sync and CI can validate the structure.
