@@ -1,33 +1,48 @@
 name: Bug report
 description: Report a bug to help us improve
 labels: [bug]
-body:
-  - type: textarea
-    id: description
-    attributes:
-      label: Description
-      description: What happened and what did you expect?
-    validations:
-      required: true
-  - type: textarea
-    id: steps
-    attributes:
-      label: Steps to reproduce
-      description: Minimal steps to reproduce the issue
-      placeholder: |
-        1. Go to ...
-        2. Click on ...
-        3. See error ...
-    validations:
-      required: true
-  - type: input
-    id: env
-    attributes:
-      label: Environment
-      description: Browser/OS/Device, app version/commit
-  - type: textarea
-    id: logs
-    attributes:
-      label: Relevant logs
-      description: Paste any logs or screenshots
-      render: shell
+  body:
+    - type: textarea
+      id: description
+      attributes:
+        label: Description
+        description: What happened and what did you expect? Include Lovable preview URL if relevant.
+      validations:
+        required: true
+    - type: textarea
+      id: steps
+      attributes:
+        label: Steps to reproduce
+        description: Minimal steps to reproduce the issue
+        placeholder: |
+          1. Go to …
+          2. Click on …
+          3. See error …
+      validations:
+        required: true
+    - type: checkboxes
+      id: impact
+      attributes:
+        label: Impact
+        description: What surfaced or degraded?
+        options:
+          - label: Lovable preview outage / connection refused
+          - label: Estimator or scheduler workflow blocked
+          - label: Mobile/Capacitor specific
+          - label: Observability / telemetry gap
+    - type: textarea
+      id: telemetry
+      attributes:
+        label: Telemetry / logs
+        description: Provide `log-beacon` IDs, screenshots, console output, or `/health` responses.
+        render: shell
+    - type: textarea
+      id: flags
+      attributes:
+        label: Feature flags in effect
+        description: List any `VITE_FLAG_*` overrides or in-app toggles enabled.
+    - type: input
+      id: env
+      attributes:
+        label: Environment
+        description: Browser/OS/Device, app version/commit, Supabase org slug

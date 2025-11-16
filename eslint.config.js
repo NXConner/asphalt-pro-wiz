@@ -5,6 +5,8 @@ import jsxA11y from 'eslint-plugin-jsx-a11y';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import pluginSecurity from 'eslint-plugin-security';
+import testingLibrary from 'eslint-plugin-testing-library';
+import vitestPlugin from 'eslint-plugin-vitest';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -37,6 +39,8 @@ export default tseslint.config(
       'jsx-a11y': jsxA11y,
       security: pluginSecurity,
       import: importPlugin,
+      'testing-library': testingLibrary,
+      vitest: vitestPlugin,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -98,6 +102,19 @@ export default tseslint.config(
     files: ['src/contexts/**/*.{ts,tsx}'],
     rules: {
       'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
+    files: [
+      'tests/**/*.{ts,tsx}',
+      'e2e/**/*.{ts,tsx}',
+      'src/**/*.{test,spec}.{ts,tsx}',
+    ],
+    rules: {
+      'vitest/no-focused-tests': 'error',
+      'vitest/no-identical-title': 'error',
+      'testing-library/no-node-access': 'warn',
+      'testing-library/prefer-screen-queries': 'warn',
     },
   },
 );

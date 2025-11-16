@@ -22,8 +22,15 @@
 ## Observability & Security
 
 - [ ] Structured logging updated where new flows exist
-- [ ] Feature flags toggled or documented
+- [ ] Lovable preview health/diagnostics updated (if touching dev server / routing)
+- [ ] Feature flags toggled or documented (including Supabase flag docs)
 - [ ] Secrets handled via env/secret manager (no hard-coded values)
+
+## Preview & Deployability
+
+- [ ] `/health` endpoint verified locally (`npm run dev` or container)
+- [ ] Lovable preview connection tested (if applicable)
+- [ ] Rollback / migration notes captured
 
 ## Documentation
 

@@ -1,6 +1,8 @@
 param(
   [switch]$SkipPlaywright,
-  [switch]$SkipHusky
+  [switch]$SkipHusky,
+  [switch]$SkipEnvCheck,
+  [switch]$StrictEnv
 )
 
 function Require-Command {
@@ -40,6 +42,26 @@ try {
   npx --yes lint-staged --version | Out-Null
 } catch {
   Write-Warning "lint-staged not yet installed; continuing."
+}
+
+if (-not (Test-Path ".env") -and (Test-Path ".env.example")) {
+  Write-Host "Hydrating .env from .env.example (update with real secrets) ..." -ForegroundColor Cyan
+  Copy-Item ".env.example" ".env" -Force
+}
+
+if (-not $SkipEnvCheck) {
+  Write-Host "Validating environment configuration..." -ForegroundColor Cyan
+  $envArgs = @()
+  if ($StrictEnv) {
+    $envArgs += "--strict"
+  }
+  if ($envArgs.Count -gt 0) {
+    npm run check:env -- $envArgs
+  } else {
+    npm run check:env
+  }
+} else {
+  Write-Warning "Skipping environment validation per flag."
 }
 
 if (-not $SkipPlaywright) {

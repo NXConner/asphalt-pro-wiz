@@ -10,6 +10,7 @@ import { AccessibilityChecker } from '@/components/AccessibilityChecker/Accessib
 import { CommandPalette } from '@/components/CommandPalette/CommandPalette';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ErrorRecovery } from '@/components/ErrorRecovery/ErrorRecovery';
+import { LovablePreviewBanner } from '@/components/LovablePreviewBanner';
 import { MobileOptimizations } from '@/components/MobileOptimizations';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -139,47 +140,48 @@ const App = () => {
     return unsubscribe;
   }, [routerBase]);
 
-  return (
-    <ErrorBoundary>
-      <ErrorRecovery>
-        <PerformanceProvider>
-          <ThemeProvider>
-            <AuthProvider>
-              <FeatureFlagProvider>
-                <ErrorProvider>
-                  <KeyboardProvider>
-                    <I18nProvider>
-                      <QueryClientProvider client={queryClient}>
-                        <TooltipProvider>
-                          <SkipLink />
-                          <SupabaseConfigBanner />
-                          <MobileOptimizations />
-                          <Toaster />
-                          <Sonner />
-                          <BrowserRouter key="router" basename={routerBase}>
-                            <CommandPalette />
-                            {process.env.NODE_ENV === 'development' && <AccessibilityChecker />}
-                            <RouteTracker />
-                            <OfflineIndicator />
-                            <Suspense
-                              fallback={
-                                <div className="p-6">
-                                  <Skeleton className="mb-4 h-6 w-1/3" />
-                                  <Skeleton className="h-96 w-full" />
-                                </div>
-                              }
-                            >
-                              <Routes>
-                                <Route path="/auth" element={<Auth />} />
-                                <Route path="/health" element={<Health />} />
-                                <Route
-                                  path="/"
-                                  element={
-                                    <Guard>
-                                      <Index />
-                                    </Guard>
-                                  }
-                                />
+    return (
+      <ErrorBoundary>
+        <ErrorRecovery>
+          <PerformanceProvider>
+            <ThemeProvider>
+              <AuthProvider>
+                <FeatureFlagProvider>
+                  <ErrorProvider>
+                    <KeyboardProvider>
+                      <I18nProvider>
+                        <QueryClientProvider client={queryClient}>
+                          <TooltipProvider>
+                            <SkipLink />
+                            <SupabaseConfigBanner />
+                            <LovablePreviewBanner />
+                            <MobileOptimizations />
+                            <Toaster />
+                            <Sonner />
+                            <BrowserRouter key="router" basename={routerBase}>
+                              <CommandPalette />
+                              {process.env.NODE_ENV === 'development' && <AccessibilityChecker />}
+                              <RouteTracker />
+                              <OfflineIndicator />
+                              <Suspense
+                                fallback={
+                                  <div className="p-6">
+                                    <Skeleton className="mb-4 h-6 w-1/3" />
+                                    <Skeleton className="h-96 w-full" />
+                                  </div>
+                                }
+                              >
+                                <Routes>
+                                  <Route path="/auth" element={<Auth />} />
+                                  <Route path="/health" element={<Health />} />
+                                  <Route
+                                    path="/"
+                                    element={
+                                      <Guard>
+                                        <Index />
+                                      </Guard>
+                                    }
+                                  />
                                 <Route
                                   path="/command-center"
                                   element={
