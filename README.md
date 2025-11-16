@@ -248,10 +248,10 @@ Exercises the workflow telemetry tables by creating synthetic measurement runs, 
 ### Artillery Smoke Pulse
 
 ```bash
-npx artillery run scripts/load/artillery.yml
+npx artillery run scripts/load/artillery.yml --output artillery-report.json
 ```
 
-Ideal for CI or pre-release smoke tests. Full instructions live in `scripts/load/README.md`.
+The Artillery profile mirrors the k6 routes with a lighter 2-minute pulse for CI. The `--output` flag captures JSON summaries—upload the file as a build artifact for audit trails (see `scripts/load/README.md` for more knobs).
 
 ---
 

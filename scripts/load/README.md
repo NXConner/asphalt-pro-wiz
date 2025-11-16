@@ -137,10 +137,10 @@ Environment knobs:
 ## Artillery – quick pulse for CI
 
 ```bash
-npx artillery run scripts/load/artillery.yml
+npx artillery run scripts/load/artillery.yml --output artillery-report.json
 ```
 
-The Artillery scenario performs the same sequence (`/auth`, `/`, `/command-center`, `/robots.txt`) with a lighter 2-minute pulse suitable for smoke checks or container health probes.
+The Artillery scenario performs the same sequence (`/auth`, `/`, `/command-center`, `/robots.txt`) with a lighter 2-minute pulse suitable for smoke checks or container health probes. The `--output` flag writes a JSON summary that you can upload as a CI artifact for trend analysis.
 
 ## Operational Guidance
 
