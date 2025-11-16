@@ -36,7 +36,7 @@ const THEME_BY_WALLPAPER: Record<string, WorkflowThemeId> = {
 
 const Index = memo(function Index() {
   const estimator = useEstimatorState();
-  const jobId = SAMPLE_JOB_ID || (estimator.job as { id?: string | null })?.id ?? null;
+  const jobId = SAMPLE_JOB_ID || ((estimator.job as { id?: string | null })?.id ?? null);
   const measurementIntel = useMeasurementIntel(estimator, jobId);
   const { setWallpaper } = useTheme();
   const { addWallpaper } = useWallpaperLibrary();
@@ -81,7 +81,7 @@ const Index = memo(function Index() {
     () => ({
       jobName: estimator.job.name || 'Untitled mission',
       campus: estimator.job.address || 'Pending campus address',
-      contact: estimator.business.data?.primaryContactName ?? estimator.business.data?.primaryEmail ?? 'Facilities team',
+      contact: 'Facilities team',
       phaseLabel: missionPhase,
       totalArea: estimator.areas.total,
       crackFootage: estimator.cracks.length,
@@ -91,8 +91,6 @@ const Index = memo(function Index() {
     [
       estimator.job.name,
       estimator.job.address,
-      estimator.business.data?.primaryContactName,
-      estimator.business.data?.primaryEmail,
       missionPhase,
       estimator.areas.total,
       estimator.cracks.length,
@@ -270,7 +268,6 @@ const Index = memo(function Index() {
           wallpaper={{
             name: wallpaper.name,
             description: wallpaper.description,
-            source: wallpaper.source,
           }}
           onNextWallpaper={cycleWallpaper}
           onUploadWallpaper={handleWallpaperUpload}

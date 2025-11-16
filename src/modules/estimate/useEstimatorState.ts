@@ -804,7 +804,7 @@ export function useEstimatorState(): EstimatorState {
   };
 
   const featureFlags: FeatureFlagState = {
-    values: featureFlagValues,
+    values: { ...featureFlagValues, schedulerConstraintSolver: false, schedulerIcsAutomation: false },
     ownerMode,
     setOwnerMode,
     toggleFlag: toggleFeatureFlag,

@@ -6,7 +6,7 @@ import {
 } from '@/design/system/catalog';
 import { DIVISION_WALLPAPERS } from '@/design/themes';
 import type { CanvasTone, CanvasWallpaper } from '@/modules/layout/wallpapers';
-import { DEFAULT_WALLPAPER } from '@/modules/layout/wallpapers';
+import { CANVAS_WALLPAPERS, DEFAULT_WALLPAPER } from '@/modules/layout/wallpapers';
 
 export interface ThemeGalleryEntry {
   readonly id: string;
@@ -33,7 +33,7 @@ export interface DesignSystemManifest {
   readonly wallpapers: CanvasWallpaper[];
 }
 
-const wallpaperMap = new Map(DIVISION_WALLPAPERS.map((wallpaper) => [wallpaper.id, wallpaper]));
+const wallpaperMap = new Map(CANVAS_WALLPAPERS.map((wallpaper) => [wallpaper.id, wallpaper]));
 
 const getWallpaper = (id?: string): CanvasWallpaper => {
   if (!id) return DEFAULT_WALLPAPER;
@@ -261,6 +261,6 @@ const seasonalCollection: ThemeGalleryCollection = {
 
 export const DESIGN_SYSTEM_MANIFEST: DesignSystemManifest = {
   collections: [liturgicalCollection, operationsCollection, campusCollection, seasonalCollection],
-  wallpapers: DIVISION_WALLPAPERS,
+  wallpapers: CANVAS_WALLPAPERS,
 };
 

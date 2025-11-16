@@ -44,14 +44,14 @@ export function CommandStat({
     trendDirection === 'up' ? ArrowUpRight : trendDirection === 'down' ? ArrowDownRight : Minus;
 
   return (
-    <output
+    <div
       className={cn(
         'relative flex flex-col gap-3 rounded-2xl border border-white/10 bg-slate-950/60 p-4 text-left shadow-[0_12px_40px_rgba(2,4,16,0.45)] backdrop-blur-xl transition-colors duration-200',
         compact && 'gap-2 p-3',
         className,
       )}
+      role="status"
       aria-live="polite"
-      value={value}
     >
       <div className="flex items-center gap-2 text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">
         {icon ? <span className="text-base text-slate-200">{icon}</span> : null}
@@ -84,6 +84,6 @@ export function CommandStat({
           {trendDirection === 'flat' ? ' holding steady' : null}
         </p>
       ) : null}
-    </output>
+    </div>
   );
 }

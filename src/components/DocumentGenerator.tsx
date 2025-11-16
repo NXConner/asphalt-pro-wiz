@@ -12,11 +12,12 @@ import { logError } from '@/lib/logging';
 import { saveEstimateDocument } from '@/modules/estimate/persistence';
 
 interface DocumentGeneratorProps {
-  jobName: string;
-  customerAddress: string;
+  jobName?: string;
+  customerAddress?: string;
+  estimator?: any;
 }
 
-export function DocumentGenerator({ jobName, customerAddress }: DocumentGeneratorProps) {
+export function DocumentGenerator({ jobName = '', customerAddress = '' }: DocumentGeneratorProps) {
   const [docType, setDocType] = useState<
     | 'Contract'
     | 'Progress Report'

@@ -139,7 +139,7 @@ const withPrimary = (primary: string, accent: string, extras: Record<string, str
     ...extras,
   });
 
-export const DIVISION_THEMES: Record<DivisionThemeId, DivisionThemeDefinition> = {
+export const DIVISION_THEMES: Partial<Record<DivisionThemeId, DivisionThemeDefinition>> = {
   'theme-division-agent': {
     id: 'theme-division-agent',
     name: 'Division Agent',
