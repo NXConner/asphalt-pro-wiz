@@ -344,13 +344,3 @@ fs.writeFileSync(OUTPUT_PATH, JSON.stringify(spec, null, 2));
 
 const pathCount = spec.paths ? Object.keys(spec.paths).length : 0;
 console.log(`Wrote ${path.relative(ROOT, OUTPUT_PATH)} with ${pathCount} documented paths`);
-const options = {
-  definition: baseDefinition,
-  apis: [path.join(ROOT, 'supabase/functions/**/*.ts')],
-};
-
-const spec = swaggerJSDoc(options);
-
-fs.mkdirSync(path.dirname(OUT), { recursive: true });
-fs.writeFileSync(OUT, JSON.stringify(spec, null, 2));
-console.log(`Wrote ${path.relative(ROOT, OUT)}`);
