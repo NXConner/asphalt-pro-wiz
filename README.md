@@ -38,7 +38,7 @@ AI-assisted operations command center purpose-built for asphalt paving, sealcoat
 - **Estimator Studio** – multi-step cost modelling with AI assistance, compliance guardrails, multi-scenario simulation lab, and offline resilience.
 - **Mission Scheduler** – crew-aware timeline with worship blackout windows, ADA alerts, conflict detection, and what-if optimization.
 - **Command Center HUD** – live telemetry, revenue and margin dashboards, configurable widgets, multi-monitor layout memory, gesture controls, keyboard navigation, animation presets, and Supabase-backed data panels with export/import workflows.
-- **Theme Command Center** – multi-theme gallery with liturgical presets, custom wallpaper uploads, adaptive typography, and instant previews.
+- **Theme Command Center** – multi-theme gallery with liturgical presets, drag-and-drop wallpaper uploads, adaptive typography, and instant previews plus a live design token manifest.
 - **Layout & Mapping Suite** – GIS overlays, measurement tools, tactical map waypoints, hazard zoning, and drone-ready workflows.
 - **Automation & Notifications** – templated outreach flows, incident management, and workflow hooks for estimator → mission transitions.
 - **Supplier Intelligence** – Supabase-backed pricing telemetry, AI summaries, and lead-time signals for regional material partners.
@@ -86,6 +86,10 @@ npm run migrate:up
 npm run seed
 ```
 
+Lovable previews poll `VITE_HEALTHCHECK_URL` (`/health` by default) **before** the SPA mounts. The repository now ships a static responder at `public/health` so previews stay green while Vite compiles; once React hydrates, the `/health` route in `src/pages/Health.tsx` adds live metadata. If you change ports or hosts, update `PORT`, `VITE_DEV_SERVER_PORT`, and `VITE_HEALTHCHECK_URL`, then refresh the already-running dev server.
+
+> **Supabase admin user**: before running `npm run seed`, create the `ADMIN_EMAIL` user (defaults to `n8ter8@gmail.com`) in Supabase Auth so the script can attach the `super_admin` role. Follow `docs/ADMIN_SETUP.md` for dashboard, CLI, or SQL instructions.
+
 > **Windows**: Follow `docs/WINDOWS_SETUP.md` for shell-specific flags, PostgreSQL provisioning, and Playwright dependencies.
 
 ---
@@ -116,6 +120,8 @@ npm run seed
   - **Mapping & Weather**: `VITE_GOOGLE_MAPS_API_KEY`, `VITE_OPENWEATHER_API_KEY`, `VITE_MAPBOX_TOKEN`, `VITE_AIR_QUALITY_API_KEY`.
   - **HUD Sync & Export**: `VITE_HUD_DEFAULT_ANIMATION_PRESET`, `VITE_HUD_ANIMATION_PRESETS_PATH`, `VITE_HUD_GESTURE_SENSITIVITY`, `VITE_HUD_MULTI_MONITOR_STRATEGY`, `VITE_HUD_CONFIG_EXPORT_FORMAT`, `VITE_HUD_CONFIG_EXPORT_ENDPOINT`, plus secrets `HUD_CONFIG_EXPORT_SIGNING_KEY`, `HUD_CONFIG_EXPORT_ENCRYPTION_KEY`, `HUD_CONFIG_EXPORT_BUCKET`.
   - **Developer tooling**: `GITHUB_TOKEN` for ingest scripts.
+  - **Seed admin**: `ADMIN_EMAIL` (defaults to `n8ter8@gmail.com`) tells the seed script which Supabase Auth user should receive `super_admin`, demo org memberships, and Theme Command Center defaults.
+  - `npm run check:env` (or `npm run check:env -- --strict` in CI) now blocks deployments if Lovable routing keys drift: it validates `PORT`, `VITE_DEV_SERVER_PORT`, `VITE_BASE_PATH`, `VITE_HEALTHCHECK_URL`, and both heartbeat timing variables so preview watchdogs never fail silently.
 - **Secrets provider**: Set `SECRET_PROVIDER` to `env` (default), `doppler`, `vault`, or `aws-secrets-manager`. The runtime helper `src/config/secrets.ts` reads this value and fails fast if required secrets are missing or the provider is unconfigured.
 - Generate sanitized runtime bundles with `npm run secrets:render -- --output .env.runtime` after hydrating secrets. Use `--strict` in CI to fail fast when a key from `.env.example` is missing.
 - Secrets automation templates live in `config/secrets/` for Doppler, Vault, and AWS Secrets Manager pipelines.
@@ -137,7 +143,8 @@ npm run seed
   - Lovable preview asset watchers (`lovable.asset_load_error`, `lovable.asset_promise_rejection`) for visibility into missing bundles or proxy misconfigurations.
 - Enable/disable web vitals and feature telemetry with `VITE_ENABLE_WEB_VITALS` and `VITE_ENABLE_FEATURE_TELEMETRY`.
 - Integrate with external APMs by configuring `VITE_OBSERVABILITY_EXPORTER_URL` and `VITE_SENTRY_DSN`.
-- **Lovable preview watchdog**: `installLovableAssetMonitoring()` pings `VITE_HEALTHCHECK_URL` using `VITE_PREVIEW_HEARTBEAT_INTERVAL_MS`. If previews return “connection refused,” verify this endpoint locally (Step 3) before redeploying to Lovable; set `PORT=8080` unless Lovable assigns a different value.
+- **Lovable preview watchdog**: `installLovableAssetMonitoring()` pings `VITE_HEALTHCHECK_URL` using `VITE_PREVIEW_HEARTBEAT_INTERVAL_MS`. A static JSON responder (`public/health`) guarantees 200-level responses even before Vite finishes compiling, while the SPA `/health` route layers live diagnostics once React hydrates. If previews return “connection refused,” verify this endpoint locally (Step 3) before redeploying to Lovable; keep `PORT`/`VITE_DEV_SERVER_PORT` at 8080 unless your proxy explicitly supports overrides.
+- **Third-party beacon guardrails**: Lovable previews often block Google/TikTok hosts. Set `VITE_DISABLE_THIRD_PARTY_ANALYTICS=1` to keep `gtag`/`ttq` calls from firing, or rely on the automatic Lovable host/offline detection baked into `trackEvent` to suppress them gracefully while still logging to Supabase.
 
 ---
 
@@ -151,9 +158,11 @@ npm run seed
     - `npm run security:baseline` (scan + report in one step for daily health checks)
     - `npm run security:ci` (aggregated audit + Snyk + JSON report for CI gates)
 - Secret resolution is centralised in `src/config/secrets.ts`, which normalises environment values and surfaces actionable errors when a managed provider (`SECRET_PROVIDER=doppler|vault|aws-secrets-manager`) is enabled without configuration. See `config/secrets/README.md` for provider-specific bootstrapping.
+  - Provider templates live in `config/secrets/doppler.yaml.example`, `config/secrets/vault.env.template`, and `config/secrets/aws-secrets-manager.json.example` so you can copy/paste minimal configs when wiring Doppler/Vault/AWS Secret Manager.
   - GitHub Actions pipeline (`.github/workflows/main.yml`) runs CodeQL SAST, dependency scans, and tests per push.
 - Secrets management patterns documented in `docs/SECRETS_AND_CONFIG.md` with Doppler/Vault/AWS sample configs.
   - day-to-day security expectations (secret rotation, dependency scans, incident checklist) live in `docs/SECURITY_OPERATIONS.md`.
+  - Set `SNYK_TOKEN` in repository/organization secrets to unlock the Snyk portion of `npm run security:ci`; without it the CI step will fall back to npm audit only.
 - Virginia contractor compliance workflows, invoicing expectations, and retention policies detailed in `docs/PRODUCTION_READINESS.md` and `docs/SECURITY_REMEDIATION_GUIDE.md`.
 
 ---
@@ -174,6 +183,8 @@ npm run seed
 | Load          | see [Load & Performance Testing](#load--performance-testing) | k6 + Artillery packs                                                                                              |
 
 Husky pre-commit hooks execute lint-staged, lint, typecheck, unit tests, and optional Playwright checks via `npm run precommit:hook`.
+
+> Accessibility linting is enforced via `eslint-plugin-jsx-a11y`; `npm run lint` and the Docker quality gate both fail on violations so HUD widgets remain screen-reader friendly.
 
 ---
 
@@ -237,10 +248,26 @@ Exercises the workflow telemetry tables by creating synthetic measurement runs, 
 ### Artillery Smoke Pulse
 
 ```bash
-npx artillery run scripts/load/artillery.yml
+npx artillery run scripts/load/artillery.yml --output artillery-report.json
 ```
 
-Ideal for CI or pre-release smoke tests. Full instructions live in `scripts/load/README.md`.
+The Artillery profile mirrors the k6 routes with a lighter 2-minute pulse for CI. The `--output` flag captures JSON summaries—upload the file as a build artifact for audit trails (see `scripts/load/README.md` for more knobs).
+
+## API Documentation
+
+- Generate the OpenAPI spec after editing Supabase Edge Functions:
+
+  ```bash
+  npm run openapi:generate
+  ```
+
+- Preview it locally with Swagger UI:
+
+  ```bash
+  npx swagger-ui-watcher docs/swagger.json
+  ```
+
+- See `docs/API_REFERENCE.md` for human-friendly summaries of each function plus example cURL snippets. The canonical machine-readable spec lives at `docs/swagger.json`.
 
 ---
 
@@ -249,14 +276,23 @@ Ideal for CI or pre-release smoke tests. Full instructions live in `scripts/load
 ### Containers
 
 ```bash
-docker compose --env-file .env up --build web
-# Reset state
+# 1. Build optimized runtime image (quality gate runs automatically)
+docker build -t pps:web --build-arg VITE_APP_VERSION=$(git rev-parse --short HEAD) .
+
+# 2. Launch the production stack (web + db + observability mocks)
+docker compose --env-file .env up --build web db observability measurement-ai
+
+# 3. Run database migrations / seed data (one-off)
+docker compose run --rm migrator
+docker compose --profile setup run --rm seeder
+
+# 4. Reset everything
 docker compose down -v
 ```
 
-> **Quality gate:** The Docker build stage runs `npm run lint`, `npm run typecheck`, and `npm run test:unit -- --run` before bundling, failing fast on regressions.
-
-> Need a hot-reload setup instead? Enable the dev profile: `docker compose --profile dev up devserver db measurement-ai`.
+- The multi-stage `Dockerfile` bakes in a `quality` gate: the runtime image copies a sentinel file from the lint/type/test stage, so `docker build` fails immediately if checks regress.
+- Hot reload uses the Vite dev server on port `8080` to stay Lovable-compatible: `docker compose --profile dev up devserver db measurement-ai`.
+- Need only the API mocks? All compose services support profiles—start just what you need (e.g., `--profile setup` for seed-only).
 
 ### Android
 
@@ -286,6 +322,7 @@ npm run android:gradle:debug
 
 ## Contribution & Developer Experience
 
+- New to the project? Start with the [Contributor Onboarding Guide](./docs/CONTRIBUTOR_GUIDE.md) for environment prerequisites, first-run scripts, and the full PR checklist.
 - Branching strategy:
   - `main`: production-ready, auto-deploy after CI success.
   - `develop`: integration branch for the next release cut; merge feature branches here.
@@ -319,6 +356,7 @@ Full roadmap and phased analysis live in `docs/PHASE_1_ANALYSIS.md`, `docs/PHASE
 - API & integrations: `docs/API_REFERENCE.md`, `docs/INTEGRATIONS_GUIDE.md`
 - Deployment & operations: `docs/DEPLOYMENT.md`, `docs/PRODUCTION_READINESS.md`, `docs/CONTAINERIZATION.md`
 - UI foundations: `docs/DESIGN_SYSTEM.md`
+- Contributor onboarding: `docs/CONTRIBUTOR_GUIDE.md`
 
 ---
 

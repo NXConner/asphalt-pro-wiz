@@ -1,9 +1,6 @@
 {
-  "openapi": "3.1.0",
+  "openapi": "3.0.3",
   "info": {
-    "title": "Pavement Performance Suite – Supabase Edge Functions",
-    "version": "0.3.0",
-    "description": "Documented Supabase Edge Function endpoints powering AI proxying, observability, and supplier intelligence for Pavement Performance Suite.",
     "title": "Pavement Performance Suite – Edge Functions API",
     "version": "0.3.0",
     "description": "OpenAPI specification for Supabase Edge Functions that power PPS AI proxying and observability beacons. Generated via swagger-jsdoc.",
@@ -48,170 +45,6 @@
     {
       "name": "Intelligence",
       "description": "Supplier pricing and operations insights"
-    }
-  ],
-  "paths": {
-    "/gemini-proxy": {
-      "post": {
-        "tags": [
-          "AI"
-        ],
-        "summary": "Proxy Gemini API calls",
-        "description": "Routes chat, image, and embedding requests to Google Gemini models while keeping API keys on the server. Requires a Supabase JWT (anon or service) supplied as `Authorization: Bearer <token>`.",
-        "operationId": "GeminiProxy",
-        "security": [
-          {
-            "supabaseAnonKey": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GeminiProxyRequest"
-              },
-              "examples": {
-                "chat": {
-                  "summary": "Chat prompt",
-                  "value": {
-                    "action": "chat",
-                    "contents": [
-                      {
-                        "parts": [
-                          {
-                            "text": "Summarize sealcoating steps for a 25,000 sq ft church campus."
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                "embed": {
-                  "summary": "Embedding request",
-                  "value": {
-                    "action": "embed",
-                    "text": "Church lot resurfacing quote"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Gemini response payload",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GeminiProxyResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Unsupported action or malformed body",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing Authorization header"
-          },
-          "405": {
-            "description": "Method not allowed"
-          },
-          "500": {
-            "description": "Upstream error or missing API key"
-          }
-        }
-      }
-    },
-    "/log-beacon": {
-      "post": {
-        "tags": [
-          "Observability"
-        ],
-        "summary": "Ingest client log beacons",
-        "description": "Receives structured telemetry events from the Pavement Performance Suite web client for centralized logging and incident roll-up. Supports single objects or batches up to 50 entries.",
-        "operationId": "LogBeacon",
-        "security": [
-          {
-            "supabaseAnonKey": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LogBeaconPayload"
-              },
-              "examples": {
-                "single": {
-                  "summary": "Single telemetry event",
-                  "value": {
-                    "event": "lovable.asset_load_error",
-                    "level": "error",
-                    "assetUrl": "https://preview.example.com/static/logo.png",
-                    "pageUrl": "https://preview.example.com/dashboard",
-                    "reason": "Failed to load resource"
-                  }
-                },
-                "batch": {
-                  "summary": "Batch payload",
-                  "value": [
-                    {
-                      "event": "mission.scheduler_loaded",
-                      "level": "info"
-                    },
-                    {
-                      "event": "lovable.asset_recovered",
-                      "level": "warn",
-                      "message": "Recovered after retry"
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Beacon accepted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LogBeaconResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid JSON payload or validation failure",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid Supabase JWT"
-          },
-          "405": {
-            "description": "Method not allowed"
-          },
-          "500": {
-            "description": "Persistence failure while writing telemetry rows"
-          }
-        }
-      }
     }
   ],
   "components": {
@@ -630,6 +463,52 @@
           "bestOffers",
           "aiSummary"
         ]
+      },
+      "LogBeaconResponse": {
+        "type": "object",
+        "properties": {
+          "ingested": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of events successfully persisted."
+          }
+        },
+        "required": [
+          "ingested"
+        ],
+        "additionalProperties": false
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Human-readable error message."
+          },
+          "details": {
+            "description": "Optional validation or diagnostic details.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": true
       }
     }
   },
@@ -644,6 +523,7 @@
         "operationId": "postGeminiProxy",
         "security": [
           {
+            "supabaseAnonKey": [],
             "supabaseBearer": []
           }
         ],
@@ -693,7 +573,14 @@
             }
           },
           "400": {
-            "description": "Validation failed or unsupported action"
+            "description": "Validation failed or unsupported action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "401": {
             "description": "Missing or invalid Supabase JWT"
@@ -717,6 +604,7 @@
         "operationId": "postLogBeacon",
         "security": [
           {
+            "supabaseAnonKey": [],
             "supabaseBearer": []
           },
           {
@@ -729,6 +617,32 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/LogBeaconPayload"
+              },
+              "examples": {
+                "single": {
+                  "summary": "Single telemetry event",
+                  "value": {
+                    "event": "lovable.asset_load_error",
+                    "level": "error",
+                    "assetUrl": "https://preview.example.com/static/logo.png",
+                    "pageUrl": "https://preview.example.com/dashboard",
+                    "reason": "Failed to load resource"
+                  }
+                },
+                "batch": {
+                  "summary": "Batch payload",
+                  "value": [
+                    {
+                      "event": "mission.scheduler_loaded",
+                      "level": "info"
+                    },
+                    {
+                      "event": "lovable.asset_recovered",
+                      "level": "warn",
+                      "message": "Recovered after retry"
+                    }
+                  ]
+                }
               }
             }
           }
@@ -739,6 +653,7 @@
             "content": {
               "application/json": {
                 "schema": {
+                  "$ref": "#/components/schemas/LogBeaconResponse",
                   "type": "object",
                   "properties": {
                     "ingested": {
@@ -751,7 +666,14 @@
             }
           },
           "400": {
-            "description": "Invalid JSON payload or validation failure"
+            "description": "Invalid JSON payload or validation failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "401": {
             "description": "Missing or invalid Supabase JWT"
@@ -784,6 +706,14 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SupplierIntelRequest"
+              },
+              "example": {
+                "materials": [
+                  "Acrylic Sealer",
+                  "Crack Filler"
+                ],
+                "radiusMiles": 75,
+                "includeAiSummary": false
               }
             }
           }
@@ -800,10 +730,20 @@
             }
           },
           "400": {
-            "description": "Missing org context or invalid radius/material filter"
+            "description": "Missing org context or invalid radius/material filter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "401": {
             "description": "Missing or invalid Supabase JWT"
+          },
+          "405": {
+            "description": "Method not allowed"
           },
           "422": {
             "description": "Request validation failed"
@@ -812,51 +752,6 @@
             "description": "Unexpected error while computing insights or contacting Gemini"
           }
         }
-      "LogBeaconResponse": {
-        "type": "object",
-        "properties": {
-          "ingested": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Number of events successfully persisted."
-          }
-        },
-        "required": [
-          "ingested"
-        ],
-        "additionalProperties": false
-      },
-      "ErrorResponse": {
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "string",
-            "description": "Human-readable error message."
-          },
-          "details": {
-            "description": "Optional validation or diagnostic details.",
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "additionalProperties": true
-                }
-              },
-              {
-                "type": "object",
-                "additionalProperties": true
-              }
-            ]
-          }
-        },
-        "required": [
-          "error"
-        ],
-        "additionalProperties": true
       }
     }
   }

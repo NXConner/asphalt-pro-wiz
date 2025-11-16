@@ -13,6 +13,50 @@ const supabase =
       })
     : null;
 
+/**
+ * @openapi
+ * /supplier-intel:
+ *   post:
+ *     tags:
+ *       - Intelligence
+ *     summary: Aggregate supplier pricing telemetry
+ *     description: |
+ *       Returns the most recent supplier price snapshots, best offers per material, and (optionally) a Gemini-authored summary
+ *       for estimators and schedulers. Requires a Supabase JWT so the service can resolve the caller's organisation context.
+ *     operationId: postSupplierIntel
+ *     security:
+ *       - supabaseBearer: []
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SupplierIntelRequest'
+ *           example:
+ *             materials: ['Acrylic Sealer', 'Crack Filler']
+ *             radiusMiles: 75
+ *             includeAiSummary: false
+ *     responses:
+ *       '200':
+ *         description: Supplier intelligence payload
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SupplierIntelResponse'
+ *       '400':
+ *         description: Invalid payload or unable to resolve organisation context
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '401':
+ *         description: Missing or invalid Supabase JWT
+ *       '405':
+ *         description: Method not allowed
+ *       '500':
+ *         description: Upstream Supabase or Gemini failure
+ */
+
 const INPUT_SCHEMA = z.object({
   orgId: z.string().uuid().optional(),
   materials: z.array(z.string().min(1).max(64)).max(12).optional(),

@@ -1,7 +1,8 @@
-import { Eye, Sparkles, Upload } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { Eye, Sparkles } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 import { TacticalInput, TacticalModal } from '@/components/tactical';
+import { ThemeWallpaperDropzone } from '@/components/theme/ThemeWallpaperDropzone';
 import { Button } from '@/components/ui/button';
 import { TacticalCard } from '@/components/ui/tactical-card';
 import { DESIGN_SYSTEM_MANIFEST, type ThemeGalleryEntry } from '@/design/system';
@@ -47,7 +48,6 @@ export function ThemeGallery({
   const [preview, setPreview] = useState<ThemeGalleryEntry | null>(null);
   const [uploadTone, setUploadTone] = useState<CanvasTone>('dusk');
   const [uploadName, setUploadName] = useState('');
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
 
   const collections = DESIGN_SYSTEM_MANIFEST.collections;
@@ -62,9 +62,7 @@ export function ThemeGallery({
     });
   };
 
-  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleUpload = async (file: File) => {
     try {
       setUploading(true);
       await onUploadWallpaper({
@@ -75,9 +73,6 @@ export function ThemeGallery({
       setUploadName('');
     } finally {
       setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     }
   };
 
@@ -201,24 +196,13 @@ export function ThemeGallery({
             </div>
           </div>
           <div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              className="hidden"
-              accept="image/png,image/jpeg,image/webp"
-              onChange={handleUpload}
+            <ThemeWallpaperDropzone
+              busy={uploading}
+              onSelectFile={(file) => {
+                void handleUpload(file);
+              }}
+              description="PNG, JPG, WebP • Drag & drop or browse. We auto-optimize and stay on-device."
             />
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              disabled={uploading}
-              onClick={() => fileInputRef.current?.click()}
-              className="border-white/30 text-white hover:bg-white/10"
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              {uploading ? 'Processing…' : 'Upload Wallpaper'}
-            </Button>
           </div>
         </div>
         <div className="rounded-2xl border border-white/5 bg-slate-900/70 p-4 text-xs text-white/80">

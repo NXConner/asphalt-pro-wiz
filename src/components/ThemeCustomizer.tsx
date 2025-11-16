@@ -14,10 +14,16 @@ import { ThemeWallpaperManager } from '@/components/theme/ThemeWallpaperManager'
 import { ThemeWallpaperSynth } from '@/components/theme/ThemeWallpaperSynth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  FOUNDATION_COLOR_ENTRIES,
+  FOUNDATION_SHADOW_ENTRIES,
+  FOUNDATION_SPACING_ENTRIES,
+  FOUNDATION_TYPOGRAPHY_ENTRIES,
+} from '@/design/system/foundation';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useImageOptimization } from '@/hooks/useImageOptimization';
 import { blobToDataUrl } from '@/lib/blob';
-import { DESIGN_SYSTEM, groupThemePresets } from '@/lib/designSystem';
+import { groupThemePresets } from '@/lib/designSystem';
 import type { ThemeName } from '@/lib/theme';
 import { useWallpaperLibrary } from '@/modules/layout/wallpaperLibrary';
 import { DEFAULT_WALLPAPER } from '@/modules/layout/wallpapers';
@@ -379,12 +385,10 @@ export function ThemeCustomizer() {
         </div>
 
         <ThemeDesignTokensPanel
-          spacing={Object.entries(DESIGN_SYSTEM.spacing)}
-          typography={Object.entries(DESIGN_SYSTEM.typography)}
-          shadows={Object.entries(DESIGN_SYSTEM.shadows)}
-          colors={['--primary', '--accent', '--secondary', '--background', '--foreground'].map(
-            (key) => [key, DESIGN_SYSTEM.colors[key as keyof typeof DESIGN_SYSTEM.colors]],
-          )}
+          spacing={FOUNDATION_SPACING_ENTRIES}
+          typography={FOUNDATION_TYPOGRAPHY_ENTRIES}
+          shadows={FOUNDATION_SHADOW_ENTRIES}
+          colors={FOUNDATION_COLOR_ENTRIES}
         />
 
         <ThemeAccessibilityPanel />

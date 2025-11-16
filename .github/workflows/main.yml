@@ -40,8 +40,8 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
-        - name: Install dependencies
-          run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
       - name: Lint
         run: npm run lint
@@ -55,8 +55,8 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-        - name: Run E2E tests (Playwright)
-          run: npm run test:e2e -- --reporter=list
+      - name: Run E2E tests (Playwright)
+        run: npm run test:e2e -- --reporter=list
 
       - name: Run preview smoke harness
         run: npm run test:preview
@@ -68,15 +68,15 @@ jobs:
         run: |
           git diff --exit-code docs/swagger.json || (echo "::error ::docs/swagger.json is out of date. Run npm run openapi:generate locally and commit the result." && exit 1)
 
-        - name: Build application
-          run: npm run build
+      - name: Build application
+        run: npm run build
 
-        - name: Upload build artefacts
-          uses: actions/upload-artifact@v4
-          with:
-            name: dist
-            path: dist
-            if-no-files-found: error
+      - name: Upload build artefacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          if-no-files-found: error
 
   security:
     name: Dependency & Vulnerability Scan
@@ -96,10 +96,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: npm audit & Snyk scan
-        run: npm run security:scan
+      - name: npm audit & Snyk scan (security:ci)
+        run: npm run security:ci
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN || '' }}
+
+      - name: Upload security report artifact
+        if: ${{ always() && hashFiles('security-report.json') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: security-report.json
+          if-no-files-found: ignore
 
   migrations:
     name: Migration Smoke Test
@@ -173,15 +181,15 @@ jobs:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-        - name: Build (and optionally push) image
-          uses: docker/build-push-action@v5
-          with:
-            context: .
-            file: ./Dockerfile
-            push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.REGISTRY_USERNAME != '' && secrets.REGISTRY_PASSWORD != '' }}
-            tags: |
-              ${{ steps.meta.outputs.sha_tag }}
-              ${{ steps.meta.outputs.latest_tag }}
-            cache-from: type=gha
-            cache-to: type=gha,mode=max
-            target: runtime
+      - name: Build (and optionally push) image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.REGISTRY_USERNAME != '' && secrets.REGISTRY_PASSWORD != '' }}
+          tags: |
+            ${{ steps.meta.outputs.sha_tag }}
+            ${{ steps.meta.outputs.latest_tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          target: runtime

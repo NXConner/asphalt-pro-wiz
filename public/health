@@ -1,0 +1,6 @@
+{
+  "status": "healthy",
+  "service": "pavement-performance-suite",
+  "generatedAt": "2025-11-16T14:25:00Z",
+  "notes": "Static Lovable heartbeat asset served before the SPA boots; runtime /health route exposes live metadata."
+}
