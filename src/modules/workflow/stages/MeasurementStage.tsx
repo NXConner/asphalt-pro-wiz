@@ -18,9 +18,10 @@ import { useWorkflowTelemetry, type WorkflowMeasurementRun } from '../hooks/useW
 interface MeasurementStageProps {
   estimator: EstimatorState;
   intel: MeasurementIntelState;
+  jobId?: string | null;
 }
 
-export function MeasurementStage({ estimator, intel }: MeasurementStageProps) {
+export function MeasurementStage({ estimator, intel, jobId }: MeasurementStageProps) {
   const { toast } = useToast();
   const [notes, setNotes] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -44,7 +45,7 @@ export function MeasurementStage({ estimator, intel }: MeasurementStageProps) {
       },
     ];
   }, [intel.measurement]);
-  const telemetry = useWorkflowTelemetry(estimator.job.id ?? null, fallbackRuns);
+  const telemetry = useWorkflowTelemetry(jobId ?? estimator.job.id ?? null, fallbackRuns);
 
   const metrics = useMemo(
     () => [

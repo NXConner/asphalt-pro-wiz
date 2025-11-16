@@ -20,6 +20,7 @@ interface UseWorkflowStagesParams {
   measurement: MeasurementIntelState;
   missionControl: ReactNode;
   onOpenCompliance: () => void;
+  jobId?: string | null;
 }
 
 export function useWorkflowStages({
@@ -27,6 +28,7 @@ export function useWorkflowStages({
   measurement,
   missionControl,
   onOpenCompliance,
+  jobId,
 }: UseWorkflowStagesParams): WorkflowStage[] {
   return useMemo<WorkflowStage[]>(() => {
     const statuses = computeStatuses(estimator, measurement);
@@ -37,10 +39,10 @@ export function useWorkflowStages({
       eyebrow: STAGE_EYEBROWS[stageId],
       summary: STAGE_DESCRIPTIONS[stageId],
       status: statuses[stageId],
-      panel: renderPanel(stageId, estimator, measurement, missionControl, onOpenCompliance),
+      panel: renderPanel(stageId, estimator, measurement, missionControl, onOpenCompliance, jobId),
       badges: [],
     }));
-  }, [estimator, measurement, missionControl, onOpenCompliance]);
+  }, [estimator, measurement, missionControl, onOpenCompliance, jobId]);
 }
 
 type StageStatusMap = Record<WorkflowStageId, WorkflowStage['status']>;
@@ -51,10 +53,11 @@ const renderPanel = (
   measurement: MeasurementIntelState,
   missionControl: ReactNode,
   onOpenCompliance: () => void,
+  jobId?: string | null,
 ) => {
   switch (stageId) {
     case 'measure':
-      return <MeasurementStage estimator={estimator} intel={measurement} />;
+      return <MeasurementStage estimator={estimator} intel={measurement} jobId={jobId} />;
     case 'condition':
       return <ConditionStage estimator={estimator} intel={measurement} />;
     case 'scope':

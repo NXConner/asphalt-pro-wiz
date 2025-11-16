@@ -20,6 +20,9 @@ import { useWallpaperLibrary } from '@/modules/layout/wallpaperLibrary';
 import { DEFAULT_WALLPAPER, getNextWallpaper, getWallpaperById } from '@/modules/layout/wallpapers';
 import { toast } from 'sonner';
 
+const SAMPLE_JOB_ID =
+  (typeof import.meta !== 'undefined' && (import.meta as any)?.env?.VITE_SAMPLE_JOB_ID) ?? null;
+
 const THEME_BY_WALLPAPER: Record<string, WorkflowThemeId> = {
   'division-twilight-ops': 'sunrise',
   'division-sanctuary-grid': 'tech',
@@ -33,7 +36,8 @@ const THEME_BY_WALLPAPER: Record<string, WorkflowThemeId> = {
 
 const Index = memo(function Index() {
   const estimator = useEstimatorState();
-  const measurementIntel = useMeasurementIntel(estimator);
+  const jobId = SAMPLE_JOB_ID || (estimator.job as { id?: string | null })?.id ?? null;
+  const measurementIntel = useMeasurementIntel(estimator, jobId);
   const { setWallpaper } = useTheme();
   const { addWallpaper } = useWallpaperLibrary();
   const { optimizeImage, isProcessing: optimizingWallpaper } = useImageOptimization();
@@ -97,8 +101,6 @@ const Index = memo(function Index() {
     ],
   );
 
-  const jobId = (estimator.job as { id?: string | null })?.id ?? null;
-
   const missionControlPanel = useMemo(() => <MissionControlPanel estimator={estimator} />, [estimator]);
 
   const stages = useWorkflowStages({
@@ -106,6 +108,7 @@ const Index = memo(function Index() {
     measurement: measurementIntel,
     missionControl: missionControlPanel,
     onOpenCompliance: () => setComplianceOpen(true),
+    jobId,
   });
 
   useEffect(() => {
