@@ -157,9 +157,11 @@ Lovable previews poll `VITE_HEALTHCHECK_URL` (`/health` by default) **before** t
     - `npm run security:baseline` (scan + report in one step for daily health checks)
     - `npm run security:ci` (aggregated audit + Snyk + JSON report for CI gates)
 - Secret resolution is centralised in `src/config/secrets.ts`, which normalises environment values and surfaces actionable errors when a managed provider (`SECRET_PROVIDER=doppler|vault|aws-secrets-manager`) is enabled without configuration. See `config/secrets/README.md` for provider-specific bootstrapping.
+  - Provider templates live in `config/secrets/doppler.yaml.example`, `config/secrets/vault.env.template`, and `config/secrets/aws-secrets-manager.json.example` so you can copy/paste minimal configs when wiring Doppler/Vault/AWS Secret Manager.
   - GitHub Actions pipeline (`.github/workflows/main.yml`) runs CodeQL SAST, dependency scans, and tests per push.
 - Secrets management patterns documented in `docs/SECRETS_AND_CONFIG.md` with Doppler/Vault/AWS sample configs.
   - day-to-day security expectations (secret rotation, dependency scans, incident checklist) live in `docs/SECURITY_OPERATIONS.md`.
+  - Set `SNYK_TOKEN` in repository/organization secrets to unlock the Snyk portion of `npm run security:ci`; without it the CI step will fall back to npm audit only.
 - Virginia contractor compliance workflows, invoicing expectations, and retention policies detailed in `docs/PRODUCTION_READINESS.md` and `docs/SECURITY_REMEDIATION_GUIDE.md`.
 
 ---
