@@ -45,19 +45,48 @@ export function WorkflowShell({
   return (
     <WorkflowContext.Provider value={{ stages, activeStageId, setActiveStage: onStageChange }}>
       <div
-        className="relative min-h-screen overflow-hidden bg-slate-950 text-white"
-        style={Object.fromEntries(Object.entries(activeTheme.tokens))}
+        data-workflow-shell
+        className="relative min-h-screen w-full overflow-hidden bg-slate-950 text-white"
+        style={{
+          ...Object.fromEntries(Object.entries(activeTheme.tokens)),
+          position: 'relative',
+          zIndex: 1,
+          display: 'block',
+          visibility: 'visible',
+          opacity: 1,
+        }}
       >
         <div
           className="absolute inset-0 opacity-70"
           style={{
-            backgroundImage: wallpaper?.source ? `url(${wallpaper.source})` : undefined,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            filter: 'blur(60px)',
+            backgroundImage: wallpaper?.source
+              ? wallpaper.source.startsWith('url(') || wallpaper.source.startsWith('data:') || wallpaper.source.startsWith('http')
+                ? `url(${wallpaper.source})`
+                : wallpaper.source
+              : undefined,
+            backgroundSize: wallpaper?.source && (wallpaper.source.startsWith('data:') || wallpaper.source.startsWith('http') || wallpaper.source.startsWith('url('))
+              ? 'cover'
+              : undefined,
+            backgroundPosition: wallpaper?.source && (wallpaper.source.startsWith('data:') || wallpaper.source.startsWith('http') || wallpaper.source.startsWith('url('))
+              ? 'center'
+              : undefined,
+            filter: wallpaper?.source && (wallpaper.source.startsWith('data:') || wallpaper.source.startsWith('http') || wallpaper.source.startsWith('url('))
+              ? 'blur(60px)'
+              : undefined,
+            zIndex: 0,
           }}
         />
-        <div className="relative z-10 space-y-6 px-4 pb-10 pt-6 sm:px-6 lg:px-10">
+        <div
+          className="relative space-y-6 px-4 pb-10 pt-6 sm:px-6 lg:px-10"
+          style={{
+            zIndex: 10,
+            position: 'relative',
+            minHeight: '100vh',
+            display: 'block',
+            visibility: 'visible',
+            opacity: 1,
+          }}
+        >
           <header className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/10 bg-slate-950/70 p-5 backdrop-blur-2xl">
             <div>
               <p className="text-[0.7rem] uppercase tracking-[0.45em] text-white/50">Pavement Workflow</p>

@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { toast as sonnerToast } from 'sonner';
 
 import Health from './pages/Health';
+import PreviewSafe from './pages/PreviewSafe';
 
 import { SkipLink } from '@/components/A11y/SkipLink';
 import { AccessibilityChecker } from '@/components/AccessibilityChecker/AccessibilityChecker';
