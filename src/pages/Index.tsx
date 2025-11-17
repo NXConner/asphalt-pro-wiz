@@ -16,7 +16,7 @@ import { useEstimatorState } from '@/modules/estimate/useEstimatorState';
 import { useWorkflowStages } from '@/modules/workflow/useWorkflowStages';
 import type { WorkflowStageId } from '@/modules/workflow/types';
 import { WorkflowShell } from '@/modules/workflow/WorkflowShell';
-import { useWallpaperLibrary } from '@/modules/layout/wallpaperLibrary';
+import { useWallpaperLibrary, getWallpaperAssetById } from '@/modules/layout/wallpaperLibrary';
 import { DEFAULT_WALLPAPER, getNextWallpaper, getWallpaperById } from '@/modules/layout/wallpapers';
 import { toast } from 'sonner';
 
@@ -43,12 +43,15 @@ const Index = memo(function Index() {
   const { optimizeImage, isProcessing: optimizingWallpaper } = useImageOptimization();
   const [wallpaperId, setWallpaperId] = useState(DEFAULT_WALLPAPER.id);
   const wallpaper = useMemo(() => getWallpaperById(wallpaperId), [wallpaperId]);
+  const wallpaperAsset = useMemo(() => getWallpaperAssetById(wallpaperId), [wallpaperId]);
   const [uploadingWallpaper, setUploadingWallpaper] = useState(false);
   const [complianceOpen, setComplianceOpen] = useState(false);
   const [complianceTopic, setComplianceTopic] = useState<ComplianceTopic>('striping');
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [lastUpdatedIso, setLastUpdatedIso] = useState(() => new Date().toISOString());
   const [activeStageId, setActiveStageId] = useState<WorkflowStageId>('measure');
+
+  // Visibility instrumentation - will be updated after stages are defined
 
   useEffect(() => {
     const timeoutId = setTimeout(() => setLastUpdatedIso(new Date().toISOString()), 200);
@@ -108,6 +111,30 @@ const Index = memo(function Index() {
     onOpenCompliance: () => setComplianceOpen(true),
     jobId,
   });
+
+  // Visibility instrumentation
+  useEffect(() => {
+    const mainEl = document.getElementById('main-content');
+    const workflowShell = mainEl?.querySelector('[data-workflow-shell]');
+    if (mainEl) {
+      const rect = mainEl.getBoundingClientRect();
+      const computed = window.getComputedStyle(mainEl);
+      console.log('[Index] Visibility check:', {
+        exists: !!mainEl,
+        visible: rect.width > 0 && rect.height > 0,
+        display: computed.display,
+        visibility: computed.visibility,
+        opacity: computed.opacity,
+        zIndex: computed.zIndex,
+        position: computed.position,
+        width: rect.width,
+        height: rect.height,
+        workflowShellExists: !!workflowShell,
+        stagesCount: stages.length,
+        activeStageId,
+      });
+    }
+  }, [activeStageId, stages.length]);
 
   useEffect(() => {
     const firstUnlocked = stages.find((stage) => stage.status !== 'locked');
@@ -257,9 +284,18 @@ const Index = memo(function Index() {
 
   const workflowThemeId = THEME_BY_WALLPAPER[wallpaperId] ?? 'sunrise';
 
+  // Log stages for debugging
+  useEffect(() => {
+    console.log('[Index] Stages state:', {
+      stagesCount: stages.length,
+      activeStageId,
+      stages: stages.map((s) => ({ id: s.id, status: s.status })),
+    });
+  }, [stages, activeStageId]);
+
   return (
     <>
-      <main id="main-content">
+      <main id="main-content" style={{ minHeight: '100vh', position: 'relative', zIndex: 1 }}>
         <h1 className="sr-only">Pavement Performance Suite</h1>
         <WorkflowShell
           stages={stages}
@@ -268,6 +304,7 @@ const Index = memo(function Index() {
           wallpaper={{
             name: wallpaper.name,
             description: wallpaper.description,
+            source: wallpaperAsset?.dataUrl || wallpaper.gradient,
           }}
           onNextWallpaper={cycleWallpaper}
           onUploadWallpaper={handleWallpaperUpload}
