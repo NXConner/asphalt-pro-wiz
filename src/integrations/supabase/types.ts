@@ -415,6 +415,53 @@ export type Database = {
         }
         Relationships: []
       }
+      assets: {
+        Row: {
+          asset_type: string | null
+          created_at: string | null
+          file_path: string | null
+          id: string
+          metadata: Json | null
+          name: string | null
+          project_id: string | null
+          updated_at: string | null
+          uploaded_by: string | null
+          url: string | null
+        }
+        Insert: {
+          asset_type?: string | null
+          created_at?: string | null
+          file_path?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string | null
+          project_id?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          url?: string | null
+        }
+        Update: {
+          asset_type?: string | null
+          created_at?: string | null
+          file_path?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string | null
+          project_id?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       backups: {
         Row: {
           createdat: string | null
@@ -4321,6 +4368,30 @@ export type Database = {
           },
         ]
       }
+      policy_acknowledgments: {
+        Row: {
+          created_at: string
+          id: number
+          policy_id: string
+          policy_title: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          policy_id: string
+          policy_title: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          policy_id?: string
+          policy_title?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -4513,6 +4584,47 @@ export type Database = {
           },
         ]
       }
+      project_photos: {
+        Row: {
+          analysis: string | null
+          created_at: string
+          id: number
+          image_url: string | null
+          notes: string | null
+          phase: string | null
+          project_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          analysis?: string | null
+          created_at?: string
+          id?: number
+          image_url?: string | null
+          notes?: string | null
+          phase?: string | null
+          project_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          analysis?: string | null
+          created_at?: string
+          id?: number
+          image_url?: string | null
+          notes?: string | null
+          phase?: string | null
+          project_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_photos_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_tasks: {
         Row: {
           actual_hours: number | null
@@ -4585,6 +4697,7 @@ export type Database = {
       projects: {
         Row: {
           actual_cost: number | null
+          client_address: string | null
           client_email: string | null
           client_name: string | null
           client_phone: string | null
@@ -4593,8 +4706,10 @@ export type Database = {
           customer_id: string | null
           description: string | null
           end_date: string | null
+          estimate_data: Json | null
           estimated_cost: number | null
           id: string
+          job_title: string | null
           name: string
           project_type: Database["public"]["Enums"]["project_type"] | null
           site_address: string | null
@@ -4604,6 +4719,7 @@ export type Database = {
         }
         Insert: {
           actual_cost?: number | null
+          client_address?: string | null
           client_email?: string | null
           client_name?: string | null
           client_phone?: string | null
@@ -4612,8 +4728,10 @@ export type Database = {
           customer_id?: string | null
           description?: string | null
           end_date?: string | null
+          estimate_data?: Json | null
           estimated_cost?: number | null
           id?: string
+          job_title?: string | null
           name: string
           project_type?: Database["public"]["Enums"]["project_type"] | null
           site_address?: string | null
@@ -4623,6 +4741,7 @@ export type Database = {
         }
         Update: {
           actual_cost?: number | null
+          client_address?: string | null
           client_email?: string | null
           client_name?: string | null
           client_phone?: string | null
@@ -4631,8 +4750,10 @@ export type Database = {
           customer_id?: string | null
           description?: string | null
           end_date?: string | null
+          estimate_data?: Json | null
           estimated_cost?: number | null
           id?: string
+          job_title?: string | null
           name?: string
           project_type?: Database["public"]["Enums"]["project_type"] | null
           site_address?: string | null
@@ -4656,6 +4777,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      projects_estimator: {
+        Row: {
+          checklist: Json | null
+          created_at: string
+          estimate_data: Json | null
+          id: number
+          job_name: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          checklist?: Json | null
+          created_at?: string
+          estimate_data?: Json | null
+          id?: number
+          job_name: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          checklist?: Json | null
+          created_at?: string
+          estimate_data?: Json | null
+          id?: number
+          job_name?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       properties: {
         Row: {
@@ -7278,6 +7429,7 @@ export type Database = {
         Args: { description_text?: string; emp_id: string; rule_id: string }
         Returns: string
       }
+      debriefs_topic: { Args: { id: string }; Returns: string }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
         | {

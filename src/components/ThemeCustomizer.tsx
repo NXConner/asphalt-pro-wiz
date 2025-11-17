@@ -388,7 +388,7 @@ export function ThemeCustomizer() {
           spacing={FOUNDATION_SPACING_ENTRIES}
           typography={FOUNDATION_TYPOGRAPHY_ENTRIES}
           shadows={FOUNDATION_SHADOW_ENTRIES}
-          colors={FOUNDATION_COLOR_ENTRIES}
+          colors={FOUNDATION_COLOR_ENTRIES.map(([k, v]) => [k, v] as [string, string])}
         />
 
         <ThemeAccessibilityPanel />
